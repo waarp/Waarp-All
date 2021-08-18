@@ -1,0 +1,1082 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ZstdFrameDecompressor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdunsafe</a> &gt; <span class="el_source">ZstdFrameDecompressor.java</span></div><h1>ZstdFrameDecompressor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdunsafe;
+
+import org.waarp.compress.MalformedInputException;
+
+import java.util.Arrays;
+
+import static org.waarp.compress.zstdunsafe.BitInputStream.*;
+import static org.waarp.compress.zstdunsafe.Constants.*;
+import static org.waarp.compress.zstdunsafe.UnsafeUtil.*;
+import static org.waarp.compress.zstdunsafe.Util.*;
+import static sun.misc.Unsafe.*;
+
+<span class="nc" id="L46">class ZstdFrameDecompressor {</span>
+<span class="nc" id="L47">  private static final int[] DEC_32_TABLE = { 4, 1, 2, 1, 4, 4, 4, 4 };</span>
+<span class="nc" id="L48">  private static final int[] DEC_64_TABLE = { 0, 0, 0, -1, 0, 1, 2, 3 };</span>
+
+  private static final int V07_MAGIC_NUMBER = 0xFD2FB527;
+
+  private static final int MAX_WINDOW_SIZE = 1 &lt;&lt; 23;
+
+<span class="nc" id="L54">  private static final int[] LITERALS_LENGTH_BASE = {</span>
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24,
+      28, 32, 40, 48, 64, 0x80, 0x100, 0x200, 0x400, 0x800, 0x1000, 0x2000,
+      0x4000, 0x8000, 0x10000
+  };
+
+<span class="nc" id="L60">  private static final int[] MATCH_LENGTH_BASE = {</span>
+      3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+      23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37, 39, 41, 43, 47,
+      51, 59, 67, 83, 99, 0x83, 0x103, 0x203, 0x403, 0x803, 0x1003, 0x2003,
+      0x4003, 0x8003, 0x10003
+  };
+
+<span class="nc" id="L67">  private static final int[] OFFSET_CODES_BASE = {</span>
+      0, 1, 1, 5, 0xD, 0x1D, 0x3D, 0x7D, 0xFD, 0x1FD, 0x3FD, 0x7FD, 0xFFD,
+      0x1FFD, 0x3FFD, 0x7FFD, 0xFFFD, 0x1FFFD, 0x3FFFD, 0x7FFFD, 0xFFFFD,
+      0x1FFFFD, 0x3FFFFD, 0x7FFFFD, 0xFFFFFD, 0x1FFFFFD, 0x3FFFFFD, 0x7FFFFFD,
+      0xFFFFFFD
+  };
+
+<span class="nc" id="L74">  private static final FiniteStateEntropy.Table DEFAULT_LITERALS_LENGTH_TABLE =</span>
+      new FiniteStateEntropy.Table(6, new int[] {
+          0, 16, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0,
+          32, 0, 0, 32, 0, 32, 0, 32, 0, 0, 32, 0, 32, 0, 32, 0, 0, 16, 32, 0,
+          0, 48, 16, 32, 32, 32, 32, 32, 32, 32, 32, 0, 32, 32, 32, 32, 32, 32,
+          0, 0, 0, 0
+      }, new byte[] {
+          0, 0, 1, 3, 4, 6, 7, 9, 10, 12, 14, 16, 18, 19, 21, 22, 24, 25, 26,
+          27, 29, 31, 0, 1, 2, 4, 5, 7, 8, 10, 11, 13, 16, 17, 19, 20, 22, 23,
+          25, 25, 26, 28, 30, 0, 1, 2, 3, 5, 6, 8, 9, 11, 12, 15, 17, 18, 20,
+          21, 23, 24, 35, 34, 33, 32
+      }, new byte[] {
+          4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 4,
+          4, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 4, 4, 5, 6, 6, 4, 4, 5,
+          5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6
+      });
+
+<span class="nc" id="L91">  private static final FiniteStateEntropy.Table DEFAULT_OFFSET_CODES_TABLE =</span>
+      new FiniteStateEntropy.Table(5, new int[] {
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 16, 0, 0,
+          0, 16, 0, 0, 0, 0, 0, 0, 0
+      }, new byte[] {
+          0, 6, 9, 15, 21, 3, 7, 12, 18, 23, 5, 8, 14, 20, 2, 7, 11, 17, 22, 4,
+          8, 13, 19, 1, 6, 10, 16, 28, 27, 26, 25, 24
+      }, new byte[] {
+          5, 4, 5, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5, 5,
+          5, 4, 5, 5, 5, 5, 5, 5, 5
+      });
+
+<span class="nc" id="L103">  private static final FiniteStateEntropy.Table DEFAULT_MATCH_LENGTH_TABLE =</span>
+      new FiniteStateEntropy.Table(6, new int[] {
+          0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16,
+          0, 32, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 48,
+          16, 32, 32, 32, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      }, new byte[] {
+          0, 1, 2, 3, 5, 6, 8, 10, 13, 16, 19, 22, 25, 28, 31, 33, 35, 37, 39,
+          41, 43, 45, 1, 2, 3, 4, 6, 7, 9, 12, 15, 18, 21, 24, 27, 30, 32, 34,
+          36, 38, 40, 42, 44, 1, 1, 2, 4, 5, 7, 8, 11, 14, 17, 20, 23, 26, 29,
+          52, 51, 50, 49, 48, 47, 46
+      }, new byte[] {
+          6, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4,
+          4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 4,
+          5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
+      });
+  public static final String NOT_ENOUGH_INPUT_BYTES = &quot;Not enough input bytes&quot;;
+  public static final String OUTPUT_BUFFER_TOO_SMALL =
+      &quot;Output buffer too small&quot;;
+  public static final String EXPECTED_MATCH_LENGTH_TABLE_TO_BE_PRESENT =
+      &quot;Expected match length table to be present&quot;;
+  public static final String INPUT_IS_CORRUPTED = &quot;Input is corrupted&quot;;
+  public static final String VALUE_EXCEEDS_EXPECTED_MAXIMUM_VALUE =
+      &quot;Value exceeds expected maximum value&quot;;
+
+<span class="nc" id="L127">  private final byte[] literals = new byte[MAX_BLOCK_SIZE + SIZE_OF_LONG];</span>
+  // extra space to allow for long-at-a-time copy
+
+  // current buffer containing literals
+  private Object literalsBase;
+  private long literalsAddress;
+  private long literalsLimit;
+
+<span class="nc" id="L135">  private final int[] previousOffsets = new int[3];</span>
+
+<span class="nc" id="L137">  private final FiniteStateEntropy.Table literalsLengthTable =</span>
+      new FiniteStateEntropy.Table(LITERAL_LENGTH_TABLE_LOG);
+<span class="nc" id="L139">  private final FiniteStateEntropy.Table offsetCodesTable =</span>
+      new FiniteStateEntropy.Table(OFFSET_TABLE_LOG);
+<span class="nc" id="L141">  private final FiniteStateEntropy.Table matchLengthTable =</span>
+      new FiniteStateEntropy.Table(MATCH_LENGTH_TABLE_LOG);
+
+  private FiniteStateEntropy.Table currentLiteralsLengthTable;
+  private FiniteStateEntropy.Table currentOffsetCodesTable;
+  private FiniteStateEntropy.Table currentMatchLengthTable;
+
+<span class="nc" id="L148">  private final Huffman huffman = new Huffman();</span>
+<span class="nc" id="L149">  private final FseTableReader fse = new FseTableReader();</span>
+
+  public int decompress(final Object inputBase, final long inputAddress,
+                        final long inputLimit, final Object outputBase,
+                        final long outputAddress, final long outputLimit) {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (outputAddress == outputLimit) {</span>
+<span class="nc" id="L155">      return 0;</span>
+    }
+
+<span class="nc" id="L158">    long input = inputAddress;</span>
+<span class="nc" id="L159">    long output = outputAddress;</span>
+
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    while (input &lt; inputLimit) {</span>
+<span class="nc" id="L162">      reset();</span>
+<span class="nc" id="L163">      final long outputStart = output;</span>
+<span class="nc" id="L164">      input += verifyMagic(inputBase, inputAddress, inputLimit);</span>
+
+<span class="nc" id="L166">      final FrameHeader frameHeader =</span>
+<span class="nc" id="L167">          readFrameHeader(inputBase, input, inputLimit);</span>
+<span class="nc" id="L168">      input += frameHeader.headerSize;</span>
+
+      boolean lastBlock;
+      do {
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        verify(input + SIZE_OF_BLOCK_HEADER &lt;= inputLimit, input,</span>
+               NOT_ENOUGH_INPUT_BYTES);
+
+        // read block header
+<span class="nc" id="L176">        final int header = UNSAFE.getInt(inputBase, input) &amp; 0xFFFFFF;</span>
+<span class="nc" id="L177">        input += SIZE_OF_BLOCK_HEADER;</span>
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        lastBlock = (header &amp; 1) != 0;</span>
+<span class="nc" id="L180">        final int blockType = (header &gt;&gt;&gt; 1) &amp; 0x3;</span>
+<span class="nc" id="L181">        final int blockSize = (header &gt;&gt;&gt; 3) &amp; 0x1FFFFF; // 21 bits</span>
+
+        final int decodedSize;
+<span class="nc bnc" id="L184" title="All 4 branches missed.">        switch (blockType) {</span>
+          case RAW_BLOCK:
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            verify(inputAddress + blockSize &lt;= inputLimit, input,</span>
+                   NOT_ENOUGH_INPUT_BYTES);
+<span class="nc" id="L188">            decodedSize =</span>
+<span class="nc" id="L189">                decodeRawBlock(inputBase, input, blockSize, outputBase, output,</span>
+                               outputLimit);
+<span class="nc" id="L191">            input += blockSize;</span>
+<span class="nc" id="L192">            break;</span>
+          case RLE_BLOCK:
+<span class="nc bnc" id="L194" title="All 2 branches missed.">            verify(inputAddress + 1 &lt;= inputLimit, input,</span>
+                   NOT_ENOUGH_INPUT_BYTES);
+<span class="nc" id="L196">            decodedSize =</span>
+<span class="nc" id="L197">                decodeRleBlock(blockSize, inputBase, input, outputBase, output,</span>
+                               outputLimit);
+<span class="nc" id="L199">            input += 1;</span>
+<span class="nc" id="L200">            break;</span>
+          case COMPRESSED_BLOCK:
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            verify(inputAddress + blockSize &lt;= inputLimit, input,</span>
+                   NOT_ENOUGH_INPUT_BYTES);
+<span class="nc" id="L204">            decodedSize =</span>
+<span class="nc" id="L205">                decodeCompressedBlock(inputBase, input, blockSize, outputBase,</span>
+                                      output, outputLimit,
+                                      frameHeader.windowSize, outputAddress);
+<span class="nc" id="L208">            input += blockSize;</span>
+<span class="nc" id="L209">            break;</span>
+          default:
+<span class="nc" id="L211">            throw fail(input, &quot;Invalid block type&quot;);</span>
+        }
+
+<span class="nc" id="L214">        output += decodedSize;</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">      } while (!lastBlock);</span>
+
+<span class="nc bnc" id="L217" title="All 2 branches missed.">      if (frameHeader.hasChecksum) {</span>
+<span class="nc" id="L218">        final int decodedFrameSize = (int) (output - outputStart);</span>
+
+<span class="nc" id="L220">        final long hash =</span>
+<span class="nc" id="L221">            XxHash64.hash(0, outputBase, outputStart, decodedFrameSize);</span>
+
+<span class="nc" id="L223">        final int checksum = UNSAFE.getInt(inputBase, input);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (checksum != (int) hash) {</span>
+<span class="nc" id="L225">          throw new MalformedInputException(input, String.format(</span>
+              &quot;Bad checksum. Expected: %s, actual: %s&quot;,
+<span class="nc" id="L227">              Integer.toHexString(checksum), Integer.toHexString((int) hash)));</span>
+        }
+
+<span class="nc" id="L230">        input += SIZE_OF_INT;</span>
+      }
+<span class="nc" id="L232">    }</span>
+
+<span class="nc" id="L234">    return (int) (output - outputAddress);</span>
+  }
+
+  private void reset() {
+<span class="nc" id="L238">    previousOffsets[0] = 1;</span>
+<span class="nc" id="L239">    previousOffsets[1] = 4;</span>
+<span class="nc" id="L240">    previousOffsets[2] = 8;</span>
+
+<span class="nc" id="L242">    currentLiteralsLengthTable = null;</span>
+<span class="nc" id="L243">    currentOffsetCodesTable = null;</span>
+<span class="nc" id="L244">    currentMatchLengthTable = null;</span>
+<span class="nc" id="L245">  }</span>
+
+  private static int decodeRawBlock(final Object inputBase,
+                                    final long inputAddress,
+                                    final int blockSize,
+                                    final Object outputBase,
+                                    final long outputAddress,
+                                    final long outputLimit) {
+<span class="nc bnc" id="L253" title="All 2 branches missed.">    verify(outputAddress + blockSize &lt;= outputLimit, inputAddress,</span>
+           OUTPUT_BUFFER_TOO_SMALL);
+
+<span class="nc" id="L256">    UNSAFE.copyMemory(inputBase, inputAddress, outputBase, outputAddress,</span>
+                      blockSize);
+<span class="nc" id="L258">    return blockSize;</span>
+  }
+
+  private static int decodeRleBlock(final int size, final Object inputBase,
+                                    final long inputAddress,
+                                    final Object outputBase,
+                                    final long outputAddress,
+                                    final long outputLimit) {
+<span class="nc bnc" id="L266" title="All 2 branches missed.">    verify(outputAddress + size &lt;= outputLimit, inputAddress,</span>
+           OUTPUT_BUFFER_TOO_SMALL);
+
+<span class="nc" id="L269">    long output = outputAddress;</span>
+<span class="nc" id="L270">    final long value = UNSAFE.getByte(inputBase, inputAddress) &amp; 0xFFL;</span>
+
+<span class="nc" id="L272">    int remaining = size;</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">    if (remaining &gt;= SIZE_OF_LONG) {</span>
+<span class="nc" id="L274">      final long packed =</span>
+          value | (value &lt;&lt; 8) | (value &lt;&lt; 16) | (value &lt;&lt; 24) | (value &lt;&lt; 32) |
+          (value &lt;&lt; 40) | (value &lt;&lt; 48) | (value &lt;&lt; 56);
+
+      do {
+<span class="nc" id="L279">        UNSAFE.putLong(outputBase, output, packed);</span>
+<span class="nc" id="L280">        output += SIZE_OF_LONG;</span>
+<span class="nc" id="L281">        remaining -= SIZE_OF_LONG;</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">      } while (remaining &gt;= SIZE_OF_LONG);</span>
+    }
+
+<span class="nc bnc" id="L285" title="All 2 branches missed.">    for (int i = 0; i &lt; remaining; i++) {</span>
+<span class="nc" id="L286">      UNSAFE.putByte(outputBase, output, (byte) value);</span>
+<span class="nc" id="L287">      output++;</span>
+    }
+
+<span class="nc" id="L290">    return size;</span>
+  }
+
+  private int decodeCompressedBlock(final Object inputBase,
+                                    final long inputAddress,
+                                    final int blockSize,
+                                    final Object outputBase,
+                                    final long outputAddress,
+                                    final long outputLimit,
+                                    final int windowSize,
+                                    final long outputAbsoluteBaseAddress) {
+<span class="nc" id="L301">    final long inputLimit = inputAddress + blockSize;</span>
+<span class="nc" id="L302">    long input = inputAddress;</span>
+
+<span class="nc bnc" id="L304" title="All 2 branches missed.">    verify(blockSize &lt;= MAX_BLOCK_SIZE, input,</span>
+           EXPECTED_MATCH_LENGTH_TABLE_TO_BE_PRESENT);
+<span class="nc bnc" id="L306" title="All 2 branches missed.">    verify(blockSize &gt;= MIN_BLOCK_SIZE, input,</span>
+           &quot;Compressed block size too small&quot;);
+
+    // decode literals
+<span class="nc" id="L310">    final int literalsBlockType = UNSAFE.getByte(inputBase, input) &amp; 0x3;</span>
+
+<span class="nc bnc" id="L312" title="All 5 branches missed.">    switch (literalsBlockType) {</span>
+      case RAW_LITERALS_BLOCK: {
+<span class="nc" id="L314">        input += decodeRawLiterals(inputBase, input, inputLimit);</span>
+<span class="nc" id="L315">        break;</span>
+      }
+      case RLE_LITERALS_BLOCK: {
+<span class="nc" id="L318">        input += decodeRleLiterals(inputBase, input, blockSize);</span>
+<span class="nc" id="L319">        break;</span>
+      }
+      case TREELESS_LITERALS_BLOCK:
+<span class="nc" id="L322">        verify(huffman.isLoaded(), input, &quot;Dictionary is corrupted&quot;);</span>
+      case COMPRESSED_LITERALS_BLOCK: {
+<span class="nc" id="L324">        input += decodeCompressedLiterals(inputBase, input, blockSize,</span>
+                                          literalsBlockType);
+<span class="nc" id="L326">        break;</span>
+      }
+      default:
+<span class="nc" id="L329">        throw fail(input, &quot;Invalid literals block encoding type&quot;);</span>
+    }
+
+<span class="nc bnc" id="L332" title="All 2 branches missed.">    verify(windowSize &lt;= MAX_WINDOW_SIZE, input,</span>
+           &quot;Window size too large (not yet supported)&quot;);
+
+<span class="nc" id="L335">    return decompressSequences(inputBase, input, inputAddress + blockSize,</span>
+                               outputBase, outputAddress, outputLimit,
+                               literalsBase, literalsAddress, literalsLimit,
+                               outputAbsoluteBaseAddress);
+  }
+
+  private int decompressSequences(final Object inputBase,
+                                  final long inputAddress,
+                                  final long inputLimit,
+                                  final Object outputBase,
+                                  final long outputAddress,
+                                  final long outputLimit,
+                                  final Object literalsBase,
+                                  final long literalsAddress,
+                                  final long literalsLimit,
+                                  final long outputAbsoluteBaseAddress) {
+<span class="nc" id="L351">    final long fastOutputLimit = outputLimit - SIZE_OF_LONG;</span>
+<span class="nc" id="L352">    final long fastMatchOutputLimit = fastOutputLimit - SIZE_OF_LONG;</span>
+
+<span class="nc" id="L354">    long input = inputAddress;</span>
+<span class="nc" id="L355">    long output = outputAddress;</span>
+
+<span class="nc" id="L357">    long literalsInput = literalsAddress;</span>
+
+<span class="nc" id="L359">    final int size = (int) (inputLimit - inputAddress);</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">    verify(size &gt;= MIN_SEQUENCES_SIZE, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+    // decode header
+<span class="nc" id="L363">    int sequenceCount = UNSAFE.getByte(inputBase, input++) &amp; 0xFF;</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">    if (sequenceCount != 0) {</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">      if (sequenceCount == 255) {</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        verify(input + SIZE_OF_SHORT &lt;= inputLimit, input,</span>
+               NOT_ENOUGH_INPUT_BYTES);
+<span class="nc" id="L368">        sequenceCount = (UNSAFE.getShort(inputBase, input) &amp; 0xFFFF) +</span>
+                        LONG_NUMBER_OF_SEQUENCES;
+<span class="nc" id="L370">        input += SIZE_OF_SHORT;</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">      } else if (sequenceCount &gt; 127) {</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">        verify(input &lt; inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+<span class="nc" id="L373">        sequenceCount = ((sequenceCount - 128) &lt;&lt; 8) +</span>
+<span class="nc" id="L374">                        (UNSAFE.getByte(inputBase, input++) &amp; 0xFF);</span>
+      }
+
+<span class="nc bnc" id="L377" title="All 2 branches missed.">      verify(input + SIZE_OF_INT &lt;= inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+<span class="nc" id="L379">      final byte type = UNSAFE.getByte(inputBase, input++);</span>
+
+<span class="nc" id="L381">      final int literalsLengthType = (type &amp; 0xFF) &gt;&gt;&gt; 6;</span>
+<span class="nc" id="L382">      final int offsetCodesType = (type &gt;&gt;&gt; 4) &amp; 0x3;</span>
+<span class="nc" id="L383">      final int matchLengthType = (type &gt;&gt;&gt; 2) &amp; 0x3;</span>
+
+<span class="nc" id="L385">      input = computeLiteralsTable(literalsLengthType, inputBase, input,</span>
+                                   inputLimit);
+<span class="nc" id="L387">      input =</span>
+<span class="nc" id="L388">          computeOffsetsTable(offsetCodesType, inputBase, input, inputLimit);</span>
+<span class="nc" id="L389">      input = computeMatchLengthTable(matchLengthType, inputBase, input,</span>
+                                      inputLimit);
+
+      // decompress sequences
+<span class="nc" id="L393">      final BitInputStream.Initializer initializer =</span>
+          new BitInputStream.Initializer(inputBase, input, inputLimit);
+<span class="nc" id="L395">      initializer.initialize();</span>
+<span class="nc" id="L396">      int bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L397">      long bits = initializer.getBits();</span>
+<span class="nc" id="L398">      long currentAddress = initializer.getCurrentAddress();</span>
+
+<span class="nc" id="L400">      final FiniteStateEntropy.Table literalsLengthTable1 =</span>
+          this.currentLiteralsLengthTable;
+<span class="nc" id="L402">      final FiniteStateEntropy.Table offsetCodesTable1 =</span>
+          this.currentOffsetCodesTable;
+<span class="nc" id="L404">      final FiniteStateEntropy.Table matchLengthTable1 =</span>
+          this.currentMatchLengthTable;
+
+<span class="nc" id="L407">      int literalsLengthState =</span>
+<span class="nc" id="L408">          (int) peekBits(bitsConsumed, bits, literalsLengthTable1.log2Size);</span>
+<span class="nc" id="L409">      bitsConsumed += literalsLengthTable1.log2Size;</span>
+
+<span class="nc" id="L411">      int offsetCodesState =</span>
+<span class="nc" id="L412">          (int) peekBits(bitsConsumed, bits, offsetCodesTable1.log2Size);</span>
+<span class="nc" id="L413">      bitsConsumed += offsetCodesTable1.log2Size;</span>
+
+<span class="nc" id="L415">      int matchLengthState =</span>
+<span class="nc" id="L416">          (int) peekBits(bitsConsumed, bits, matchLengthTable1.log2Size);</span>
+<span class="nc" id="L417">      bitsConsumed += matchLengthTable1.log2Size;</span>
+
+<span class="nc" id="L419">      final int[] previousOffsets1 = this.previousOffsets;</span>
+
+<span class="nc" id="L421">      final byte[] literalsLengthNumbersOfBits =</span>
+          literalsLengthTable1.numberOfBits;
+<span class="nc" id="L423">      final int[] literalsLengthNewStates = literalsLengthTable1.newState;</span>
+<span class="nc" id="L424">      final byte[] literalsLengthSymbols = literalsLengthTable1.symbol;</span>
+
+<span class="nc" id="L426">      final byte[] matchLengthNumbersOfBits = matchLengthTable1.numberOfBits;</span>
+<span class="nc" id="L427">      final int[] matchLengthNewStates = matchLengthTable1.newState;</span>
+<span class="nc" id="L428">      final byte[] matchLengthSymbols = matchLengthTable1.symbol;</span>
+
+<span class="nc" id="L430">      final byte[] offsetCodesNumbersOfBits = offsetCodesTable1.numberOfBits;</span>
+<span class="nc" id="L431">      final int[] offsetCodesNewStates = offsetCodesTable1.newState;</span>
+<span class="nc" id="L432">      final byte[] offsetCodesSymbols = offsetCodesTable1.symbol;</span>
+
+<span class="nc bnc" id="L434" title="All 2 branches missed.">      while (sequenceCount &gt; 0) {</span>
+<span class="nc" id="L435">        sequenceCount--;</span>
+
+<span class="nc" id="L437">        final BitInputStream.Loader loader =</span>
+            new BitInputStream.Loader(inputBase, input, currentAddress, bits,
+                                      bitsConsumed);
+<span class="nc" id="L440">        loader.load();</span>
+<span class="nc" id="L441">        bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L442">        bits = loader.getBits();</span>
+<span class="nc" id="L443">        currentAddress = loader.getCurrentAddress();</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">        if (loader.isOverflow()) {</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">          verify(sequenceCount == 0, input, &quot;Not all sequences were consumed&quot;);</span>
+<span class="nc" id="L446">          break;</span>
+        }
+
+        // decode sequence
+<span class="nc" id="L450">        final int literalsLengthCode =</span>
+            literalsLengthSymbols[literalsLengthState];
+<span class="nc" id="L452">        final int matchLengthCode = matchLengthSymbols[matchLengthState];</span>
+<span class="nc" id="L453">        final int offsetCode = offsetCodesSymbols[offsetCodesState];</span>
+
+<span class="nc" id="L455">        final int literalsLengthBits = LITERALS_LENGTH_BITS[literalsLengthCode];</span>
+<span class="nc" id="L456">        final int matchLengthBits = MATCH_LENGTH_BITS[matchLengthCode];</span>
+
+<span class="nc" id="L458">        int offset = OFFSET_CODES_BASE[offsetCode];</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">        if (offsetCode &gt; 0) {</span>
+<span class="nc" id="L460">          offset += peekBits(bitsConsumed, bits, offsetCode);</span>
+<span class="nc" id="L461">          bitsConsumed += offsetCode;</span>
+        }
+
+<span class="nc bnc" id="L464" title="All 2 branches missed.">        if (offsetCode &lt;= 1) {</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">          if (literalsLengthCode == 0) {</span>
+<span class="nc" id="L466">            offset++;</span>
+          }
+
+<span class="nc bnc" id="L469" title="All 2 branches missed.">          if (offset != 0) {</span>
+            int temp;
+<span class="nc bnc" id="L471" title="All 2 branches missed.">            if (offset == 3) {</span>
+<span class="nc" id="L472">              temp = previousOffsets1[0] - 1;</span>
+            } else {
+<span class="nc" id="L474">              temp = previousOffsets1[offset];</span>
+            }
+
+<span class="nc bnc" id="L477" title="All 2 branches missed.">            if (temp == 0) {</span>
+<span class="nc" id="L478">              temp = 1;</span>
+            }
+
+<span class="nc bnc" id="L481" title="All 2 branches missed.">            if (offset != 1) {</span>
+<span class="nc" id="L482">              previousOffsets1[2] = previousOffsets1[1];</span>
+            }
+<span class="nc" id="L484">            previousOffsets1[1] = previousOffsets1[0];</span>
+<span class="nc" id="L485">            previousOffsets1[0] = temp;</span>
+
+<span class="nc" id="L487">            offset = temp;</span>
+<span class="nc" id="L488">          } else {</span>
+<span class="nc" id="L489">            offset = previousOffsets1[0];</span>
+          }
+        } else {
+<span class="nc" id="L492">          previousOffsets1[2] = previousOffsets1[1];</span>
+<span class="nc" id="L493">          previousOffsets1[1] = previousOffsets1[0];</span>
+<span class="nc" id="L494">          previousOffsets1[0] = offset;</span>
+        }
+
+<span class="nc" id="L497">        int matchLength = MATCH_LENGTH_BASE[matchLengthCode];</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">        if (matchLengthCode &gt; 31) {</span>
+<span class="nc" id="L499">          matchLength += peekBits(bitsConsumed, bits, matchLengthBits);</span>
+<span class="nc" id="L500">          bitsConsumed += matchLengthBits;</span>
+        }
+
+<span class="nc" id="L503">        int literalsLength = LITERALS_LENGTH_BASE[literalsLengthCode];</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">        if (literalsLengthCode &gt; 15) {</span>
+<span class="nc" id="L505">          literalsLength += peekBits(bitsConsumed, bits, literalsLengthBits);</span>
+<span class="nc" id="L506">          bitsConsumed += literalsLengthBits;</span>
+        }
+
+<span class="nc" id="L509">        final int totalBits = literalsLengthBits + matchLengthBits + offsetCode;</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        if (totalBits &gt; 64 - 7 -</span>
+                        (LITERAL_LENGTH_TABLE_LOG + MATCH_LENGTH_TABLE_LOG +
+                         OFFSET_TABLE_LOG)) {
+<span class="nc" id="L513">          final BitInputStream.Loader loader1 =</span>
+              new BitInputStream.Loader(inputBase, input, currentAddress, bits,
+                                        bitsConsumed);
+<span class="nc" id="L516">          loader1.load();</span>
+
+<span class="nc" id="L518">          bitsConsumed = loader1.getBitsConsumed();</span>
+<span class="nc" id="L519">          bits = loader1.getBits();</span>
+<span class="nc" id="L520">          currentAddress = loader1.getCurrentAddress();</span>
+        }
+
+        int numberOfBits;
+
+<span class="nc" id="L525">        numberOfBits = literalsLengthNumbersOfBits[literalsLengthState];</span>
+<span class="nc" id="L526">        literalsLengthState =</span>
+            (int) (literalsLengthNewStates[literalsLengthState] +
+<span class="nc" id="L528">                   peekBits(bitsConsumed, bits, numberOfBits)); // &lt;= 9 bits</span>
+<span class="nc" id="L529">        bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L531">        numberOfBits = matchLengthNumbersOfBits[matchLengthState];</span>
+<span class="nc" id="L532">        matchLengthState = (int) (matchLengthNewStates[matchLengthState] +</span>
+<span class="nc" id="L533">                                  peekBits(bitsConsumed, bits,</span>
+                                           numberOfBits)); // &lt;= 9 bits
+<span class="nc" id="L535">        bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L537">        numberOfBits = offsetCodesNumbersOfBits[offsetCodesState];</span>
+<span class="nc" id="L538">        offsetCodesState = (int) (offsetCodesNewStates[offsetCodesState] +</span>
+<span class="nc" id="L539">                                  peekBits(bitsConsumed, bits,</span>
+                                           numberOfBits)); // &lt;= 8 bits
+<span class="nc" id="L541">        bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L543">        final long literalOutputLimit = output + literalsLength;</span>
+<span class="nc" id="L544">        final long matchOutputLimit = literalOutputLimit + matchLength;</span>
+
+<span class="nc bnc" id="L546" title="All 2 branches missed.">        verify(matchOutputLimit &lt;= outputLimit, input, OUTPUT_BUFFER_TOO_SMALL);</span>
+<span class="nc" id="L547">        final long literalEnd = literalsInput + literalsLength;</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">        verify(literalEnd &lt;= literalsLimit, input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc" id="L550">        final long matchAddress = literalOutputLimit - offset;</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">        verify(matchAddress &gt;= outputAbsoluteBaseAddress, input,</span>
+               INPUT_IS_CORRUPTED);
+
+<span class="nc bnc" id="L554" title="All 2 branches missed.">        if (literalOutputLimit &gt; fastOutputLimit) {</span>
+<span class="nc" id="L555">          executeLastSequence(outputBase, output, literalOutputLimit,</span>
+                              matchOutputLimit, fastOutputLimit, literalsInput,
+                              matchAddress);
+        } else {
+          // copy literals. literalOutputLimit &lt;= fastOutputLimit, so we can copy
+          // long at a time with over-copy
+<span class="nc" id="L561">          output = copyLiterals(outputBase, literalsBase, output, literalsInput,</span>
+                                literalOutputLimit);
+<span class="nc" id="L563">          copyMatch(outputBase, fastOutputLimit, output, offset,</span>
+                    matchOutputLimit, matchAddress, matchLength,
+                    fastMatchOutputLimit);
+        }
+<span class="nc" id="L567">        output = matchOutputLimit;</span>
+<span class="nc" id="L568">        literalsInput = literalEnd;</span>
+<span class="nc" id="L569">      }</span>
+    }
+
+    // last literal segment
+<span class="nc" id="L573">    output = copyLastLiteral(outputBase, literalsBase, literalsLimit, output,</span>
+                             literalsInput);
+
+<span class="nc" id="L576">    return (int) (output - outputAddress);</span>
+  }
+
+  private long copyLastLiteral(final Object outputBase,
+                               final Object literalsBase,
+                               final long literalsLimit, long output,
+                               final long literalsInput) {
+<span class="nc" id="L583">    final long lastLiteralsSize = literalsLimit - literalsInput;</span>
+<span class="nc" id="L584">    UNSAFE.copyMemory(literalsBase, literalsInput, outputBase, output,</span>
+                      lastLiteralsSize);
+<span class="nc" id="L586">    output += lastLiteralsSize;</span>
+<span class="nc" id="L587">    return output;</span>
+  }
+
+  private void copyMatch(final Object outputBase, final long fastOutputLimit,
+                         long output, final int offset,
+                         final long matchOutputLimit, long matchAddress,
+                         int matchLength, final long fastMatchOutputLimit) {
+<span class="nc" id="L594">    matchAddress = copyMatchHead(outputBase, output, offset, matchAddress);</span>
+<span class="nc" id="L595">    output += SIZE_OF_LONG;</span>
+<span class="nc" id="L596">    matchLength -= SIZE_OF_LONG; // first 8 bytes copied above</span>
+
+<span class="nc" id="L598">    copyMatchTail(outputBase, fastOutputLimit, output, matchOutputLimit,</span>
+                  matchAddress, matchLength, fastMatchOutputLimit);
+<span class="nc" id="L600">  }</span>
+
+  private void copyMatchTail(final Object outputBase,
+                             final long fastOutputLimit, long output,
+                             final long matchOutputLimit, long matchAddress,
+                             final int matchLength,
+                             final long fastMatchOutputLimit) {
+    // fastMatchOutputLimit is just fastOutputLimit - SIZE_OF_LONG. It needs to be passed in so that it can be computed once for the
+    // whole invocation to decompressSequences. Otherwise, we'd just compute it here.
+    // If matchOutputLimit is &lt; fastMatchOutputLimit, we know that even after the head (8 bytes) has been copied, the output pointer
+    // will be within fastOutputLimit, so it's safe to copy blindly before checking the limit condition
+<span class="nc bnc" id="L611" title="All 2 branches missed.">    if (matchOutputLimit &lt; fastMatchOutputLimit) {</span>
+<span class="nc" id="L612">      int copied = 0;</span>
+      do {
+<span class="nc" id="L614">        UNSAFE.putLong(outputBase, output,</span>
+<span class="nc" id="L615">                       UNSAFE.getLong(outputBase, matchAddress));</span>
+<span class="nc" id="L616">        output += SIZE_OF_LONG;</span>
+<span class="nc" id="L617">        matchAddress += SIZE_OF_LONG;</span>
+<span class="nc" id="L618">        copied += SIZE_OF_LONG;</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">      } while (copied &lt; matchLength);</span>
+<span class="nc" id="L620">    } else {</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">      while (output &lt; fastOutputLimit) {</span>
+<span class="nc" id="L622">        UNSAFE.putLong(outputBase, output,</span>
+<span class="nc" id="L623">                       UNSAFE.getLong(outputBase, matchAddress));</span>
+<span class="nc" id="L624">        matchAddress += SIZE_OF_LONG;</span>
+<span class="nc" id="L625">        output += SIZE_OF_LONG;</span>
+      }
+
+<span class="nc bnc" id="L628" title="All 2 branches missed.">      while (output &lt; matchOutputLimit) {</span>
+<span class="nc" id="L629">        UNSAFE.putByte(outputBase, output++,</span>
+<span class="nc" id="L630">                       UNSAFE.getByte(outputBase, matchAddress++));</span>
+      }
+    }
+<span class="nc" id="L633">  }</span>
+
+  private long copyMatchHead(final Object outputBase, final long output,
+                             final int offset, long matchAddress) {
+    // copy match
+<span class="nc bnc" id="L638" title="All 2 branches missed.">    if (offset &lt; 8) {</span>
+      // 8 bytes apart so that we can copy long-at-a-time below
+<span class="nc" id="L640">      final int increment32 = DEC_32_TABLE[offset];</span>
+<span class="nc" id="L641">      final int decrement64 = DEC_64_TABLE[offset];</span>
+
+<span class="nc" id="L643">      UNSAFE.putByte(outputBase, output,</span>
+<span class="nc" id="L644">                     UNSAFE.getByte(outputBase, matchAddress));</span>
+<span class="nc" id="L645">      UNSAFE.putByte(outputBase, output + 1,</span>
+<span class="nc" id="L646">                     UNSAFE.getByte(outputBase, matchAddress + 1));</span>
+<span class="nc" id="L647">      UNSAFE.putByte(outputBase, output + 2,</span>
+<span class="nc" id="L648">                     UNSAFE.getByte(outputBase, matchAddress + 2));</span>
+<span class="nc" id="L649">      UNSAFE.putByte(outputBase, output + 3,</span>
+<span class="nc" id="L650">                     UNSAFE.getByte(outputBase, matchAddress + 3));</span>
+<span class="nc" id="L651">      matchAddress += increment32;</span>
+
+<span class="nc" id="L653">      UNSAFE.putInt(outputBase, output + 4,</span>
+<span class="nc" id="L654">                    UNSAFE.getInt(outputBase, matchAddress));</span>
+<span class="nc" id="L655">      matchAddress -= decrement64;</span>
+<span class="nc" id="L656">    } else {</span>
+<span class="nc" id="L657">      UNSAFE.putLong(outputBase, output,</span>
+<span class="nc" id="L658">                     UNSAFE.getLong(outputBase, matchAddress));</span>
+<span class="nc" id="L659">      matchAddress += SIZE_OF_LONG;</span>
+    }
+<span class="nc" id="L661">    return matchAddress;</span>
+  }
+
+  private long copyLiterals(final Object outputBase, final Object literalsBase,
+                            long output, final long literalsInput,
+                            final long literalOutputLimit) {
+<span class="nc" id="L667">    long literalInput = literalsInput;</span>
+    do {
+<span class="nc" id="L669">      UNSAFE.putLong(outputBase, output,</span>
+<span class="nc" id="L670">                     UNSAFE.getLong(literalsBase, literalInput));</span>
+<span class="nc" id="L671">      output += SIZE_OF_LONG;</span>
+<span class="nc" id="L672">      literalInput += SIZE_OF_LONG;</span>
+<span class="nc bnc" id="L673" title="All 2 branches missed.">    } while (output &lt; literalOutputLimit);</span>
+<span class="nc" id="L674">    output = literalOutputLimit; // correction in case we over-copied</span>
+<span class="nc" id="L675">    return output;</span>
+  }
+
+  private long computeMatchLengthTable(final int matchLengthType,
+                                       final Object inputBase, long input,
+                                       final long inputLimit) {
+<span class="nc bnc" id="L681" title="All 5 branches missed.">    switch (matchLengthType) {</span>
+      case SEQUENCE_ENCODING_RLE:
+<span class="nc bnc" id="L683" title="All 2 branches missed.">        verify(input &lt; inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+<span class="nc" id="L685">        final byte value = UNSAFE.getByte(inputBase, input++);</span>
+<span class="nc bnc" id="L686" title="All 2 branches missed.">        verify(value &lt;= MAX_MATCH_LENGTH_SYMBOL, input,</span>
+               VALUE_EXCEEDS_EXPECTED_MAXIMUM_VALUE);
+
+<span class="nc" id="L689">        FseTableReader.initializeRleTable(matchLengthTable, value);</span>
+<span class="nc" id="L690">        currentMatchLengthTable = matchLengthTable;</span>
+<span class="nc" id="L691">        break;</span>
+      case SEQUENCE_ENCODING_BASIC:
+<span class="nc" id="L693">        currentMatchLengthTable = DEFAULT_MATCH_LENGTH_TABLE;</span>
+<span class="nc" id="L694">        break;</span>
+      case SEQUENCE_ENCODING_REPEAT:
+<span class="nc bnc" id="L696" title="All 2 branches missed.">        verify(currentMatchLengthTable != null, input,</span>
+               EXPECTED_MATCH_LENGTH_TABLE_TO_BE_PRESENT);
+<span class="nc" id="L698">        break;</span>
+      case SEQUENCE_ENCODING_COMPRESSED:
+<span class="nc" id="L700">        input +=</span>
+<span class="nc" id="L701">            fse.readFseTable(matchLengthTable, inputBase, input, inputLimit,</span>
+                             MAX_MATCH_LENGTH_SYMBOL, MATCH_LENGTH_TABLE_LOG);
+<span class="nc" id="L703">        currentMatchLengthTable = matchLengthTable;</span>
+<span class="nc" id="L704">        break;</span>
+      default:
+<span class="nc" id="L706">        throw fail(input, &quot;Invalid match length encoding type&quot;);</span>
+    }
+<span class="nc" id="L708">    return input;</span>
+  }
+
+  private long computeOffsetsTable(final int offsetCodesType,
+                                   final Object inputBase, long input,
+                                   final long inputLimit) {
+<span class="nc bnc" id="L714" title="All 5 branches missed.">    switch (offsetCodesType) {</span>
+      case SEQUENCE_ENCODING_RLE:
+<span class="nc bnc" id="L716" title="All 2 branches missed.">        verify(input &lt; inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+<span class="nc" id="L718">        final byte value = UNSAFE.getByte(inputBase, input++);</span>
+<span class="nc bnc" id="L719" title="All 2 branches missed.">        verify(value &lt;= DEFAULT_MAX_OFFSET_CODE_SYMBOL, input,</span>
+               VALUE_EXCEEDS_EXPECTED_MAXIMUM_VALUE);
+
+<span class="nc" id="L722">        FseTableReader.initializeRleTable(offsetCodesTable, value);</span>
+<span class="nc" id="L723">        currentOffsetCodesTable = offsetCodesTable;</span>
+<span class="nc" id="L724">        break;</span>
+      case SEQUENCE_ENCODING_BASIC:
+<span class="nc" id="L726">        currentOffsetCodesTable = DEFAULT_OFFSET_CODES_TABLE;</span>
+<span class="nc" id="L727">        break;</span>
+      case SEQUENCE_ENCODING_REPEAT:
+<span class="nc bnc" id="L729" title="All 2 branches missed.">        verify(currentOffsetCodesTable != null, input,</span>
+               EXPECTED_MATCH_LENGTH_TABLE_TO_BE_PRESENT);
+<span class="nc" id="L731">        break;</span>
+      case SEQUENCE_ENCODING_COMPRESSED:
+<span class="nc" id="L733">        input +=</span>
+<span class="nc" id="L734">            fse.readFseTable(offsetCodesTable, inputBase, input, inputLimit,</span>
+                             DEFAULT_MAX_OFFSET_CODE_SYMBOL, OFFSET_TABLE_LOG);
+<span class="nc" id="L736">        currentOffsetCodesTable = offsetCodesTable;</span>
+<span class="nc" id="L737">        break;</span>
+      default:
+<span class="nc" id="L739">        throw fail(input, &quot;Invalid offset code encoding type&quot;);</span>
+    }
+<span class="nc" id="L741">    return input;</span>
+  }
+
+  private long computeLiteralsTable(final int literalsLengthType,
+                                    final Object inputBase, long input,
+                                    final long inputLimit) {
+<span class="nc bnc" id="L747" title="All 5 branches missed.">    switch (literalsLengthType) {</span>
+      case SEQUENCE_ENCODING_RLE:
+<span class="nc bnc" id="L749" title="All 2 branches missed.">        verify(input &lt; inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+<span class="nc" id="L751">        final byte value = UNSAFE.getByte(inputBase, input++);</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">        verify(value &lt;= MAX_LITERALS_LENGTH_SYMBOL, input,</span>
+               VALUE_EXCEEDS_EXPECTED_MAXIMUM_VALUE);
+
+<span class="nc" id="L755">        FseTableReader.initializeRleTable(literalsLengthTable, value);</span>
+<span class="nc" id="L756">        currentLiteralsLengthTable = literalsLengthTable;</span>
+<span class="nc" id="L757">        break;</span>
+      case SEQUENCE_ENCODING_BASIC:
+<span class="nc" id="L759">        currentLiteralsLengthTable = DEFAULT_LITERALS_LENGTH_TABLE;</span>
+<span class="nc" id="L760">        break;</span>
+      case SEQUENCE_ENCODING_REPEAT:
+<span class="nc bnc" id="L762" title="All 2 branches missed.">        verify(currentLiteralsLengthTable != null, input,</span>
+               EXPECTED_MATCH_LENGTH_TABLE_TO_BE_PRESENT);
+<span class="nc" id="L764">        break;</span>
+      case SEQUENCE_ENCODING_COMPRESSED:
+<span class="nc" id="L766">        input +=</span>
+<span class="nc" id="L767">            fse.readFseTable(literalsLengthTable, inputBase, input, inputLimit,</span>
+                             MAX_LITERALS_LENGTH_SYMBOL,
+                             LITERAL_LENGTH_TABLE_LOG);
+<span class="nc" id="L770">        currentLiteralsLengthTable = literalsLengthTable;</span>
+<span class="nc" id="L771">        break;</span>
+      default:
+<span class="nc" id="L773">        throw fail(input, &quot;Invalid literals length encoding type&quot;);</span>
+    }
+<span class="nc" id="L775">    return input;</span>
+  }
+
+  private void executeLastSequence(final Object outputBase, long output,
+                                   final long literalOutputLimit,
+                                   final long matchOutputLimit,
+                                   final long fastOutputLimit,
+                                   long literalInput, long matchAddress) {
+    // copy literals
+<span class="nc bnc" id="L784" title="All 2 branches missed.">    if (output &lt; fastOutputLimit) {</span>
+      // wild copy
+      do {
+<span class="nc" id="L787">        UNSAFE.putLong(outputBase, output,</span>
+<span class="nc" id="L788">                       UNSAFE.getLong(literalsBase, literalInput));</span>
+<span class="nc" id="L789">        output += SIZE_OF_LONG;</span>
+<span class="nc" id="L790">        literalInput += SIZE_OF_LONG;</span>
+<span class="nc bnc" id="L791" title="All 2 branches missed.">      } while (output &lt; fastOutputLimit);</span>
+
+<span class="nc" id="L793">      literalInput -= output - fastOutputLimit;</span>
+<span class="nc" id="L794">      output = fastOutputLimit;</span>
+    }
+
+<span class="nc bnc" id="L797" title="All 2 branches missed.">    while (output &lt; literalOutputLimit) {</span>
+<span class="nc" id="L798">      UNSAFE.putByte(outputBase, output,</span>
+<span class="nc" id="L799">                     UNSAFE.getByte(literalsBase, literalInput));</span>
+<span class="nc" id="L800">      output++;</span>
+<span class="nc" id="L801">      literalInput++;</span>
+    }
+
+    // copy match
+<span class="nc bnc" id="L805" title="All 2 branches missed.">    while (output &lt; matchOutputLimit) {</span>
+<span class="nc" id="L806">      UNSAFE.putByte(outputBase, output,</span>
+<span class="nc" id="L807">                     UNSAFE.getByte(outputBase, matchAddress));</span>
+<span class="nc" id="L808">      output++;</span>
+<span class="nc" id="L809">      matchAddress++;</span>
+    }
+<span class="nc" id="L811">  }</span>
+
+  private int decodeCompressedLiterals(final Object inputBase,
+                                       final long inputAddress,
+                                       final int blockSize,
+                                       final int literalsBlockType) {
+<span class="nc" id="L817">    long input = inputAddress;</span>
+<span class="nc bnc" id="L818" title="All 2 branches missed.">    verify(blockSize &gt;= 5, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+    // compressed
+    final int compressedSize;
+    final int uncompressedSize;
+<span class="nc" id="L823">    boolean singleStream = false;</span>
+    final int headerSize;
+<span class="nc" id="L825">    final int type = (UNSAFE.getByte(inputBase, input) &gt;&gt; 2) &amp; 0x3;</span>
+<span class="nc bnc" id="L826" title="All 5 branches missed.">    switch (type) {</span>
+      case 0:
+<span class="nc" id="L828">        singleStream = true;</span>
+      case 1: {
+<span class="nc" id="L830">        final int header = UNSAFE.getInt(inputBase, input);</span>
+
+<span class="nc" id="L832">        headerSize = 3;</span>
+<span class="nc" id="L833">        uncompressedSize = (header &gt;&gt;&gt; 4) &amp; mask(10);</span>
+<span class="nc" id="L834">        compressedSize = (header &gt;&gt;&gt; 14) &amp; mask(10);</span>
+<span class="nc" id="L835">        break;</span>
+      }
+      case 2: {
+<span class="nc" id="L838">        final int header = UNSAFE.getInt(inputBase, input);</span>
+
+<span class="nc" id="L840">        headerSize = 4;</span>
+<span class="nc" id="L841">        uncompressedSize = (header &gt;&gt;&gt; 4) &amp; mask(14);</span>
+<span class="nc" id="L842">        compressedSize = (header &gt;&gt;&gt; 18) &amp; mask(14);</span>
+<span class="nc" id="L843">        break;</span>
+      }
+      case 3: {
+        // read 5 little-endian bytes
+<span class="nc" id="L847">        final long header = UNSAFE.getByte(inputBase, input) &amp; 0xFF |</span>
+<span class="nc" id="L848">                            (UNSAFE.getInt(inputBase, input + 1) &amp;</span>
+                             0xFFFFFFFFL) &lt;&lt; 8;
+
+<span class="nc" id="L851">        headerSize = 5;</span>
+<span class="nc" id="L852">        uncompressedSize = (int) ((header &gt;&gt;&gt; 4) &amp; mask(18));</span>
+<span class="nc" id="L853">        compressedSize = (int) ((header &gt;&gt;&gt; 22) &amp; mask(18));</span>
+<span class="nc" id="L854">        break;</span>
+      }
+      default:
+<span class="nc" id="L857">        throw fail(input, &quot;Invalid literals header size type&quot;);</span>
+    }
+
+<span class="nc bnc" id="L860" title="All 2 branches missed.">    verify(uncompressedSize &lt;= MAX_BLOCK_SIZE, input,</span>
+           &quot;Block exceeds maximum size&quot;);
+<span class="nc bnc" id="L862" title="All 2 branches missed.">    verify(headerSize + compressedSize &lt;= blockSize, input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc" id="L864">    input += headerSize;</span>
+
+<span class="nc" id="L866">    final long inputLimit = input + compressedSize;</span>
+<span class="nc bnc" id="L867" title="All 2 branches missed.">    if (literalsBlockType != TREELESS_LITERALS_BLOCK) {</span>
+<span class="nc" id="L868">      input += huffman.readTable(inputBase, input, compressedSize);</span>
+    }
+
+<span class="nc" id="L871">    literalsBase = literals;</span>
+<span class="nc" id="L872">    literalsAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="nc" id="L873">    literalsLimit = ARRAY_BYTE_BASE_OFFSET + uncompressedSize;</span>
+
+<span class="nc bnc" id="L875" title="All 2 branches missed.">    if (singleStream) {</span>
+<span class="nc" id="L876">      huffman.decodeSingleStream(inputBase, input, inputLimit, literals,</span>
+                                 literalsAddress, literalsLimit);
+    } else {
+<span class="nc" id="L879">      huffman.decode4Streams(inputBase, input, inputLimit, literals,</span>
+                             literalsAddress, literalsLimit);
+    }
+
+<span class="nc" id="L883">    return headerSize + compressedSize;</span>
+  }
+
+  private int decodeRleLiterals(final Object inputBase, final long inputAddress,
+                                final int blockSize) {
+<span class="nc" id="L888">    long input = inputAddress;</span>
+    final int outputSize;
+
+<span class="nc" id="L891">    final int type = (UNSAFE.getByte(inputBase, input) &gt;&gt; 2) &amp; 0x3;</span>
+<span class="nc bnc" id="L892" title="All 4 branches missed.">    switch (type) {</span>
+      case 0:
+      case 2:
+<span class="nc" id="L895">        outputSize = (UNSAFE.getByte(inputBase, input) &amp; 0xFF) &gt;&gt;&gt; 3;</span>
+<span class="nc" id="L896">        input++;</span>
+<span class="nc" id="L897">        break;</span>
+      case 1:
+<span class="nc" id="L899">        outputSize = (UNSAFE.getShort(inputBase, input) &amp; 0xFFFF) &gt;&gt;&gt; 4;</span>
+<span class="nc" id="L900">        input += 2;</span>
+<span class="nc" id="L901">        break;</span>
+      case 3:
+        // we need at least 4 bytes (3 for the header, 1 for the payload)
+<span class="nc bnc" id="L904" title="All 2 branches missed.">        verify(blockSize &gt;= SIZE_OF_INT, input, NOT_ENOUGH_INPUT_BYTES);</span>
+<span class="nc" id="L905">        outputSize = (UNSAFE.getInt(inputBase, input) &amp; 0xFFFFFF) &gt;&gt;&gt; 4;</span>
+<span class="nc" id="L906">        input += 3;</span>
+<span class="nc" id="L907">        break;</span>
+      default:
+<span class="nc" id="L909">        throw fail(input, &quot;Invalid RLE literals header encoding type&quot;);</span>
+    }
+
+<span class="nc bnc" id="L912" title="All 2 branches missed.">    verify(outputSize &lt;= MAX_BLOCK_SIZE, input,</span>
+           &quot;Output exceeds maximum block size&quot;);
+
+<span class="nc" id="L915">    final byte value = UNSAFE.getByte(inputBase, input++);</span>
+<span class="nc" id="L916">    Arrays.fill(literals, 0, outputSize + SIZE_OF_LONG, value);</span>
+
+<span class="nc" id="L918">    literalsBase = literals;</span>
+<span class="nc" id="L919">    literalsAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="nc" id="L920">    literalsLimit = ARRAY_BYTE_BASE_OFFSET + outputSize;</span>
+
+<span class="nc" id="L922">    return (int) (input - inputAddress);</span>
+  }
+
+  private int decodeRawLiterals(final Object inputBase, final long inputAddress,
+                                final long inputLimit) {
+<span class="nc" id="L927">    long input = inputAddress;</span>
+<span class="nc" id="L928">    final int type = (UNSAFE.getByte(inputBase, input) &gt;&gt; 2) &amp; 0x3;</span>
+
+    final int literalSize;
+<span class="nc bnc" id="L931" title="All 4 branches missed.">    switch (type) {</span>
+      case 0:
+      case 2:
+<span class="nc" id="L934">        literalSize = (UNSAFE.getByte(inputBase, input) &amp; 0xFF) &gt;&gt;&gt; 3;</span>
+<span class="nc" id="L935">        input++;</span>
+<span class="nc" id="L936">        break;</span>
+      case 1:
+<span class="nc" id="L938">        literalSize = (UNSAFE.getShort(inputBase, input) &amp; 0xFFFF) &gt;&gt;&gt; 4;</span>
+<span class="nc" id="L939">        input += 2;</span>
+<span class="nc" id="L940">        break;</span>
+      case 3:
+        // read 3 little-endian bytes
+<span class="nc" id="L943">        final int header = ((UNSAFE.getByte(inputBase, input) &amp; 0xFF) |</span>
+<span class="nc" id="L944">                            ((UNSAFE.getShort(inputBase, input + 1) &amp; 0xFFFF) &lt;&lt;</span>
+                             8));
+
+<span class="nc" id="L947">        literalSize = header &gt;&gt;&gt; 4;</span>
+<span class="nc" id="L948">        input += 3;</span>
+<span class="nc" id="L949">        break;</span>
+      default:
+<span class="nc" id="L951">        throw fail(input, &quot;Invalid raw literals header encoding type&quot;);</span>
+    }
+
+<span class="nc bnc" id="L954" title="All 2 branches missed.">    verify(input + literalSize &lt;= inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+    // Set literals pointer to [input, literalSize], but only if we can copy 8 bytes at a time during sequence decoding
+    // Otherwise, copy literals into buffer that's big enough to guarantee that
+<span class="nc bnc" id="L958" title="All 2 branches missed.">    if (literalSize &gt; (inputLimit - input) - SIZE_OF_LONG) {</span>
+<span class="nc" id="L959">      literalsBase = literals;</span>
+<span class="nc" id="L960">      literalsAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="nc" id="L961">      literalsLimit = ARRAY_BYTE_BASE_OFFSET + literalSize;</span>
+
+<span class="nc" id="L963">      UNSAFE.copyMemory(inputBase, input, literals, literalsAddress,</span>
+                        literalSize);
+<span class="nc" id="L965">      Arrays.fill(literals, literalSize, literalSize + SIZE_OF_LONG, (byte) 0);</span>
+    } else {
+<span class="nc" id="L967">      literalsBase = inputBase;</span>
+<span class="nc" id="L968">      literalsAddress = input;</span>
+<span class="nc" id="L969">      literalsLimit = literalsAddress + literalSize;</span>
+    }
+<span class="nc" id="L971">    input += literalSize;</span>
+
+<span class="nc" id="L973">    return (int) (input - inputAddress);</span>
+  }
+
+  static FrameHeader readFrameHeader(final Object inputBase,
+                                     final long inputAddress,
+                                     final long inputLimit) {
+<span class="nc" id="L979">    long input = inputAddress;</span>
+<span class="nc bnc" id="L980" title="All 2 branches missed.">    verify(input &lt; inputLimit, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+<span class="nc" id="L982">    final int frameHeaderDescriptor = UNSAFE.getByte(inputBase, input++) &amp; 0xFF;</span>
+<span class="nc bnc" id="L983" title="All 2 branches missed.">    final boolean singleSegment = (frameHeaderDescriptor &amp; 0x20) != 0;</span>
+<span class="nc" id="L984">    final int dictionaryDescriptor = frameHeaderDescriptor &amp; 0x3;</span>
+<span class="nc" id="L985">    final int contentSizeDescriptor = frameHeaderDescriptor &gt;&gt;&gt; 6;</span>
+
+<span class="nc bnc" id="L987" title="All 8 branches missed.">    final int headerSize = 1 + (singleSegment? 0 : 1) +</span>
+                           (dictionaryDescriptor == 0? 0 :
+                               (1 &lt;&lt; (dictionaryDescriptor - 1))) +
+                           (contentSizeDescriptor == 0? (singleSegment? 1 : 0) :
+                               (1 &lt;&lt; contentSizeDescriptor));
+
+<span class="nc bnc" id="L993" title="All 2 branches missed.">    verify(headerSize &lt;= inputLimit - inputAddress, input,</span>
+           NOT_ENOUGH_INPUT_BYTES);
+
+    // decode window size
+<span class="nc" id="L997">    int windowSize = -1;</span>
+<span class="nc bnc" id="L998" title="All 2 branches missed.">    if (!singleSegment) {</span>
+<span class="nc" id="L999">      final int windowDescriptor = UNSAFE.getByte(inputBase, input++) &amp; 0xFF;</span>
+<span class="nc" id="L1000">      final int exponent = windowDescriptor &gt;&gt;&gt; 3;</span>
+<span class="nc" id="L1001">      final int mantissa = windowDescriptor &amp; 0x7;</span>
+
+<span class="nc" id="L1003">      final int base = 1 &lt;&lt; (MIN_WINDOW_LOG + exponent);</span>
+<span class="nc" id="L1004">      windowSize = base + (base / 8) * mantissa;</span>
+    }
+
+    // decode dictionary id
+<span class="nc" id="L1008">    long dictionaryId = -1;</span>
+<span class="nc bnc" id="L1009" title="All 4 branches missed.">    switch (dictionaryDescriptor) {</span>
+      case 1:
+<span class="nc" id="L1011">        dictionaryId = UNSAFE.getByte(inputBase, input) &amp; 0xFF;</span>
+<span class="nc" id="L1012">        input += SIZE_OF_BYTE;</span>
+<span class="nc" id="L1013">        break;</span>
+      case 2:
+<span class="nc" id="L1015">        dictionaryId = UNSAFE.getShort(inputBase, input) &amp; 0xFFFF;</span>
+<span class="nc" id="L1016">        input += SIZE_OF_SHORT;</span>
+<span class="nc" id="L1017">        break;</span>
+      case 3:
+<span class="nc" id="L1019">        dictionaryId = UNSAFE.getInt(inputBase, input) &amp; 0xFFFFFFFFL;</span>
+<span class="nc" id="L1020">        input += SIZE_OF_INT;</span>
+        break;
+    }
+<span class="nc bnc" id="L1023" title="All 2 branches missed.">    verify(dictionaryId == -1, input, &quot;Custom dictionaries not supported&quot;);</span>
+
+    // decode content size
+<span class="nc" id="L1026">    long contentSize = -1;</span>
+<span class="nc bnc" id="L1027" title="All 5 branches missed.">    switch (contentSizeDescriptor) {</span>
+      case 0:
+<span class="nc bnc" id="L1029" title="All 2 branches missed.">        if (singleSegment) {</span>
+<span class="nc" id="L1030">          contentSize = UNSAFE.getByte(inputBase, input) &amp; 0xFF;</span>
+<span class="nc" id="L1031">          input += SIZE_OF_BYTE;</span>
+        }
+        break;
+      case 1:
+<span class="nc" id="L1035">        contentSize = UNSAFE.getShort(inputBase, input) &amp; 0xFFFF;</span>
+<span class="nc" id="L1036">        contentSize += 256;</span>
+<span class="nc" id="L1037">        input += SIZE_OF_SHORT;</span>
+<span class="nc" id="L1038">        break;</span>
+      case 2:
+<span class="nc" id="L1040">        contentSize = UNSAFE.getInt(inputBase, input) &amp; 0xFFFFFFFFL;</span>
+<span class="nc" id="L1041">        input += SIZE_OF_INT;</span>
+<span class="nc" id="L1042">        break;</span>
+      case 3:
+<span class="nc" id="L1044">        contentSize = UNSAFE.getLong(inputBase, input);</span>
+<span class="nc" id="L1045">        input += SIZE_OF_LONG;</span>
+        break;
+    }
+
+<span class="nc bnc" id="L1049" title="All 2 branches missed.">    final boolean hasChecksum = (frameHeaderDescriptor &amp; 0x4) != 0;</span>
+
+<span class="nc" id="L1051">    return new FrameHeader(input - inputAddress, windowSize, contentSize,</span>
+                           dictionaryId, hasChecksum);
+  }
+
+  public static long getDecompressedSize(final Object inputBase,
+                                         final long inputAddress,
+                                         final long inputLimit) {
+<span class="nc" id="L1058">    long input = inputAddress;</span>
+<span class="nc" id="L1059">    input += verifyMagic(inputBase, input, inputLimit);</span>
+<span class="nc" id="L1060">    return readFrameHeader(inputBase, input, inputLimit).contentSize;</span>
+  }
+
+  static int verifyMagic(final Object inputBase, final long inputAddress,
+                         final long inputLimit) {
+<span class="nc bnc" id="L1065" title="All 2 branches missed.">    verify(inputLimit - inputAddress &gt;= 4, inputAddress,</span>
+           NOT_ENOUGH_INPUT_BYTES);
+
+<span class="nc" id="L1068">    final int magic = UNSAFE.getInt(inputBase, inputAddress);</span>
+<span class="nc bnc" id="L1069" title="All 2 branches missed.">    if (magic != MAGIC_NUMBER) {</span>
+<span class="nc bnc" id="L1070" title="All 2 branches missed.">      if (magic == V07_MAGIC_NUMBER) {</span>
+<span class="nc" id="L1071">        throw new MalformedInputException(inputAddress,</span>
+                                          &quot;Data encoded in unsupported ZSTD v0.7 format&quot;);
+      }
+<span class="nc" id="L1074">      throw new MalformedInputException(inputAddress, &quot;Invalid magic prefix: &quot; +</span>
+<span class="nc" id="L1075">                                                      Integer.toHexString(</span>
+                                                          magic));
+    }
+
+<span class="nc" id="L1079">    return SIZE_OF_INT;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

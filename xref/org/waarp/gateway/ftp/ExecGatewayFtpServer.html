@@ -67,8 +67,8 @@
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>            <span class="jxr_string">" &lt;config-file&gt; [&lt;r66config-file&gt;]"</span>);
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>        <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>      }
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <a name="WaarpLoggerFactory" href="../../../../org/waarp/common/logging/WaarpLoggerFactory.html#WaarpLoggerFactory">WaarpLoggerFactory</a>
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>          .setDefaultFactoryIfNotSame(<strong class="jxr_keyword">new</strong> <a name="WaarpSlf4JLoggerFactory" href="../../../../org/waarp/common/logging/WaarpSlf4JLoggerFactory.html#WaarpSlf4JLoggerFactory">WaarpSlf4JLoggerFactory</a>(<strong class="jxr_keyword">null</strong>));
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>          <strong class="jxr_keyword">new</strong> <a name="WaarpSlf4JLoggerFactory" href="../../../../org/waarp/common/logging/WaarpSlf4JLoggerFactory.html#WaarpSlf4JLoggerFactory">WaarpSlf4JLoggerFactory</a>(<strong class="jxr_keyword">null</strong>));
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>      logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      initialize(args[0], args.length &gt; 1? args[1] : <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>    }
@@ -97,48 +97,47 @@
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>      <strong class="jxr_keyword">if</strong> (AbstractExecutor.useDatabase) {
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>        <em class="jxr_comment">// Use R66 module</em>
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>        <strong class="jxr_keyword">if</strong> (r66file != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>          <strong class="jxr_keyword">if</strong> (!org.waarp.openr66.configuration.FileBasedConfiguration
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>              .setSubmitClientConfigurationFromXml(Configuration.configuration,
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>                                                   r66file)) {
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>            SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"Bad R66 configuration"</span>);
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>            <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>          }
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>        } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>          <em class="jxr_comment">// Cannot get R66 functional</em>
-<a class="jxr_linenumber" name="L100" href="#L100">100</a>         SysErrLogger.FAKE_LOGGER
-<a class="jxr_linenumber" name="L101" href="#L101">101</a>             .syserr(<span class="jxr_string">"No R66PrepareTransfer configuration file"</span>);
-<a class="jxr_linenumber" name="L102" href="#L102">102</a>       }
-<a class="jxr_linenumber" name="L103" href="#L103">103</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L104" href="#L104">104</a>       SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"No R66PrepareTransfer support"</span>);
-<a class="jxr_linenumber" name="L105" href="#L105">105</a>     }
-<a class="jxr_linenumber" name="L106" href="#L106">106</a>     FileBasedConfiguration.fileBasedConfiguration = configuration;
-<a class="jxr_linenumber" name="L107" href="#L107">107</a>     <em class="jxr_comment">// Start server.</em>
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>     configuration.configureLExec();
-<a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>       configuration.serverStartup();
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="FtpNoConnectionException" href="../../../../org/waarp/ftp/core/exception/FtpNoConnectionException.html#FtpNoConnectionException">FtpNoConnectionException</a> e1) {
-<a class="jxr_linenumber" name="L112" href="#L112">112</a>       SysErrLogger.FAKE_LOGGER.syserr(e1);
-<a class="jxr_linenumber" name="L113" href="#L113">113</a>       configuration.releaseResources();
-<a class="jxr_linenumber" name="L114" href="#L114">114</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L115" href="#L115">115</a>     }
-<a class="jxr_linenumber" name="L116" href="#L116">116</a>     configuration.configureHttps();
-<a class="jxr_linenumber" name="L117" href="#L117">117</a>     configuration.configureConstraint();
-<a class="jxr_linenumber" name="L118" href="#L118">118</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L119" href="#L119">119</a>       configuration.configureSnmp();
-<a class="jxr_linenumber" name="L120" href="#L120">120</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="FtpNoConnectionException" href="../../../../org/waarp/ftp/core/exception/FtpNoConnectionException.html#FtpNoConnectionException">FtpNoConnectionException</a> e) {
-<a class="jxr_linenumber" name="L121" href="#L121">121</a>       SysErrLogger.FAKE_LOGGER
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>           .syserr(<span class="jxr_string">"Cannot start SNMP support: "</span> + e.getMessage());
-<a class="jxr_linenumber" name="L123" href="#L123">123</a>     }
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>     logger.warn(<span class="jxr_string">"FTP started "</span> +
-<a class="jxr_linenumber" name="L125" href="#L125">125</a>                 (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?
-<a class="jxr_linenumber" name="L126" href="#L126">126</a>                     <span class="jxr_string">"Implicit SSL On"</span> :
-<a class="jxr_linenumber" name="L127" href="#L127">127</a>                     configuration.getFtpInternalConfiguration()
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>                                  .isAcceptAuthProt()? <span class="jxr_string">"Explicit SSL On"</span> :
-<a class="jxr_linenumber" name="L129" href="#L129">129</a>                         <span class="jxr_string">"with SSL Off"</span>));
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L131" href="#L131">131</a>   }
-<a class="jxr_linenumber" name="L132" href="#L132">132</a> 
-<a class="jxr_linenumber" name="L133" href="#L133">133</a> }
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>          <strong class="jxr_keyword">if</strong> (!org.waarp.openr66.configuration.FileBasedConfiguration.setSubmitClientConfigurationFromXml(
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>              Configuration.configuration, r66file)) {
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>            SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"Bad R66 configuration"</span>);
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>            <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>          }
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>        } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>          <em class="jxr_comment">// Cannot get R66 functional</em>
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>          SysErrLogger.FAKE_LOGGER.syserr(
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>             <span class="jxr_string">"No R66PrepareTransfer configuration file"</span>);
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>       }
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>       SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"No R66PrepareTransfer support"</span>);
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>     }
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>     FileBasedConfiguration.fileBasedConfiguration = configuration;
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>     <em class="jxr_comment">// Start server.</em>
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>     configuration.configureLExec();
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>       configuration.serverStartup();
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="FtpNoConnectionException" href="../../../../org/waarp/ftp/core/exception/FtpNoConnectionException.html#FtpNoConnectionException">FtpNoConnectionException</a> e1) {
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>       SysErrLogger.FAKE_LOGGER.syserr(e1);
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>       configuration.releaseResources();
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>     }
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>     configuration.configureHttps();
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>     configuration.configureConstraint();
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>       configuration.configureSnmp();
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="FtpNoConnectionException" href="../../../../org/waarp/ftp/core/exception/FtpNoConnectionException.html#FtpNoConnectionException">FtpNoConnectionException</a> e) {
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>       SysErrLogger.FAKE_LOGGER.syserr(
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>           <span class="jxr_string">"Cannot start SNMP support: "</span> + e.getMessage());
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>     }
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>     logger.warn(<span class="jxr_string">"FTP started "</span> +
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>                 (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>                     <span class="jxr_string">"Implicit SSL On"</span> :
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>                     configuration.getFtpInternalConfiguration()
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>                                  .isAcceptAuthProt()? <span class="jxr_string">"Explicit SSL On"</span> :
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>                         <span class="jxr_string">"with SSL Off"</span>));
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>   }
+<a class="jxr_linenumber" name="L131" href="#L131">131</a> 
+<a class="jxr_linenumber" name="L132" href="#L132">132</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpSystemUtil.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">WaarpSystemUtil.java</span></div><h1>WaarpSystemUtil.java</h1><pre class="source lang-java linenums">package org.waarp.common.utility;
+
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+
+public class WaarpSystemUtil {
+
+<span class="nc" id="L11">  private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];</span>
+  static boolean isJunit;
+
+  private WaarpSystemUtil() {
+    // Empty
+  }
+
+  /**
+   * System.exit(value)
+   *
+   * @param value
+   */
+  public static void systemExit(final int value) {
+<span class="nc bnc" id="L24" title="All 2 branches missed.">    if (isJunit()) {</span>
+<span class="nc" id="L25">      return;</span>
+    }
+<span class="nc" id="L27">    stopLogger(false);</span>
+<span class="nc" id="L28">    System.exit(value);//NOSONAR</span>
+<span class="nc" id="L29">  }</span>
+
+  /**
+   * Stop logger
+   */
+  public static void stopLogger(final boolean force) {
+<span class="nc bnc" id="L35" title="All 4 branches missed.">    if (!force &amp;&amp; isJunit()) {</span>
+<span class="nc" id="L36">      return;</span>
+    }
+<span class="nc bnc" id="L38" title="All 2 branches missed.">    if (WaarpLoggerFactory.getLogLevel() == WaarpLogLevel.NONE) {</span>
+<span class="nc" id="L39">      return;</span>
+    }
+<span class="nc" id="L41">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+<span class="nc" id="L43">    WaarpLoggerFactory.getLogger(&quot;io.netty&quot;).setLevel(WaarpLogLevel.NONE);</span>
+<span class="nc" id="L44">    WaarpLoggerFactory.getLogger(&quot;io.netty.channel.AbstractChannel&quot;)</span>
+<span class="nc" id="L45">                      .setLevel(WaarpLogLevel.NONE);</span>
+<span class="nc" id="L46">    WaarpLoggerFactory.getLogger(</span>
+                          &quot;io.netty.util.concurrent.AbstractEventExecutor&quot;)
+<span class="nc" id="L48">                      .setLevel(WaarpLogLevel.NONE);</span>
+<span class="nc" id="L49">  }</span>
+
+  /**
+   * @param classz
+   *
+   * @return a new Instance for this Class
+   *
+   * @throws InvocationTargetException
+   */
+  public static Object newInstance(final Class classz)
+      throws InvocationTargetException {
+    try {
+<span class="nc" id="L61">      return classz.getDeclaredConstructor(EMPTY_CLASS_ARRAY).newInstance();</span>
+<span class="nc" id="L62">    } catch (final Exception e) {</span>
+<span class="nc" id="L63">      throw new InvocationTargetException(e);</span>
+    }
+  }
+
+  /**
+   * @param className
+   *
+   * @return a new Instance for this Class
+   *
+   * @throws InvocationTargetException
+   */
+  public static Object newInstance(final String className)
+      throws InvocationTargetException {
+    try {
+<span class="nc" id="L77">      return newInstance(Class.forName(className));</span>
+<span class="nc" id="L78">    } catch (final Exception e) {</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      if (e instanceof InvocationTargetException) {</span>
+<span class="nc" id="L80">        throw (InvocationTargetException) e;</span>
+      }
+<span class="nc" id="L82">      throw new InvocationTargetException(e);</span>
+    }
+  }
+
+  /**
+   * Replacement for Runtime.getRuntime().halt(value)
+   *
+   * @param value
+   */
+  public static void runtimeGetRuntimeHalt(final int value) {
+<span class="nc bnc" id="L92" title="All 2 branches missed.">    if (!isJunit()) {</span>
+<span class="nc" id="L93">      Runtime.getRuntime().halt(value);//NOSONAR</span>
+    }
+<span class="nc" id="L95">  }</span>
+
+  /**
+   * JUnit usage only
+   *
+   * @return True if in JUnit role
+   */
+  public static boolean isJunit() {
+<span class="nc" id="L103">    return isJunit;</span>
+  }
+
+  /**
+   * JUnit usage only
+   *
+   * @param isJunit
+   */
+  public static void setJunit(final boolean isJunit) {
+<span class="nc" id="L112">    WaarpSystemUtil.isJunit = isJunit;</span>
+<span class="nc" id="L113">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

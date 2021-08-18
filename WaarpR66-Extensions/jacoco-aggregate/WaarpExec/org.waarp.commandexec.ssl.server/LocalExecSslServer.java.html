@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LocalExecSslServer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpExec</a> &gt; <a href="index.source.html" class="el_package">org.waarp.commandexec.ssl.server</a> &gt; <span class="el_source">LocalExecSslServer.java</span></div><h1>LocalExecSslServer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.commandexec.ssl.server;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.waarp.commandexec.utils.LocalExecDefaultResult;
+import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
+import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpThreadFactory;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
+/**
+ * LocalExec server Main method.
+ */
+<span class="nc" id="L44">public class LocalExecSslServer {</span>
+
+<span class="nc" id="L46">  static final EventLoopGroup workerGroup = new NioEventLoopGroup();</span>
+<span class="nc" id="L47">  static final EventExecutorGroup executor =</span>
+<span class="nc" id="L48">      new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),</span>
+                                    new WaarpThreadFactory(&quot;LocalExecServer&quot;));
+
+  /**
+   * Takes 3 to 8 arguments (last 5 are optional arguments):&lt;br&gt;
+   * - mandatory arguments: filename keystorepaswwd keypassword&lt;br&gt;
+   * - if no more arguments are provided, it implies 127.0.0.1 + 9999 as port
+   * and no certificates&lt;br&gt;
+   * - optional arguments:&lt;br&gt;
+   * &quot;port&quot;&lt;br&gt;
+   * &quot;port&quot; &quot;trustfilename&quot; &quot;trustpassword&quot;&lt;br&gt;
+   * &quot;port&quot; &quot;trustfilename&quot; &quot;trustpassword&quot; &quot;addresse&quot;&lt;br&gt;
+   * &quot;port&quot; &quot;trustfilename&quot; &quot;trustpassword&quot; &quot;addresse&quot; &quot;default delay&quot;&lt;br&gt;
+   *
+   * @param args
+   *
+   * @throws Exception
+   */
+  public static void main(final String[] args) throws Exception {
+<span class="nc" id="L67">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc" id="L69">    int port = 9999;</span>
+    InetAddress addr;
+<span class="nc" id="L71">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+    final String keyStoreFilename;
+    final String keyStorePasswd;
+    final String keyPassword;
+<span class="nc" id="L75">    String trustStoreFilename = null;</span>
+<span class="nc" id="L76">    String trustStorePasswd = null;</span>
+<span class="nc" id="L77">    final byte[] loop = { 127, 0, 0, 1 };</span>
+<span class="nc" id="L78">    addr = InetAddress.getByAddress(loop);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">    if (args.length &gt;= 3) {</span>
+<span class="nc" id="L80">      keyStoreFilename = args[0];</span>
+<span class="nc" id="L81">      keyStorePasswd = args[1];</span>
+<span class="nc" id="L82">      keyPassword = args[2];</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">      if (args.length &gt;= 4) {</span>
+<span class="nc" id="L84">        port = Integer.parseInt(args[3]);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (args.length &gt;= 6) {</span>
+<span class="nc" id="L86">          trustStoreFilename = args[4];</span>
+<span class="nc" id="L87">          trustStorePasswd = args[5];</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">          if (args.length &gt;= 7) {</span>
+<span class="nc" id="L89">            addr = InetAddress.getByName(args[6]);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (args.length &gt; 7) {</span>
+<span class="nc" id="L91">              delay = Long.parseLong(args[7]);</span>
+            }
+          }
+        }
+      }
+    } else {
+<span class="nc" id="L97">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+          &quot;Need at least 3 arguments: Filename &quot; + &quot;KeyStorePswd KeyPswd&quot;);
+<span class="nc" id="L99">      return;</span>
+    }
+    // Configure the server.
+    try {
+<span class="nc" id="L103">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L104">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, workerGroup,</span>
+                                        30000);
+
+      // Load the KeyStore (No certificates)
+<span class="nc" id="L108">      final WaarpSecureKeyStore WaarpSecureKeyStoreNew =</span>
+          new WaarpSecureKeyStore(keyStoreFilename, keyStorePasswd,
+                                  keyPassword);
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (trustStoreFilename != null) {</span>
+        // Include certificates
+<span class="nc" id="L113">        WaarpSecureKeyStoreNew.initTrustStore(trustStoreFilename,</span>
+                                              trustStorePasswd, true);
+      } else {
+<span class="nc" id="L116">        WaarpSecureKeyStoreNew.initEmptyTrustStore();</span>
+      }
+<span class="nc" id="L118">      final WaarpSslContextFactory waarpSslContextFactory =</span>
+          new WaarpSslContextFactory(WaarpSecureKeyStoreNew, true);
+      // Configure the pipeline factory.
+<span class="nc" id="L121">      bootstrap.childHandler(</span>
+          new LocalExecSslServerInitializer(waarpSslContextFactory, delay,
+                                            executor));
+
+      // Bind and start to accept incoming connections only on local address.
+<span class="nc" id="L126">      final ChannelFuture future =</span>
+<span class="nc" id="L127">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
+
+      // Wait until the server socket is closed.
+<span class="nc" id="L130">      future.channel().closeFuture().sync();</span>
+    } finally {
+      // Shut down all event loops to terminate all threads.
+<span class="nc" id="L133">      workerGroup.shutdownGracefully();</span>
+
+      // Wait until all threads are terminated.
+<span class="nc" id="L136">      workerGroup.terminationFuture().sync();</span>
+    }
+<span class="nc" id="L138">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

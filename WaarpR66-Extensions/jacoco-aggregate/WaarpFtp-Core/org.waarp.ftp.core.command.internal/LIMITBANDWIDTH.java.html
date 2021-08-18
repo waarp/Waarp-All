@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LIMITBANDWIDTH.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.command.internal</a> &gt; <span class="el_source">LIMITBANDWIDTH.java</span></div><h1>LIMITBANDWIDTH.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.command.internal;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.Reply500Exception;
+import org.waarp.common.command.exception.Reply501Exception;
+import org.waarp.ftp.core.command.AbstractCommand;
+
+/**
+ * Internal limit bandwidth command that will change the global limit bandwidth
+ */
+<span class="nc" id="L30">public class LIMITBANDWIDTH extends AbstractCommand {</span>
+  @Override
+  public final void exec() throws Reply501Exception, Reply500Exception {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">    if (!getSession().getAuth().isAdmin()) {</span>
+      // not admin
+<span class="nc" id="L35">      throw new Reply500Exception(&quot;Command Not Allowed&quot;);</span>
+    }
+<span class="nc bnc" id="L37" title="All 2 branches missed.">    if (!hasArg()) {</span>
+      // reset to default
+<span class="nc" id="L39">      getConfiguration().changeNetworkLimit(0, 0);</span>
+<span class="nc" id="L40">      getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,</span>
+                                &quot;Limit reset to default&quot;);
+<span class="nc" id="L42">      return;</span>
+    }
+<span class="nc" id="L44">    final String[] limits = getArgs();</span>
+    final long writeLimit;
+    final long readLimit;
+    try {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">      if (limits.length == 1) {</span>
+<span class="nc" id="L49">        writeLimit = Long.parseLong(limits[0]);</span>
+<span class="nc" id="L50">        readLimit = writeLimit;</span>
+      } else {
+<span class="nc" id="L52">        writeLimit = Long.parseLong(limits[0]);</span>
+<span class="nc" id="L53">        readLimit = Long.parseLong(limits[1]);</span>
+      }
+<span class="nc" id="L55">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L56">      throw new Reply501Exception(getCommand() +</span>
+                                  &quot; ([write and read limits in b/s] | [write limit in b/s] [read limit in b/s]&quot;);
+<span class="nc" id="L58">    }</span>
+<span class="nc" id="L59">    getConfiguration().changeNetworkLimit(writeLimit, readLimit);</span>
+<span class="nc" id="L60">    getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,</span>
+                              &quot;Limit set to new values&quot;);
+<span class="nc" id="L62">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

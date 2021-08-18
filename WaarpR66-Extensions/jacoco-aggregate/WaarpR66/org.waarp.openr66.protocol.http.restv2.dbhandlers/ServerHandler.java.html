@@ -1,0 +1,878 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ServerHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.dbhandlers</a> &gt; <span class="el_source">ServerHandler.java</span></div><h1>ServerHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.dbhandlers;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.cdap.http.HttpResponder;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.dao.BusinessDAO;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.TransferDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.pojo.Business;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.http.restv2.converters.ServerStatusMaker;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Hosts;
+import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Rules;
+import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Transfers;
+import org.waarp.openr66.protocol.http.restv2.utils.XmlUtils;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static java.lang.Boolean.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+import static javax.ws.rs.core.MediaType.*;
+import static org.waarp.common.role.RoleDefault.ROLE.*;
+import static org.waarp.openr66.dao.database.DBTransferDAO.*;
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+import static org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.ExportConfigParams.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetLogsParams.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetStatusParams.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.ImportConfigParams.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.ServerCommandsURI.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
+
+/**
+ * This is the {@link AbstractRestDbHandler} handling all requests made on the
+ * server commands REST entry
+ * point.
+ */
+
+@Path(SERVER_HANDLER_URI)
+public class ServerHandler extends AbstractRestDbHandler {
+
+  /**
+   * Stores the path to the archive directory.
+   */
+<span class="nc" id="L105">  private static final String ARCH_PATH =</span>
+<span class="nc" id="L106">      configuration.getBaseDirectory() + configuration.getArchivePath();</span>
+
+  /**
+   * Stores the path to the configuration directory.
+   */
+<span class="nc" id="L111">  private static final String CONFIGS_PATH =</span>
+<span class="nc" id="L112">      configuration.getBaseDirectory() + configuration.getConfigPath();</span>
+
+  /**
+   * Stores a {@link Map} associating each sub-path of the handler to their
+   * respective CRUD configuration.
+   */
+<span class="nc" id="L118">  private final Map&lt;String, Byte&gt; serverCRUD = new HashMap&lt;String, Byte&gt;();</span>
+
+  /**
+   * Instantiates the handler with the given CRUD configuration array.
+   *
+   * @param crud An array of byte containing all the REST CRUD
+   *     configurations.
+   */
+  public ServerHandler(final byte[] crud) {
+<span class="nc" id="L127">    super((byte) 0);</span>
+<span class="nc" id="L128">    serverCRUD.put(STATUS_URI, crud[Information.ordinal()]);</span>
+<span class="nc" id="L129">    serverCRUD.put(DEACTIVATE_URI, crud[Server.ordinal()]);</span>
+<span class="nc" id="L130">    serverCRUD.put(SHUTDOWN_URI, crud[Server.ordinal()]);</span>
+<span class="nc" id="L131">    serverCRUD.put(RESTART_URI, crud[Server.ordinal()]);</span>
+<span class="nc" id="L132">    serverCRUD.put(LOGS_URI, crud[Log.ordinal()]);</span>
+<span class="nc" id="L133">    serverCRUD.put(CONFIG_URI, crud[Config.ordinal()]);</span>
+<span class="nc" id="L134">  }</span>
+
+  /**
+   * Checks if the request can be made in consideration to the handler's CRUD
+   * configuration.
+   *
+   * @param request the HttpRequest made to the handler
+   *
+   * @return {@code true} if the request is valid, {@code false} if the CRUD
+   *     configuration does not allow this
+   *     request
+   */
+  @Override
+  public boolean checkCRUD(final HttpRequest request) {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (request.method().equals(HttpMethod.OPTIONS)) {</span>
+<span class="nc" id="L149">      return true;</span>
+    }
+
+<span class="nc" id="L152">    final Pattern pattern =</span>
+<span class="nc" id="L153">        Pattern.compile('(' + SERVER_HANDLER_URI + &quot;)(\\w+)(\\?.+)?&quot;);</span>
+<span class="nc" id="L154">    final Matcher matcher = pattern.matcher(request.uri());</span>
+<span class="nc" id="L155">    final HttpMethod method = request.method();</span>
+
+    final Byte crud;
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L159">      crud = 0;</span>
+    } else {
+<span class="nc" id="L161">      final String subPath = matcher.group(2);</span>
+<span class="nc" id="L162">      crud = serverCRUD.get(subPath);</span>
+    }
+
+<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (crud == null) {</span>
+<span class="nc" id="L166">      return false;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.GET)) {</span>
+<span class="nc" id="L168">      return CRUD.READ.isValid(crud);</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.POST)) {</span>
+<span class="nc" id="L170">      return CRUD.CREATE.isValid(crud);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.DELETE)) {</span>
+<span class="nc" id="L172">      return CRUD.DELETE.isValid(crud);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.PUT)) {</span>
+<span class="nc" id="L174">      return CRUD.UPDATE.isValid(crud);</span>
+    } else {
+<span class="nc" id="L176">      return false;</span>
+    }
+  }
+
+  /**
+   * Get the general status of the server.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   */
+  @Path(STATUS_URI)
+  @GET
+  @Consumes(WILDCARD)
+  @RequiredRole(READONLY)
+  public final void getStatus(final HttpRequest request,
+                              final HttpResponder responder,
+                              @QueryParam(PERIOD) @DefaultValue(&quot;P1DT0H0M0S&quot;)
+                              final String periodStr) {
+<span class="nc" id="L195">    checkSanity(periodStr);</span>
+    try {
+<span class="nc" id="L197">      final Period period = Period.parse(periodStr);</span>
+<span class="nc" id="L198">      final ObjectNode status = ServerStatusMaker.exportAsJson(period);</span>
+<span class="nc" id="L199">      final String responseText = JsonUtils.nodeToString(status);</span>
+<span class="nc" id="L200">      responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L201">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L202">      throw new RestErrorException(ILLEGAL_PARAMETER_VALUE(PERIOD, periodStr));</span>
+<span class="nc" id="L203">    } catch (final UnsupportedOperationException e) {</span>
+<span class="nc" id="L204">      throw new RestErrorException(ILLEGAL_PARAMETER_VALUE(PERIOD, periodStr));</span>
+<span class="nc" id="L205">    }</span>
+<span class="nc" id="L206">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on the
+   * '/server/status' entry point. The HTTP
+   * methods are sent as an array in the reply's headers.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request.
+   */
+  @Path(STATUS_URI)
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void status_options(final HttpRequest request,
+                                   final HttpResponder responder) {
+<span class="nc" id="L223">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L224">    final List&lt;HttpMethod&gt; options = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L225">    options.add(HttpMethod.GET);</span>
+<span class="nc" id="L226">    options.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L227">    allow.add(ALLOW, options);</span>
+<span class="nc" id="L228">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L229">  }</span>
+
+  /**
+   * Deactivates the server so that it doesn't accept any new transfer
+   * request.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   */
+  @Path(DEACTIVATE_URI)
+  @PUT
+  @Consumes(WILDCARD)
+  @RequiredRole(FULLADMIN)
+  public final void deactivate(final HttpRequest request,
+                               final HttpResponder responder) {
+<span class="nc" id="L245">    HostDAO hostDAO = null;</span>
+    try {
+<span class="nc" id="L247">      hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="nc" id="L248">      final Host host = hostDAO.select(serverName());</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">      host.setActive(!host.isActive());</span>
+<span class="nc" id="L250">      hostDAO.update(host);</span>
+
+<span class="nc" id="L252">      final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L253">      headers.add(&quot;active&quot;, host.isActive());</span>
+<span class="nc" id="L254">      responder.sendStatus(NO_CONTENT, headers);</span>
+<span class="nc" id="L255">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L256">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L257">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L258">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L260">      DAOFactory.closeDAO(hostDAO);</span>
+    }
+<span class="nc" id="L262">  }</span>
+
+  /**
+   * Shut down the server.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   */
+  @Path(SHUTDOWN_URI)
+  @PUT
+  @Consumes(WILDCARD)
+  @RequiredRole(FULLADMIN)
+  public final void shutdown(final HttpRequest request,
+                             final HttpResponder responder) {
+<span class="nc" id="L277">    WaarpShutdownHook.setRestart(false);</span>
+<span class="nc" id="L278">    ChannelUtils.startShutdown();</span>
+<span class="nc" id="L279">    responder.sendStatus(NO_CONTENT);</span>
+<span class="nc" id="L280">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on the
+   * '/server/shutdown' entry point. The HTTP
+   * methods are sent as an array in the reply's headers.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request.
+   */
+  @Path(SHUTDOWN_URI)
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void shutdown_options(final HttpRequest request,
+                                     final HttpResponder responder) {
+<span class="nc" id="L297">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L298">    final List&lt;HttpMethod&gt; options = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L299">    options.add(HttpMethod.PUT);</span>
+<span class="nc" id="L300">    options.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L301">    allow.add(ALLOW, options);</span>
+<span class="nc" id="L302">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L303">  }</span>
+
+  /**
+   * Restart the server.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   */
+  @Path(RESTART_URI)
+  @PUT
+  @Consumes(WILDCARD)
+  @RequiredRole(FULLADMIN)
+  public final void restart(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L318">    WaarpShutdownHook.setRestart(true);</span>
+<span class="nc" id="L319">    ChannelUtils.startShutdown();</span>
+<span class="nc" id="L320">    responder.sendStatus(NO_CONTENT);</span>
+<span class="nc" id="L321">  }</span>
+
+  /**
+   * Export the server logs to a file. Only the entries that satisfy the
+   * desired filters will be exported.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param purgeStr states whether to delete exported entries or not
+   * @param cleanStr states whether to fix the incoherent entries
+   * @param statusStr only transfers with this status will be
+   *     exported
+   * @param rule only transfers using this rule will be exported
+   * @param start lower bound for the date of the transfer
+   * @param stop upper bound for the date of the transfer
+   * @param startID lower bound for the transfer's ID
+   * @param stopID upper bound for the transfer's ID
+   */
+  @Path(LOGS_URI)
+  @GET
+  @Consumes(APPLICATION_FORM_URLENCODED)
+  @RequiredRole(LOGCONTROL)
+  public final void getLogs(final HttpRequest request,
+                            final HttpResponder responder,
+                            @QueryParam(PURGE) @DefaultValue(&quot;false&quot;)
+                            final String purgeStr,
+                            @QueryParam(CLEAN) @DefaultValue(&quot;false&quot;)
+                            final String cleanStr,
+                            @QueryParam(STATUS) @DefaultValue(&quot;&quot;)
+                            final String statusStr,
+                            @QueryParam(RULE_NAME) @DefaultValue(&quot;&quot;)
+                            final String rule,
+                            @QueryParam(START) @DefaultValue(&quot;&quot;)
+                            final String start,
+                            @QueryParam(STOP) @DefaultValue(&quot;&quot;)
+                            final String stop,
+                            @QueryParam(START_ID) @DefaultValue(&quot;&quot;)
+                            final String startID,
+                            @QueryParam(STOP_ID) @DefaultValue(&quot;&quot;)
+                            final String stopID,
+                            @QueryParam(REQUESTED) @DefaultValue(&quot;&quot;)
+                            final String requester) {
+<span class="nc" id="L364">    checkSanity(purgeStr, cleanStr, statusStr, rule, start, stop, startID,</span>
+                stopID, requester);
+<span class="nc" id="L366">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc" id="L367">    RestUtils.getLocale(request);</span>
+<span class="nc" id="L368">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc" id="L369">    final String filePath =</span>
+<span class="nc" id="L370">        ARCH_PATH + File.separator + serverName() + &quot;_export_&quot; +</span>
+<span class="nc" id="L371">        DateTime.now() + &quot;.xml&quot;;</span>
+
+<span class="nc" id="L373">    boolean purge = false;</span>
+<span class="nc" id="L374">    boolean clean = false;</span>
+    try {
+<span class="nc" id="L376">      purge = RestUtils.stringToBoolean(purgeStr);</span>
+<span class="nc" id="L377">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L378">      errors.add(ILLEGAL_PARAMETER_VALUE(PURGE, purgeStr));</span>
+<span class="nc" id="L379">    }</span>
+    try {
+<span class="nc" id="L381">      clean = RestUtils.stringToBoolean(cleanStr);</span>
+<span class="nc" id="L382">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L383">      errors.add(ILLEGAL_PARAMETER_VALUE(CLEAN, cleanStr));</span>
+<span class="nc" id="L384">    }</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(start, stop)) {</span>
+      try {
+<span class="nc" id="L387">        filters.add(new Filter(TRANSFER_START_FIELD, Filter.BETWEEN,</span>
+<span class="nc" id="L388">                               DateTime.parse(start), DateTime.parse(stop)));</span>
+<span class="nc" id="L389">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L390">        errors.add(ILLEGAL_PARAMETER_VALUE(START, start));</span>
+<span class="nc" id="L391">        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stop));</span>
+<span class="nc" id="L392">      }</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(start)) {</span>
+      try {
+<span class="nc" id="L395">        final DateTime lowerDate = DateTime.parse(start);</span>
+<span class="nc" id="L396">        filters.add(new Filter(TRANSFER_START_FIELD, &quot;&gt;=&quot;, lowerDate));</span>
+<span class="nc" id="L397">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L398">        errors.add(ILLEGAL_PARAMETER_VALUE(START, start));</span>
+<span class="nc" id="L399">      }</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(stop)) {</span>
+      try {
+<span class="nc" id="L402">        final DateTime upperDate = DateTime.parse(stop);</span>
+<span class="nc" id="L403">        filters.add(new Filter(TRANSFER_START_FIELD, &quot;&lt;=&quot;, upperDate));</span>
+<span class="nc" id="L404">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L405">        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stop));</span>
+<span class="nc" id="L406">      }</span>
+    }
+<span class="nc bnc" id="L408" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(startID, stopID)) {</span>
+      try {
+<span class="nc" id="L410">        filters.add(</span>
+<span class="nc" id="L411">            new Filter(ID_FIELD, Filter.BETWEEN, Long.parseLong(startID),</span>
+<span class="nc" id="L412">                       Long.parseLong(stopID)));</span>
+<span class="nc" id="L413">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L414">        errors.add(ILLEGAL_PARAMETER_VALUE(START_ID, startID));</span>
+<span class="nc" id="L415">        errors.add(ILLEGAL_PARAMETER_VALUE(STOP_ID, stopID));</span>
+<span class="nc" id="L416">      }</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(startID)) {</span>
+      try {
+<span class="nc" id="L419">        final Long lowerID = Long.parseLong(startID);</span>
+<span class="nc" id="L420">        filters.add(new Filter(ID_FIELD, &quot;&gt;=&quot;, lowerID));</span>
+<span class="nc" id="L421">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L422">        errors.add(ILLEGAL_PARAMETER_VALUE(START_ID, startID));</span>
+<span class="nc" id="L423">      }</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(stopID)) {</span>
+      try {
+<span class="nc" id="L426">        final Long upperID = Long.parseLong(stopID);</span>
+<span class="nc" id="L427">        filters.add(new Filter(ID_FIELD, &quot;&lt;=&quot;, upperID));</span>
+<span class="nc" id="L428">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L429">        errors.add(ILLEGAL_PARAMETER_VALUE(STOP_ID, stopID));</span>
+<span class="nc" id="L430">      }</span>
+    }
+<span class="nc bnc" id="L432" title="All 2 branches missed.">    if (!rule.isEmpty()) {</span>
+<span class="nc" id="L433">      filters.add(new Filter(ID_RULE_FIELD, &quot;=&quot;, rule));</span>
+    }
+<span class="nc bnc" id="L435" title="All 2 branches missed.">    if (!statusStr.isEmpty()) {</span>
+      try {
+<span class="nc" id="L437">        final UpdatedInfo status = UpdatedInfo.valueOf(statusStr);</span>
+<span class="nc" id="L438">        filters.add(new Filter(UPDATED_INFO_FIELD, &quot;=&quot;, status.ordinal()));</span>
+<span class="nc" id="L439">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L440">        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));</span>
+<span class="nc" id="L441">      }</span>
+    }
+
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    if (!requester.isEmpty()) {</span>
+<span class="nc" id="L445">      filters.add(new Filter(REQUESTER_FIELD, &quot;=&quot;, requester));</span>
+    }
+
+<span class="nc bnc" id="L448" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L449">      throw new RestErrorException(errors);</span>
+    }
+<span class="nc" id="L451">    TransferDAO transferDAO = null;</span>
+    try {
+<span class="nc" id="L453">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L454">      final Transfers transfers = new Transfers(transferDAO.find(filters));</span>
+<span class="nc" id="L455">      final int exported = transfers.transfers.size();</span>
+
+<span class="nc" id="L457">      XmlUtils.saveObject(transfers, filePath);</span>
+<span class="nc" id="L458">      int purged = 0;</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">      if (purge) {</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">        for (final Transfer transfer : transfers.transfers) {</span>
+<span class="nc" id="L461">          transferDAO.delete(transfer);</span>
+<span class="nc" id="L462">          ++purged;</span>
+<span class="nc" id="L463">        }</span>
+      }
+      // Update all UpdatedInfo to DONE
+      // where GlobalLastStep = ALLDONETASK and status = CompleteOk
+<span class="nc bnc" id="L467" title="All 2 branches missed.">      if (clean) {</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">        for (final Transfer transfer : transfers.transfers) {</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">          if (transfer.getGlobalStep() == Transfer.TASKSTEP.ALLDONETASK &amp;&amp;</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">              transfer.getInfoStatus() == ErrorCode.CompleteOk) {</span>
+<span class="nc" id="L471">            transfer.setUpdatedInfo(UpdatedInfo.DONE);</span>
+<span class="nc" id="L472">            transferDAO.update(transfer);</span>
+          }
+<span class="nc" id="L474">        }</span>
+      }
+
+<span class="nc" id="L477">      final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L478">      responseObject.put(&quot;filePath&quot;, filePath);</span>
+<span class="nc" id="L479">      responseObject.put(&quot;exported&quot;, exported);</span>
+<span class="nc" id="L480">      responseObject.put(&quot;purged&quot;, purged);</span>
+<span class="nc" id="L481">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L482">      responder.sendJson(OK, responseText);</span>
+
+<span class="nc" id="L484">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L485">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L486">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L487">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L489">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="nc" id="L491">  }</span>
+
+  /**
+   * Exports parts of the current server configuration to multiple XML files,
+   * depending on the parameters of the
+   * request.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param hostStr states whether to export the host database or
+   *     not.
+   * @param ruleStr states whether to export the rules database or
+   *     not.
+   * @param businessStr states whether to export the host's business
+   *     or not.
+   * @param aliasStr states whether to export the host's aliases or
+   *     not.
+   * @param roleStr states whether to export the host's permission
+   *     database or not.
+   */
+  @Path(CONFIG_URI)
+  @GET
+  @Consumes(APPLICATION_FORM_URLENCODED)
+  @RequiredRole(CONFIGADMIN)
+  public final void getConfig(final HttpRequest request,
+                              final HttpResponder responder,
+                              @QueryParam(EXPORT_HOSTS) @DefaultValue(&quot;false&quot;)
+                              final String hostStr,
+                              @QueryParam(EXPORT_RULES) @DefaultValue(&quot;false&quot;)
+                              final String ruleStr, @QueryParam(EXPORT_BUSINESS)
+                              @DefaultValue(&quot;false&quot;) final String businessStr,
+                              @QueryParam(EXPORT_ALIASES) @DefaultValue(&quot;false&quot;)
+                              final String aliasStr,
+                              @QueryParam(EXPORT_ROLES) @DefaultValue(&quot;false&quot;)
+                              final String roleStr) {
+<span class="nc" id="L527">    checkSanity(hostStr, ruleStr, businessStr, aliasStr, roleStr);</span>
+<span class="nc" id="L528">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+
+<span class="nc" id="L530">    boolean host = false;</span>
+<span class="nc" id="L531">    boolean rule = false;</span>
+<span class="nc" id="L532">    boolean business = false;</span>
+<span class="nc" id="L533">    boolean alias = false;</span>
+<span class="nc" id="L534">    boolean role = false;</span>
+
+    try {
+<span class="nc" id="L537">      host = RestUtils.stringToBoolean(hostStr);</span>
+<span class="nc" id="L538">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L539">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_HOSTS, hostStr));</span>
+<span class="nc" id="L540">    }</span>
+    try {
+<span class="nc" id="L542">      rule = RestUtils.stringToBoolean(ruleStr);</span>
+<span class="nc" id="L543">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L544">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_RULES, ruleStr));</span>
+<span class="nc" id="L545">    }</span>
+    try {
+<span class="nc" id="L547">      business = RestUtils.stringToBoolean(businessStr);</span>
+<span class="nc" id="L548">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L549">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_BUSINESS, businessStr));</span>
+<span class="nc" id="L550">    }</span>
+    try {
+<span class="nc" id="L552">      alias = RestUtils.stringToBoolean(aliasStr);</span>
+<span class="nc" id="L553">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L554">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ALIASES, aliasStr));</span>
+<span class="nc" id="L555">    }</span>
+    try {
+<span class="nc" id="L557">      role = RestUtils.stringToBoolean(roleStr);</span>
+<span class="nc" id="L558">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L559">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ROLES, roleStr));</span>
+<span class="nc" id="L560">    }</span>
+<span class="nc bnc" id="L561" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L562">      throw new RestErrorException(errors);</span>
+    }
+
+<span class="nc" id="L565">    final String hostsFilePath =</span>
+<span class="nc" id="L566">        CONFIGS_PATH + File.separator + serverName() + &quot;_hosts.xml&quot;;</span>
+<span class="nc" id="L567">    final String rulesFilePath =</span>
+<span class="nc" id="L568">        CONFIGS_PATH + File.separator + serverName() + &quot;_rules.xml&quot;;</span>
+<span class="nc" id="L569">    final String businessFilePath =</span>
+<span class="nc" id="L570">        CONFIGS_PATH + File.separator + serverName() + &quot;_business.xml&quot;;</span>
+<span class="nc" id="L571">    final String aliasFilePath =</span>
+<span class="nc" id="L572">        CONFIGS_PATH + File.separator + serverName() + &quot;_aliases.xml&quot;;</span>
+<span class="nc" id="L573">    final String rolesFilePath =</span>
+<span class="nc" id="L574">        CONFIGS_PATH + File.separator + serverName() + &quot;_roles.xml&quot;;</span>
+
+<span class="nc" id="L576">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+
+<span class="nc" id="L578">    HostDAO hostDAO = null;</span>
+<span class="nc" id="L579">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L580">    BusinessDAO businessDAO = null;</span>
+    try {
+<span class="nc bnc" id="L582" title="All 2 branches missed.">      if (host) {</span>
+<span class="nc" id="L583">        hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="nc" id="L584">        final List&lt;Host&gt; hostList = hostDAO.getAll();</span>
+
+<span class="nc" id="L586">        final Hosts hosts = new Hosts(hostList);</span>
+
+<span class="nc" id="L588">        XmlUtils.saveObject(hosts, hostsFilePath);</span>
+<span class="nc" id="L589">        responseObject.put(&quot;fileHost&quot;, hostsFilePath);</span>
+      }
+<span class="nc bnc" id="L591" title="All 2 branches missed.">      if (rule) {</span>
+<span class="nc" id="L592">        ruleDAO = DAO_FACTORY.getRuleDAO(false);</span>
+<span class="nc" id="L593">        final Rules rules = new Rules(ruleDAO.getAll());</span>
+
+<span class="nc" id="L595">        XmlUtils.saveObject(rules, rulesFilePath);</span>
+<span class="nc" id="L596">        responseObject.put(&quot;fileRule&quot;, rulesFilePath);</span>
+      }
+<span class="nc" id="L598">      businessDAO = DAO_FACTORY.getBusinessDAO(true);</span>
+<span class="nc" id="L599">      final Business businessEntry = businessDAO.select(serverName());</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">      if (business) {</span>
+<span class="nc" id="L601">        final String businessXML = businessEntry.getBusiness();</span>
+
+<span class="nc" id="L603">        XmlUtils.saveXML(businessXML, businessFilePath);</span>
+<span class="nc" id="L604">        responseObject.put(&quot;fileBusiness&quot;, businessFilePath);</span>
+      }
+<span class="nc bnc" id="L606" title="All 2 branches missed.">      if (alias) {</span>
+<span class="nc" id="L607">        final String aliasXML = businessEntry.getAliases();</span>
+
+<span class="nc" id="L609">        XmlUtils.saveXML(aliasXML, aliasFilePath);</span>
+<span class="nc" id="L610">        responseObject.put(&quot;fileAlias&quot;, aliasFilePath);</span>
+      }
+<span class="nc bnc" id="L612" title="All 2 branches missed.">      if (role) {</span>
+<span class="nc" id="L613">        final String rolesXML = businessEntry.getRoles();</span>
+
+<span class="nc" id="L615">        XmlUtils.saveXML(rolesXML, rolesFilePath);</span>
+<span class="nc" id="L616">        responseObject.put(&quot;fileRoles&quot;, rolesFilePath);</span>
+      }
+
+<span class="nc" id="L619">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L620">      responder.sendJson(OK, responseText);</span>
+
+<span class="nc" id="L622">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L623">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L624">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L625">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L627">      DAOFactory.closeDAO(hostDAO);</span>
+<span class="nc" id="L628">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L629">      DAOFactory.closeDAO(businessDAO);</span>
+    }
+<span class="nc" id="L631">  }</span>
+
+  /**
+   * Imports different parts of the server configuration from the XML files
+   * given as parameters of the request.
+   * These imported values will replace those already present in the
+   * database.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param purgeHostStr states if a new host database should be
+   *     imported.
+   * @param purgeRuleStr states if a new transfer rule database
+   *     should be imported
+   * @param purgeBusinessStr states if a new business database should
+   *     be imported
+   * @param purgeAliasStr states if a new alias database should be
+   *     imported
+   * @param purgeRoleStr states if a new role database should be
+   *     imported
+   * @param hostFile path to the XML file containing the host database
+   *     to import
+   * @param ruleFile path to the XML file containing the rule database
+   *     to import
+   * @param businessFile path to the XML file containing the business
+   *     database to import
+   * @param aliasFile path to the XML file containing the alias
+   *     database to import
+   * @param roleFile path to the XML file containing the role database
+   *     to import
+   */
+  @Path(CONFIG_URI)
+  @PUT
+  @Consumes(APPLICATION_FORM_URLENCODED)
+  @RequiredRole(CONFIGADMIN)
+  public final void setConfig(final HttpRequest request,
+                              final HttpResponder responder,
+                              @QueryParam(PURGE_HOST) @DefaultValue(&quot;false&quot;)
+                              final String purgeHostStr,
+                              @QueryParam(PURGE_RULE) @DefaultValue(&quot;false&quot;)
+                              final String purgeRuleStr,
+                              @QueryParam(PURGE_BUSINESS) @DefaultValue(&quot;false&quot;)
+                              final String purgeBusinessStr,
+                              @QueryParam(PURGE_ALIASES) @DefaultValue(&quot;false&quot;)
+                              final String purgeAliasStr,
+                              @QueryParam(PURGE_ROLES) @DefaultValue(&quot;false&quot;)
+                              final String purgeRoleStr,
+                              @QueryParam(HOST_FILE) @DefaultValue(&quot;&quot;)
+                              final String hostFile,
+                              @QueryParam(RULE_FILE) @DefaultValue(&quot;&quot;)
+                              final String ruleFile,
+                              @QueryParam(BUSINESS_FILE) @DefaultValue(&quot;&quot;)
+                              final String businessFile,
+                              @QueryParam(ALIAS_FILE) @DefaultValue(&quot;&quot;)
+                              final String aliasFile,
+                              @QueryParam(ROLE_FILE) @DefaultValue(&quot;&quot;)
+                              final String roleFile) {
+<span class="nc" id="L689">    checkSanity(purgeHostStr, purgeRuleStr, purgeBusinessStr, purgeAliasStr,</span>
+                purgeRoleStr, hostFile, ruleFile, businessFile, aliasFile,
+                ruleFile);
+<span class="nc" id="L692">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc" id="L693">    RestUtils.getLocale(request);</span>
+
+<span class="nc" id="L695">    boolean purgeHost = false;</span>
+<span class="nc" id="L696">    boolean purgeRule = false;</span>
+<span class="nc" id="L697">    boolean purgeBusiness = false;</span>
+<span class="nc" id="L698">    boolean purgeAlias = false;</span>
+<span class="nc" id="L699">    boolean purgeRole = false;</span>
+
+    try {
+<span class="nc" id="L702">      purgeHost = RestUtils.stringToBoolean(purgeHostStr);</span>
+<span class="nc" id="L703">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L704">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_HOSTS, purgeHostStr));</span>
+<span class="nc" id="L705">    }</span>
+    try {
+<span class="nc" id="L707">      purgeRule = RestUtils.stringToBoolean(purgeRuleStr);</span>
+<span class="nc" id="L708">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L709">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_RULES, purgeRuleStr));</span>
+<span class="nc" id="L710">    }</span>
+    try {
+<span class="nc" id="L712">      purgeBusiness = RestUtils.stringToBoolean(purgeBusinessStr);</span>
+<span class="nc" id="L713">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L714">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_BUSINESS, purgeBusinessStr));</span>
+<span class="nc" id="L715">    }</span>
+    try {
+<span class="nc" id="L717">      purgeAlias = RestUtils.stringToBoolean(purgeAliasStr);</span>
+<span class="nc" id="L718">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L719">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ALIASES, purgeAliasStr));</span>
+<span class="nc" id="L720">    }</span>
+    try {
+<span class="nc" id="L722">      purgeRole = RestUtils.stringToBoolean(purgeRoleStr);</span>
+<span class="nc" id="L723">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L724">      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ROLES, purgeRoleStr));</span>
+<span class="nc" id="L725">    }</span>
+<span class="nc bnc" id="L726" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L727">      throw new RestErrorException(errors);</span>
+    }
+
+<span class="nc" id="L730">    HostDAO hostDAO = null;</span>
+<span class="nc" id="L731">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L732">    BusinessDAO businessDAO = null;</span>
+
+<span class="nc" id="L734">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+
+    try {
+<span class="nc" id="L737">      hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="nc" id="L738">      final Hosts hosts = XmlUtils.loadObject(hostFile, Hosts.class);</span>
+
+      // if a purge is requested, we can add the new entries without
+      // checking with 'exist' to gain performance
+<span class="nc bnc" id="L742" title="All 2 branches missed.">      if (purgeHost) {</span>
+<span class="nc" id="L743">        hostDAO.deleteAll();</span>
+<span class="nc bnc" id="L744" title="All 2 branches missed.">        for (final Host host : hosts.hosts) {</span>
+<span class="nc" id="L745">          hostDAO.insert(host);</span>
+<span class="nc" id="L746">        }</span>
+      } else {
+<span class="nc bnc" id="L748" title="All 2 branches missed.">        for (final Host host : hosts.hosts) {</span>
+<span class="nc bnc" id="L749" title="All 2 branches missed.">          if (hostDAO.exist(host.getHostid())) {</span>
+<span class="nc" id="L750">            hostDAO.update(host);</span>
+          } else {
+<span class="nc" id="L752">            hostDAO.insert(host);</span>
+          }
+<span class="nc" id="L754">        }</span>
+      }
+<span class="nc" id="L756">      responseObject.put(&quot;purgedHost&quot;, TRUE.toString());</span>
+
+<span class="nc" id="L758">      ruleDAO = DAO_FACTORY.getRuleDAO(false);</span>
+
+<span class="nc" id="L760">      final Rules rules = XmlUtils.loadObject(ruleFile, Rules.class);</span>
+
+<span class="nc bnc" id="L762" title="All 2 branches missed.">      if (purgeRule) {</span>
+<span class="nc" id="L763">        ruleDAO.deleteAll();</span>
+<span class="nc bnc" id="L764" title="All 2 branches missed.">        for (final Rule rule : rules.rules) {</span>
+<span class="nc" id="L765">          ruleDAO.insert(rule);</span>
+<span class="nc" id="L766">        }</span>
+      } else {
+<span class="nc bnc" id="L768" title="All 2 branches missed.">        for (final Rule rule : rules.rules) {</span>
+<span class="nc bnc" id="L769" title="All 2 branches missed.">          if (ruleDAO.exist(rule.getName())) {</span>
+<span class="nc" id="L770">            ruleDAO.update(rule);</span>
+          } else {
+<span class="nc" id="L772">            ruleDAO.insert(rule);</span>
+          }
+<span class="nc" id="L774">        }</span>
+      }
+
+<span class="nc" id="L777">      responseObject.put(&quot;purgedRule&quot;, TRUE.toString());</span>
+
+<span class="nc" id="L779">      businessDAO = DAO_FACTORY.getBusinessDAO(false);</span>
+<span class="nc bnc" id="L780" title="All 2 branches missed.">      if (purgeBusiness) {</span>
+<span class="nc" id="L781">        final Business business = businessDAO.select(serverName());</span>
+
+<span class="nc" id="L783">        final String new_business = XmlUtils.loadXML(businessFile);</span>
+<span class="nc" id="L784">        business.setBusiness(new_business);</span>
+<span class="nc" id="L785">        businessDAO.update(business);</span>
+<span class="nc" id="L786">        responseObject.put(&quot;purgedBusiness&quot;, TRUE.toString());</span>
+      }
+<span class="nc bnc" id="L788" title="All 2 branches missed.">      if (purgeAlias) {</span>
+<span class="nc" id="L789">        final Business business = businessDAO.select(serverName());</span>
+<span class="nc" id="L790">        business.setAliases(XmlUtils.loadXML(aliasFile));</span>
+<span class="nc" id="L791">        businessDAO.update(business);</span>
+<span class="nc" id="L792">        responseObject.put(&quot;purgedAlias&quot;, TRUE.toString());</span>
+      }
+<span class="nc bnc" id="L794" title="All 2 branches missed.">      if (purgeRole) {</span>
+<span class="nc" id="L795">        final Business business = businessDAO.select(serverName());</span>
+<span class="nc" id="L796">        business.setRoles(XmlUtils.loadXML(roleFile));</span>
+<span class="nc" id="L797">        businessDAO.update(business);</span>
+<span class="nc" id="L798">        responseObject.put(&quot;purgedRoles&quot;, TRUE.toString());</span>
+      }
+
+<span class="nc bnc" id="L801" title="All 2 branches missed.">      if (errors.isEmpty()) {</span>
+<span class="nc" id="L802">        responder.sendJson(OK, JsonUtils.nodeToString(responseObject));</span>
+      } else {
+<span class="nc" id="L804">        throw new RestErrorException(errors);</span>
+      }
+
+<span class="nc" id="L807">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L808">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L809">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L810">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L812">      DAOFactory.closeDAO(hostDAO);</span>
+<span class="nc" id="L813">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L814">      DAOFactory.closeDAO(businessDAO);</span>
+    }
+<span class="nc" id="L816">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on the '/server'
+   * entry point. The HTTP methods are
+   * sent as an array in the reply's headers.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request.
+   */
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L832">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L833">    allow.add(ALLOW, HttpMethod.OPTIONS);</span>
+<span class="nc" id="L834">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L835">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on all sub entry
+   * points of the '/server' entry
+   * point. The HTTP methods are sent as an array in the reply's headers.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request.
+   */
+  @Path(&quot;{ep}&quot;)
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void command_options(final HttpRequest request,
+                                    final HttpResponder responder,
+                                    @PathParam(&quot;ep&quot;) final String ep) {
+<span class="nc" id="L853">    checkSanity(ep);</span>
+<span class="nc" id="L854">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L855">    final List&lt;HttpMethod&gt; options = new ArrayList&lt;HttpMethod&gt;();</span>
+
+<span class="nc bnc" id="L857" title="All 2 branches missed.">    if (ep.equals(STATUS_URI)) {</span>
+<span class="nc" id="L858">      options.add(HttpMethod.GET);</span>
+<span class="nc bnc" id="L859" title="All 2 branches missed.">    } else if (ep.equals(DEACTIVATE_URI)) {</span>
+<span class="nc" id="L860">      options.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L861" title="All 2 branches missed.">    } else if (ep.equals(SHUTDOWN_URI)) {</span>
+<span class="nc" id="L862">      options.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L863" title="All 2 branches missed.">    } else if (ep.equals(RESTART_URI)) {</span>
+<span class="nc" id="L864">      options.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L865" title="All 2 branches missed.">    } else if (ep.equals(LOGS_URI)) {</span>
+<span class="nc" id="L866">      options.add(HttpMethod.GET);</span>
+<span class="nc bnc" id="L867" title="All 2 branches missed.">    } else if (ep.equals(CONFIG_URI)) {</span>
+<span class="nc" id="L868">      options.add(HttpMethod.PUT);</span>
+    } else {
+<span class="nc" id="L870">      responder.sendStatus(FOUND);</span>
+<span class="nc" id="L871">      return;</span>
+    }
+<span class="nc" id="L873">    options.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L874">    allow.add(ALLOW, options);</span>
+<span class="nc" id="L875">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L876">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -204,7 +204,7 @@
 <a class="jxr_linenumber" name="L196" href="#L196">196</a>       count = ++counter;
 <a class="jxr_linenumber" name="L197" href="#L197">197</a>       <strong class="jxr_keyword">if</strong> (count &gt; 0xFFFFFF) {
 <a class="jxr_linenumber" name="L198" href="#L198">198</a>         <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L199" href="#L199">199</a>           FORSYNC.wait(1);<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>           Thread.sleep(1);<em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L200" href="#L200">200</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L201" href="#L201">201</a>           <em class="jxr_comment">// ignore</em>
 <a class="jxr_linenumber" name="L202" href="#L202">202</a>           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
@@ -275,7 +275,7 @@
 <a class="jxr_linenumber" name="L267" href="#L267">267</a> <em class="jxr_javadoccomment">   * @return the Base32 representation (default of toString)</em>
 <a class="jxr_linenumber" name="L268" href="#L268">268</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L269" href="#L269">269</a>   @JsonIgnore
-<a class="jxr_linenumber" name="L270" href="#L270">270</a>   <strong class="jxr_keyword">public</strong> String toBase32() {
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String toBase32() {
 <a class="jxr_linenumber" name="L271" href="#L271">271</a>     <strong class="jxr_keyword">return</strong> BaseXx.getBase32(bguid);
 <a class="jxr_linenumber" name="L272" href="#L272">272</a>   }
 <a class="jxr_linenumber" name="L273" href="#L273">273</a> 
@@ -283,7 +283,7 @@
 <a class="jxr_linenumber" name="L275" href="#L275">275</a> <em class="jxr_javadoccomment">   * @return the Base64 representation (default of toString)</em>
 <a class="jxr_linenumber" name="L276" href="#L276">276</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L277" href="#L277">277</a>   @JsonIgnore
-<a class="jxr_linenumber" name="L278" href="#L278">278</a>   <strong class="jxr_keyword">public</strong> String toBase64() {
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String toBase64() {
 <a class="jxr_linenumber" name="L279" href="#L279">279</a>     <strong class="jxr_keyword">return</strong> BaseXx.getBase64UrlWithoutPadding(bguid);
 <a class="jxr_linenumber" name="L280" href="#L280">280</a>   }
 <a class="jxr_linenumber" name="L281" href="#L281">281</a> 
@@ -291,7 +291,7 @@
 <a class="jxr_linenumber" name="L283" href="#L283">283</a> <em class="jxr_javadoccomment">   * @return the Hexadecimal representation</em>
 <a class="jxr_linenumber" name="L284" href="#L284">284</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L285" href="#L285">285</a>   @JsonIgnore
-<a class="jxr_linenumber" name="L286" href="#L286">286</a>   <strong class="jxr_keyword">public</strong> String toHex() {
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String toHex() {
 <a class="jxr_linenumber" name="L287" href="#L287">287</a>     <strong class="jxr_keyword">return</strong> BaseXx.getBase16(bguid);
 <a class="jxr_linenumber" name="L288" href="#L288">288</a>   }
 <a class="jxr_linenumber" name="L289" href="#L289">289</a> 
@@ -299,7 +299,7 @@
 <a class="jxr_linenumber" name="L291" href="#L291">291</a> <em class="jxr_javadoccomment">   * @return the Ark representation of this GUID</em>
 <a class="jxr_linenumber" name="L292" href="#L292">292</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L293" href="#L293">293</a>   @JsonIgnore
-<a class="jxr_linenumber" name="L294" href="#L294">294</a>   <strong class="jxr_keyword">public</strong> String toArk() {
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String toArk() {
 <a class="jxr_linenumber" name="L295" href="#L295">295</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> StringBuilder(ARK).append(getTenantId()).append('/')
 <a class="jxr_linenumber" name="L296" href="#L296">296</a>                                  .append(toArkName()).toString();
 <a class="jxr_linenumber" name="L297" href="#L297">297</a>   }
@@ -308,7 +308,7 @@
 <a class="jxr_linenumber" name="L300" href="#L300">300</a> <em class="jxr_javadoccomment">   * @return the String representation of this GUID</em>
 <a class="jxr_linenumber" name="L301" href="#L301">301</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L302" href="#L302">302</a>   @JsonGetter(<span class="jxr_string">"id"</span>)
-<a class="jxr_linenumber" name="L303" href="#L303">303</a>   <strong class="jxr_keyword">public</strong> String getId() {
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String getId() {
 <a class="jxr_linenumber" name="L304" href="#L304">304</a>     <strong class="jxr_keyword">return</strong> toString();
 <a class="jxr_linenumber" name="L305" href="#L305">305</a>   }
 <a class="jxr_linenumber" name="L306" href="#L306">306</a> 
@@ -507,18 +507,18 @@
 <a class="jxr_linenumber" name="L499" href="#L499">499</a> <em class="jxr_javadoccomment">   * @return raw byte array of GUID</em>
 <a class="jxr_linenumber" name="L500" href="#L500">500</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L501" href="#L501">501</a>   @JsonIgnore
-<a class="jxr_linenumber" name="L502" href="#L502">502</a>   <strong class="jxr_keyword">public</strong> byte[] getBytes() {
+<a class="jxr_linenumber" name="L502" href="#L502">502</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> byte[] getBytes() {
 <a class="jxr_linenumber" name="L503" href="#L503">503</a>     <strong class="jxr_keyword">return</strong> Arrays.copyOf(bguid, bguid.length);
 <a class="jxr_linenumber" name="L504" href="#L504">504</a>   }
 <a class="jxr_linenumber" name="L505" href="#L505">505</a> 
 <a class="jxr_linenumber" name="L506" href="#L506">506</a>   @Override
 <a class="jxr_linenumber" name="L507" href="#L507">507</a>   @JsonIgnore
-<a class="jxr_linenumber" name="L508" href="#L508">508</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> hashCode() {
+<a class="jxr_linenumber" name="L508" href="#L508">508</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> hashCode() {
 <a class="jxr_linenumber" name="L509" href="#L509">509</a>     <strong class="jxr_keyword">return</strong> Arrays.hashCode(bguid);
 <a class="jxr_linenumber" name="L510" href="#L510">510</a>   }
 <a class="jxr_linenumber" name="L511" href="#L511">511</a> 
 <a class="jxr_linenumber" name="L512" href="#L512">512</a>   @Override
-<a class="jxr_linenumber" name="L513" href="#L513">513</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> equals(<strong class="jxr_keyword">final</strong> Object o) {
+<a class="jxr_linenumber" name="L513" href="#L513">513</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> equals(<strong class="jxr_keyword">final</strong> Object o) {
 <a class="jxr_linenumber" name="L514" href="#L514">514</a>     <strong class="jxr_keyword">if</strong> (!(o instanceof <a name="GUID" href="../../../../org/waarp/common/guid/GUID.html#GUID">GUID</a>)) {
 <a class="jxr_linenumber" name="L515" href="#L515">515</a>       <strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="L516" href="#L516">516</a>     }
@@ -526,7 +526,7 @@
 <a class="jxr_linenumber" name="L518" href="#L518">518</a>   }
 <a class="jxr_linenumber" name="L519" href="#L519">519</a> 
 <a class="jxr_linenumber" name="L520" href="#L520">520</a>   @Override
-<a class="jxr_linenumber" name="L521" href="#L521">521</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> compareTo(<strong class="jxr_keyword">final</strong> <a name="GUID" href="../../../../org/waarp/common/guid/GUID.html#GUID">GUID</a> guid) {
+<a class="jxr_linenumber" name="L521" href="#L521">521</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> compareTo(<strong class="jxr_keyword">final</strong> <a name="GUID" href="../../../../org/waarp/common/guid/GUID.html#GUID">GUID</a> guid) {
 <a class="jxr_linenumber" name="L522" href="#L522">522</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> id = getTenantId();
 <a class="jxr_linenumber" name="L523" href="#L523">523</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> id2 = guid.getTenantId();
 <a class="jxr_linenumber" name="L524" href="#L524">524</a>     <strong class="jxr_keyword">if</strong> (id != id2) {

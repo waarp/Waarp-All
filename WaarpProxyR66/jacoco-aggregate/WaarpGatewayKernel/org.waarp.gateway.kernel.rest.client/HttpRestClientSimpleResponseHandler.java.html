@@ -63,16 +63,16 @@ import java.nio.channels.ClosedChannelException;
 /**
  *
  */
-<span class="fc" id="L66">public class HttpRestClientSimpleResponseHandler</span>
+<span class="nc" id="L66">public class HttpRestClientSimpleResponseHandler</span>
     extends SimpleChannelInboundHandler&lt;HttpObject&gt; {
   /**
    * Internal Logger
    */
-<span class="fc" id="L71">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L72">      WaarpLoggerFactory.getLogger(HttpRestClientSimpleResponseHandler.class);</span>
+<span class="nc" id="L71">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L72">      WaarpLoggerFactory.getLogger(HttpRestClientSimpleResponseHandler.class);</span>
 
-<span class="fc" id="L74">  public static final AttributeKey&lt;RestFuture&gt; RESTARGUMENT =</span>
-<span class="fc" id="L75">      AttributeKey.valueOf(&quot;RestClient.Argument&quot;);</span>
+<span class="nc" id="L74">  public static final AttributeKey&lt;RestFuture&gt; RESTARGUMENT =</span>
+<span class="nc" id="L75">      AttributeKey.valueOf(&quot;RestClient.Argument&quot;);</span>
 
   private ByteBuf cumulativeBody;
   protected JsonNode jsonObject;
@@ -100,49 +100,49 @@ import java.nio.channels.ClosedChannelException;
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
                               final HttpObject msg) throws Exception {
-<span class="fc bfc" id="L103" title="All 2 branches covered.">    if (msg instanceof HttpResponse) {</span>
-<span class="fc" id="L104">      final HttpResponse response = (HttpResponse) msg;</span>
-<span class="fc" id="L105">      final HttpResponseStatus status = response.status();</span>
-<span class="fc" id="L106">      logger.debug(&quot;{}: {} STATUS: {}&quot;, HttpHeaderNames.REFERER,</span>
-<span class="fc" id="L107">                   response.headers().get(HttpHeaderNames.REFERER), status);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (msg instanceof HttpResponse) {</span>
+<span class="nc" id="L104">      final HttpResponse response = (HttpResponse) msg;</span>
+<span class="nc" id="L105">      final HttpResponseStatus status = response.status();</span>
+<span class="nc" id="L106">      logger.debug(&quot;{}: {} STATUS: {}&quot;, HttpHeaderNames.REFERER,</span>
+<span class="nc" id="L107">                   response.headers().get(HttpHeaderNames.REFERER), status);</span>
     }
-<span class="fc bfc" id="L109" title="All 2 branches covered.">    if (msg instanceof HttpContent) {</span>
-<span class="fc" id="L110">      final HttpContent chunk = (HttpContent) msg;</span>
-<span class="fc bfc" id="L111" title="All 2 branches covered.">      if (chunk instanceof LastHttpContent) {</span>
-<span class="fc" id="L112">        final ByteBuf content = chunk.content();</span>
-<span class="pc bpc" id="L113" title="2 of 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">          if (cumulativeBody != null) {</span>
-<span class="fc" id="L115">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (msg instanceof HttpContent) {</span>
+<span class="nc" id="L110">      final HttpContent chunk = (HttpContent) msg;</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (chunk instanceof LastHttpContent) {</span>
+<span class="nc" id="L112">        final ByteBuf content = chunk.content();</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="nc" id="L115">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
           } else {
 <span class="nc" id="L117">            cumulativeBody = content;</span>
           }
         }
         // get the Json equivalent of the Body
-<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        if (cumulativeBody == null) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (cumulativeBody == null) {</span>
 <span class="nc" id="L122">          jsonObject = JsonHandler.createObjectNode();</span>
         } else {
           try {
-<span class="fc" id="L125">            final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);</span>
-<span class="fc" id="L126">            jsonObject = JsonHandler.getFromString(json);</span>
+<span class="nc" id="L125">            final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L126">            jsonObject = JsonHandler.getFromString(json);</span>
 <span class="nc" id="L127">          } catch (final Throwable e2) {</span>
-<span class="nc" id="L128">            logger.warn(&quot;Error&quot;, e2);</span>
+<span class="nc" id="L128">            logger.warn(&quot;Error&quot; + &quot; : {}&quot;, e2.getMessage());</span>
 <span class="nc" id="L129">            throw new HttpIncorrectRequestException(e2);</span>
-<span class="fc" id="L130">          }</span>
-<span class="fc" id="L131">          cumulativeBody = null;</span>
+<span class="nc" id="L130">          }</span>
+<span class="nc" id="L131">          cumulativeBody = null;</span>
         }
-<span class="fc" id="L133">        actionFromResponse(ctx.channel());</span>
-<span class="fc" id="L134">      } else {</span>
-<span class="fc" id="L135">        final ByteBuf content = chunk.content();</span>
-<span class="pc bpc" id="L136" title="2 of 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="nc" id="L133">        actionFromResponse(ctx.channel());</span>
+<span class="nc" id="L134">      } else {</span>
+<span class="nc" id="L135">        final ByteBuf content = chunk.content();</span>
+<span class="nc bnc" id="L136" title="All 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">          if (cumulativeBody != null) {</span>
 <span class="nc" id="L138">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
           } else {
-<span class="fc" id="L140">            cumulativeBody = content;</span>
+<span class="nc" id="L140">            cumulativeBody = content;</span>
           }
         }
       }
     }
-<span class="fc" id="L145">  }</span>
+<span class="nc" id="L145">  }</span>
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
@@ -166,4 +166,4 @@ import java.nio.channels.ClosedChannelException;
 <span class="nc" id="L166">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

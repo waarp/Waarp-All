@@ -42,7 +42,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
  */
 public abstract class ProgressBarTransfer extends AbstractTransfer {
   protected final NetworkTransaction networkTransaction;
-<span class="fc" id="L45">  protected long intervalCallback = 100;</span>
+<span class="nc" id="L45">  protected long intervalCallback = 100;</span>
   protected long filesize;
 
   protected ProgressBarTransfer(final R66Future future, final String remoteHost,
@@ -52,11 +52,11 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
                                 final NetworkTransaction networkTransaction,
                                 final long callbackdelay) {
     // no delay so starttime = null
-<span class="fc" id="L55">    super(ProgressBarTransfer.class, future, filename, rulename, fileinfo,</span>
+<span class="nc" id="L55">    super(ProgressBarTransfer.class, future, filename, rulename, fileinfo,</span>
           isMD5, remoteHost, blocksize, id, null);
-<span class="fc" id="L57">    this.networkTransaction = networkTransaction;</span>
-<span class="fc" id="L58">    intervalCallback = callbackdelay;</span>
-<span class="fc" id="L59">  }</span>
+<span class="nc" id="L57">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L58">    intervalCallback = callbackdelay;</span>
+<span class="nc" id="L59">  }</span>
 
   /**
    * This function will be called every 100ms (or other fixed value in
@@ -85,25 +85,25 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
    */
   @Override
   public void run() {
-<span class="pc bpc" id="L88" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L89">      logger = WaarpLoggerFactory.getLogger(ProgressBarTransfer.class);</span>
     }
-<span class="fc" id="L91">    final DbTaskRunner taskRunner = initRequest();</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    if (taskRunner == null) {</span>
+<span class="nc" id="L91">    final DbTaskRunner taskRunner = initRequest();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">    if (taskRunner == null) {</span>
       // already an error from there
 <span class="nc" id="L94">      lastCallBack(false, 0, transferArgs.getBlockSize());</span>
 <span class="nc" id="L95">      return;</span>
     }
-<span class="fc" id="L97">    final ClientRunner runner =</span>
+<span class="nc" id="L97">    final ClientRunner runner =</span>
         new ClientRunner(networkTransaction, taskRunner, future);
-<span class="fc" id="L99">    OpenR66ProtocolNotYetConnectionException exc = null;</span>
-<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="nc" id="L99">    OpenR66ProtocolNotYetConnectionException exc = null;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
       try {
-<span class="fc" id="L102">        logger.debug(&quot;starting connection done on progressBarTransfer&quot;);</span>
-<span class="fc" id="L103">        final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L104">            runner.initRequest();</span>
-<span class="fc" id="L105">        localChannelReference.getFutureValidRequest().awaitOrInterruptible();</span>
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        if (!localChannelReference.getFutureValidRequest().isSuccess() &amp;&amp;</span>
+<span class="nc" id="L102">        logger.debug(&quot;starting connection done on progressBarTransfer&quot;);</span>
+<span class="nc" id="L103">        final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L104">            runner.initRequest();</span>
+<span class="nc" id="L105">        localChannelReference.getFutureValidRequest().awaitOrInterruptible();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (!localChannelReference.getFutureValidRequest().isSuccess() &amp;&amp;</span>
 <span class="nc bnc" id="L107" title="All 2 branches missed.">            localChannelReference.getFutureValidRequest() != null &amp;&amp;</span>
 <span class="nc" id="L108">            localChannelReference.getFutureValidRequest().getResult()</span>
 <span class="nc bnc" id="L109" title="All 2 branches missed.">                                 .getCode() == ErrorCode.ServerOverloaded) {</span>
@@ -117,8 +117,8 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
                                        ErrorCode.ServerOverloaded, true);
           }
           // redo if possible
-<span class="nc" id="L120">          if (runner</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">              .incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">          if (runner.incrementTaskRunnerTry(taskRunner,</span>
+                                            Configuration.RETRYNB)) {
             try {
 <span class="nc" id="L123">              Thread.sleep(</span>
 <span class="nc" id="L124">                  Configuration.configuration.getConstraintLimitHandler()</span>
@@ -133,21 +133,21 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
                 &quot;End of retry on ServerOverloaded&quot;);
           }
         }
-<span class="fc" id="L136">        logger.debug(&quot;connection done on progressBarTransfer&quot;);</span>
-<span class="fc" id="L137">        filesize = future.getFilesize();</span>
-<span class="fc bfc" id="L138" title="All 2 branches covered.">        while (!future.awaitOrInterruptible(intervalCallback)) {</span>
-<span class="pc bpc" id="L139" title="1 of 2 branches missed.">          if (future.isDone()) {</span>
+<span class="nc" id="L136">        logger.debug(&quot;connection done on progressBarTransfer&quot;);</span>
+<span class="nc" id="L137">        filesize = future.getFilesize();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        while (!future.awaitOrInterruptible(intervalCallback)) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">          if (future.isDone()) {</span>
 <span class="nc" id="L140">            break;</span>
           }
-<span class="fc" id="L142">          callBack(future.getRunner().getRank(),</span>
-<span class="fc" id="L143">                   future.getRunner().getBlocksize());</span>
+<span class="nc" id="L142">          callBack(future.getRunner().getRank(),</span>
+<span class="nc" id="L143">                   future.getRunner().getBlocksize());</span>
         }
-<span class="fc" id="L145">        logger.debug(&quot;transfer done on progressBarTransfer&quot;);</span>
-<span class="fc" id="L146">        runner.finishTransfer(localChannelReference);</span>
-<span class="fc" id="L147">        lastCallBack(future.isSuccess(), future.getRunner().getRank(),</span>
-<span class="fc" id="L148">                     future.getRunner().getBlocksize());</span>
-<span class="fc" id="L149">        exc = null;</span>
-<span class="fc" id="L150">        break;</span>
+<span class="nc" id="L145">        logger.debug(&quot;transfer done on progressBarTransfer&quot;);</span>
+<span class="nc" id="L146">        runner.finishTransfer(localChannelReference);</span>
+<span class="nc" id="L147">        lastCallBack(future.isSuccess(), future.getRunner().getRank(),</span>
+<span class="nc" id="L148">                     future.getRunner().getBlocksize());</span>
+<span class="nc" id="L149">        exc = null;</span>
+<span class="nc" id="L150">        break;</span>
 <span class="nc" id="L151">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
 <span class="nc" id="L152">        logger.error(&quot;Cannot Connect&quot;, e);</span>
 <span class="nc" id="L153">        future.setResult(</span>
@@ -178,7 +178,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
 <span class="nc" id="L178">        exc = e;</span>
       }
     }
-<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    if (exc != null) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">    if (exc != null) {</span>
 <span class="nc" id="L182">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
 <span class="nc" id="L183">      logger.error(&quot;Cannot Connect&quot;, exc);</span>
 <span class="nc" id="L184">      future.setResult(</span>
@@ -195,6 +195,6 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
       }
 <span class="nc" id="L196">      future.setFailure(exc);</span>
     }
-<span class="fc" id="L198">  }</span>
+<span class="nc" id="L198">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

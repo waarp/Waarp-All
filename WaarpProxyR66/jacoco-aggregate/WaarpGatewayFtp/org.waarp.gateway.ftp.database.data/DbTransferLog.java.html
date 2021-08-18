@@ -1,0 +1,1211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbTransferLog.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.database.data</a> &gt; <span class="el_source">DbTransferLog.java</span></div><h1>DbTransferLog.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.ftp.database.data;
+
+import org.dom4j.Document;
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.database.data.DbValue;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlDecl;
+import org.waarp.common.xml.XmlType;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.ftp.core.command.FtpCommandCode;
+import org.waarp.gateway.ftp.config.FileBasedConfiguration;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.Writer;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Transfer Log for FtpExec
+ */
+public class DbTransferLog extends AbstractDbData {
+  private static final String ERROR_DURING_EXPORT_OR_PURGE =
+      &quot;Error during export or purge&quot;;
+
+  private static final String ERROR_DURING_PURGE = &quot;Error during purge&quot;;
+
+  private static final String NO_ROW_FOUND2 = &quot;No row found&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L67">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L68">      WaarpLoggerFactory.getLogger(DbTransferLog.class);</span>
+
+<span class="nc" id="L70">  public enum Columns {</span>
+<span class="nc" id="L71">    FILENAME, MODETRANS, STARTTRANS, STOPTRANS, TRANSINFO, INFOSTATUS,</span>
+<span class="nc" id="L72">    UPDATEDINFO, USERID, ACCOUNTID, HOSTID, SPECIALID</span>
+  }
+
+<span class="nc" id="L75">  public static final int[] dbTypes = {</span>
+      Types.VARCHAR, Types.NVARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
+      Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.NVARCHAR,
+      Types.NVARCHAR, Types.NVARCHAR, Types.BIGINT
+  };
+
+  public static final String table = &quot; TRANSFLOG &quot;;
+
+  public static final String fieldseq = &quot;TRANSSEQ&quot;;
+
+<span class="nc" id="L85">  public static final Columns[] indexes =</span>
+      { Columns.STARTTRANS, Columns.UPDATEDINFO, Columns.INFOSTATUS };
+
+  public static final String XMLRUNNERS = &quot;transferlogs&quot;;
+  public static final String XMLRUNNER = &quot;log&quot;;
+
+  // Values
+  private String user;
+
+  private String account;
+
+  private long specialId;
+
+  private boolean isSender;
+
+  private String filename;
+
+  private String mode;
+
+  private Timestamp start;
+
+  private Timestamp stop;
+
+  private String infotransf;
+
+  private String hostid;
+
+  /**
+   * Info status error code
+   */
+<span class="nc" id="L115">  private ReplyCode infostatus = ReplyCode.REPLY_000_SPECIAL_NOSTATUS;</span>
+
+  /**
+   * The global status for running
+   */
+<span class="nc" id="L120">  private int updatedInfo = UpdatedInfo.UNKNOWN.ordinal();</span>
+
+  /**
+   * Special For DbTransferLog
+   */
+  public static final int NBPRKEY = 4;
+  // ALL TABLE SHOULD IMPLEMENT THIS
+
+<span class="nc" id="L128">  protected static final String selectAllFields =</span>
+<span class="nc" id="L129">      Columns.FILENAME.name() + ',' + Columns.MODETRANS.name() + ',' +</span>
+<span class="nc" id="L130">      Columns.STARTTRANS.name() + ',' + Columns.STOPTRANS.name() + ',' +</span>
+<span class="nc" id="L131">      Columns.TRANSINFO.name() + ',' + Columns.INFOSTATUS.name() + ',' +</span>
+<span class="nc" id="L132">      Columns.UPDATEDINFO.name() + ',' + Columns.USERID.name() + ',' +</span>
+<span class="nc" id="L133">      Columns.ACCOUNTID.name() + ',' + Columns.HOSTID.name() + ',' +</span>
+<span class="nc" id="L134">      Columns.SPECIALID.name();</span>
+
+<span class="nc" id="L136">  protected static final String updateAllFields =</span>
+<span class="nc" id="L137">      Columns.FILENAME.name() + &quot;=?,&quot; + Columns.MODETRANS.name() + &quot;=?,&quot; +</span>
+<span class="nc" id="L138">      Columns.STARTTRANS.name() + &quot;=?,&quot; + Columns.STOPTRANS.name() + &quot;=?,&quot; +</span>
+<span class="nc" id="L139">      Columns.TRANSINFO.name() + &quot;=?,&quot; + Columns.INFOSTATUS.name() + &quot;=?,&quot; +</span>
+<span class="nc" id="L140">      Columns.UPDATEDINFO.name() + &quot;=?&quot;;</span>
+
+  protected static final String insertAllValues = &quot; (?,?,?,?,?,?,?,?,?,?,?) &quot;;
+
+<span class="nc" id="L144">  private static final Set&lt;Long&gt; clientNoDbSpecialId = new HashSet&lt;Long&gt;();</span>
+
+  /**
+   * Insert into database
+   *
+   * @param dbSession
+   * @param user
+   * @param account
+   * @param specialId
+   * @param isSender
+   * @param filename
+   * @param mode
+   * @param infostatus
+   * @param info
+   * @param updatedInfo
+   *
+   * @throws WaarpDatabaseException
+   */
+  public DbTransferLog(final DbSession dbSession, final String user,
+                       final String account, final long specialId,
+                       final boolean isSender, final String filename,
+                       final String mode, final ReplyCode infostatus,
+                       final String info, final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseException {
+<span class="nc" id="L168">    super(dbSession);</span>
+<span class="nc" id="L169">    this.user = user;</span>
+<span class="nc" id="L170">    this.account = account;</span>
+<span class="nc" id="L171">    this.specialId = specialId;</span>
+<span class="nc" id="L172">    this.isSender = isSender;</span>
+<span class="nc" id="L173">    this.filename = filename;</span>
+<span class="nc" id="L174">    this.mode = mode;</span>
+<span class="nc" id="L175">    start = new Timestamp(System.currentTimeMillis());</span>
+<span class="nc" id="L176">    this.infostatus = infostatus;</span>
+<span class="nc" id="L177">    infotransf = info;</span>
+<span class="nc" id="L178">    this.updatedInfo = updatedInfo.ordinal();</span>
+<span class="nc" id="L179">    hostid = FileBasedConfiguration.fileBasedConfiguration.getHostId();</span>
+<span class="nc" id="L180">    setToArray();</span>
+<span class="nc" id="L181">    isSaved = false;</span>
+<span class="nc" id="L182">    insert();</span>
+<span class="nc" id="L183">  }</span>
+
+  /**
+   * Load from database
+   *
+   * @param dbSession
+   * @param user
+   * @param account
+   * @param specialId
+   *
+   * @throws WaarpDatabaseException
+   */
+  public DbTransferLog(final DbSession dbSession, final String user,
+                       final String account, final long specialId)
+      throws WaarpDatabaseException {
+<span class="nc" id="L198">    super(dbSession);</span>
+<span class="nc" id="L199">    this.user = user;</span>
+<span class="nc" id="L200">    this.account = account;</span>
+<span class="nc" id="L201">    this.specialId = specialId;</span>
+<span class="nc" id="L202">    hostid = FileBasedConfiguration.fileBasedConfiguration.getHostId();</span>
+<span class="nc" id="L203">    select();</span>
+<span class="nc" id="L204">  }</span>
+
+  @Override
+  protected final void initObject() {
+<span class="nc" id="L208">    primaryKey = new DbValue[] {</span>
+<span class="nc" id="L209">        new DbValue(user, Columns.USERID.name()),</span>
+<span class="nc" id="L210">        new DbValue(account, Columns.ACCOUNTID.name()),</span>
+<span class="nc" id="L211">        new DbValue(hostid, Columns.HOSTID.name()),</span>
+<span class="nc" id="L212">        new DbValue(specialId, Columns.SPECIALID.name())</span>
+    };
+<span class="nc" id="L214">    otherFields = new DbValue[] {</span>
+        // FILENAME, MODETRANS,
+        // STARTTRANS, STOPTRANS, TRANSINFO
+        // INFOSTATUS, UPDATEDINFO
+<span class="nc" id="L218">        new DbValue(filename, Columns.FILENAME.name()),</span>
+<span class="nc" id="L219">        new DbValue(mode, Columns.MODETRANS.name()),</span>
+<span class="nc" id="L220">        new DbValue(start, Columns.STARTTRANS.name()),</span>
+<span class="nc" id="L221">        new DbValue(stop, Columns.STOPTRANS.name()),</span>
+<span class="nc" id="L222">        new DbValue(infotransf, Columns.TRANSINFO.name()),</span>
+<span class="nc" id="L223">        new DbValue(ReplyCode.REPLY_000_SPECIAL_NOSTATUS.getCode(),</span>
+<span class="nc" id="L224">                    Columns.INFOSTATUS.name()), // infostatus.getCode()</span>
+<span class="nc" id="L225">        new DbValue(updatedInfo, Columns.UPDATEDINFO.name())</span>
+    };
+<span class="nc" id="L227">    allFields = new DbValue[] {</span>
+        otherFields[0], otherFields[1], otherFields[2], otherFields[3],
+        otherFields[4], otherFields[5], otherFields[6], primaryKey[0],
+        primaryKey[1], primaryKey[2], primaryKey[3]
+    };
+<span class="nc" id="L232">  }</span>
+
+  @Override
+  protected final String getSelectAllFields() {
+<span class="nc" id="L236">    return selectAllFields;</span>
+  }
+
+  @Override
+  protected final String getTable() {
+<span class="nc" id="L241">    return table;</span>
+  }
+
+  @Override
+  protected final String getInsertAllValues() {
+<span class="nc" id="L246">    return insertAllValues;</span>
+  }
+
+  @Override
+  protected final String getUpdateAllFields() {
+<span class="nc" id="L251">    return updateAllFields;</span>
+  }
+
+  @Override
+  protected final void setToArray() throws WaarpDatabaseSqlException {
+    // FILENAME, MODETRANS,
+    // STARTTRANS, STOPTRANS, TRANSINFO
+    // INFOSTATUS, UPDATEDINFO
+    // USERID, ACCOUNTID, SPECIALID
+<span class="nc" id="L260">    validateLength(Types.VARCHAR, filename, infotransf);</span>
+<span class="nc" id="L261">    validateLength(Types.NVARCHAR, mode, user, account, hostid);</span>
+<span class="nc" id="L262">    allFields[Columns.FILENAME.ordinal()].setValue(filename);</span>
+<span class="nc" id="L263">    allFields[Columns.MODETRANS.ordinal()].setValue(mode);</span>
+<span class="nc" id="L264">    allFields[Columns.STARTTRANS.ordinal()].setValue(start);</span>
+<span class="nc" id="L265">    stop = new Timestamp(System.currentTimeMillis());</span>
+<span class="nc" id="L266">    allFields[Columns.STOPTRANS.ordinal()].setValue(stop);</span>
+<span class="nc" id="L267">    allFields[Columns.TRANSINFO.ordinal()].setValue(infotransf);</span>
+<span class="nc" id="L268">    allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.getCode());</span>
+<span class="nc" id="L269">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="nc" id="L270">    allFields[Columns.USERID.ordinal()].setValue(user);</span>
+<span class="nc" id="L271">    allFields[Columns.ACCOUNTID.ordinal()].setValue(account);</span>
+<span class="nc" id="L272">    allFields[Columns.HOSTID.ordinal()].setValue(hostid);</span>
+<span class="nc" id="L273">    allFields[Columns.SPECIALID.ordinal()].setValue(specialId);</span>
+<span class="nc" id="L274">  }</span>
+
+  @Override
+  protected final void setFromArray() throws WaarpDatabaseSqlException {
+<span class="nc" id="L278">    filename = (String) allFields[Columns.FILENAME.ordinal()].getValue();</span>
+<span class="nc" id="L279">    mode = (String) allFields[Columns.MODETRANS.ordinal()].getValue();</span>
+<span class="nc" id="L280">    start = (Timestamp) allFields[Columns.STARTTRANS.ordinal()].getValue();</span>
+<span class="nc" id="L281">    stop = (Timestamp) allFields[Columns.STOPTRANS.ordinal()].getValue();</span>
+    try {
+<span class="nc" id="L283">      infostatus = ReplyCode.getReplyCode(</span>
+<span class="nc" id="L284">          (Integer) allFields[Columns.INFOSTATUS.ordinal()].getValue());</span>
+<span class="nc" id="L285">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L286">      throw new WaarpDatabaseSqlException(&quot;Wrong Argument&quot;, e);</span>
+<span class="nc" id="L287">    }</span>
+<span class="nc" id="L288">    infotransf = (String) allFields[Columns.TRANSINFO.ordinal()].getValue();</span>
+<span class="nc" id="L289">    updatedInfo = (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue();</span>
+<span class="nc" id="L290">    user = (String) allFields[Columns.USERID.ordinal()].getValue();</span>
+<span class="nc" id="L291">    account = (String) allFields[Columns.ACCOUNTID.ordinal()].getValue();</span>
+<span class="nc" id="L292">    hostid = (String) allFields[Columns.HOSTID.ordinal()].getValue();</span>
+<span class="nc" id="L293">    specialId = (Long) allFields[Columns.SPECIALID.ordinal()].getValue();</span>
+<span class="nc" id="L294">  }</span>
+
+  /**
+   * @return The Where condition on Primary Key
+   */
+  @Override
+  protected final String getWherePrimaryKey() {
+<span class="nc" id="L301">    return primaryKey[0].getColumn() + &quot; = ? AND &quot; + primaryKey[1].getColumn() +</span>
+<span class="nc" id="L302">           &quot; = ? AND &quot; + primaryKey[2].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L303">           primaryKey[3].getColumn() + &quot; = ? &quot;;</span>
+  }
+
+  /**
+   * Set the primary Key as current value
+   */
+  @Override
+  protected final void setPrimaryKey() {
+<span class="nc" id="L311">    primaryKey[0].setValue(user);</span>
+<span class="nc" id="L312">    primaryKey[1].setValue(account);</span>
+<span class="nc" id="L313">    primaryKey[2].setValue(hostid);</span>
+<span class="nc" id="L314">    primaryKey[3].setValue(specialId);</span>
+<span class="nc" id="L315">  }</span>
+
+  /**
+   * @return the condition to limit access to the row concerned by the Host
+   */
+  private static String getLimitWhereCondition() {
+<span class="nc" id="L321">    return &quot; &quot; + Columns.HOSTID + &quot; = '&quot; +</span>
+<span class="nc" id="L322">           FileBasedConfiguration.fileBasedConfiguration.getHostId() + &quot;' &quot;;</span>
+  }
+
+  /**
+   * Create a Special Id for NoDb client
+   */
+  private void createNoDbSpecialId() {
+<span class="nc" id="L329">    synchronized (clientNoDbSpecialId) {</span>
+      // New SpecialId is not possible with No Database Model
+<span class="nc" id="L331">      specialId = System.currentTimeMillis();</span>
+<span class="nc" id="L332">      Long newOne = specialId;</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">      while (clientNoDbSpecialId.contains(newOne)) {</span>
+<span class="nc" id="L334">        newOne = specialId++;</span>
+      }
+<span class="nc" id="L336">      clientNoDbSpecialId.add(newOne);</span>
+<span class="nc" id="L337">    }</span>
+<span class="nc" id="L338">  }</span>
+
+  /**
+   * Remove a Special Id for NoDb Client
+   */
+  private void removeNoDbSpecialId() {
+<span class="nc" id="L344">    synchronized (clientNoDbSpecialId) {</span>
+<span class="nc" id="L345">      final Long oldOne = specialId;</span>
+<span class="nc" id="L346">      clientNoDbSpecialId.remove(oldOne);</span>
+<span class="nc" id="L347">    }</span>
+<span class="nc" id="L348">  }</span>
+
+  @Override
+  public final void delete() throws WaarpDatabaseException {
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L353">      removeNoDbSpecialId();</span>
+<span class="nc" id="L354">      return;</span>
+    }
+<span class="nc" id="L356">    super.delete();</span>
+<span class="nc" id="L357">  }</span>
+
+  @Override
+  public final void insert() throws WaarpDatabaseException {
+<span class="nc bnc" id="L361" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L362">      return;</span>
+    }
+<span class="nc bnc" id="L364" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
+        // New SpecialId is not possible with No Database Model
+<span class="nc" id="L367">        createNoDbSpecialId();</span>
+      }
+<span class="nc" id="L369">      isSaved = true;</span>
+<span class="nc" id="L370">      return;</span>
+    }
+<span class="nc" id="L372">    logger.debug(&quot;Dbrelated info: {}&quot;, dbSession.getAdmin().getServer());</span>
+    // First need to find a new id if id is not ok
+<span class="nc bnc" id="L374" title="All 2 branches missed.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc" id="L375">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
+<span class="nc" id="L376">      logger.debug(&quot;Try Insert create a new Id from sequence: {}&quot;, specialId);</span>
+<span class="nc" id="L377">      setPrimaryKey();</span>
+    }
+<span class="nc" id="L379">    super.insert();</span>
+<span class="nc" id="L380">    logger.debug(&quot;TransferLog shall be created: {}&quot;, this);</span>
+<span class="nc" id="L381">  }</span>
+
+  /**
+   * As insert but with the ability to change the SpecialId
+   *
+   * @throws WaarpDatabaseException
+   */
+  public final void create() throws WaarpDatabaseException {
+<span class="nc bnc" id="L389" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L390">      return;</span>
+    }
+<span class="nc bnc" id="L392" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
+        // New SpecialId is not possible with No Database Model
+<span class="nc" id="L395">        createNoDbSpecialId();</span>
+      }
+<span class="nc" id="L397">      isSaved = true;</span>
+<span class="nc" id="L398">      return;</span>
+    }
+    // First need to find a new id if id is not ok
+<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc" id="L402">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
+<span class="nc" id="L403">      logger.debug(&quot;Try Insert create a new Id from sequence: {}&quot;, specialId);</span>
+<span class="nc" id="L404">      setPrimaryKey();</span>
+    }
+<span class="nc" id="L406">    setToArray();</span>
+<span class="nc" id="L407">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L410">      preparedStatement.createPrepareStatement(</span>
+          &quot;INSERT INTO &quot; + table + &quot; (&quot; + selectAllFields + &quot;) VALUES &quot; +
+          insertAllValues);
+<span class="nc" id="L413">      setValues(preparedStatement, allFields);</span>
+      try {
+<span class="nc" id="L415">        final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">        if (count &lt;= 0) {</span>
+<span class="nc" id="L417">          throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
+        }
+<span class="nc" id="L419">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L420">        logger.error(&quot;Problem while inserting: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L421">        final DbPreparedStatement find = new DbPreparedStatement(dbSession);</span>
+        try {
+<span class="nc" id="L423">          find.createPrepareStatement(</span>
+<span class="nc" id="L424">              &quot;SELECT MAX(&quot; + primaryKey[3].getColumn() + &quot;) FROM &quot; + table +</span>
+<span class="nc" id="L425">              &quot; WHERE &quot; + primaryKey[0].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L426">              primaryKey[1].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L427">              primaryKey[2].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L428">              primaryKey[3].getColumn() + &quot; != ? &quot;);</span>
+<span class="nc" id="L429">          setPrimaryKey();</span>
+<span class="nc" id="L430">          setValues(find, primaryKey);</span>
+<span class="nc" id="L431">          find.executeQuery();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">          if (find.getNext()) {</span>
+            final long result;
+            try {
+<span class="nc" id="L435">              result = find.getResultSet().getLong(1);</span>
+<span class="nc" id="L436">            } catch (final SQLException e1) {</span>
+<span class="nc" id="L437">              throw new WaarpDatabaseSqlException(e1);</span>
+<span class="nc" id="L438">            }</span>
+<span class="nc" id="L439">            specialId = result + 1;</span>
+<span class="nc" id="L440">            dbSession.getAdmin().getDbModel()</span>
+<span class="nc" id="L441">                     .resetSequence(dbSession, specialId + 1);</span>
+<span class="nc" id="L442">            setToArray();</span>
+<span class="nc" id="L443">            preparedStatement.close();</span>
+<span class="nc" id="L444">            setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L445">            final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">            if (count &lt;= 0) {</span>
+<span class="nc" id="L447">              throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
+            }
+<span class="nc" id="L449">          } else {</span>
+<span class="nc" id="L450">            throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
+          }
+        } finally {
+<span class="nc" id="L453">          find.realClose();</span>
+        }
+<span class="nc" id="L455">      }</span>
+<span class="nc" id="L456">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L458">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L460">  }</span>
+
+  /**
+   * Private constructor
+   *
+   * @param dBsession
+   */
+  private DbTransferLog(final DbSession dBsession) {
+<span class="nc" id="L468">    super(dBsession);</span>
+<span class="nc" id="L469">  }</span>
+
+  /**
+   * For instance when getting updated information
+   *
+   * @param preparedStatement
+   *
+   * @return the next updated DbTaskRunner
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbTransferLog getFromStatement(
+      final DbPreparedStatement preparedStatement)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L484">    final DbTransferLog dbTaskRunner =</span>
+<span class="nc" id="L485">        new DbTransferLog(preparedStatement.getDbSession());</span>
+<span class="nc" id="L486">    dbTaskRunner.getValues(preparedStatement, dbTaskRunner.allFields);</span>
+<span class="nc" id="L487">    dbTaskRunner.setFromArray();</span>
+<span class="nc" id="L488">    dbTaskRunner.isSaved = true;</span>
+<span class="nc" id="L489">    return dbTaskRunner;</span>
+  }
+
+  /**
+   * @param session
+   * @param status
+   * @param limit limit the number of rows
+   *
+   * @return the DbPreparedStatement for getting TransferLog according to
+   *     status
+   *     ordered by start
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getStatusPrepareStament(
+      final DbSession session, final ReplyCode status, final int limit)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L507">    String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">    if (status != null) {</span>
+<span class="nc" id="L509">      request +=</span>
+<span class="nc" id="L510">          &quot; WHERE &quot; + Columns.INFOSTATUS.name() + &quot; = &quot; + status.getCode() +</span>
+<span class="nc" id="L511">          &quot; AND &quot; + getLimitWhereCondition();</span>
+    } else {
+<span class="nc" id="L513">      request += &quot; WHERE &quot; + getLimitWhereCondition();</span>
+    }
+<span class="nc" id="L515">    request += &quot; ORDER BY &quot; + Columns.STARTTRANS.name() + &quot; DESC &quot;;</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="nc" id="L517">      request = session.getAdmin().getDbModel()</span>
+<span class="nc" id="L518">                       .limitRequest(selectAllFields, request, limit);</span>
+    }
+<span class="nc" id="L520">    return new DbPreparedStatement(session, request);</span>
+  }
+
+  /**
+   * @param session
+   * @param start
+   * @param stop
+   *
+   * @return the DbPreparedStatement for getting Selected Object, whatever
+   *     their
+   *     status
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getLogPrepareStament(
+      final DbSession session, final Timestamp start, final Timestamp stop)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L538">    return getLogPrepareStament(session, start, stop, null);</span>
+  }
+
+  /**
+   * @param session
+   * @param start
+   * @param stop
+   *
+   * @return the DbPreparedStatement for getting Selected Object, whatever
+   *     their
+   *     status
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getLogPrepareStament(
+      final DbSession session, final Timestamp start, final Timestamp stop,
+      final ReplyCode status)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+
+<span class="nc" id="L558">    String statusWhereFilter = &quot;&quot;;</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">    if (status != null) {</span>
+<span class="nc" id="L560">      statusWhereFilter =</span>
+<span class="nc" id="L561">          Columns.INFOSTATUS.name() + &quot; = &quot; + status.getCode() + &quot; AND &quot;;</span>
+    }
+
+<span class="nc" id="L564">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(session);
+<span class="nc" id="L566">    String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="nc bnc" id="L567" title="All 4 branches missed.">    if (start != null &amp;&amp; stop != null) {</span>
+<span class="nc" id="L568">      request += &quot; WHERE &quot; + statusWhereFilter + Columns.STARTTRANS.name() +</span>
+<span class="nc" id="L569">                 &quot; &gt;= ? AND &quot; + Columns.STARTTRANS.name() + &quot; &lt;= ? AND &quot; +</span>
+<span class="nc" id="L570">                 getLimitWhereCondition() + &quot; ORDER BY &quot; +</span>
+<span class="nc" id="L571">                 Columns.SPECIALID.name() + &quot; DESC &quot;;</span>
+<span class="nc" id="L572">      preparedStatement.createPrepareStatement(request);</span>
+      try {
+<span class="nc" id="L574">        preparedStatement.getPreparedStatement().setTimestamp(1, start);</span>
+<span class="nc" id="L575">        preparedStatement.getPreparedStatement().setTimestamp(2, stop);</span>
+<span class="nc" id="L576">      } catch (final SQLException e) {</span>
+<span class="nc" id="L577">        preparedStatement.realClose();</span>
+<span class="nc" id="L578">        throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L579">      }</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">    } else if (start != null) {</span>
+<span class="nc" id="L581">      request += &quot; WHERE &quot; + statusWhereFilter + Columns.STARTTRANS.name() +</span>
+<span class="nc" id="L582">                 &quot; &gt;= ? AND &quot; + getLimitWhereCondition() + &quot; ORDER BY &quot; +</span>
+<span class="nc" id="L583">                 Columns.SPECIALID.name() + &quot; DESC &quot;;</span>
+<span class="nc" id="L584">      preparedStatement.createPrepareStatement(request);</span>
+      try {
+<span class="nc" id="L586">        preparedStatement.getPreparedStatement().setTimestamp(1, start);</span>
+<span class="nc" id="L587">      } catch (final SQLException e) {</span>
+<span class="nc" id="L588">        preparedStatement.realClose();</span>
+<span class="nc" id="L589">        throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L590">      }</span>
+<span class="nc bnc" id="L591" title="All 2 branches missed.">    } else if (stop != null) {</span>
+<span class="nc" id="L592">      request += &quot; WHERE &quot; + statusWhereFilter + Columns.STARTTRANS.name() +</span>
+<span class="nc" id="L593">                 &quot; &lt;= ? AND &quot; + getLimitWhereCondition() + &quot; ORDER BY &quot; +</span>
+<span class="nc" id="L594">                 Columns.SPECIALID.name() + &quot; DESC &quot;;</span>
+<span class="nc" id="L595">      preparedStatement.createPrepareStatement(request);</span>
+      try {
+<span class="nc" id="L597">        preparedStatement.getPreparedStatement().setTimestamp(1, stop);</span>
+<span class="nc" id="L598">      } catch (final SQLException e) {</span>
+<span class="nc" id="L599">        preparedStatement.realClose();</span>
+<span class="nc" id="L600">        throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L601">      }</span>
+    } else {
+<span class="nc" id="L603">      request += &quot; WHERE &quot; + statusWhereFilter + getLimitWhereCondition() +</span>
+<span class="nc" id="L604">                 &quot; ORDER BY &quot; + Columns.SPECIALID.name() + &quot; DESC &quot;;</span>
+<span class="nc" id="L605">      preparedStatement.createPrepareStatement(request);</span>
+    }
+<span class="nc" id="L607">    return preparedStatement;</span>
+  }
+
+  /**
+   * @param session
+   *
+   * @return the DbPreparedStatement for getting Updated Object
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getCountInfoPrepareStatement(
+      final DbSession session)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L621">    final String request =</span>
+<span class="nc" id="L622">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table +</span>
+<span class="nc" id="L623">        &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? AND &quot; +</span>
+<span class="nc" id="L624">        getLimitWhereCondition() + &quot; AND &quot; + Columns.UPDATEDINFO.name() +</span>
+        &quot; = ? &quot;;
+<span class="nc" id="L626">    final DbPreparedStatement pstt = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L627">    session.addLongTermPreparedStatement(pstt);</span>
+<span class="nc" id="L628">    return pstt;</span>
+  }
+
+  /**
+   * @param pstt
+   * @param info
+   * @param time
+   *
+   * @return the number of elements (COUNT) from the statement
+   */
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final UpdatedInfo info, final long time) {
+<span class="nc" id="L640">    long result = 0;</span>
+    try {
+<span class="nc" id="L642">      finishSelectOrCountPrepareStatement(pstt, time);</span>
+<span class="nc" id="L643">      pstt.getPreparedStatement().setInt(2, info.ordinal());</span>
+<span class="nc" id="L644">      pstt.executeQuery();</span>
+<span class="nc bnc" id="L645" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
+<span class="nc" id="L646">        result = pstt.getResultSet().getLong(1);</span>
+      }
+<span class="nc" id="L648">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+      // nothing
+<span class="nc" id="L650">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+      // nothing
+<span class="nc" id="L652">    } catch (final SQLException ignored) {</span>
+      // nothing
+    } finally {
+<span class="nc" id="L655">      pstt.close();</span>
+    }
+<span class="nc" id="L657">    return result;</span>
+  }
+
+  /**
+   * @param session
+   *
+   * @return the DbPreparedStatement for getting Runner according to status
+   *     ordered by start
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getCountStatusPrepareStatement(
+      final DbSession session)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L672">    String request =</span>
+<span class="nc" id="L673">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+<span class="nc" id="L674">    request += &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="nc" id="L675">    request += &quot; AND &quot; + Columns.INFOSTATUS.name() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L676">               getLimitWhereCondition();</span>
+<span class="nc" id="L677">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L678">    session.addLongTermPreparedStatement(prep);</span>
+<span class="nc" id="L679">    return prep;</span>
+  }
+
+  /**
+   * @param session
+   *
+   * @return the DbPreparedStatement for getting All according to status
+   *     ordered
+   *     by start
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getCountAllPrepareStatement(
+      final DbSession session)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L695">    String request =</span>
+<span class="nc" id="L696">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+<span class="nc" id="L697">    request += &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="nc" id="L698">    request += &quot; AND &quot; + getLimitWhereCondition();</span>
+<span class="nc" id="L699">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L700">    session.addLongTermPreparedStatement(prep);</span>
+<span class="nc" id="L701">    return prep;</span>
+  }
+
+  /**
+   * @param pstt
+   * @param error
+   * @param time
+   *
+   * @return the number of elements (COUNT) from the statement
+   */
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final ReplyCode error, final long time) {
+<span class="nc" id="L713">    long result = 0;</span>
+    try {
+<span class="nc" id="L715">      finishSelectOrCountPrepareStatement(pstt, time);</span>
+<span class="nc" id="L716">      pstt.getPreparedStatement().setInt(2, error.getCode());</span>
+<span class="nc" id="L717">      pstt.executeQuery();</span>
+<span class="nc bnc" id="L718" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
+<span class="nc" id="L719">        result = pstt.getResultSet().getLong(1);</span>
+      }
+<span class="nc" id="L721">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+      // nothing
+<span class="nc" id="L723">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+      // nothing
+<span class="nc" id="L725">    } catch (final SQLException ignored) {</span>
+      // nothing
+    } finally {
+<span class="nc" id="L728">      pstt.close();</span>
+    }
+<span class="nc" id="L730">    return result;</span>
+  }
+
+  /**
+   * @param pstt
+   *
+   * @return the number of elements (COUNT) from the statement
+   */
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt) {
+<span class="nc" id="L740">    long result = 0;</span>
+    try {
+<span class="nc" id="L742">      pstt.executeQuery();</span>
+<span class="nc bnc" id="L743" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
+<span class="nc" id="L744">        result = pstt.getResultSet().getLong(1);</span>
+      }
+<span class="nc" id="L746">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+      // nothing
+<span class="nc" id="L748">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+      // nothing
+<span class="nc" id="L750">    } catch (final SQLException ignored) {</span>
+      // nothing
+    } finally {
+<span class="nc" id="L753">      pstt.close();</span>
+    }
+<span class="nc" id="L755">    return result;</span>
+  }
+
+  /**
+   * Set the current time in the given updatedPreparedStatement
+   *
+   * @param pstt
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static void finishSelectOrCountPrepareStatement(
+      final DbPreparedStatement pstt)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L769">    finishSelectOrCountPrepareStatement(pstt, System.currentTimeMillis());</span>
+<span class="nc" id="L770">  }</span>
+
+  /**
+   * Set the current time in the given updatedPreparedStatement
+   *
+   * @param pstt
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static void finishSelectOrCountPrepareStatement(
+      final DbPreparedStatement pstt, final long time)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L783">    final Timestamp startlimit = new Timestamp(time);</span>
+    try {
+<span class="nc" id="L785">      pstt.getPreparedStatement().setTimestamp(1, startlimit);</span>
+<span class="nc" id="L786">    } catch (final SQLException e) {</span>
+<span class="nc" id="L787">      logger.error(&quot;Database SQL Error: Cannot set timestamp {}&quot;,</span>
+<span class="nc" id="L788">                   e.getMessage());</span>
+<span class="nc" id="L789">      throw new WaarpDatabaseSqlException(&quot;Cannot set timestamp&quot;, e);</span>
+<span class="nc" id="L790">    }</span>
+<span class="nc" id="L791">  }</span>
+
+  /**
+   * Running or not transfers are concerned
+   *
+   * @param session
+   * @param in True for Incoming, False for Outgoing
+   *
+   * @return the DbPreparedStatement for getting Runner according to in or out
+   *     going way and Error
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getCountInOutErrorPrepareStatement(
+      final DbSession session, final boolean in)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L808">    String request =</span>
+<span class="nc" id="L809">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+    final String inCond;
+<span class="nc bnc" id="L811" title="All 2 branches missed.">    if (in) {</span>
+<span class="nc" id="L812">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="nc" id="L813">               FtpCommandCode.APPE.name() + &quot;' OR &quot; + Columns.MODETRANS.name() +</span>
+<span class="nc" id="L814">               &quot; = '&quot; + FtpCommandCode.STOR.name() + &quot;' OR &quot; +</span>
+<span class="nc" id="L815">               Columns.MODETRANS.name() + &quot; = '&quot; + FtpCommandCode.STOU.name() +</span>
+               &quot;') &quot;;
+    } else {
+<span class="nc" id="L818">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="nc" id="L819">               FtpCommandCode.RETR.name() + &quot;') &quot;;</span>
+    }
+<span class="nc" id="L821">    request += &quot; WHERE &quot; + inCond;</span>
+<span class="nc" id="L822">    request += &quot; AND &quot; + getLimitWhereCondition() + ' ';</span>
+<span class="nc" id="L823">    request += &quot; AND &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="nc" id="L824">    request += &quot; AND &quot; + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
+<span class="nc" id="L825">               UpdatedInfo.INERROR.ordinal();</span>
+<span class="nc" id="L826">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L827">    session.addLongTermPreparedStatement(prep);</span>
+<span class="nc" id="L828">    return prep;</span>
+  }
+
+  /**
+   * Running or not transfers are concerned
+   *
+   * @param session
+   * @param in True for Incoming, False for Outgoing
+   * @param running True for Running only, False for all
+   *
+   * @return the DbPreparedStatement for getting Runner according to in or out
+   *     going way
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getCountInOutRunningPrepareStatement(
+      final DbSession session, final boolean in, final boolean running)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L847">    String request =</span>
+<span class="nc" id="L848">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+    final String inCond;
+<span class="nc bnc" id="L850" title="All 2 branches missed.">    if (in) {</span>
+<span class="nc" id="L851">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="nc" id="L852">               FtpCommandCode.APPE.name() + &quot;' OR &quot; + Columns.MODETRANS.name() +</span>
+<span class="nc" id="L853">               &quot; = '&quot; + FtpCommandCode.STOR.name() + &quot;' OR &quot; +</span>
+<span class="nc" id="L854">               Columns.MODETRANS.name() + &quot; = '&quot; + FtpCommandCode.STOU.name() +</span>
+               &quot;') &quot;;
+    } else {
+<span class="nc" id="L857">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="nc" id="L858">               FtpCommandCode.RETR.name() + &quot;') &quot;;</span>
+    }
+<span class="nc" id="L860">    request += &quot; WHERE &quot; + inCond;</span>
+<span class="nc" id="L861">    request += &quot; AND &quot; + getLimitWhereCondition() + ' ';</span>
+<span class="nc" id="L862">    request += &quot; AND &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="nc bnc" id="L863" title="All 2 branches missed.">    if (running) {</span>
+<span class="nc" id="L864">      request += &quot; AND &quot; + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
+<span class="nc" id="L865">                 UpdatedInfo.RUNNING.ordinal();</span>
+    }
+<span class="nc" id="L867">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L868">    session.addLongTermPreparedStatement(prep);</span>
+<span class="nc" id="L869">    return prep;</span>
+  }
+
+  @Override
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
+<span class="nc" id="L874">    updatedInfo = info.ordinal();</span>
+<span class="nc" id="L875">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="nc" id="L876">    isSaved = false;</span>
+<span class="nc" id="L877">  }</span>
+
+  /**
+   * Set the ReplyCode for the UpdatedInfo
+   *
+   * @param code
+   */
+  public final void setReplyCodeExecutionStatus(final ReplyCode code) {
+<span class="nc bnc" id="L885" title="All 2 branches missed.">    if (infostatus != code) {</span>
+<span class="nc" id="L886">      infostatus = code;</span>
+<span class="nc" id="L887">      allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.getCode());</span>
+<span class="nc" id="L888">      isSaved = false;</span>
+    }
+<span class="nc" id="L890">  }</span>
+
+  /**
+   * @return The current UpdatedInfo value
+   */
+  public final UpdatedInfo getUpdatedInfo() {
+<span class="nc" id="L896">    return UpdatedInfo.values()[updatedInfo];</span>
+  }
+
+  /**
+   * @return the ReplyCode code associated with the Updated Info
+   */
+  public final ReplyCode getErrorInfo() {
+<span class="nc" id="L903">    return infostatus;</span>
+  }
+
+  /**
+   * @param filename the filename to set
+   */
+  public final void setFilename(final String filename) {
+<span class="nc bnc" id="L910" title="All 2 branches missed.">    if (!this.filename.equals(filename)) {</span>
+<span class="nc" id="L911">      this.filename = filename;</span>
+<span class="nc" id="L912">      allFields[Columns.FILENAME.ordinal()].setValue(this.filename);</span>
+<span class="nc" id="L913">      isSaved = false;</span>
+    }
+<span class="nc" id="L915">  }</span>
+
+  /**
+   * @return the isSender
+   */
+  public final boolean isSender() {
+<span class="nc" id="L921">    return isSender;</span>
+  }
+
+  /**
+   * @return the filename
+   */
+  public final String getFilename() {
+<span class="nc" id="L928">    return filename;</span>
+  }
+
+  /**
+   * @return the specialId
+   */
+  public final long getSpecialId() {
+<span class="nc" id="L935">    return specialId;</span>
+  }
+
+  /**
+   * @return the infotransf
+   */
+  public final String getInfotransf() {
+<span class="nc" id="L942">    return infotransf;</span>
+  }
+
+  /**
+   * @param infotransf the infotransf to set
+   */
+  public final void setInfotransf(final String infotransf) {
+<span class="nc" id="L949">    this.infotransf = infotransf;</span>
+<span class="nc" id="L950">  }</span>
+
+  /**
+   * @return the user
+   */
+  public final String getUser() {
+<span class="nc" id="L956">    return user;</span>
+  }
+
+  /**
+   * @return the account
+   */
+  public final String getAccount() {
+<span class="nc" id="L963">    return account;</span>
+  }
+
+  /**
+   * @param stop the stop to set
+   */
+  public final void setStop(final Timestamp stop) {
+<span class="nc" id="L970">    this.stop = stop;</span>
+<span class="nc" id="L971">  }</span>
+
+  /**
+   * @return the mode
+   */
+  public final String getMode() {
+<span class="nc" id="L977">    return mode;</span>
+  }
+
+  /**
+   * This method is to be called each time an operation is happening on Runner
+   *
+   * @throws WaarpDatabaseException
+   */
+  public final void saveStatus() throws WaarpDatabaseException {
+<span class="nc" id="L986">    update();</span>
+<span class="nc" id="L987">  }</span>
+
+  /**
+   * Clear the runner
+   */
+  public final void clear() {
+    // nothing
+<span class="nc" id="L994">  }</span>
+
+  @Override
+  public final String toString() {
+<span class="nc" id="L998">    return &quot;Transfer: on &quot; + filename + &quot; SpecialId: &quot; + specialId + &quot; Mode: &quot; +</span>
+           mode + &quot; isSender: &quot; + isSender + &quot; User: &quot; + user + &quot; Account: &quot; +
+           account + &quot; Start: &quot; + start + &quot; Stop: &quot; + stop + &quot; Internal: &quot; +
+<span class="nc" id="L1001">           UpdatedInfo.values()[updatedInfo].name() + ':' +</span>
+<span class="nc" id="L1002">           infostatus.getMesg() + &quot; TransferInfo: &quot; + infotransf;</span>
+  }
+
+  /**
+   * @return the start
+   */
+  public final Timestamp getStart() {
+<span class="nc" id="L1009">    return start;</span>
+  }
+
+  /**
+   * @return the stop
+   */
+  public final Timestamp getStop() {
+<span class="nc" id="L1016">    return stop;</span>
+  }
+
+  /*
+   * XXXIDXXX XXXUSERXXX XXXACCTXXX XXXFILEXXX XXXMODEXXX XXXSTATUSXXX XXXINFOXXX XXXUPINFXXX XXXSTARTXXX
+   * XXXSTOPXXX
+   */
+  private static final String XML_IDX = &quot;IDX&quot;;
+  private static final String XML_USER = &quot;USER&quot;;
+  private static final String XML_ACCT = &quot;ACCT&quot;;
+  private static final String XML_FILE = &quot;FILE&quot;;
+  private static final String XML_MODE = &quot;MODE&quot;;
+  private static final String XML_STATUS = &quot;STATUS&quot;;
+  private static final String XML_INFO = &quot;INFO&quot;;
+  private static final String XML_UPDINFO = &quot;UPDINFO&quot;;
+  private static final String XML_START = &quot;START&quot;;
+  private static final String XML_STOP = &quot;STOP&quot;;
+  private static final String XML_ROOT = &quot;LOGS&quot;;
+  private static final String XML_ENTRY = &quot;LOG&quot;;
+  /**
+   * Structure of the Configuration file
+   */
+<span class="nc" id="L1038">  private static final XmlDecl[] logDecls = {</span>
+      // identity
+      new XmlDecl(XmlType.STRING, XML_IDX),
+      new XmlDecl(XmlType.STRING, XML_USER),
+      new XmlDecl(XmlType.STRING, XML_ACCT),
+      new XmlDecl(XmlType.STRING, XML_FILE),
+      new XmlDecl(XmlType.STRING, XML_MODE),
+      new XmlDecl(XmlType.STRING, XML_STATUS),
+      new XmlDecl(XmlType.STRING, XML_INFO),
+      new XmlDecl(XmlType.STRING, XML_UPDINFO),
+      new XmlDecl(XmlType.STRING, XML_START),
+      new XmlDecl(XmlType.STRING, XML_STOP),
+  };
+  /**
+   * Global Structure for Server Configuration
+   */
+<span class="nc" id="L1054">  private static final XmlDecl[] logsElements = {</span>
+      new XmlDecl(XML_ENTRY, XmlType.XVAL, XML_ROOT + '/' + XML_ENTRY, logDecls,
+                  true)
+  };
+
+  /**
+   * @return the associated XmlValue
+   */
+  private XmlValue[] saveIntoXmlValue() {
+<span class="nc" id="L1063">    final XmlValue[] values = new XmlValue[logDecls.length];</span>
+<span class="nc bnc" id="L1064" title="All 2 branches missed.">    for (int i = 0; i &lt; logDecls.length; i++) {</span>
+<span class="nc" id="L1065">      values[i] = new XmlValue(logDecls[i]);</span>
+    }
+    try {
+<span class="nc" id="L1068">      values[0].setFromString(Long.toString(specialId));</span>
+<span class="nc" id="L1069">      values[1].setFromString(user);</span>
+<span class="nc" id="L1070">      values[2].setFromString(account);</span>
+<span class="nc" id="L1071">      values[3].setFromString(filename);</span>
+<span class="nc" id="L1072">      values[4].setFromString(mode);</span>
+<span class="nc" id="L1073">      values[5].setFromString(getErrorInfo().getMesg());</span>
+<span class="nc" id="L1074">      values[6].setFromString(infotransf);</span>
+<span class="nc" id="L1075">      values[7].setFromString(getUpdatedInfo().name());</span>
+<span class="nc" id="L1076">      values[8].setFromString(start.toString());</span>
+<span class="nc" id="L1077">      values[9].setFromString(stop.toString());</span>
+<span class="nc" id="L1078">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L1079">      return null;</span>
+<span class="nc" id="L1080">    }</span>
+<span class="nc" id="L1081">    return values;</span>
+  }
+
+  /**
+   * Save the current DbTransferLog to a file
+   *
+   * @param filename
+   *
+   * @return The message for the HTTPS interface
+   */
+  public final String saveDbTransferLog(final String filename) {
+<span class="nc" id="L1092">    final Document document = XmlUtil.createEmptyDocument();</span>
+<span class="nc" id="L1093">    final XmlValue[] roots = new XmlValue[1];</span>
+<span class="nc" id="L1094">    final XmlValue root = new XmlValue(logsElements[0]);</span>
+<span class="nc" id="L1095">    roots[0] = root;</span>
+    String message;
+<span class="nc" id="L1097">    final XmlValue[] values = saveIntoXmlValue();</span>
+<span class="nc bnc" id="L1098" title="All 2 branches missed.">    if (values == null) {</span>
+<span class="nc" id="L1099">      return &quot;Error during export&quot;;</span>
+    }
+    try {
+<span class="nc" id="L1102">      root.addValue(values);</span>
+<span class="nc" id="L1103">    } catch (final InvalidObjectException e) {</span>
+<span class="nc" id="L1104">      logger.error(&quot;Error during Write DbTransferLog file {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1105">      return ERROR_DURING_PURGE;</span>
+<span class="nc" id="L1106">    }</span>
+    try {
+<span class="nc" id="L1108">      delete();</span>
+<span class="nc" id="L1109">      message = &quot;Purge Correct Logs successful&quot;;</span>
+<span class="nc" id="L1110">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1111">      message = ERROR_DURING_PURGE;</span>
+<span class="nc" id="L1112">    }</span>
+<span class="nc" id="L1113">    XmlUtil.write(document, roots);</span>
+    try {
+<span class="nc" id="L1115">      XmlUtil.saveDocument(filename, document);</span>
+<span class="nc" id="L1116">    } catch (final IOException e1) {</span>
+<span class="nc" id="L1117">      logger.error(&quot;Cannot write to file: &quot; + filename + &quot; since {}&quot;,</span>
+<span class="nc" id="L1118">                   e1.getMessage());</span>
+<span class="nc" id="L1119">      return message + &quot; but cannot save file as export&quot;;</span>
+<span class="nc" id="L1120">    }</span>
+<span class="nc" id="L1121">    return message;</span>
+  }
+
+  /**
+   * Exports DbTransferLogs to a file and purges the corresponding
+   * DbTransferLogs
+   *
+   * @param preparedStatement the DbTransferLog as SELECT command to
+   *     export
+   *     (and purge)
+   * @param filename the filename where the DbLogs will be exported
+   *
+   * @return The message for the HTTPS interface
+   */
+  public static String saveDbTransferLogFile(
+      final DbPreparedStatement preparedStatement, final String filename) {
+    final Writer outWriter;
+    try {
+<span class="nc" id="L1139">      outWriter = new FileWriter(filename);</span>
+<span class="nc" id="L1140">    } catch (final IOException e) {</span>
+<span class="nc" id="L1141">      return &quot;Cannot open file &quot; + filename + &quot;: &quot; + e.getMessage();</span>
+<span class="nc" id="L1142">    }</span>
+
+<span class="nc" id="L1144">    return saveDbTransferLogFile(preparedStatement, outWriter, true);</span>
+  }
+
+  /**
+   * Exports DbTransferLogs to a Writer object and optionally purges the
+   * corresponding DbTransferLogs
+   *
+   * @param preparedStatement the DbTransferLog as SELECT command to
+   *     export
+   *     (and purge)
+   * @param outWriter a Writer object where the DbLogs will be written
+   * @param purge sets whether or not the selected results must be
+   *     purged
+   *
+   * @return The message for the HTTPS interface
+   */
+  public static String saveDbTransferLogFile(
+      final DbPreparedStatement preparedStatement, final Writer outWriter,
+      final boolean purge) {
+<span class="nc" id="L1163">    final Document document = XmlUtil.createEmptyDocument();</span>
+<span class="nc" id="L1164">    final XmlValue[] roots = new XmlValue[1];</span>
+<span class="nc" id="L1165">    final XmlValue root = new XmlValue(logsElements[0]);</span>
+<span class="nc" id="L1166">    roots[0] = root;</span>
+<span class="nc" id="L1167">    String message = null;</span>
+    try {
+      try {
+<span class="nc" id="L1170">        preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L1171" title="All 2 branches missed.">        while (preparedStatement.getNext()) {</span>
+<span class="nc" id="L1172">          final DbTransferLog log = getFromStatement(preparedStatement);</span>
+<span class="nc" id="L1173">          final XmlValue[] values = log.saveIntoXmlValue();</span>
+<span class="nc bnc" id="L1174" title="All 2 branches missed.">          if (values == null) {</span>
+<span class="nc" id="L1175">            return &quot;Error during export&quot;;</span>
+          }
+          try {
+<span class="nc" id="L1178">            root.addValue(values);</span>
+<span class="nc" id="L1179">          } catch (final InvalidObjectException e) {</span>
+<span class="nc" id="L1180">            logger.error(&quot;Error during Write DbTransferLog file {}&quot;,</span>
+<span class="nc" id="L1181">                         e.getMessage());</span>
+<span class="nc" id="L1182">            return ERROR_DURING_PURGE;</span>
+<span class="nc" id="L1183">          }</span>
+
+<span class="nc bnc" id="L1185" title="All 2 branches missed.">          if (purge) {</span>
+<span class="nc" id="L1186">            log.delete();</span>
+          }
+<span class="nc" id="L1188">        }</span>
+<span class="nc" id="L1189">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L1190">        message = ERROR_DURING_EXPORT_OR_PURGE;</span>
+<span class="nc" id="L1191">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L1192">        message = ERROR_DURING_EXPORT_OR_PURGE;</span>
+<span class="nc" id="L1193">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1194">        message = ERROR_DURING_EXPORT_OR_PURGE;</span>
+<span class="nc" id="L1195">      }</span>
+    } finally {
+<span class="nc" id="L1197">      preparedStatement.realClose();</span>
+    }
+
+<span class="nc" id="L1200">    XmlUtil.write(document, roots);</span>
+    try {
+<span class="nc" id="L1202">      XmlUtil.saveDocument(outWriter, document);</span>
+<span class="nc bnc" id="L1203" title="All 2 branches missed.">      message = &quot;Logs exported &quot; + (purge? &quot;and purged&quot; : &quot;&quot;) + &quot; successfully&quot;;</span>
+<span class="nc" id="L1204">    } catch (final IOException e1) {</span>
+<span class="nc" id="L1205">      logger.error(&quot;Cannot write to file since {}&quot;, e1.getMessage());</span>
+<span class="nc" id="L1206">      return message + &quot; but cannot save file as export&quot;;</span>
+<span class="nc" id="L1207">    }</span>
+<span class="nc" id="L1208">    return message;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

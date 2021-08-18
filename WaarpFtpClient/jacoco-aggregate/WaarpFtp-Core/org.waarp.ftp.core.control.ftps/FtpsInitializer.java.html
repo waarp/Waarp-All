@@ -47,34 +47,33 @@ public class FtpsInitializer extends FtpInitializer {
    */
   public FtpsInitializer(final Class&lt;? extends BusinessHandler&gt; businessHandler,
                          final FtpConfiguration configuration) {
-<span class="fc" id="L50">    super(businessHandler, configuration);</span>
-<span class="fc" id="L51">  }</span>
+<span class="nc" id="L50">    super(businessHandler, configuration);</span>
+<span class="nc" id="L51">  }</span>
 
   /**
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
   public void initChannel(final SocketChannel ch) throws Exception {
-<span class="fc" id="L58">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="nc" id="L58">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Server: no renegotiation still, but possible clientAuthent
-<span class="fc" id="L60">    final SslHandler handler = waarpSslContextFactory.initInitializer(true,</span>
-                                                                      waarpSslContextFactory
-<span class="fc" id="L62">                                                                          .needClientAuthentication());</span>
-<span class="fc" id="L63">    pipeline.addLast(&quot;SSL&quot;, handler);</span>
+<span class="nc" id="L60">    final SslHandler handler = waarpSslContextFactory.createHandlerServer(</span>
+<span class="nc" id="L61">        waarpSslContextFactory.needClientAuthentication(), ch);</span>
+<span class="nc" id="L62">    pipeline.addLast(&quot;SSL&quot;, handler);</span>
     // Add the text line codec combination first,
-<span class="fc" id="L65">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, delimiter));</span>
-<span class="fc" id="L66">    pipeline.addLast(&quot;decoder&quot;, ftpControlStringDecoder);</span>
-<span class="fc" id="L67">    pipeline.addLast(&quot;encoder&quot;, ftpControlStringEncoder);</span>
+<span class="nc" id="L64">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, delimiter));</span>
+<span class="nc" id="L65">    pipeline.addLast(&quot;decoder&quot;, ftpControlStringDecoder);</span>
+<span class="nc" id="L66">    pipeline.addLast(&quot;encoder&quot;, ftpControlStringEncoder);</span>
     // Threaded execution for business logic
 
-<span class="fc" id="L70">    final EventExecutorGroup executorGroup =</span>
-<span class="fc" id="L71">        configuration.getFtpInternalConfiguration().getExecutor();</span>
+<span class="nc" id="L69">    final EventExecutorGroup executorGroup =</span>
+<span class="nc" id="L70">        configuration.getFtpInternalConfiguration().getExecutor();</span>
     // and then business logic. New one on every connection
-<span class="fc" id="L73">    final BusinessHandler newbusiness =</span>
-<span class="fc" id="L74">        businessHandler.getDeclaredConstructor().newInstance();</span>
-<span class="fc" id="L75">    final SslNetworkHandler newNetworkHandler =</span>
+<span class="nc" id="L72">    final BusinessHandler newbusiness =</span>
+<span class="nc" id="L73">        businessHandler.getDeclaredConstructor().newInstance();</span>
+<span class="nc" id="L74">    final SslNetworkHandler newNetworkHandler =</span>
         new SslNetworkHandler(new FtpSession(configuration, newbusiness));
-<span class="fc" id="L77">    pipeline.addLast(executorGroup, &quot;handler&quot;, newNetworkHandler);</span>
-<span class="fc" id="L78">  }</span>
+<span class="nc" id="L76">    pipeline.addLast(executorGroup, &quot;handler&quot;, newNetworkHandler);</span>
+<span class="nc" id="L77">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

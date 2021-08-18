@@ -190,8 +190,8 @@
 <a class="jxr_linenumber" name="L182" href="#L182">182</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> loadServerParam(<strong class="jxr_keyword">final</strong> <a name="Configuration" href="../../../../../org/waarp/openr66/protocol/configuration/Configuration.html#Configuration">Configuration</a> config) {
 <a class="jxr_linenumber" name="L183" href="#L183">183</a>     <a name="XmlHash" href="../../../../../org/waarp/common/xml/XmlHa<a name="XmlHash" href="../../../../../org/waarp/common/xml/XmlHash.html#XmlHash">XmlHash</a>#XmlHash">XmlHash</a> hashConfigSub = <strong class="jxr_keyword">new</strong> <a name="XmlHash" href="../../../../../org/waarp/common/xml/XmlHash.html#XmlHash">XmlHash</a>(hashConfig.get(XML_SERVER));
 <a class="jxr_linenumber" name="L184" href="#L184">184</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>       <strong class="jxr_keyword">return</strong> org.waarp.openr66.configuration.FileBasedConfiguration
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>           .loadServerConfig(config, hashConfigSub);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>       <strong class="jxr_keyword">return</strong> org.waarp.openr66.configuration.FileBasedConfiguration.loadServerConfig(
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>           config, hashConfigSub);
 <a class="jxr_linenumber" name="L187" href="#L187">187</a>     } <strong class="jxr_keyword">finally</strong> {
 <a class="jxr_linenumber" name="L188" href="#L188">188</a>       hashConfigSub.clear();
 <a class="jxr_linenumber" name="L189" href="#L189">189</a>       hashConfigSub = <strong class="jxr_keyword">null</strong>;
@@ -333,51 +333,52 @@
 <a class="jxr_linenumber" name="L325" href="#L325">325</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L326" href="#L326">326</a>       document = XmlUtil.getNewSaxReader().read(filename);
 <a class="jxr_linenumber" name="L327" href="#L327">327</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DocumentException e) {
-<a class="jxr_linenumber" name="L328" href="#L328">328</a>       logger.error(<span class="jxr_string">"Unable to read the XML Config file: "</span> + filename, e);
-<a class="jxr_linenumber" name="L329" href="#L329">329</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L330" href="#L330">330</a>     }
-<a class="jxr_linenumber" name="L331" href="#L331">331</a>     <strong class="jxr_keyword">if</strong> (document == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L332" href="#L332">332</a>       logger.error(<span class="jxr_string">"Unable to read the XML Config file: "</span> + filename);
-<a class="jxr_linenumber" name="L333" href="#L333">333</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L334" href="#L334">334</a>     }
-<a class="jxr_linenumber" name="L335" href="#L335">335</a>     <a name="XmlValue" href="../../../../../org/waarp/common/xml/XmlValue.html#XmlValue">XmlValue</a>[] configuration = XmlUtil.read(document, configServer);
-<a class="jxr_linenumber" name="L336" href="#L336">336</a>     hashConfig = <strong class="jxr_keyword">new</strong> <a name="XmlHash" href="../../../../../org/waarp/common/xml/XmlHash.html#XmlHash">XmlHash</a>(configuration);
-<a class="jxr_linenumber" name="L337" href="#L337">337</a>     <strong class="jxr_keyword">final</strong> <a name="XmlRootHash" href="../../../../../org/waarp/common/xml/Xml<a name="XmlRootHash" href="../../../../../org/waarp/common/xml/XmlRootHash.html#XmlRootHash">XmlRootHash</a>ml#XmlRootHash">XmlRootHash</a> xmlRootHash = <strong class="jxr_keyword">new</strong> <a name="XmlRootHash" href="../../../../../org/waarp/common/xml/XmlRootHash.html#XmlRootHash">XmlRootHash</a>(configuration);
-<a class="jxr_linenumber" name="L338" href="#L338">338</a>     setXmlRootHash(xmlRootHash);
-<a class="jxr_linenumber" name="L339" href="#L339">339</a>     <em class="jxr_comment">// Now read the configuration</em>
-<a class="jxr_linenumber" name="L340" href="#L340">340</a>     <strong class="jxr_keyword">if</strong> (!loadIdentity(config, xmlRootHash)) {
-<a class="jxr_linenumber" name="L341" href="#L341">341</a>       logger.error(<span class="jxr_string">"Cannot load Identity"</span>);
-<a class="jxr_linenumber" name="L342" href="#L342">342</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L343" href="#L343">343</a>     }
-<a class="jxr_linenumber" name="L344" href="#L344">344</a>     <strong class="jxr_keyword">if</strong> (!loadDatabase(config)) {
-<a class="jxr_linenumber" name="L345" href="#L345">345</a>       logger.error(<span class="jxr_string">"Cannot load Database configuration"</span>);
-<a class="jxr_linenumber" name="L346" href="#L346">346</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L347" href="#L347">347</a>     }
-<a class="jxr_linenumber" name="L348" href="#L348">348</a>     <strong class="jxr_keyword">if</strong> (!loadServerParam(config)) {
-<a class="jxr_linenumber" name="L349" href="#L349">349</a>       logger.error(<span class="jxr_string">"Cannot load Server Parameters"</span>);
-<a class="jxr_linenumber" name="L350" href="#L350">350</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L351" href="#L351">351</a>     }
-<a class="jxr_linenumber" name="L352" href="#L352">352</a>     <strong class="jxr_keyword">if</strong> (!loadDirectory(config)) {
-<a class="jxr_linenumber" name="L353" href="#L353">353</a>       logger.error(<span class="jxr_string">"Cannot load Directory configuration"</span>);
-<a class="jxr_linenumber" name="L354" href="#L354">354</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L355" href="#L355">355</a>     }
-<a class="jxr_linenumber" name="L356" href="#L356">356</a>     loadLimit(config, false);
-<a class="jxr_linenumber" name="L357" href="#L357">357</a>     <strong class="jxr_keyword">if</strong> (config.isUseSSL() &amp;&amp; !loadSsl(config, xmlRootHash)) {
-<a class="jxr_linenumber" name="L358" href="#L358">358</a>       logger.error(<span class="jxr_string">"Cannot load SSL configuration"</span>);
-<a class="jxr_linenumber" name="L359" href="#L359">359</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L360" href="#L360">360</a>     }
-<a class="jxr_linenumber" name="L361" href="#L361">361</a>     <strong class="jxr_keyword">if</strong> (!loadNetworkServer(config)) {
-<a class="jxr_linenumber" name="L362" href="#L362">362</a>       logger.error(<span class="jxr_string">"Cannot load Network configuration"</span>);
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L364" href="#L364">364</a>     }
-<a class="jxr_linenumber" name="L365" href="#L365">365</a>     hashConfig.clear();
-<a class="jxr_linenumber" name="L366" href="#L366">366</a>     hashConfig = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L367" href="#L367">367</a>     xmlRootHash.clear();
-<a class="jxr_linenumber" name="L368" href="#L368">368</a>     configuration = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L370" href="#L370">370</a>   }
-<a class="jxr_linenumber" name="L371" href="#L371">371</a> 
-<a class="jxr_linenumber" name="L372" href="#L372">372</a> }
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>       logger.error(<span class="jxr_string">"Unable to read the XML Config file: "</span> + filename + <span class="jxr_string">": {}"</span>,
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>                    e.getMessage());
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>     }
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>     <strong class="jxr_keyword">if</strong> (document == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>       logger.error(<span class="jxr_string">"Unable to read the XML Config file: "</span> + filename);
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L335" href="#L335">335</a>     }
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>     <a name="XmlValue" href="../../../../../org/waarp/common/xml/XmlValue.html#XmlValue">XmlValue</a>[] configuration = XmlUtil.read(document, configServer);
+<a class="jxr_linenumber" name="L337" href="#L337">337</a>     hashConfig = <strong class="jxr_keyword">new</strong> <a name="XmlHash" href="../../../../../org/waarp/common/xml/XmlHash.html#XmlHash">XmlHash</a>(configuration);
+<a class="jxr_linenumber" name="L338" href="#L338">338</a>     <strong class="jxr_keyword">final</strong> <a name="XmlRootHash" href="../../../../../org/waarp/common/xml/Xml<a name="XmlRootHash" href="../../../../../org/waarp/common/xml/XmlRootHash.html#XmlRootHash">XmlRootHash</a>ml#XmlRootHash">XmlRootHash</a> xmlRootHash = <strong class="jxr_keyword">new</strong> <a name="XmlRootHash" href="../../../../../org/waarp/common/xml/XmlRootHash.html#XmlRootHash">XmlRootHash</a>(configuration);
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>     setXmlRootHash(xmlRootHash);
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>     <em class="jxr_comment">// Now read the configuration</em>
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>     <strong class="jxr_keyword">if</strong> (!loadIdentity(config, xmlRootHash)) {
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>       logger.error(<span class="jxr_string">"Cannot load Identity"</span>);
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L344" href="#L344">344</a>     }
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>     <strong class="jxr_keyword">if</strong> (!loadDatabase(config)) {
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>       logger.error(<span class="jxr_string">"Cannot load Database configuration"</span>);
+<a class="jxr_linenumber" name="L347" href="#L347">347</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>     }
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>     <strong class="jxr_keyword">if</strong> (!loadServerParam(config)) {
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>       logger.error(<span class="jxr_string">"Cannot load Server Parameters"</span>);
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>     }
+<a class="jxr_linenumber" name="L353" href="#L353">353</a>     <strong class="jxr_keyword">if</strong> (!loadDirectory(config)) {
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>       logger.error(<span class="jxr_string">"Cannot load Directory configuration"</span>);
+<a class="jxr_linenumber" name="L355" href="#L355">355</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>     }
+<a class="jxr_linenumber" name="L357" href="#L357">357</a>     loadLimit(config, false);
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>     <strong class="jxr_keyword">if</strong> (config.isUseSSL() &amp;&amp; !loadSsl(config, xmlRootHash)) {
+<a class="jxr_linenumber" name="L359" href="#L359">359</a>       logger.error(<span class="jxr_string">"Cannot load SSL configuration"</span>);
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>     }
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>     <strong class="jxr_keyword">if</strong> (!loadNetworkServer(config)) {
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>       logger.error(<span class="jxr_string">"Cannot load Network configuration"</span>);
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>     }
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>     hashConfig.clear();
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>     hashConfig = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>     xmlRootHash.clear();
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>     configuration = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>   }
+<a class="jxr_linenumber" name="L372" href="#L372">372</a> 
+<a class="jxr_linenumber" name="L373" href="#L373">373</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

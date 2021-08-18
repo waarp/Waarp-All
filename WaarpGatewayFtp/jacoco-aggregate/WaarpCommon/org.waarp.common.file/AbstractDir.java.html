@@ -27,6 +27,7 @@ import org.waarp.common.command.exception.Reply553Exception;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
@@ -39,12 +40,12 @@ import java.util.List;
 /**
  * Abstract Main Implementation of Directory
  */
-<span class="fc" id="L42">public abstract class AbstractDir implements DirInterface {</span>
+<span class="nc" id="L43">public abstract class AbstractDir implements DirInterface {</span>
   /**
    * Internal Logger
    */
-<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(AbstractDir.class);</span>
+<span class="nc" id="L47">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L48">      WaarpLoggerFactory.getLogger(AbstractDir.class);</span>
   /**
    * Current Directory
    */
@@ -72,32 +73,32 @@ import java.util.List;
    * Init Windows Support
    */
   static {
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    ISUNIX = !DetectionUtils.isWindows();</span>
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (!ISUNIX) {</span>
-<span class="nc" id="L77">      roots = File.listRoots();</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    ISUNIX = !DetectionUtils.isWindows();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (!ISUNIX) {</span>
+<span class="nc" id="L78">      roots = File.listRoots();</span>
     } else {
-<span class="fc" id="L79">      roots = new File[] { new File(&quot;/&quot;) };</span>
+<span class="nc" id="L80">      roots = new File[] { new File(&quot;/&quot;) };</span>
     }
-<span class="fc" id="L81">  }</span>
+<span class="nc" id="L82">  }</span>
 
   /**
    * @param file
    *
    * @return The corresponding Root file
    */
-  protected File getCorrespondingRoot(final File file) {
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (ISUNIX) {</span>
-<span class="nc" id="L90">      return new File(&quot;/&quot;);</span>
+  protected final File getCorrespondingRoot(final File file) {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (ISUNIX) {</span>
+<span class="nc" id="L91">      return new File(&quot;/&quot;);</span>
     }
-<span class="nc" id="L92">    final String path = file.getAbsolutePath();</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">    for (final File root : roots) {</span>
-<span class="nc bnc" id="L94" title="All 2 branches missed.">      if (path.startsWith(root.getAbsolutePath())) {</span>
-<span class="nc" id="L95">        return root;</span>
+<span class="nc" id="L93">    final String path = file.getAbsolutePath();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    for (final File root : roots) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (path.startsWith(root.getAbsolutePath())) {</span>
+<span class="nc" id="L96">        return root;</span>
       }
     }
     // hack !
-<span class="nc" id="L99">    logger.warn(&quot;No root found for &quot; + file.getAbsolutePath());</span>
-<span class="nc" id="L100">    return roots[0];</span>
+<span class="nc" id="L100">    logger.warn(&quot;No root found for &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L101">    return roots[0];</span>
   }
 
   /**
@@ -108,7 +109,7 @@ import java.util.List;
    * @return the normalized path
    */
   public static String normalizePath(final String path) {
-<span class="fc" id="L111">    return path.replace('\\', SEPARATORCHAR);</span>
+<span class="nc" id="L112">    return path.replace('\\', SEPARATORCHAR);</span>
   }
 
   /**
@@ -122,58 +123,58 @@ import java.util.List;
    */
   public static String pathFromURI(String path) {
 
-<span class="fc bfc" id="L125" title="All 2 branches covered.">    if (path.startsWith(&quot;file://&quot;)) {</span>
-<span class="fc" id="L126">      int charToRemove = 7;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (path.startsWith(&quot;file://&quot;)) {</span>
+<span class="nc" id="L127">      int charToRemove = 7;</span>
 
-<span class="fc bfc" id="L128" title="All 4 branches covered.">      if (path.charAt(7) == '/' &amp;&amp; path.charAt(9) == ':') {</span>
-<span class="fc" id="L129">        charToRemove++;</span>
+<span class="nc bnc" id="L129" title="All 4 branches missed.">      if (path.charAt(7) == '/' &amp;&amp; path.charAt(9) == ':') {</span>
+<span class="nc" id="L130">        charToRemove++;</span>
       }
 
-<span class="fc" id="L132">      path = path.substring(charToRemove);</span>
-<span class="fc bfc" id="L133" title="All 2 branches covered.">      if (path.contains(&quot;%&quot;)) {</span>
+<span class="nc" id="L133">      path = path.substring(charToRemove);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (path.contains(&quot;%&quot;)) {</span>
         try {
-<span class="fc" id="L135">          path = URLDecoder.decode(path, WaarpStringUtils.UTF8.name());</span>
-<span class="nc" id="L136">        } catch (final UnsupportedEncodingException e) {</span>
-<span class="nc" id="L137">          logger.warn(&quot;Cannot convert filename to UTF-8: &quot; + path);</span>
-<span class="fc" id="L138">        } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L136">          path = URLDecoder.decode(path, WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L137">        } catch (final UnsupportedEncodingException e) {</span>
+<span class="nc" id="L138">          logger.warn(&quot;Cannot convert filename to UTF-8: &quot; + path);</span>
+<span class="nc" id="L139">        } catch (final IllegalArgumentException e) {</span>
           // ignore: it was propably not url-encoded!
-<span class="pc" id="L140">        }</span>
+<span class="nc" id="L141">        }</span>
       }
     }
-<span class="fc" id="L143">    return path;</span>
+<span class="nc" id="L144">    return path;</span>
   }
 
   /**
    * @return the SessionInterface
    */
   @Override
-  public SessionInterface getSession() {
-<span class="fc" id="L151">    return session;</span>
+  public final SessionInterface getSession() {
+<span class="nc" id="L152">    return session;</span>
   }
 
   @Override
-  public String validatePath(final String path)
+  public final String validatePath(final String path)
       throws CommandAbstractException {
     String extDir;
-<span class="fc bfc" id="L158" title="All 2 branches covered.">    if (isAbsolute(path)) {</span>
-<span class="fc" id="L159">      extDir = path;</span>
-<span class="fc" id="L160">      final File newDir = new File(extDir);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (isAbsolute(path)) {</span>
+<span class="nc" id="L160">      extDir = path;</span>
+<span class="nc" id="L161">      final File newDir = new File(extDir);</span>
       try {
-<span class="fc" id="L162">        return validatePath(newDir);</span>
-<span class="nc" id="L163">      } catch (final Reply553Exception e) {</span>
+<span class="nc" id="L163">        return validatePath(newDir);</span>
+<span class="nc" id="L164">      } catch (final Reply553Exception e) {</span>
         // ignore and continue as it could be not absolute
       }
     }
-<span class="fc bfc" id="L167" title="All 2 branches covered.">    if (path.charAt(0) == SEPARATORCHAR) {</span>
-<span class="fc" id="L168">      extDir = path;</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (path.charAt(0) == SEPARATORCHAR) {</span>
+<span class="nc" id="L169">      extDir = path;</span>
     } else {
-<span class="fc" id="L170">      extDir = currentDir + SEPARATOR + path;</span>
+<span class="nc" id="L171">      extDir = currentDir + SEPARATOR + path;</span>
     }
     // Get the baseDir (mount point)
-<span class="fc" id="L173">    final String baseDir = getSession().getAuth().getBaseDirectory();</span>
+<span class="nc" id="L174">    final String baseDir = getSession().getAuth().getBaseDirectory();</span>
     // Get the translated real file path (removing '..')
-<span class="fc" id="L175">    final File newDir = new File(baseDir, extDir);</span>
-<span class="fc" id="L176">    return validatePath(newDir);</span>
+<span class="nc" id="L176">    final File newDir = new File(baseDir, extDir);</span>
+<span class="nc" id="L177">    return validatePath(newDir);</span>
   }
 
   /**
@@ -182,14 +183,14 @@ import java.util.List;
    * @return True if the given Path is an absolute one under Windows System or
    *     should be an absolute one on Unix
    */
-  public boolean isAbsolute(final String path) {
-<span class="fc" id="L186">    File file = new File(path);</span>
-<span class="pc bpc" id="L187" title="1 of 2 branches missed.">    if (!ISUNIX) {</span>
-<span class="nc" id="L188">      return file.isAbsolute();</span>
+  public final boolean isAbsolute(final String path) {
+<span class="nc" id="L187">    File file = new File(path);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (!ISUNIX) {</span>
+<span class="nc" id="L189">      return file.isAbsolute();</span>
     } else {
-<span class="fc" id="L190">      file = file.getParentFile();</span>
-<span class="fc bfc" id="L191" title="All 6 branches covered.">      return file != null &amp;&amp; file.isAbsolute() &amp;&amp; file.isDirectory() &amp;&amp;</span>
-<span class="fc bfc" id="L192" title="All 2 branches covered.">             !file.getAbsolutePath().equals(File.separator);</span>
+<span class="nc" id="L191">      file = file.getParentFile();</span>
+<span class="nc bnc" id="L192" title="All 6 branches missed.">      return file != null &amp;&amp; file.isAbsolute() &amp;&amp; file.isDirectory() &amp;&amp;</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">             !file.getAbsolutePath().equals(File.separator);</span>
     }
   }
 
@@ -202,20 +203,20 @@ import java.util.List;
    *
    * @throws CommandAbstractException
    */
-  protected String consolidatePath(final String path)
+  protected final String consolidatePath(final String path)
       throws CommandAbstractException {
-<span class="pc bpc" id="L207" title="2 of 4 branches missed.">    if (path == null || path.isEmpty()) {</span>
-<span class="nc" id="L208">      throw new Reply501Exception(&quot;Path must not be empty&quot;);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(path)) {</span>
+<span class="nc" id="L209">      throw new Reply501Exception(&quot;Path must not be empty&quot;);</span>
     }
     // First check if the path is relative or absolute
-<span class="fc bfc" id="L211" title="All 2 branches covered.">    if (isAbsolute(path)) {</span>
-<span class="fc" id="L212">      return normalizePath(path);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (isAbsolute(path)) {</span>
+<span class="nc" id="L213">      return normalizePath(path);</span>
     }
-<span class="fc" id="L214">    String extDir = normalizePath(path);</span>
-<span class="fc bfc" id="L215" title="All 2 branches covered.">    if (extDir.charAt(0) != SEPARATORCHAR) {</span>
-<span class="fc" id="L216">      extDir = currentDir + SEPARATOR + extDir;</span>
+<span class="nc" id="L215">    String extDir = normalizePath(path);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (extDir.charAt(0) != SEPARATORCHAR) {</span>
+<span class="nc" id="L217">      extDir = currentDir + SEPARATOR + extDir;</span>
     }
-<span class="fc" id="L218">    return extDir;</span>
+<span class="nc" id="L219">    return extDir;</span>
   }
 
   /**
@@ -225,50 +226,50 @@ import java.util.List;
    *
    * @return the canonicalPath
    */
-  protected String getCanonicalPath(final File dir) {
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    if (ISUNIX) {</span>
+  protected final String getCanonicalPath(final File dir) {
+<span class="nc bnc" id="L230" title="All 2 branches missed.">    if (ISUNIX) {</span>
       // resolve it without getting symbolic links
-<span class="fc" id="L231">      final StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L232">      final StringBuilder builder = new StringBuilder();</span>
       // Get the path in reverse order from end to start
-<span class="fc" id="L233">      final List&lt;String&gt; list = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L234">      File newdir = dir;</span>
-<span class="fc" id="L235">      String lastdir = newdir.getName();</span>
-<span class="fc" id="L236">      list.add(lastdir);</span>
-<span class="fc" id="L237">      File parent = newdir.getParentFile();</span>
-<span class="fc bfc" id="L238" title="All 2 branches covered.">      while (parent != null) {</span>
-<span class="fc" id="L239">        newdir = parent;</span>
-<span class="fc" id="L240">        lastdir = newdir.getName();</span>
-<span class="fc" id="L241">        list.add(lastdir);</span>
-<span class="fc" id="L242">        parent = newdir.getParentFile();</span>
+<span class="nc" id="L234">      final List&lt;String&gt; list = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L235">      File newdir = dir;</span>
+<span class="nc" id="L236">      String lastdir = newdir.getName();</span>
+<span class="nc" id="L237">      list.add(lastdir);</span>
+<span class="nc" id="L238">      File parent = newdir.getParentFile();</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">      while (parent != null) {</span>
+<span class="nc" id="L240">        newdir = parent;</span>
+<span class="nc" id="L241">        lastdir = newdir.getName();</span>
+<span class="nc" id="L242">        list.add(lastdir);</span>
+<span class="nc" id="L243">        parent = newdir.getParentFile();</span>
       }
       // Now filter on '..' or '.'
-<span class="fc bfc" id="L245" title="All 2 branches covered.">      for (int i = list.size() - 1; i &gt;= 0; i--) {</span>
-<span class="fc" id="L246">        final String curdir = list.get(i);</span>
-<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        if (&quot;.&quot;.equals(curdir)) {</span>
-<span class="nc" id="L248">          list.remove(i);// removes '.'</span>
-<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        } else if (&quot;..&quot;.equals(curdir)) {</span>
-<span class="nc" id="L250">          list.remove(i);// removes '..'</span>
-<span class="nc" id="L251">          final int len = list.size();</span>
-<span class="nc bnc" id="L252" title="All 4 branches missed.">          if (len &gt; 0 &amp;&amp; i &lt; len) {</span>
-<span class="nc" id="L253">            list.remove(i);// and removes parent dir</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">      for (int i = list.size() - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L247">        final String curdir = list.get(i);</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (&quot;.&quot;.equals(curdir)) {</span>
+<span class="nc" id="L249">          list.remove(i);// removes '.'</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        } else if (&quot;..&quot;.equals(curdir)) {</span>
+<span class="nc" id="L251">          list.remove(i);// removes '..'</span>
+<span class="nc" id="L252">          final int len = list.size();</span>
+<span class="nc bnc" id="L253" title="All 4 branches missed.">          if (len &gt; 0 &amp;&amp; i &lt; len) {</span>
+<span class="nc" id="L254">            list.remove(i);// and removes parent dir</span>
           }
         }
       }
-<span class="pc bpc" id="L257" title="1 of 2 branches missed.">      if (list.isEmpty()) {</span>
-<span class="nc" id="L258">        return &quot;/&quot;;</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">      if (list.isEmpty()) {</span>
+<span class="nc" id="L259">        return &quot;/&quot;;</span>
       }
 
-<span class="fc bfc" id="L261" title="All 2 branches covered.">      for (int i = list.size() - 1; i &gt;= 0; i--) {</span>
-<span class="fc" id="L262">        builder.append('/').append(list.get(i));</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">      for (int i = list.size() - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L263">        builder.append('/').append(list.get(i));</span>
       }
-<span class="fc" id="L264">      return builder.toString();</span>
+<span class="nc" id="L265">      return builder.toString();</span>
     }
     // Windows version
     // no link so just use the default version of canonical Path
     try {
-<span class="nc" id="L269">      return dir.getCanonicalPath();</span>
-<span class="nc" id="L270">    } catch (final IOException e) {</span>
-<span class="nc" id="L271">      return dir.getAbsolutePath();</span>
+<span class="nc" id="L270">      return dir.getCanonicalPath();</span>
+<span class="nc" id="L271">    } catch (final IOException e) {</span>
+<span class="nc" id="L272">      return dir.getAbsolutePath();</span>
     }
   }
 
@@ -283,37 +284,37 @@ import java.util.List;
    *
    * @throws CommandAbstractException
    */
-  protected String validatePath(final File dir)
+  protected final String validatePath(final File dir)
       throws CommandAbstractException {
     String extDir;
-<span class="fc" id="L289">    extDir = normalizePath(getCanonicalPath(dir));</span>
+<span class="nc" id="L290">    extDir = normalizePath(getCanonicalPath(dir));</span>
     // Get the relative business path
-<span class="fc" id="L291">    extDir = getSession().getAuth().getRelativePath(extDir);</span>
+<span class="nc" id="L292">    extDir = getSession().getAuth().getRelativePath(extDir);</span>
     // Check if this business path is valid
-<span class="pc bpc" id="L293" title="1 of 2 branches missed.">    if (getSession().getAuth().isBusinessPathValid(extDir)) {</span>
-<span class="fc" id="L294">      return extDir;</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">    if (getSession().getAuth().isBusinessPathValid(extDir)) {</span>
+<span class="nc" id="L295">      return extDir;</span>
     }
-<span class="nc" id="L296">    throw new Reply553Exception(&quot;Pathname not allowed&quot;);</span>
+<span class="nc" id="L297">    throw new Reply553Exception(&quot;Pathname not allowed&quot;);</span>
   }
 
   @Override
-  public boolean isPathInCurrentDir(final String path) {
+  public final boolean isPathInCurrentDir(final String path) {
     final String extDir;
-<span class="pc bpc" id="L302" title="1 of 2 branches missed.">    if (isAbsolute(path)) {</span>
-<span class="nc" id="L303">      extDir = path;</span>
-<span class="nc" id="L304">      final File newDir = new File(extDir);</span>
-<span class="nc" id="L305">      return isPathInCurrentDir(newDir);</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (isAbsolute(path)) {</span>
+<span class="nc" id="L304">      extDir = path;</span>
+<span class="nc" id="L305">      final File newDir = new File(extDir);</span>
+<span class="nc" id="L306">      return isPathInCurrentDir(newDir);</span>
     }
-<span class="pc bpc" id="L307" title="1 of 2 branches missed.">    if (path.charAt(0) == SEPARATORCHAR) {</span>
-<span class="fc" id="L308">      extDir = path;</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">    if (path.charAt(0) == SEPARATORCHAR) {</span>
+<span class="nc" id="L309">      extDir = path;</span>
     } else {
-<span class="nc" id="L310">      extDir = currentDir + SEPARATOR + path;</span>
+<span class="nc" id="L311">      extDir = currentDir + SEPARATOR + path;</span>
     }
     // Get the baseDir (mount point)
-<span class="fc" id="L313">    final String baseDir = getSession().getAuth().getBaseDirectory();</span>
+<span class="nc" id="L314">    final String baseDir = getSession().getAuth().getBaseDirectory();</span>
     // Get the translated real file path (removing '..')
-<span class="fc" id="L315">    final File newDir = new File(baseDir, extDir);</span>
-<span class="fc" id="L316">    return isPathInCurrentDir(newDir);</span>
+<span class="nc" id="L316">    final File newDir = new File(baseDir, extDir);</span>
+<span class="nc" id="L317">    return isPathInCurrentDir(newDir);</span>
   }
 
   /**
@@ -325,17 +326,17 @@ import java.util.List;
    *
    * @throws CommandAbstractException
    */
-  protected boolean isPathInCurrentDir(final File dir) {
+  protected final boolean isPathInCurrentDir(final File dir) {
     String extDir;
-<span class="fc" id="L330">    extDir = normalizePath(getCanonicalPath(dir));</span>
+<span class="nc" id="L331">    extDir = normalizePath(getCanonicalPath(dir));</span>
     // Get the relative business path
-<span class="fc" id="L332">    extDir = getSession().getAuth().getRelativePath(extDir);</span>
+<span class="nc" id="L333">    extDir = getSession().getAuth().getRelativePath(extDir);</span>
     // Check if this business path is valid
-<span class="pc bpc" id="L334" title="1 of 2 branches missed.">    if (extDir.startsWith(currentDir)) {</span>
-<span class="fc" id="L335">      return true;</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">    if (extDir.startsWith(currentDir)) {</span>
+<span class="nc" id="L336">      return true;</span>
     }
-<span class="nc" id="L337">    logger.warn(&quot;File not OK: {} not in {}&quot;, extDir, currentDir);</span>
-<span class="nc" id="L338">    return false;</span>
+<span class="nc" id="L338">    logger.warn(&quot;File not OK: {} not in {}&quot;, extDir, currentDir);</span>
+<span class="nc" id="L339">    return false;</span>
   }
 
   /**
@@ -359,50 +360,50 @@ import java.util.List;
       throws CommandAbstractException;
 
   @Override
-  public String getPwd() {
-<span class="fc" id="L363">    return currentDir;</span>
+  public final String getPwd() {
+<span class="nc" id="L364">    return currentDir;</span>
   }
 
   @Override
-  public boolean changeParentDirectory() throws CommandAbstractException {
-<span class="nc" id="L368">    return changeDirectory(&quot;..&quot;);</span>
+  public final boolean changeParentDirectory() throws CommandAbstractException {
+<span class="nc" id="L369">    return changeDirectory(&quot;..&quot;);</span>
   }
 
   @Override
   public FileInterface setFile(final String path, final boolean append)
       throws CommandAbstractException {
-<span class="fc" id="L374">    checkIdentify();</span>
-<span class="fc" id="L375">    final String newpath = consolidatePath(path);</span>
-<span class="fc" id="L376">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
-<span class="pc bpc" id="L377" title="1 of 2 branches missed.">    if (paths.size() != 1) {</span>
-<span class="nc" id="L378">      throw new Reply550Exception(</span>
-<span class="nc" id="L379">          &quot;File not found: &quot; + paths.size() + &quot; founds&quot;);</span>
+<span class="nc" id="L375">    checkIdentify();</span>
+<span class="nc" id="L376">    final String newpath = consolidatePath(path);</span>
+<span class="nc" id="L377">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">    if (paths.size() != 1) {</span>
+<span class="nc" id="L379">      throw new Reply550Exception(</span>
+<span class="nc" id="L380">          &quot;File not found: &quot; + paths.size() + &quot; founds&quot;);</span>
     }
-<span class="fc" id="L381">    final String extDir = paths.get(0);</span>
-<span class="fc" id="L382">    return newFile(extDir, append);</span>
+<span class="nc" id="L382">    final String extDir = paths.get(0);</span>
+<span class="nc" id="L383">    return newFile(extDir, append);</span>
   }
 
   @Override
-  public void checkIdentify() throws Reply530Exception {
-<span class="fc bfc" id="L387" title="All 2 branches covered.">    if (!getSession().getAuth().isIdentified()) {</span>
-<span class="fc" id="L388">      throw new Reply530Exception(&quot;User not authentified&quot;);</span>
+  public final void checkIdentify() throws Reply530Exception {
+<span class="nc bnc" id="L388" title="All 2 branches missed.">    if (!getSession().getAuth().isIdentified()) {</span>
+<span class="nc" id="L389">      throw new Reply530Exception(&quot;User not authentified&quot;);</span>
     }
-<span class="fc" id="L390">  }</span>
+<span class="nc" id="L391">  }</span>
 
   @Override
-  public void clear() {
-<span class="fc" id="L394">    currentDir = null;</span>
-<span class="fc" id="L395">  }</span>
+  public final void clear() {
+<span class="nc" id="L395">    currentDir = null;</span>
+<span class="nc" id="L396">  }</span>
 
   @Override
-  public void initAfterIdentification() {
-<span class="fc" id="L399">    currentDir = getSession().getAuth().getBusinessPath();</span>
-<span class="fc" id="L400">  }</span>
+  public final void initAfterIdentification() {
+<span class="nc" id="L400">    currentDir = getSession().getAuth().getBusinessPath();</span>
+<span class="nc" id="L401">  }</span>
 
   @Override
-  public OptsMLSxInterface getOptsMLSx() {
-<span class="fc" id="L404">    return optsMLSx;</span>
+  public final OptsMLSxInterface getOptsMLSx() {
+<span class="nc" id="L405">    return optsMLSx;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

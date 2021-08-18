@@ -77,7 +77,7 @@ public class FtpInternalConfiguration {
   /**
    * Number of retry before error
    */
-  public static final int RETRYNB = 3;
+  public static final int RETRYNB = 10;
 
   /**
    * Hack to say Windows or Unix (USR1 not OK on Windows)
@@ -90,6 +90,11 @@ public class FtpInternalConfiguration {
    * ChannelGroup
    */
   private ChannelGroup commandChannelGroup;
+
+  /**
+   * ExecutorService Server
+   */
+  private final EventLoopGroup execServer;
 
   /**
    * ExecutorService Worker
@@ -113,6 +118,11 @@ public class FtpInternalConfiguration {
   private final EventLoopGroup execDataEvent;
 
   /**
+   * ExecutorService Data Active Server
+   */
+  private final EventLoopGroup execDataServer;
+
+  /**
    * ExecutorService Data Active Worker
    */
   private final EventLoopGroup execDataWorker;
@@ -120,7 +130,7 @@ public class FtpInternalConfiguration {
   /**
    * FtpSession references used by Data Connection process
    */
-<span class="nc" id="L123">  private final FtpSessionReference ftpSessionReference =</span>
+<span class="nc" id="L133">  private final FtpSessionReference ftpSessionReference =</span>
       new FtpSessionReference();
 
   /**
@@ -136,9 +146,10 @@ public class FtpInternalConfiguration {
   /**
    * Scheduler for TrafficCounter
    */
-<span class="nc" id="L139">  private final ScheduledExecutorService executorService = Executors</span>
-<span class="nc" id="L140">      .newScheduledThreadPool(2,</span>
-                              new WaarpThreadFactory(&quot;TimerTrafficFtp&quot;, false));
+<span class="nc" id="L149">  private final ScheduledExecutorService executorService =</span>
+<span class="nc" id="L150">      Executors.newScheduledThreadPool(2,</span>
+                                       new WaarpThreadFactory(&quot;TimerTrafficFtp&quot;,
+                                                              false));
 
   /**
    * Global TrafficCounter (set from global configuration)
@@ -176,23 +187,23 @@ public class FtpInternalConfiguration {
     /**
      * Number of binded Data connections
      */
-<span class="nc" id="L179">    public final AtomicInteger nbBind = new AtomicInteger();</span>
+<span class="nc" id="L190">    public final AtomicInteger nbBind = new AtomicInteger();</span>
 
     /**
      * Constructor
      *
      * @param channel
      */
-<span class="nc" id="L186">    public BindAddress(final Channel channel) {</span>
-<span class="nc" id="L187">      parent = channel;</span>
-<span class="nc" id="L188">      nbBind.set(0);</span>
-<span class="nc" id="L189">    }</span>
+<span class="nc" id="L197">    public BindAddress(final Channel channel) {</span>
+<span class="nc" id="L198">      parent = channel;</span>
+<span class="nc" id="L199">      nbBind.set(0);</span>
+<span class="nc" id="L200">    }</span>
   }
 
   /**
    * List of already bind local addresses for Passive connections
    */
-<span class="nc" id="L195">  private final ConcurrentHashMap&lt;InetSocketAddress, BindAddress&gt;</span>
+<span class="nc" id="L206">  private final ConcurrentHashMap&lt;InetSocketAddress, BindAddress&gt;</span>
       hashBindPassiveDataConn =
       new ConcurrentHashMap&lt;InetSocketAddress, BindAddress&gt;();
 
@@ -206,147 +217,152 @@ public class FtpInternalConfiguration {
    *
    * @param configuration
    */
-<span class="nc" id="L209">  public FtpInternalConfiguration(final FtpConfiguration configuration) {</span>
-<span class="nc" id="L210">    this.configuration = configuration;</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">    isUnix = !DetectionUtils.isWindows();</span>
-<span class="nc" id="L212">    configuration.getShutdownConfiguration().timeout =</span>
-<span class="nc" id="L213">        configuration.getTimeoutCon();</span>
-<span class="nc" id="L214">    new FtpShutdownHook(configuration.getShutdownConfiguration(),</span>
+<span class="nc" id="L220">  public FtpInternalConfiguration(final FtpConfiguration configuration) {</span>
+<span class="nc" id="L221">    this.configuration = configuration;</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">    isUnix = !DetectionUtils.isWindows();</span>
+<span class="nc" id="L223">    configuration.getShutdownConfiguration().timeout =</span>
+<span class="nc" id="L224">        configuration.getTimeoutCon();</span>
+<span class="nc" id="L225">    new FtpShutdownHook(configuration.getShutdownConfiguration(),</span>
                         configuration);
-<span class="nc" id="L216">    execCommandEvent = new NioEventLoopGroup(configuration.getClientThread(),</span>
+<span class="nc" id="L227">    execCommandEvent = new NioEventLoopGroup(configuration.getClientThread(),</span>
                                              new WaarpThreadFactory(&quot;Command&quot;));
-<span class="nc" id="L218">    execDataEvent = new NioEventLoopGroup(configuration.getClientThread(),</span>
+<span class="nc" id="L229">    execDataEvent = new NioEventLoopGroup(configuration.getClientThread(),</span>
                                           new WaarpThreadFactory(&quot;Data&quot;));
-<span class="nc" id="L220">    execWorker = new NioEventLoopGroup(configuration.getClientThread(),</span>
+<span class="nc" id="L231">    execServer = new NioEventLoopGroup(configuration.getServerThread(),</span>
+                                       new WaarpThreadFactory(&quot;CommandServer&quot;));
+<span class="nc" id="L233">    execWorker = new NioEventLoopGroup(configuration.getClientThread(),</span>
                                        new WaarpThreadFactory(&quot;CommandWorker&quot;));
-<span class="nc" id="L222">    execDataWorker = new NioEventLoopGroup(configuration.getClientThread() * 2,</span>
+<span class="nc" id="L235">    execDataServer = new NioEventLoopGroup(configuration.getServerThread(),</span>
+                                           new WaarpThreadFactory(
+                                               &quot;DataServer&quot;));
+<span class="nc" id="L238">    execDataWorker = new NioEventLoopGroup(configuration.getClientThread() * 2,</span>
                                            new WaarpThreadFactory(
                                                &quot;DataWorker&quot;));
-<span class="nc" id="L225">  }</span>
+<span class="nc" id="L241">  }</span>
 
   /**
    * Startup the server
    *
    * @throws FtpNoConnectionException
    */
-  public void serverStartup() throws FtpNoConnectionException {
-<span class="nc" id="L233">    logger.debug(&quot;Start groups&quot;);</span>
+  public final void serverStartup() throws FtpNoConnectionException {
+<span class="nc" id="L249">    logger.debug(&quot;Start groups&quot;);</span>
     // Command
-<span class="nc" id="L235">    commandChannelGroup =</span>
-<span class="nc" id="L236">        new DefaultChannelGroup(configuration.fromClass.getName(),</span>
-<span class="nc" id="L237">                                execWorker.next());</span>
+<span class="nc" id="L251">    commandChannelGroup =</span>
+<span class="nc" id="L252">        new DefaultChannelGroup(configuration.fromClass.getName(),</span>
+<span class="nc" id="L253">                                execWorker.next());</span>
     // Data
-<span class="nc" id="L239">    dataChannelGroup =</span>
-<span class="nc" id="L240">        new DefaultChannelGroup(configuration.fromClass.getName() + &quot;.data&quot;,</span>
-<span class="nc" id="L241">                                execWorker.next());</span>
+<span class="nc" id="L255">    dataChannelGroup =</span>
+<span class="nc" id="L256">        new DefaultChannelGroup(configuration.fromClass.getName() + &quot;.data&quot;,</span>
+<span class="nc" id="L257">                                execWorker.next());</span>
 
-<span class="nc" id="L243">    logger.debug(&quot;Start data connections&quot;);</span>
+<span class="nc" id="L259">    logger.debug(&quot;Start data connections&quot;);</span>
     // Passive Data Connections
-<span class="nc" id="L245">    passiveBootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L246">    WaarpNettyUtil.setServerBootstrap(passiveBootstrap, execDataWorker,</span>
-<span class="nc" id="L247">                                      (int) configuration.getTimeoutCon(),</span>
-<span class="nc" id="L248">                                      configuration.getBlocksize() + 1024,</span>
+<span class="nc" id="L261">    passiveBootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L262">    WaarpNettyUtil.setServerBootstrap(passiveBootstrap, execDataServer,</span>
+                                      execDataWorker,
+<span class="nc" id="L264">                                      (int) configuration.getTimeoutCon(),</span>
+<span class="nc" id="L265">                                      configuration.getBlocksize() + 1024,</span>
                                       true);
-<span class="nc bnc" id="L250" title="All 2 branches missed.">    if (usingNativeSsl) {</span>
-<span class="nc" id="L251">      passiveBootstrap.childHandler(</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">    if (usingNativeSsl) {</span>
+<span class="nc" id="L268">      passiveBootstrap.childHandler(</span>
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, false));
     } else {
-<span class="nc" id="L255">      passiveBootstrap.childHandler(</span>
+<span class="nc" id="L272">      passiveBootstrap.childHandler(</span>
           new FtpDataInitializer(configuration.dataBusinessHandler,
                                  configuration, false));
     }
-<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (acceptAuthProt) {</span>
-<span class="nc" id="L260">      passiveSslBootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L261">      WaarpNettyUtil.setServerBootstrap(passiveSslBootstrap, execDataWorker,</span>
-<span class="nc" id="L262">                                        (int) configuration.getTimeoutCon(),</span>
-<span class="nc" id="L263">                                        configuration.getBlocksize() + 1024,</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (acceptAuthProt) {</span>
+<span class="nc" id="L277">      passiveSslBootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L278">      WaarpNettyUtil.setServerBootstrap(passiveSslBootstrap, execDataServer,</span>
+                                        execDataWorker,
+<span class="nc" id="L280">                                        (int) configuration.getTimeoutCon(),</span>
+<span class="nc" id="L281">                                        configuration.getBlocksize() + 1024,</span>
                                         true);
-<span class="nc" id="L265">      passiveSslBootstrap.childHandler(</span>
+<span class="nc" id="L283">      passiveSslBootstrap.childHandler(</span>
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, false));
     } else {
-<span class="nc" id="L269">      passiveSslBootstrap = passiveBootstrap;</span>
+<span class="nc" id="L287">      passiveSslBootstrap = passiveBootstrap;</span>
     }
 
     // Active Data Connections
-<span class="nc" id="L273">    activeBootstrap = new Bootstrap();</span>
-<span class="nc" id="L274">    WaarpNettyUtil.setBootstrap(activeBootstrap, execDataWorker,</span>
-<span class="nc" id="L275">                                (int) configuration.getTimeoutCon(),</span>
-<span class="nc" id="L276">                                configuration.getBlocksize() + 1024, true);</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">    if (usingNativeSsl) {</span>
-<span class="nc" id="L278">      activeBootstrap.handler(</span>
+<span class="nc" id="L291">    activeBootstrap = new Bootstrap();</span>
+<span class="nc" id="L292">    WaarpNettyUtil.setBootstrap(activeBootstrap, execDataWorker,</span>
+<span class="nc" id="L293">                                (int) configuration.getTimeoutCon(),</span>
+<span class="nc" id="L294">                                configuration.getBlocksize() + 1024, true);</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (usingNativeSsl) {</span>
+<span class="nc" id="L296">      activeBootstrap.handler(</span>
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, true));
     } else {
-<span class="nc" id="L282">      activeBootstrap.handler(</span>
+<span class="nc" id="L300">      activeBootstrap.handler(</span>
           new FtpDataInitializer(configuration.dataBusinessHandler,
                                  configuration, true));
     }
-<span class="nc bnc" id="L286" title="All 2 branches missed.">    if (acceptAuthProt) {</span>
-<span class="nc" id="L287">      activeSslBootstrap = new Bootstrap();</span>
-<span class="nc" id="L288">      WaarpNettyUtil.setBootstrap(activeSslBootstrap, execDataWorker,</span>
-<span class="nc" id="L289">                                  (int) configuration.getTimeoutCon(),</span>
-<span class="nc" id="L290">                                  configuration.getBlocksize() + 1024, true);</span>
-<span class="nc" id="L291">      activeSslBootstrap.handler(</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">    if (acceptAuthProt) {</span>
+<span class="nc" id="L305">      activeSslBootstrap = new Bootstrap();</span>
+<span class="nc" id="L306">      WaarpNettyUtil.setBootstrap(activeSslBootstrap, execDataWorker,</span>
+<span class="nc" id="L307">                                  (int) configuration.getTimeoutCon(),</span>
+<span class="nc" id="L308">                                  configuration.getBlocksize() + 1024, true);</span>
+<span class="nc" id="L309">      activeSslBootstrap.handler(</span>
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, true));
     } else {
-<span class="nc" id="L295">      activeSslBootstrap = activeBootstrap;</span>
+<span class="nc" id="L313">      activeSslBootstrap = activeBootstrap;</span>
     }
 
-<span class="nc" id="L298">    logger.debug(&quot;Start command connections {}&quot;, configuration.getServerPort());</span>
+<span class="nc" id="L316">    logger.debug(&quot;Start command connections {}&quot;, configuration.getServerPort());</span>
     // Main Command server
     /*
      * Bootstrap for Command server
      */
-<span class="nc" id="L303">    final ServerBootstrap serverBootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L304">    WaarpNettyUtil.setServerBootstrap(serverBootstrap, execWorker,</span>
-<span class="nc" id="L305">                                      (int) configuration.getTimeoutCon(),</span>
-<span class="nc" id="L306">                                      configuration.getBlocksize(), true);</span>
-<span class="nc bnc" id="L307" title="All 2 branches missed.">    if (usingNativeSsl) {</span>
-<span class="nc" id="L308">      serverBootstrap.childHandler(</span>
+<span class="nc" id="L321">    final ServerBootstrap serverBootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L322">    WaarpNettyUtil.setServerBootstrap(serverBootstrap, execServer, execWorker,</span>
+<span class="nc" id="L323">                                      (int) configuration.getTimeoutCon(),</span>
+<span class="nc" id="L324">                                      configuration.getBlocksize(), true);</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">    if (usingNativeSsl) {</span>
+<span class="nc" id="L326">      serverBootstrap.childHandler(</span>
           new FtpsInitializer(configuration.businessHandler, configuration));
     } else {
-<span class="nc" id="L311">      serverBootstrap.childHandler(</span>
+<span class="nc" id="L329">      serverBootstrap.childHandler(</span>
           new FtpInitializer(configuration.businessHandler, configuration));
     }
-<span class="nc" id="L314">    final InetSocketAddress socketAddress =</span>
-<span class="nc" id="L315">        new InetSocketAddress(configuration.getServerPort());</span>
-<span class="nc" id="L316">    ChannelFuture future = serverBootstrap.bind(socketAddress);</span>
+<span class="nc" id="L332">    final InetSocketAddress socketAddress =</span>
+<span class="nc" id="L333">        new InetSocketAddress(configuration.getServerPort());</span>
+<span class="nc" id="L334">    ChannelFuture future = serverBootstrap.bind(socketAddress);</span>
     try {
-<span class="nc" id="L318">      future = future.sync();</span>
-<span class="nc" id="L319">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L320">      logger.error(&quot;Cannot start command conections&quot;, e);</span>
-<span class="nc" id="L321">      throw new FtpNoConnectionException(&quot;Can't initiate the FTP server&quot;, e);</span>
-<span class="nc" id="L322">    }</span>
-<span class="nc bnc" id="L323" title="All 2 branches missed.">    if (!future.isSuccess()) {</span>
-<span class="nc" id="L324">      logger.error(&quot;Cannot start command conections&quot;);</span>
-<span class="nc" id="L325">      throw new FtpNoConnectionException(&quot;Can't initiate the FTP server&quot;);</span>
+<span class="nc" id="L336">      future = future.sync();</span>
+<span class="nc" id="L337">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L338">      logger.error(&quot;Cannot start command conections: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L339">      throw new FtpNoConnectionException(&quot;Can't initiate the FTP server&quot;, e);</span>
+<span class="nc" id="L340">    }</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">    if (!future.isSuccess()) {</span>
+<span class="nc" id="L342">      logger.error(&quot;Cannot start command conections&quot;);</span>
+<span class="nc" id="L343">      throw new FtpNoConnectionException(&quot;Can't initiate the FTP server&quot;);</span>
     }
-<span class="nc" id="L327">    FtpChannelUtils.addCommandChannel(future.channel(), configuration);</span>
+<span class="nc" id="L345">    FtpChannelUtils.addCommandChannel(future.channel(), configuration);</span>
 
     // Init Shutdown Hook handler
-<span class="nc" id="L330">    configuration.getShutdownConfiguration().timeout =</span>
-<span class="nc" id="L331">        configuration.getTimeoutCon();</span>
-<span class="nc" id="L332">    WaarpShutdownHook.addShutdownHook();</span>
+<span class="nc" id="L348">    configuration.getShutdownConfiguration().timeout =</span>
+<span class="nc" id="L349">        configuration.getTimeoutCon();</span>
+<span class="nc" id="L350">    WaarpShutdownHook.addShutdownHook();</span>
     // Factory for TrafficShapingHandler
-<span class="nc" id="L334">    globalTrafficShapingHandler =</span>
-        new FtpGlobalTrafficShapingHandler(executorService, configuration
-<span class="nc" id="L336">            .getServerGlobalWriteLimit(), configuration</span>
-<span class="nc" id="L337">                                               .getServerGlobalReadLimit(),</span>
-                                           configuration
-<span class="nc" id="L339">                                               .getServerChannelWriteLimit(),</span>
-                                           configuration
-<span class="nc" id="L341">                                               .getServerChannelReadLimit(),</span>
-<span class="nc" id="L342">                                           configuration.getDelayLimit());</span>
-<span class="nc" id="L343">  }</span>
+<span class="nc" id="L352">    globalTrafficShapingHandler =</span>
+        new FtpGlobalTrafficShapingHandler(executorService,
+<span class="nc" id="L354">                                           configuration.getServerGlobalWriteLimit(),</span>
+<span class="nc" id="L355">                                           configuration.getServerGlobalReadLimit(),</span>
+<span class="nc" id="L356">                                           configuration.getServerChannelWriteLimit(),</span>
+<span class="nc" id="L357">                                           configuration.getServerChannelReadLimit(),</span>
+<span class="nc" id="L358">                                           configuration.getDelayLimit());</span>
+<span class="nc" id="L359">  }</span>
 
   /**
    * @return an ExecutorService
    */
-  public ExecutorService getWorker() {
-<span class="nc" id="L349">    return execWorker;</span>
+  public final ExecutorService getWorker() {
+<span class="nc" id="L365">    return execWorker;</span>
   }
 
   /**
@@ -356,27 +372,21 @@ public class FtpInternalConfiguration {
    * @param fullIp
    * @param session
    */
-  public void setNewFtpSession(final InetAddress ipOnly,
-                               final InetSocketAddress fullIp,
-                               final FtpSession session) {
-<span class="nc" id="L362">    ftpSessionReference.setNewFtpSession(ipOnly, fullIp, session);</span>
-<span class="nc" id="L363">  }</span>
+  public final void setNewFtpSession(final InetAddress ipOnly,
+                                     final InetSocketAddress fullIp,
+                                     final FtpSession session) {
+<span class="nc" id="L378">    ftpSessionReference.setNewFtpSession(ipOnly, fullIp, session);</span>
+<span class="nc" id="L379">  }</span>
 
   /**
    * Return and remove the FtpSession
    *
    * @param channel
-   * @param active
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getFtpSession(final Channel channel, final boolean active,
-                                  final boolean remove) {
-<span class="nc bnc" id="L375" title="All 2 branches missed.">    if (active) {</span>
-<span class="nc" id="L376">      return ftpSessionReference.getActiveFtpSession(channel, remove);</span>
-    } else {
-<span class="nc" id="L378">      return ftpSessionReference.getPassiveFtpSession(channel, remove);</span>
-    }
+  public final FtpSession getFtpSession(final Channel channel) {
+<span class="nc" id="L389">    return ftpSessionReference.getPassiveFtpSession(channel);</span>
   }
 
   /**
@@ -385,29 +395,25 @@ public class FtpInternalConfiguration {
    * @param ipOnly
    * @param fullIp
    */
-  public void delFtpSession(final InetAddress ipOnly,
-                            final InetSocketAddress fullIp) {
-<span class="nc" id="L390">    ftpSessionReference.delFtpSession(ipOnly, fullIp);</span>
-<span class="nc" id="L391">  }</span>
-
-  /**
-   * Test if the couple of addresses is already in the context
-   *
-   * @param ipOnly
-   * @param fullIp
-   *
-   * @return True if the couple is present
-   */
-  public boolean hasFtpSession(final InetAddress ipOnly,
-                               final InetSocketAddress fullIp) {
-<span class="nc" id="L403">    return ftpSessionReference.contains(ipOnly, fullIp);</span>
-  }
+  public final void delFtpSession(final InetAddress ipOnly,
+                                  final InetSocketAddress fullIp) {
+<span class="nc" id="L400">    ftpSessionReference.delFtpSession(ipOnly, fullIp);</span>
+<span class="nc" id="L401">  }</span>
 
   /**
    * @return the number of Active Sessions
    */
-  public int getNumberSessions() {
-<span class="nc" id="L410">    return ftpSessionReference.sessionsNumber();</span>
+  public final int getNumberSessions() {
+<span class="nc" id="L407">    return ftpSessionReference.sessionsNumber();</span>
+  }
+
+  /**
+   * @param channel
+   *
+   * @return the FtpSession if found
+   */
+  public final FtpSession findPassiveFtpSession(final Channel channel) {
+<span class="nc" id="L416">    return ftpSessionReference.findPassive(channel);</span>
   }
 
   /**
@@ -418,45 +424,45 @@ public class FtpInternalConfiguration {
    *
    * @throws Reply425Exception in case the channel cannot be opened
    */
-  public void bindPassive(final InetSocketAddress address, final boolean ssl)
-      throws Reply425Exception {
-<span class="nc" id="L423">    configuration.bindLock();</span>
+  public final void bindPassive(final InetSocketAddress address,
+                                final boolean ssl) throws Reply425Exception {
+<span class="nc" id="L429">    configuration.bindLock();</span>
     try {
-<span class="nc" id="L425">      BindAddress bindAddress = hashBindPassiveDataConn.get(address);</span>
-<span class="nc bnc" id="L426" title="All 2 branches missed.">      if (bindAddress == null) {</span>
-<span class="nc" id="L427">        logger.debug(&quot;Bind really to {}&quot;, address);</span>
+<span class="nc" id="L431">      BindAddress bindAddress = hashBindPassiveDataConn.get(address);</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">      if (bindAddress == null) {</span>
+<span class="nc" id="L433">        logger.debug(&quot;Bind really to {}&quot;, address);</span>
         final Channel parentChannel;
         try {
           final ChannelFuture future;
-<span class="nc bnc" id="L431" title="All 2 branches missed.">          if (ssl) {</span>
-<span class="nc" id="L432">            future = passiveSslBootstrap.bind(address);</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">          if (ssl) {</span>
+<span class="nc" id="L438">            future = passiveSslBootstrap.bind(address);</span>
           } else {
-<span class="nc" id="L434">            future = passiveBootstrap.bind(address);</span>
+<span class="nc" id="L440">            future = passiveBootstrap.bind(address);</span>
           }
-<span class="nc bnc" id="L436" title="All 2 branches missed.">          if (future.await(configuration.getTimeoutCon())) {</span>
-<span class="nc" id="L437">            parentChannel = future.sync().channel();</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">          if (future.await(configuration.getTimeoutCon())) {</span>
+<span class="nc" id="L443">            parentChannel = future.sync().channel();</span>
           } else {
-<span class="nc" id="L439">            logger.warn(&quot;Cannot open passive connection due to Timeout&quot;);</span>
-<span class="nc" id="L440">            throw new Reply425Exception(</span>
+<span class="nc" id="L445">            logger.warn(&quot;Cannot open passive connection due to Timeout&quot;);</span>
+<span class="nc" id="L446">            throw new Reply425Exception(</span>
                 &quot;Cannot open a Passive Connection due to Timeout&quot;);
           }
-<span class="nc" id="L443">        } catch (final ChannelException e) {</span>
-<span class="nc" id="L444">          logger.warn(&quot;Cannot open passive connection {}&quot;, e.getMessage());</span>
-<span class="nc" id="L445">          throw new Reply425Exception(&quot;Cannot open a Passive Connection&quot;);</span>
-<span class="nc" id="L446">        } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L447">          logger.warn(&quot;Cannot open passive connection {}&quot;, e.getMessage());</span>
-<span class="nc" id="L448">          throw new Reply425Exception(&quot;Cannot open a Passive Connection&quot;);</span>
-<span class="nc" id="L449">        }</span>
-<span class="nc" id="L450">        bindAddress = new BindAddress(parentChannel);</span>
-<span class="nc" id="L451">        FtpChannelUtils.addDataChannel(parentChannel, configuration);</span>
-<span class="nc" id="L452">        hashBindPassiveDataConn.put(address, bindAddress);</span>
+<span class="nc" id="L449">        } catch (final ChannelException e) {</span>
+<span class="nc" id="L450">          logger.warn(&quot;Cannot open passive connection {}&quot;, e.getMessage());</span>
+<span class="nc" id="L451">          throw new Reply425Exception(&quot;Cannot open a Passive Connection&quot;);</span>
+<span class="nc" id="L452">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L453">          logger.warn(&quot;Cannot open passive connection {}&quot;, e.getMessage());</span>
+<span class="nc" id="L454">          throw new Reply425Exception(&quot;Cannot open a Passive Connection&quot;);</span>
+<span class="nc" id="L455">        }</span>
+<span class="nc" id="L456">        bindAddress = new BindAddress(parentChannel);</span>
+<span class="nc" id="L457">        FtpChannelUtils.addDataChannel(parentChannel, configuration);</span>
+<span class="nc" id="L458">        hashBindPassiveDataConn.put(address, bindAddress);</span>
       }
-<span class="nc" id="L454">      bindAddress.nbBind.getAndIncrement();</span>
-<span class="nc" id="L455">      logger.debug(&quot;Bind number to {} is {}&quot;, address, bindAddress.nbBind);</span>
+<span class="nc" id="L460">      bindAddress.nbBind.getAndIncrement();</span>
+<span class="nc" id="L461">      logger.debug(&quot;Bind number to {} is {}&quot;, address, bindAddress.nbBind);</span>
     } finally {
-<span class="nc" id="L457">      configuration.bindUnlock();</span>
+<span class="nc" id="L463">      configuration.bindUnlock();</span>
     }
-<span class="nc" id="L459">  }</span>
+<span class="nc" id="L465">  }</span>
 
   /**
    * Try to unbind (closing the parent channel) the Passive Channel listening
@@ -469,31 +475,33 @@ public class FtpInternalConfiguration {
    *
    * @param address
    */
-  public void unbindPassive(final InetSocketAddress address) {
-<span class="nc" id="L473">    configuration.bindLock();</span>
+  public final void unbindPassive(final InetSocketAddress address) {
+<span class="nc" id="L479">    configuration.bindLock();</span>
     try {
-<span class="nc" id="L475">      final BindAddress bindAddress = hashBindPassiveDataConn.get(address);</span>
-<span class="nc bnc" id="L476" title="All 2 branches missed.">      if (bindAddress != null) {</span>
-<span class="nc" id="L477">        bindAddress.nbBind.getAndDecrement();</span>
-<span class="nc" id="L478">        logger</span>
-<span class="nc" id="L479">            .debug(&quot;Bind number to {} left is {}&quot;, address, bindAddress.nbBind);</span>
-<span class="nc bnc" id="L480" title="All 2 branches missed.">        if (bindAddress.nbBind.get() == 0) {</span>
-<span class="nc" id="L481">          WaarpSslUtility.closingSslChannel(bindAddress.parent);</span>
-<span class="nc" id="L482">          hashBindPassiveDataConn.remove(address);</span>
-        }
+<span class="nc" id="L481">      final BindAddress bindAddress = hashBindPassiveDataConn.get(address);</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">      if (bindAddress != null) {</span>
+<span class="nc" id="L483">        bindAddress.nbBind.getAndDecrement();</span>
+<span class="nc" id="L484">        logger.debug(&quot;Bind number to {} left is {}&quot;, address,</span>
+                     bindAddress.nbBind);
+<span class="nc bnc" id="L486" title="All 2 branches missed.">        if (bindAddress.nbBind.get() == 0) {</span>
+<span class="nc" id="L487">          final ChannelFuture future =</span>
+<span class="nc" id="L488">              WaarpSslUtility.closingSslChannel(bindAddress.parent);</span>
+<span class="nc" id="L489">          hashBindPassiveDataConn.remove(address);</span>
+<span class="nc" id="L490">          future.awaitUninterruptibly();</span>
+<span class="nc" id="L491">        }</span>
       } else {
-<span class="nc" id="L485">        logger.warn(&quot;No Bind to {}&quot;, address);</span>
+<span class="nc" id="L493">        logger.warn(&quot;No Bind to {}&quot;, address);</span>
       }
     } finally {
-<span class="nc" id="L488">      configuration.bindUnlock();</span>
+<span class="nc" id="L496">      configuration.bindUnlock();</span>
     }
-<span class="nc" id="L490">  }</span>
+<span class="nc" id="L498">  }</span>
 
   /**
    * @return the number of Binded Passive Connections
    */
-  public int getNbBindedPassive() {
-<span class="nc" id="L496">    return hashBindPassiveDataConn.size();</span>
+  public final int getNbBindedPassive() {
+<span class="nc" id="L504">    return hashBindPassiveDataConn.size();</span>
   }
 
   /**
@@ -501,8 +509,8 @@ public class FtpInternalConfiguration {
    *
    * @return the Command Event Executor
    */
-  public EventExecutorGroup getExecutor() {
-<span class="nc" id="L505">    return execCommandEvent;</span>
+  public final EventExecutorGroup getExecutor() {
+<span class="nc" id="L513">    return execCommandEvent;</span>
   }
 
   /**
@@ -510,8 +518,8 @@ public class FtpInternalConfiguration {
    *
    * @return the Data Event Executor
    */
-  public EventExecutorGroup getDataExecutor() {
-<span class="nc" id="L514">    return execDataEvent;</span>
+  public final EventExecutorGroup getDataExecutor() {
+<span class="nc" id="L522">    return execDataEvent;</span>
   }
 
   /**
@@ -519,86 +527,88 @@ public class FtpInternalConfiguration {
    *
    * @return the ActiveBootstrap
    */
-  public Bootstrap getActiveBootstrap(final boolean ssl) {
-<span class="nc bnc" id="L523" title="All 2 branches missed.">    if (ssl) {</span>
-<span class="nc" id="L524">      return activeSslBootstrap;</span>
+  public final Bootstrap getActiveBootstrap(final boolean ssl) {
+<span class="nc bnc" id="L531" title="All 2 branches missed.">    if (ssl) {</span>
+<span class="nc" id="L532">      return activeSslBootstrap;</span>
     } else {
-<span class="nc" id="L526">      return activeBootstrap;</span>
+<span class="nc" id="L534">      return activeBootstrap;</span>
     }
   }
 
   /**
    * @return the commandChannelGroup
    */
-  public ChannelGroup getCommandChannelGroup() {
-<span class="nc" id="L534">    return commandChannelGroup;</span>
+  public final ChannelGroup getCommandChannelGroup() {
+<span class="nc" id="L542">    return commandChannelGroup;</span>
   }
 
   /**
    * @return the dataChannelGroup
    */
-  public ChannelGroup getDataChannelGroup() {
-<span class="nc" id="L541">    return dataChannelGroup;</span>
+  public final ChannelGroup getDataChannelGroup() {
+<span class="nc" id="L549">    return dataChannelGroup;</span>
   }
 
   /**
    * @return The TrafficCounterFactory
    */
-  public FtpGlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
-<span class="nc" id="L548">    return globalTrafficShapingHandler;</span>
+  public final FtpGlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
+<span class="nc" id="L556">    return globalTrafficShapingHandler;</span>
   }
 
   /**
    * @return a new ChannelTrafficShapingHandler
    */
-  public ChannelTrafficShapingHandler newChannelTrafficShapingHandler() {
-<span class="nc bnc" id="L555" title="All 2 branches missed.">    if (configuration.getServerChannelWriteLimit() == 0 &amp;&amp;</span>
-<span class="nc bnc" id="L556" title="All 2 branches missed.">        configuration.getServerChannelReadLimit() == 0) {</span>
-<span class="nc" id="L557">      return null;</span>
+  public final ChannelTrafficShapingHandler newChannelTrafficShapingHandler() {
+<span class="nc bnc" id="L563" title="All 2 branches missed.">    if (configuration.getServerChannelWriteLimit() == 0 &amp;&amp;</span>
+<span class="nc bnc" id="L564" title="All 2 branches missed.">        configuration.getServerChannelReadLimit() == 0) {</span>
+<span class="nc" id="L565">      return null;</span>
     }
-<span class="nc bnc" id="L559" title="All 2 branches missed.">    if (globalTrafficShapingHandler instanceof GlobalChannelTrafficShapingHandler) {</span>
-<span class="nc" id="L560">      return null;</span>
+<span class="nc bnc" id="L567" title="All 2 branches missed.">    if (globalTrafficShapingHandler instanceof GlobalChannelTrafficShapingHandler) {</span>
+<span class="nc" id="L568">      return null;</span>
     }
-<span class="nc" id="L562">    return new FtpChannelTrafficShapingHandler(</span>
-<span class="nc" id="L563">        configuration.getServerChannelWriteLimit(),</span>
-<span class="nc" id="L564">        configuration.getServerChannelReadLimit(),</span>
-<span class="nc" id="L565">        configuration.getDelayLimit());</span>
+<span class="nc" id="L570">    return new FtpChannelTrafficShapingHandler(</span>
+<span class="nc" id="L571">        configuration.getServerChannelWriteLimit(),</span>
+<span class="nc" id="L572">        configuration.getServerChannelReadLimit(),</span>
+<span class="nc" id="L573">        configuration.getDelayLimit());</span>
   }
 
-  public void releaseResources() {
-<span class="nc" id="L569">    WaarpSslUtility.forceCloseAllSslChannels();</span>
-<span class="nc" id="L570">    execWorker.shutdownGracefully();</span>
-<span class="nc" id="L571">    execDataWorker.shutdownGracefully();</span>
-<span class="nc bnc" id="L572" title="All 2 branches missed.">    if (globalTrafficShapingHandler != null) {</span>
-<span class="nc" id="L573">      globalTrafficShapingHandler.release();</span>
+  public final void releaseResources() {
+<span class="nc" id="L577">    WaarpSslUtility.forceCloseAllSslChannels();</span>
+<span class="nc" id="L578">    execWorker.shutdownGracefully();</span>
+<span class="nc" id="L579">    execDataWorker.shutdownGracefully();</span>
+<span class="nc" id="L580">    execServer.shutdownGracefully();</span>
+<span class="nc" id="L581">    execDataServer.shutdownGracefully();</span>
+<span class="nc bnc" id="L582" title="All 2 branches missed.">    if (globalTrafficShapingHandler != null) {</span>
+<span class="nc" id="L583">      globalTrafficShapingHandler.release();</span>
     }
-<span class="nc" id="L575">    executorService.shutdown();</span>
-<span class="nc" id="L576">  }</span>
+<span class="nc" id="L585">    executorService.shutdown();</span>
+<span class="nc" id="L586">  }</span>
 
-  public boolean isAcceptAuthProt() {
-<span class="nc" id="L579">    return acceptAuthProt;</span>
+  public final boolean isAcceptAuthProt() {
+<span class="nc" id="L589">    return acceptAuthProt;</span>
   }
 
   /**
    * @return the usingNativeSsl
    */
-  public boolean isUsingNativeSsl() {
-<span class="nc" id="L586">    return usingNativeSsl;</span>
+  public final boolean isUsingNativeSsl() {
+<span class="nc" id="L596">    return usingNativeSsl;</span>
   }
 
   /**
    * @param usingNativeSsl the usingNativeSsl to set
    */
-  public void setUsingNativeSsl(final boolean usingNativeSsl) {
-<span class="nc" id="L593">    this.usingNativeSsl = usingNativeSsl;</span>
-<span class="nc" id="L594">  }</span>
+  public final void setUsingNativeSsl(final boolean usingNativeSsl) {
+<span class="nc" id="L603">    this.usingNativeSsl = usingNativeSsl;</span>
+<span class="nc" id="L604">  }</span>
 
   /**
    * @param acceptAuthProt the acceptAuthProt to set
    */
-  public void setAcceptAuthProt(final boolean acceptAuthProt) {
-<span class="nc" id="L600">    this.acceptAuthProt = acceptAuthProt;</span>
-<span class="nc" id="L601">  }</span>
+  public final void setAcceptAuthProt(final boolean acceptAuthProt) {
+<span class="nc" id="L610">    this.acceptAuthProt = acceptAuthProt;</span>
+<span class="nc" id="L611">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

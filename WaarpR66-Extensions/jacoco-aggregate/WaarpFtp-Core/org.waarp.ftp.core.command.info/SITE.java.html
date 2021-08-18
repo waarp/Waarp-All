@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SITE.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.command.info</a> &gt; <span class="el_source">SITE.java</span></div><h1>SITE.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.command.info;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply501Exception;
+import org.waarp.common.command.exception.Reply502Exception;
+import org.waarp.common.command.exception.Reply503Exception;
+import org.waarp.ftp.core.command.AbstractCommand;
+import org.waarp.ftp.core.command.FtpCommandCode;
+import org.waarp.ftp.core.command.extension.XCRC;
+import org.waarp.ftp.core.command.extension.XDIGEST;
+import org.waarp.ftp.core.command.extension.XMD5;
+import org.waarp.ftp.core.command.extension.XSHA1;
+import org.waarp.ftp.core.command.internal.IncorrectCommand;
+
+/**
+ * SITE command: implements some specific command like {@link XMD5} {@link XCRC}
+ * {@link XSHA1} or {@link XDIGEST} as if they were
+ * called directly
+ */
+<span class="nc" id="L40">public class SITE extends AbstractCommand {</span>
+
+  @Override
+  public final void exec() throws CommandAbstractException {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">    if (!hasArg()) {</span>
+<span class="nc" id="L45">      invalidCurrentCommand();</span>
+<span class="nc" id="L46">      throw new Reply501Exception(&quot;Need a command at least as argument&quot;);</span>
+    }
+    // First check if this command is a special extension
+<span class="nc" id="L49">    AbstractCommand command = getSession().getBusinessHandler()</span>
+<span class="nc" id="L50">                                          .getSpecializedSiteCommand(</span>
+<span class="nc" id="L51">                                              getSession(), getArg());</span>
+<span class="nc" id="L52">    boolean special = true;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (command == null) {</span>
+      // Now check what is the command as if we were in the NetworkHandler
+<span class="nc" id="L55">      command = FtpCommandCode.getFromLine(getSession(), getArg());</span>
+<span class="nc" id="L56">      special = false;</span>
+    }
+    // Default message
+<span class="nc" id="L59">    getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY, null);</span>
+    // First check if the command is an extension command
+<span class="nc bnc" id="L61" title="All 4 branches missed.">    if (special || FtpCommandCode.isExtensionCommand(command.getCode())) {</span>
+      // Now check if a transfer is on its way: illegal to have at same
+      // time two commands
+<span class="nc" id="L64">      if (getSession().getDataConn().getFtpTransferControl()</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                      .isFtpTransferExecuting()) {</span>
+<span class="nc" id="L66">        throw new Reply503Exception(</span>
+            &quot;Previous transfer command is not finished yet&quot;);
+      }
+    } else {
+<span class="nc" id="L70">      throw new Reply502Exception(&quot;Command not implemented: &quot; + getArg());</span>
+    }
+    // Command is OK, set it as current by first undo current command then
+    // set it as next after testing validity
+<span class="nc" id="L74">    getSession().setPreviousAsCurrentCommand();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    if (getSession().getCurrentCommand().isNextCommandValid(command)) {</span>
+<span class="nc" id="L76">      getSession().setNextCommand(command);</span>
+<span class="nc" id="L77">      getSession().getBusinessHandler().beforeRunCommand();</span>
+<span class="nc" id="L78">      command.exec();</span>
+    } else {
+<span class="nc" id="L80">      command = new IncorrectCommand();</span>
+<span class="nc" id="L81">      command.setArgs(getSession(), getArg(), null,</span>
+                      FtpCommandCode.IncorrectSequence);
+<span class="nc" id="L83">      getSession().setNextCommand(command);</span>
+<span class="nc" id="L84">      getSession().getBusinessHandler().beforeRunCommand();</span>
+<span class="nc" id="L85">      command.exec();</span>
+    }
+<span class="nc" id="L87">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

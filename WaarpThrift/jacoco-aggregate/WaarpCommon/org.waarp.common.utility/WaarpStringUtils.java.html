@@ -47,18 +47,18 @@ public final class WaarpStringUtils {
   /**
    * Internal Logger
    */
-<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(WaarpStringUtils.class);</span>
+<span class="nc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L51">      WaarpLoggerFactory.getLogger(WaarpStringUtils.class);</span>
 
   public static final String UTF_8 = &quot;UTF-8&quot;;
   /**
    * Format used for Files
    */
-<span class="fc" id="L57">  public static final Charset UTF8 = Charset.forName(UTF_8);</span>
+<span class="nc" id="L57">  public static final Charset UTF8 = Charset.forName(UTF_8);</span>
 
   public static final String BLANK_REGEX = &quot;\\s+&quot;;
-<span class="fc" id="L60">  public static final Pattern BLANK = Pattern.compile(BLANK_REGEX);</span>
-<span class="fc" id="L61">  private static final TimeZone z = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="nc" id="L60">  public static final Pattern BLANK = Pattern.compile(BLANK_REGEX);</span>
+<span class="nc" id="L61">  private static final TimeZone z = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
 
   private WaarpStringUtils() {
   }
@@ -75,18 +75,19 @@ public final class WaarpStringUtils {
    */
   public static String readFileException(final String filename)
       throws FileTransferException {
-<span class="fc" id="L78">    final File file = new File(filename);</span>
+<span class="nc" id="L78">    final File file = new File(filename);</span>
     // Check for size of file
-<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
 <span class="nc" id="L81">      throw new FileTransferException(</span>
 <span class="nc" id="L82">          &quot;File is too big for this convenience method (&quot; + file.length() +</span>
           &quot; bytes).&quot;);
     }
     try {
-<span class="fc" id="L86">      return Files.toString(file, UTF8);</span>
+<span class="nc" id="L86">      return Files.asCharSource(file, UTF8).read();</span>
 <span class="nc" id="L87">    } catch (final IOException e) {</span>
-<span class="nc" id="L88">      logger.error(&quot;Error on File while trying to read: &quot; + filename, e);</span>
-<span class="nc" id="L89">      throw new FileTransferException(&quot;Error on File while trying to read&quot;, e);</span>
+<span class="nc" id="L88">      logger.error(&quot;Error on File while trying to read: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L89">                   e.getMessage());</span>
+<span class="nc" id="L90">      throw new FileTransferException(&quot;Error on File while trying to read&quot;, e);</span>
     }
   }
 
@@ -99,10 +100,11 @@ public final class WaarpStringUtils {
    */
   public static String readFile(final String filename) {
     try {
-<span class="fc" id="L102">      return readFileException(filename);</span>
-<span class="nc" id="L103">    } catch (final FileTransferException e) {</span>
-<span class="nc" id="L104">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
-<span class="nc" id="L105">      return &quot;&quot;;</span>
+<span class="nc" id="L103">      return readFileException(filename);</span>
+<span class="nc" id="L104">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L105">      logger.error(&quot;Error while trying to read: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L106">                   e.getMessage());</span>
+<span class="nc" id="L107">      return &quot;&quot;;</span>
     }
   }
 
@@ -114,25 +116,25 @@ public final class WaarpStringUtils {
    * @return the corresponding Timestamp
    */
   public static Timestamp fixDate(final String date) {
-<span class="nc" id="L117">    Timestamp tdate = null;</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (date == null) {</span>
-<span class="nc" id="L119">      return null;</span>
+<span class="nc" id="L119">    Timestamp tdate = null;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (date == null) {</span>
+<span class="nc" id="L121">      return null;</span>
     }
-<span class="nc" id="L121">    String ndate = date.replaceAll(&quot;/|:|\\.|\\s|-&quot;, &quot;&quot;);</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
-<span class="nc bnc" id="L123" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
-<span class="nc" id="L124">        final int len = ndate.length();</span>
-<span class="nc" id="L125">        ndate += &quot;000000000000000&quot;.substring(len);</span>
+<span class="nc" id="L123">    String ndate = date.replaceAll(&quot;/|:|\\.|\\s|-&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
+<span class="nc" id="L126">        final int len = ndate.length();</span>
+<span class="nc" id="L127">        ndate += &quot;000000000000000&quot;.substring(len);</span>
       }
-<span class="nc" id="L127">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
+<span class="nc" id="L129">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
       try {
-<span class="nc" id="L129">        final Date ddate = format.parse(ndate);</span>
-<span class="nc" id="L130">        tdate = new Timestamp(ddate.getTime());</span>
-<span class="nc" id="L131">      } catch (final ParseException e) {</span>
-<span class="nc" id="L132">        logger.debug(&quot;start&quot;, e);</span>
-<span class="nc" id="L133">      }</span>
+<span class="nc" id="L131">        final Date ddate = format.parse(ndate);</span>
+<span class="nc" id="L132">        tdate = new Timestamp(ddate.getTime());</span>
+<span class="nc" id="L133">      } catch (final ParseException e) {</span>
+<span class="nc" id="L134">        logger.debug(&quot;start {}&quot;, e.getMessage());</span>
+<span class="nc" id="L135">      }</span>
     }
-<span class="nc" id="L135">    return tdate;</span>
+<span class="nc" id="L137">    return tdate;</span>
   }
 
   /**
@@ -149,40 +151,40 @@ public final class WaarpStringUtils {
    * @return the end date
    */
   public static Timestamp fixDate(final String date, final Timestamp before) {
-<span class="nc" id="L152">    Timestamp tdate = null;</span>
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (date == null) {</span>
-<span class="nc" id="L154">      return null;</span>
+<span class="nc" id="L154">    Timestamp tdate = null;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (date == null) {</span>
+<span class="nc" id="L156">      return null;</span>
     }
-<span class="nc" id="L156">    String ndate = date.replaceAll(&quot;/|:|\\.|\\s|-&quot;, &quot;&quot;);</span>
-<span class="nc bnc" id="L157" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
-<span class="nc" id="L159">        final int len = ndate.length();</span>
-<span class="nc" id="L160">        ndate += &quot;000000000000000&quot;.substring(len);</span>
+<span class="nc" id="L158">    String ndate = date.replaceAll(&quot;/|:|\\.|\\s|-&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
+<span class="nc" id="L161">        final int len = ndate.length();</span>
+<span class="nc" id="L162">        ndate += &quot;000000000000000&quot;.substring(len);</span>
       }
-<span class="nc" id="L162">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
+<span class="nc" id="L164">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
       try {
-<span class="nc" id="L164">        Date ddate = format.parse(ndate);</span>
-<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (before != null) {</span>
-<span class="nc" id="L166">          final Date bef = new Date(before.getTime());</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">          if (bef.compareTo(ddate) &gt;= 0) {</span>
-<span class="nc" id="L168">            ddate = new Date(bef.getTime() + 1000 * 3600 * 24 - 1);</span>
+<span class="nc" id="L166">        Date ddate = format.parse(ndate);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (before != null) {</span>
+<span class="nc" id="L168">          final Date bef = new Date(before.getTime());</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">          if (bef.compareTo(ddate) &gt;= 0) {</span>
+<span class="nc" id="L170">            ddate = new Date(bef.getTime() + 1000 * 3600 * 24 - 1);</span>
           }
         }
-<span class="nc" id="L171">        tdate = new Timestamp(ddate.getTime());</span>
-<span class="nc" id="L172">      } catch (final ParseException e) {</span>
-<span class="nc" id="L173">        logger.debug(&quot;start&quot;, e);</span>
-<span class="nc" id="L174">      }</span>
+<span class="nc" id="L173">        tdate = new Timestamp(ddate.getTime());</span>
+<span class="nc" id="L174">      } catch (final ParseException e) {</span>
+<span class="nc" id="L175">        logger.debug(&quot;start {}&quot;, e.getMessage());</span>
+<span class="nc" id="L176">      }</span>
     }
-<span class="nc" id="L176">    return tdate;</span>
+<span class="nc" id="L178">    return tdate;</span>
   }
 
   public static Timestamp getTodayMidnight() {
-<span class="fc" id="L180">    final GregorianCalendar calendar = new GregorianCalendar();</span>
-<span class="fc" id="L181">    calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
-<span class="fc" id="L182">    calendar.set(Calendar.MINUTE, 0);</span>
-<span class="fc" id="L183">    calendar.set(Calendar.SECOND, 0);</span>
-<span class="fc" id="L184">    calendar.set(Calendar.MILLISECOND, 0);</span>
-<span class="fc" id="L185">    return new Timestamp(calendar.getTimeInMillis());</span>
+<span class="nc" id="L182">    final GregorianCalendar calendar = new GregorianCalendar();</span>
+<span class="nc" id="L183">    calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="nc" id="L184">    calendar.set(Calendar.MINUTE, 0);</span>
+<span class="nc" id="L185">    calendar.set(Calendar.SECOND, 0);</span>
+<span class="nc" id="L186">    calendar.set(Calendar.MILLISECOND, 0);</span>
+<span class="nc" id="L187">    return new Timestamp(calendar.getTimeInMillis());</span>
   }
 
   /**
@@ -193,15 +195,15 @@ public final class WaarpStringUtils {
    * @return the corresponding value
    */
   public static boolean getBoolean(final Node node) {
-<span class="nc" id="L196">    final String val = node.getText();</span>
+<span class="nc" id="L198">    final String val = node.getText();</span>
     boolean bval;
     try {
-<span class="nc" id="L199">      final int ival = Integer.parseInt(val);</span>
-<span class="nc bnc" id="L200" title="All 2 branches missed.">      bval = ival == 1;</span>
-<span class="nc" id="L201">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L202">      bval = Boolean.parseBoolean(val);</span>
-<span class="nc" id="L203">    }</span>
-<span class="nc" id="L204">    return bval;</span>
+<span class="nc" id="L201">      final int ival = Integer.parseInt(val);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">      bval = ival == 1;</span>
+<span class="nc" id="L203">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L204">      bval = Boolean.parseBoolean(val);</span>
+<span class="nc" id="L205">    }</span>
+<span class="nc" id="L206">    return bval;</span>
   }
 
   /**
@@ -215,17 +217,17 @@ public final class WaarpStringUtils {
    */
   public static int getInteger(final Node node)
       throws InvalidArgumentException {
-<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (node == null) {</span>
-<span class="nc" id="L219">      throw new InvalidArgumentException(&quot;Node empty&quot;);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L221">      throw new InvalidArgumentException(&quot;Node empty&quot;);</span>
     }
-<span class="nc" id="L221">    final String val = node.getText();</span>
+<span class="nc" id="L223">    final String val = node.getText();</span>
     final int ival;
     try {
-<span class="nc" id="L224">      ival = Integer.parseInt(val);</span>
-<span class="nc" id="L225">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L226">      throw new InvalidArgumentException(&quot;Incorrect value&quot;);</span>
-<span class="nc" id="L227">    }</span>
-<span class="nc" id="L228">    return ival;</span>
+<span class="nc" id="L226">      ival = Integer.parseInt(val);</span>
+<span class="nc" id="L227">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L228">      throw new InvalidArgumentException(&quot;Incorrect value&quot;);</span>
+<span class="nc" id="L229">    }</span>
+<span class="nc" id="L230">    return ival;</span>
   }
 
   /**
@@ -240,20 +242,20 @@ public final class WaarpStringUtils {
    */
   public static boolean replace(final StringBuilder builder, final String find,
                                 final String replace) {
-<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (find == null) {</span>
-<span class="nc" id="L244">      return false;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">    if (find == null) {</span>
+<span class="nc" id="L246">      return false;</span>
     }
-<span class="nc" id="L246">    final int start = builder.indexOf(find);</span>
-<span class="nc bnc" id="L247" title="All 2 branches missed.">    if (start == -1) {</span>
-<span class="nc" id="L248">      return false;</span>
+<span class="nc" id="L248">    final int start = builder.indexOf(find);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">    if (start == -1) {</span>
+<span class="nc" id="L250">      return false;</span>
     }
-<span class="nc" id="L250">    final int end = start + find.length();</span>
-<span class="nc bnc" id="L251" title="All 2 branches missed.">    if (replace != null) {</span>
-<span class="nc" id="L252">      builder.replace(start, end, replace);</span>
+<span class="nc" id="L252">    final int end = start + find.length();</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">    if (replace != null) {</span>
+<span class="nc" id="L254">      builder.replace(start, end, replace);</span>
     } else {
-<span class="nc" id="L254">      builder.replace(start, end, &quot;&quot;);</span>
+<span class="nc" id="L256">      builder.replace(start, end, &quot;&quot;);</span>
     }
-<span class="nc" id="L256">    return true;</span>
+<span class="nc" id="L258">    return true;</span>
   }
 
   /**
@@ -266,10 +268,10 @@ public final class WaarpStringUtils {
    */
   public static void replaceAll(final StringBuilder builder, final String find,
                                 final String replace) {
-<span class="nc bnc" id="L269" title="All 2 branches missed.">    while (replace(builder, find, replace)) {</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">    while (replace(builder, find, replace)) {</span>
       // nothing
     }
-<span class="nc" id="L272">  }</span>
+<span class="nc" id="L274">  }</span>
 
   /**
    * Build a String with count chars using fillChar
@@ -280,9 +282,9 @@ public final class WaarpStringUtils {
    * @return the String of length count filled with fillChar
    */
   public static String fillString(final char fillChar, final int count) {
-<span class="fc" id="L283">    final char[] chars = new char[count];</span>
-<span class="fc" id="L284">    Arrays.fill(chars, fillChar);</span>
-<span class="fc" id="L285">    return new String(chars);</span>
+<span class="nc" id="L285">    final char[] chars = new char[count];</span>
+<span class="nc" id="L286">    Arrays.fill(chars, fillChar);</span>
+<span class="nc" id="L287">    return new String(chars);</span>
   }
 
   /**
@@ -294,27 +296,27 @@ public final class WaarpStringUtils {
    * @return the cleaned String
    */
   public static String cleanJsonForHtml(final String json) {
-<span class="fc" id="L297">    return json.replaceAll(&quot;([^\\\\])\\\\n&quot;, &quot;$1&quot;)</span>
-<span class="fc" id="L298">               .replaceAll(&quot;([^\\\\])\\\\r&quot;, &quot;$1&quot;);</span>
+<span class="nc" id="L299">    return json.replaceAll(&quot;([^\\\\])\\\\n&quot;, &quot;$1&quot;)</span>
+<span class="nc" id="L300">               .replaceAll(&quot;([^\\\\])\\\\r&quot;, &quot;$1&quot;);</span>
   }
 
   public static DateFormat getDateFormat() {
-<span class="fc" id="L302">    final DateFormat dateFormat = new SimpleDateFormat(&quot;yyyy-MM-dd z&quot;);</span>
-<span class="fc" id="L303">    dateFormat.setTimeZone(z);</span>
-<span class="fc" id="L304">    return dateFormat;</span>
+<span class="nc" id="L304">    final DateFormat dateFormat = new SimpleDateFormat(&quot;yyyy-MM-dd z&quot;);</span>
+<span class="nc" id="L305">    dateFormat.setTimeZone(z);</span>
+<span class="nc" id="L306">    return dateFormat;</span>
   }
 
   public static DateFormat getTimeFormat() {
-<span class="nc" id="L308">    final DateFormat timeFormat = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss z&quot;);</span>
-<span class="nc" id="L309">    timeFormat.setTimeZone(z);</span>
-<span class="nc" id="L310">    return timeFormat;</span>
+<span class="nc" id="L310">    final DateFormat timeFormat = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss z&quot;);</span>
+<span class="nc" id="L311">    timeFormat.setTimeZone(z);</span>
+<span class="nc" id="L312">    return timeFormat;</span>
   }
 
   public static DateFormat getTimestampFormat() {
-<span class="nc" id="L314">    final DateFormat timestampFormat =</span>
+<span class="nc" id="L316">    final DateFormat timestampFormat =</span>
         new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);
-<span class="nc" id="L316">    timestampFormat.setTimeZone(z);</span>
-<span class="nc" id="L317">    return timestampFormat;</span>
+<span class="nc" id="L318">    timestampFormat.setTimeZone(z);</span>
+<span class="nc" id="L319">    return timestampFormat;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -29,95 +29,54 @@ import java.util.concurrent.BlockingQueue;
  * environment, such as Java version.
  */
 public final class DetectionUtils {
-<span class="fc" id="L32">  private static final int JAVA_VERSION = javaVersion0();</span>
+<span class="nc" id="L32">  private static final int JAVA_VERSION = javaVersion0();</span>
   private static final boolean IS_WINDOWS;
   private static final boolean IS_UNIX_IBM;
   private static final int NUMBERTHREAD;
-  private static boolean isJunit;
 
   static {
-<span class="fc" id="L39">    final String os = SystemPropertyUtil.get(&quot;os.name&quot;).toLowerCase();</span>
+<span class="nc" id="L38">    final String os = SystemPropertyUtil.get(&quot;os.name&quot;).toLowerCase();</span>
     // windows
-<span class="fc" id="L41">    IS_WINDOWS = os.contains(&quot;win&quot;);</span>
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">    if (!IS_WINDOWS) {</span>
-<span class="fc" id="L43">      String vendor = SystemPropertyUtil.get(&quot;java.vm.vendor&quot;);</span>
-<span class="fc" id="L44">      vendor = vendor.toLowerCase();</span>
-<span class="fc" id="L45">      IS_UNIX_IBM = vendor.contains(&quot;ibm&quot;);</span>
-<span class="fc" id="L46">    } else {</span>
-<span class="nc" id="L47">      IS_UNIX_IBM = false;</span>
+<span class="nc" id="L40">    IS_WINDOWS = os.contains(&quot;win&quot;);</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">    if (!IS_WINDOWS) {</span>
+<span class="nc" id="L42">      String vendor = SystemPropertyUtil.get(&quot;java.vm.vendor&quot;);</span>
+<span class="nc" id="L43">      vendor = vendor.toLowerCase();</span>
+<span class="nc" id="L44">      IS_UNIX_IBM = vendor.contains(&quot;ibm&quot;);</span>
+<span class="nc" id="L45">    } else {</span>
+<span class="nc" id="L46">      IS_UNIX_IBM = false;</span>
     }
-<span class="fc" id="L49">    NUMBERTHREAD = Math.max(1, SystemPropertyUtil.getInt(&quot;org.waarp.numThreads&quot;,</span>
-<span class="fc" id="L50">                                                         Runtime.getRuntime()</span>
-<span class="fc" id="L51">                                                                .availableProcessors() *</span>
+<span class="nc" id="L48">    NUMBERTHREAD = Math.max(1, SystemPropertyUtil.getInt(&quot;org.waarp.numThreads&quot;,</span>
+<span class="nc" id="L49">                                                         Runtime.getRuntime()</span>
+<span class="nc" id="L50">                                                                .availableProcessors() *</span>
                                                          2));
-<span class="fc" id="L53">  }</span>
+<span class="nc" id="L52">  }</span>
 
   private DetectionUtils() {
   }
 
   /**
-   * Replacement for System.exit(value)
-   *
-   * @param value
-   */
-  public static void systemExit(final int value) {
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (!isJunit()) {</span>
-<span class="nc" id="L65">      System.exit(value);//NOSONAR</span>
-    }
-<span class="nc" id="L67">  }</span>
-
-  /**
-   * Replacement for Runtime.getRuntime().halt(value)
-   *
-   * @param value
-   */
-  public static void runtimeGetRuntimeHalt(final int value) {
-<span class="nc bnc" id="L75" title="All 2 branches missed.">    if (!isJunit()) {</span>
-<span class="nc" id="L76">      Runtime.getRuntime().halt(value);//NOSONAR</span>
-    }
-<span class="nc" id="L78">  }</span>
-
-  /**
-   * JUnit usage only
-   *
-   * @return True if in JUnit role
-   */
-  public static boolean isJunit() {
-<span class="fc" id="L86">    return isJunit;</span>
-  }
-
-  /**
-   * JUnit usage only
-   *
-   * @param isJunit
-   */
-  public static void setJunit(final boolean isJunit) {
-<span class="fc" id="L95">    DetectionUtils.isJunit = isJunit;</span>
-<span class="fc" id="L96">  }</span>
-
-  /**
    * @return the default number of threads (core * 2)
    */
   public static int numberThreads() {
-<span class="fc" id="L102">    return NUMBERTHREAD;</span>
+<span class="nc" id="L61">    return NUMBERTHREAD;</span>
   }
 
   /**
    * Return {@code true} if the JVM is running on Windows
    */
   public static boolean isWindows() {
-<span class="fc" id="L109">    return IS_WINDOWS;</span>
+<span class="nc" id="L68">    return IS_WINDOWS;</span>
   }
 
   /**
    * Return {@code true} if the JVM is running on IBM UNIX JVM
    */
   public static boolean isUnixIBM() {
-<span class="nc" id="L116">    return IS_UNIX_IBM;</span>
+<span class="nc" id="L75">    return IS_UNIX_IBM;</span>
   }
 
   public static int javaVersion() {
-<span class="fc" id="L120">    return JAVA_VERSION;</span>
+<span class="nc" id="L79">    return JAVA_VERSION;</span>
   }
 
   private static int javaVersion0() {
@@ -125,36 +84,36 @@ public final class DetectionUtils {
       // Check if its android, if so handle it the same way as java6.
       //
       // See https://github.com/netty/netty/issues/282
-<span class="nc" id="L128">      Class.forName(&quot;android.app.Application&quot;);</span>
-<span class="nc" id="L129">      return 6;</span>
-<span class="fc" id="L130">    } catch (final ClassNotFoundException e) {</span>
+<span class="nc" id="L87">      Class.forName(&quot;android.app.Application&quot;);</span>
+<span class="nc" id="L88">      return 6;</span>
+<span class="nc" id="L89">    } catch (final ClassNotFoundException e) {</span>
       // Ignore
     }
 
     try {
-<span class="fc" id="L135">      Class.forName(&quot;java.time.Clock&quot;, false, Object.class.getClassLoader());</span>
-<span class="fc" id="L136">      return 8;</span>
-<span class="nc" id="L137">    } catch (final Exception e) {</span>
+<span class="nc" id="L94">      Class.forName(&quot;java.time.Clock&quot;, false, Object.class.getClassLoader());</span>
+<span class="nc" id="L95">      return 8;</span>
+<span class="nc" id="L96">    } catch (final Exception e) {</span>
       // Ignore
     }
 
     try {
-<span class="nc" id="L142">      Class.forName(&quot;java.util.concurrent.LinkedTransferQueue&quot;, false,</span>
-<span class="nc" id="L143">                    BlockingQueue.class.getClassLoader());</span>
-<span class="nc" id="L144">      return 7;</span>
-<span class="nc" id="L145">    } catch (final Exception e) {</span>
+<span class="nc" id="L101">      Class.forName(&quot;java.util.concurrent.LinkedTransferQueue&quot;, false,</span>
+<span class="nc" id="L102">                    BlockingQueue.class.getClassLoader());</span>
+<span class="nc" id="L103">      return 7;</span>
+<span class="nc" id="L104">    } catch (final Exception e) {</span>
       // Ignore
     }
 
     try {
-<span class="nc" id="L150">      Class</span>
-<span class="nc" id="L151">          .forName(&quot;java.util.ArrayDeque&quot;, false, Queue.class.getClassLoader());</span>
-<span class="nc" id="L152">      return 6;</span>
-<span class="nc" id="L153">    } catch (final Exception e) {</span>
+<span class="nc" id="L109">      Class.forName(&quot;java.util.ArrayDeque&quot;, false,</span>
+<span class="nc" id="L110">                    Queue.class.getClassLoader());</span>
+<span class="nc" id="L111">      return 6;</span>
+<span class="nc" id="L112">    } catch (final Exception e) {</span>
       // Ignore
     }
 
-<span class="nc" id="L157">    return 5;</span>
+<span class="nc" id="L116">    return 5;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

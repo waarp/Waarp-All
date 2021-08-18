@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.networkhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -55,13 +54,13 @@ public class NetworkPacket {
    * @param buffer
    */
   public NetworkPacket(final int localId, final int remoteId, final byte code,
-<span class="fc" id="L58">                       final ByteBuf buffer) {</span>
-<span class="fc" id="L59">    this.remoteId = remoteId;</span>
-<span class="fc" id="L60">    this.localId = localId;</span>
-<span class="fc" id="L61">    this.code = code;</span>
-<span class="fc" id="L62">    this.buffer = buffer;</span>
-<span class="fc" id="L63">    this.uniqueBuffer = false;</span>
-<span class="fc" id="L64">  }</span>
+<span class="nc" id="L57">                       final ByteBuf buffer) {</span>
+<span class="nc" id="L58">    this.remoteId = remoteId;</span>
+<span class="nc" id="L59">    this.localId = localId;</span>
+<span class="nc" id="L60">    this.code = code;</span>
+<span class="nc" id="L61">    this.buffer = buffer;</span>
+<span class="nc" id="L62">    this.uniqueBuffer = false;</span>
+<span class="nc" id="L63">  }</span>
 
   /**
    * @param localId
@@ -74,80 +73,81 @@ public class NetworkPacket {
   public NetworkPacket(final int localId, final int remoteId,
                        final AbstractLocalPacket packet,
                        final LocalChannelReference lcr)
-<span class="fc" id="L77">      throws OpenR66ProtocolPacketException {</span>
-<span class="fc" id="L78">    this.remoteId = remoteId;</span>
-<span class="fc" id="L79">    this.localId = localId;</span>
-<span class="fc" id="L80">    code = packet.getType();</span>
-<span class="fc" id="L81">    uniqueBuffer = true;</span>
-<span class="fc" id="L82">    buffer = packet.getLocalPacketForNetworkPacket(lcr, this);</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L76">      throws OpenR66ProtocolPacketException {</span>
+<span class="nc" id="L77">    this.remoteId = remoteId;</span>
+<span class="nc" id="L78">    this.localId = localId;</span>
+<span class="nc" id="L79">    code = packet.getType();</span>
+<span class="nc" id="L80">    uniqueBuffer = true;</span>
+<span class="nc" id="L81">    buffer = packet.getLocalPacketForNetworkPacket(lcr, this);</span>
+<span class="nc" id="L82">  }</span>
 
   /**
    * @return the buffer
    */
-  public ByteBuf getBuffer() {
-<span class="fc" id="L89">    return buffer;</span>
+  public final ByteBuf getBuffer() {
+<span class="nc" id="L88">    return buffer;</span>
   }
 
   /**
    * @return the remoteId
    */
-  public int getRemoteId() {
-<span class="fc" id="L96">    return remoteId;</span>
+  public final int getRemoteId() {
+<span class="nc" id="L95">    return remoteId;</span>
   }
 
   /**
    * @return the localId
    */
-  public int getLocalId() {
-<span class="fc" id="L103">    return localId;</span>
+  public final int getLocalId() {
+<span class="nc" id="L102">    return localId;</span>
   }
 
   /**
    * @return the code
    */
-  public byte getCode() {
-<span class="fc" id="L110">    return code;</span>
+  public final byte getCode() {
+<span class="nc" id="L109">    return code;</span>
   }
 
-  public void writeNetworkHeader(final ByteBuf buf, final int capacity) {
-<span class="fc" id="L114">    buf.writerIndex(0);</span>
-<span class="fc" id="L115">    buf.writeInt(capacity + NETWORK_HEADER_SIZE - 4);</span>
-<span class="fc" id="L116">    buf.writeInt(remoteId);</span>
-<span class="fc" id="L117">    buf.writeInt(localId);</span>
-<span class="fc" id="L118">    buf.writeByte(code);</span>
-<span class="fc" id="L119">  }</span>
+  public final void writeNetworkHeader(final ByteBuf buf, final int capacity) {
+<span class="nc" id="L113">    buf.writerIndex(0);</span>
+<span class="nc" id="L114">    buf.writeInt(capacity + NETWORK_HEADER_SIZE - 4);</span>
+<span class="nc" id="L115">    buf.writeInt(remoteId);</span>
+<span class="nc" id="L116">    buf.writeInt(localId);</span>
+<span class="nc" id="L117">    buf.writeByte(code);</span>
+<span class="nc" id="L118">  }</span>
 
   /**
    * @return The corresponding ByteBuf
    */
   public ByteBuf getNetworkPacket() {
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">    if (uniqueBuffer) {</span>
-<span class="fc" id="L126">      writeNetworkHeader(buffer, buffer.capacity() - NETWORK_HEADER_SIZE);</span>
-<span class="fc" id="L127">      buffer.writerIndex(buffer.capacity());</span>
-<span class="fc" id="L128">      return buffer;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (uniqueBuffer) {</span>
+<span class="nc" id="L125">      writeNetworkHeader(buffer, buffer.capacity() - NETWORK_HEADER_SIZE);</span>
+<span class="nc" id="L126">      buffer.writerIndex(buffer.capacity());</span>
+<span class="nc" id="L127">      return buffer;</span>
     }
-<span class="nc" id="L130">    final ByteBuf buf = ByteBufAllocator.DEFAULT</span>
-<span class="nc" id="L131">        .buffer(NETWORK_HEADER_SIZE, NETWORK_HEADER_SIZE);</span>
-<span class="nc" id="L132">    writeNetworkHeader(buf, buffer.capacity());</span>
-<span class="nc" id="L133">    buffer = Unpooled.wrappedBuffer(buf, buffer);</span>
+<span class="nc" id="L129">    final ByteBuf buf = ByteBufAllocator.DEFAULT.ioBuffer(NETWORK_HEADER_SIZE,</span>
+                                                          NETWORK_HEADER_SIZE);
+<span class="nc" id="L131">    writeNetworkHeader(buf, buffer.capacity());</span>
+<span class="nc" id="L132">    buffer = ByteBufAllocator.DEFAULT.compositeDirectBuffer(2)</span>
+<span class="nc" id="L133">                                     .addComponents(buf, buffer);</span>
 <span class="nc" id="L134">    uniqueBuffer = true;</span>
 <span class="nc" id="L135">    return buffer;</span>
   }
 
   @Override
   public String toString() {
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    return &quot;RId: &quot; + remoteId + &quot; LId: &quot; + localId + &quot; Code: &quot; + code +</span>
-<span class="fc bfc" id="L141" title="All 2 branches covered.">           &quot; Length: &quot; + (buffer != null? (buffer.readableBytes() + (code ==</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">    return &quot;RId: &quot; + remoteId + &quot; LId: &quot; + localId + &quot; Code: &quot; + code +</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">           &quot; Length: &quot; + (buffer != null? (buffer.readableBytes() + (code ==</span>
                                                                      LocalPacketFactory.REQUESTPACKET?
-<span class="pc" id="L143">        buffer.toString(buffer.readerIndex(), buffer.readableBytes(),</span>
+<span class="nc" id="L143">        buffer.toString(buffer.readerIndex(), buffer.readableBytes(),</span>
                         WaarpStringUtils.UTF8) : &quot;&quot;)) : &quot;no buffer&quot;);
   }
 
-  public void clear() {
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(buffer)) {</span>
-<span class="fc" id="L149">      buffer = null;</span>
+  public final void clear() {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (WaarpNettyUtil.release(buffer)) {</span>
+<span class="nc" id="L149">      buffer = null;</span>
     }
-<span class="fc" id="L151">  }</span>
+<span class="nc" id="L151">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

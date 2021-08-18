@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>BusinessRequestPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">BusinessRequestPacket.java</span></div><h1>BusinessRequestPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * Business Request Message class for packet
+ * &lt;p&gt;
+ * 1 string and on integer and one byte:&lt;br&gt;
+ * - sheader = full text with class at first place, following (space separated)
+ * by extra arguments - smiddle =
+ * integer - send = byte
+ */
+public class BusinessRequestPacket extends AbstractLocalPacket {
+  private static final byte ASKVALIDATE = 0;
+
+  private static final byte ANSWERVALIDATE = 1;
+  private static final byte ANSWERINVALIDATE = 2;
+
+  private final String sheader;
+
+  private int delay;
+
+  private byte way;
+
+  public static BusinessRequestPacket createFromBuffer(final int headerLength,
+                                                       final int middleLength,
+                                                       final int endLength,
+                                                       final ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L54">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="nc" id="L56">      buf.readBytes(bheader);</span>
+    }
+<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (middleLength != 4) {</span>
+<span class="nc" id="L59">      throw new OpenR66ProtocolPacketException(&quot;Packet not correct&quot;);</span>
+    }
+<span class="nc" id="L61">    final int delay = buf.readInt();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (endLength != 1) {</span>
+<span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(&quot;Packet not correct&quot;);</span>
+    }
+<span class="nc" id="L65">    final byte valid = buf.readByte();</span>
+<span class="nc" id="L66">    return new BusinessRequestPacket(new String(bheader, WaarpStringUtils.UTF8),</span>
+                                     delay, valid);
+  }
+
+  public BusinessRequestPacket(final String header, final int delay,
+<span class="nc" id="L71">                               final byte way) {</span>
+<span class="nc" id="L72">    sheader = header;</span>
+<span class="nc" id="L73">    this.delay = delay;</span>
+<span class="nc" id="L74">    this.way = way;</span>
+<span class="nc" id="L75">  }</span>
+
+<span class="nc" id="L77">  public BusinessRequestPacket(final String header, final int delay) {</span>
+<span class="nc" id="L78">    sheader = header;</span>
+<span class="nc" id="L79">    this.delay = delay;</span>
+<span class="nc" id="L80">    way = ASKVALIDATE;</span>
+<span class="nc" id="L81">  }</span>
+
+  @Override
+  public final boolean hasGlobalBuffer() {
+<span class="nc" id="L85">    return true;</span>
+  }
+
+  @Override
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
+<span class="nc" id="L91">    final byte[] headerBytes = sheader.getBytes(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L92">    final int headerSize = headerBytes.length;</span>
+<span class="nc" id="L93">    final int middleSize = 4;</span>
+<span class="nc" id="L94">    final int endSize = 1;</span>
+<span class="nc" id="L95">    final int globalSize =</span>
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+<span class="nc" id="L97">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L98">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
+<span class="nc" id="L99">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="nc" id="L100">    header.writeBytes(headerBytes);</span>
+<span class="nc" id="L101">    offset += headerSize;</span>
+<span class="nc" id="L102">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="nc" id="L103">    middle.writeInt(delay);</span>
+<span class="nc" id="L104">    offset += middleSize;</span>
+<span class="nc" id="L105">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="nc" id="L106">    end.writeByte(way);</span>
+<span class="nc" id="L107">    WaarpNettyUtil.retain(global);</span>
+<span class="nc" id="L108">  }</span>
+
+  @Override
+  public final byte getType() {
+<span class="nc" id="L112">    return LocalPacketFactory.BUSINESSREQUESTPACKET;</span>
+  }
+
+  @Override
+  public final String toString() {
+<span class="nc" id="L117">    return &quot;BusinessRequestPacket: &quot; + sheader + ':' + delay + ':' + way;</span>
+  }
+
+  /**
+   * @return True if this packet is to be validated
+   */
+  public final boolean isToValidate() {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    return way == ASKVALIDATE;</span>
+  }
+
+  /**
+   * Validate the request
+   */
+  public final void validate() {
+<span class="nc" id="L131">    way = ANSWERVALIDATE;</span>
+<span class="nc" id="L132">    clear();</span>
+<span class="nc" id="L133">  }</span>
+
+  /**
+   * Invalidate the request
+   */
+  public final void invalidate() {
+<span class="nc" id="L139">    way = ANSWERINVALIDATE;</span>
+<span class="nc" id="L140">    clear();</span>
+<span class="nc" id="L141">  }</span>
+
+  /**
+   * @return the sheader
+   */
+  public final String getSheader() {
+<span class="nc" id="L147">    return sheader;</span>
+  }
+
+  /**
+   * @return the delay
+   */
+  public final int getDelay() {
+<span class="nc" id="L154">    return delay;</span>
+  }
+
+  /**
+   * @param delay the delay to set
+   */
+  public final void setDelay(final int delay) {
+<span class="nc" id="L161">    this.delay = delay;</span>
+<span class="nc" id="L162">    WaarpNettyUtil.release(middle);</span>
+<span class="nc" id="L163">    middle = null;</span>
+<span class="nc" id="L164">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

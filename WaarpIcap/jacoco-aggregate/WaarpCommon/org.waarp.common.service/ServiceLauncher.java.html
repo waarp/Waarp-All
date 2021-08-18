@@ -27,6 +27,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 
 import java.util.Scanner;
@@ -60,42 +61,42 @@ public abstract class ServiceLauncher implements Daemon {
    */
   protected abstract EngineAbstract getNewEngineAbstract();
 
-<span class="nc" id="L63">  protected ServiceLauncher() {</span>
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L65">      logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);</span>
+<span class="nc" id="L64">  protected ServiceLauncher() {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L66">      logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);</span>
     }
-<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (executor == null) {</span>
-<span class="nc" id="L68">      executor = Executors</span>
-<span class="nc" id="L69">          .newSingleThreadExecutor(new WaarpThreadFactory(&quot;ServiceLauncher&quot;));</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (executor == null) {</span>
+<span class="nc" id="L69">      executor = Executors.newSingleThreadExecutor(</span>
+          new WaarpThreadFactory(&quot;ServiceLauncher&quot;));
     }
-<span class="nc" id="L71">    engineLauncherInstance = this;</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (engine == null) {</span>
-<span class="nc" id="L73">      engine = getNewEngineAbstract();</span>
+<span class="nc" id="L72">    engineLauncherInstance = this;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (engine == null) {</span>
+<span class="nc" id="L74">      engine = getNewEngineAbstract();</span>
     }
-<span class="nc" id="L75">  }</span>
+<span class="nc" id="L76">  }</span>
 
   protected static void initStatic() {
-<span class="nc" id="L78">    WaarpLoggerFactory</span>
-<span class="nc" id="L79">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L81">      logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);</span>
+<span class="nc" id="L79">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L82">      logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);</span>
     }
     final String className =
-<span class="nc" id="L84">        Thread.currentThread().getStackTrace()[3].getClassName();</span>
+<span class="nc" id="L85">        Thread.currentThread().getStackTrace()[3].getClassName();</span>
 
-<span class="nc" id="L86">    logger.debug(&quot;Engine {}&quot;, className);</span>
+<span class="nc" id="L87">    logger.debug(&quot;Engine {}&quot;, className);</span>
     try {
-<span class="nc" id="L88">      engineLauncherInstance =</span>
-<span class="nc" id="L89">          (ServiceLauncher) Class.forName(className).newInstance();//NOSONAR</span>
-<span class="nc" id="L90">    } catch (final Throwable e) {</span>
-<span class="nc" id="L91">      logger.error(&quot;Engine not correctly initialized&quot;, e);</span>
-<span class="nc" id="L92">      System.exit(2);//NOSONAR</span>
-<span class="nc" id="L93">    }</span>
-<span class="nc bnc" id="L94" title="All 4 branches missed.">    if (engineLauncherInstance == null || engine == null) {</span>
-<span class="nc" id="L95">      logger.error(&quot;Engine not correctly initialized&quot;);</span>
-<span class="nc" id="L96">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L89">      engineLauncherInstance =</span>
+<span class="nc" id="L90">          (ServiceLauncher) WaarpSystemUtil.newInstance(className);//NOSONAR</span>
+<span class="nc" id="L91">    } catch (final Throwable e) {</span>
+<span class="nc" id="L92">      logger.error(&quot;Engine not correctly initialized&quot;, e);</span>
+<span class="nc" id="L93">      System.exit(2);//NOSONAR</span>
+<span class="nc" id="L94">    }</span>
+<span class="nc bnc" id="L95" title="All 4 branches missed.">    if (engineLauncherInstance == null || engine == null) {</span>
+<span class="nc" id="L96">      logger.error(&quot;Engine not correctly initialized&quot;);</span>
+<span class="nc" id="L97">      System.exit(1);//NOSONAR</span>
     }
-<span class="nc" id="L98">  }</span>
+<span class="nc" id="L99">  }</span>
 
   /**
    * The Java entry point.
@@ -103,22 +104,22 @@ public abstract class ServiceLauncher implements Daemon {
    * @param args Command line arguments, all ignored.
    */
   public static void _main(final String[] args) {
-<span class="nc" id="L106">    initStatic();</span>
+<span class="nc" id="L107">    initStatic();</span>
     // the main routine is only here so I can also run the app from the command line
-<span class="nc" id="L108">    engineLauncherInstance.initialize();</span>
+<span class="nc" id="L109">    engineLauncherInstance.initialize();</span>
 
-<span class="nc" id="L110">    final Scanner sc = new Scanner(System.in);</span>
+<span class="nc" id="L111">    final Scanner sc = new Scanner(System.in);</span>
     // wait until receive stop command from keyboard
-<span class="nc" id="L112">    SysErrLogger.FAKE_LOGGER.sysout(&quot;Enter 'stop' to halt: &quot;);</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">    while (!&quot;stop&quot;.equalsIgnoreCase(sc.nextLine())) {</span>
+<span class="nc" id="L113">    SysErrLogger.FAKE_LOGGER.sysout(&quot;Enter 'stop' to halt: &quot;);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    while (!&quot;stop&quot;.equalsIgnoreCase(sc.nextLine())) {</span>
       // nothing
     }
 
-<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (!engine.isShutdown()) {</span>
-<span class="nc" id="L118">      engineLauncherInstance.terminate();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (!engine.isShutdown()) {</span>
+<span class="nc" id="L119">      engineLauncherInstance.terminate();</span>
     }
-<span class="nc" id="L120">    sc.close();</span>
-<span class="nc" id="L121">  }</span>
+<span class="nc" id="L121">    sc.close();</span>
+<span class="nc" id="L122">  }</span>
 
   /**
    * Windows mode&lt;br&gt;
@@ -139,17 +140,17 @@ public abstract class ServiceLauncher implements Daemon {
    * @throws Exception
    **/
   public static void _windowsService(final String[] args) throws Exception {
-<span class="nc" id="L142">    initStatic();</span>
-<span class="nc" id="L143">    String cmd = &quot;start&quot;;</span>
-<span class="nc bnc" id="L144" title="All 2 branches missed.">    if (args.length &gt; 0) {</span>
-<span class="nc" id="L145">      cmd = args[0];</span>
+<span class="nc" id="L143">    initStatic();</span>
+<span class="nc" id="L144">    String cmd = &quot;start&quot;;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (args.length &gt; 0) {</span>
+<span class="nc" id="L146">      cmd = args[0];</span>
     }
-<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (&quot;start&quot;.equals(cmd)) {</span>
-<span class="nc" id="L148">      engineLauncherInstance.windowsStart();</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (&quot;start&quot;.equals(cmd)) {</span>
+<span class="nc" id="L149">      engineLauncherInstance.windowsStart();</span>
     } else {
-<span class="nc" id="L150">      engineLauncherInstance.windowsStop();</span>
+<span class="nc" id="L151">      engineLauncherInstance.windowsStop();</span>
     }
-<span class="nc" id="L152">  }</span>
+<span class="nc" id="L153">  }</span>
 
   /**
    * Windows mode&lt;br&gt;
@@ -167,9 +168,9 @@ public abstract class ServiceLauncher implements Daemon {
    * @throws Exception
    **/
   public static void _windowsStart(final String[] args) throws Exception {
-<span class="nc" id="L170">    initStatic();</span>
-<span class="nc" id="L171">    engineLauncherInstance.windowsStart();</span>
-<span class="nc" id="L172">  }</span>
+<span class="nc" id="L171">    initStatic();</span>
+<span class="nc" id="L172">    engineLauncherInstance.windowsStart();</span>
+<span class="nc" id="L173">  }</span>
 
   /**
    * Windows mode&lt;br&gt;
@@ -185,10 +186,10 @@ public abstract class ServiceLauncher implements Daemon {
    * @param args Arguments are ignored
    **/
   public static void _windowsStop(final String[] args) {
-<span class="nc" id="L188">    initStatic();</span>
-<span class="nc" id="L189">    stopCalledCorrectly = true;</span>
-<span class="nc" id="L190">    engineLauncherInstance.windowsStop();</span>
-<span class="nc" id="L191">  }</span>
+<span class="nc" id="L189">    initStatic();</span>
+<span class="nc" id="L190">    stopCalledCorrectly = true;</span>
+<span class="nc" id="L191">    engineLauncherInstance.windowsStop();</span>
+<span class="nc" id="L192">  }</span>
 
   /**
    * Internal command
@@ -196,87 +197,87 @@ public abstract class ServiceLauncher implements Daemon {
    * @throws Exception
    */
   protected void windowsStart() throws Exception {
-<span class="nc" id="L199">    logger.info(&quot;windowsStart called&quot;);</span>
-<span class="nc" id="L200">    initialize();</span>
+<span class="nc" id="L200">    logger.info(&quot;windowsStart called&quot;);</span>
+<span class="nc" id="L201">    initialize();</span>
     // We must wait in Windows Mode
-<span class="nc" id="L202">    boolean status = false;</span>
+<span class="nc" id="L203">    boolean status = false;</span>
     try {
-<span class="nc" id="L204">      status = engine.waitShutdown();</span>
-<span class="nc" id="L205">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L206">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L207">    }</span>
-<span class="nc bnc" id="L208" title="All 4 branches missed.">    if (!status || !stopCalledCorrectly) {</span>
+<span class="nc" id="L205">      status = engine.waitShutdown();</span>
+<span class="nc" id="L206">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L207">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L208">    }</span>
+<span class="nc bnc" id="L209" title="All 4 branches missed.">    if (!status || !stopCalledCorrectly) {</span>
       // Was stopped outside service management
-<span class="nc" id="L210">      terminate();</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">      if (controller != null) {</span>
-<span class="nc" id="L212">        controller.fail(&quot;Service stopped abnormally&quot;);</span>
+<span class="nc" id="L211">      terminate();</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">      if (controller != null) {</span>
+<span class="nc" id="L213">        controller.fail(&quot;Service stopped abnormally&quot;);</span>
       } else {
-<span class="nc" id="L214">        throw new InvalidArgumentException(&quot;Service stopped abnormally&quot;);</span>
+<span class="nc" id="L215">        throw new InvalidArgumentException(&quot;Service stopped abnormally&quot;);</span>
       }
     }
-<span class="nc" id="L217">  }</span>
+<span class="nc" id="L218">  }</span>
 
   /**
    * Internal command
    */
   protected void windowsStop() {
-<span class="nc" id="L223">    logger.info(&quot;windowsStop called from Service: {}&quot;, stopCalledCorrectly);</span>
-<span class="nc" id="L224">    terminate();</span>
+<span class="nc" id="L224">    logger.info(&quot;windowsStop called from Service: {}&quot;, stopCalledCorrectly);</span>
+<span class="nc" id="L225">    terminate();</span>
     // should we force Future to be cancelled there?
-<span class="nc" id="L226">  }</span>
+<span class="nc" id="L227">  }</span>
 
   // Implementing the Daemon interface is not required for Windows but is for Linux
   @Override
   public void init(final DaemonContext arg0) {
-<span class="nc" id="L231">    controller = arg0.getController();</span>
-<span class="nc" id="L232">    logger.info(&quot;Daemon init&quot;);</span>
-<span class="nc" id="L233">  }</span>
+<span class="nc" id="L232">    controller = arg0.getController();</span>
+<span class="nc" id="L233">    logger.info(&quot;Daemon init&quot;);</span>
+<span class="nc" id="L234">  }</span>
 
   @Override
   public void start() {
-<span class="nc" id="L237">    logger.info(&quot;Daemon start&quot;);</span>
-<span class="nc" id="L238">    initialize();</span>
-<span class="nc" id="L239">  }</span>
+<span class="nc" id="L238">    logger.info(&quot;Daemon start&quot;);</span>
+<span class="nc" id="L239">    initialize();</span>
+<span class="nc" id="L240">  }</span>
 
   @Override
   public void stop() {
-<span class="nc" id="L243">    logger.info(&quot;Daemon stop&quot;);</span>
-<span class="nc" id="L244">    terminate();</span>
-<span class="nc" id="L245">  }</span>
+<span class="nc" id="L244">    logger.info(&quot;Daemon stop&quot;);</span>
+<span class="nc" id="L245">    terminate();</span>
+<span class="nc" id="L246">  }</span>
 
   @Override
   public void destroy() {
-<span class="nc" id="L249">    logger.info(&quot;Daemon destroy&quot;);</span>
-<span class="nc" id="L250">    terminate();</span>
-<span class="nc" id="L251">  }</span>
+<span class="nc" id="L250">    logger.info(&quot;Daemon destroy&quot;);</span>
+<span class="nc" id="L251">    terminate();</span>
+<span class="nc" id="L252">  }</span>
 
   /**
    * Do the work of starting the engine
    */
   protected void initialize() {
-<span class="nc bnc" id="L257" title="All 2 branches missed.">    if (engine != null) {</span>
-<span class="nc" id="L258">      logger.info(&quot;Starting the Engine&quot;);</span>
-<span class="nc" id="L259">      engine.setDaemon(true);</span>
-<span class="nc" id="L260">      executor.execute(engine);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (engine != null) {</span>
+<span class="nc" id="L259">      logger.info(&quot;Starting the Engine&quot;);</span>
+<span class="nc" id="L260">      engine.setDaemon(true);</span>
+<span class="nc" id="L261">      executor.execute(engine);</span>
     } else {
-<span class="nc" id="L262">      logger.error(&quot;Engine cannot be started since it is not initialized&quot;);</span>
+<span class="nc" id="L263">      logger.error(&quot;Engine cannot be started since it is not initialized&quot;);</span>
     }
-<span class="nc" id="L264">  }</span>
+<span class="nc" id="L265">  }</span>
 
   /**
    * Cleanly stop the engine.
    */
   protected void terminate() {
-<span class="nc bnc" id="L270" title="All 2 branches missed.">    if (engine != null) {</span>
-<span class="nc" id="L271">      logger.info(&quot;Stopping the Engine&quot;);</span>
-<span class="nc" id="L272">      engine.shutdown();</span>
-<span class="nc" id="L273">      engine = null;</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">    if (engine != null) {</span>
+<span class="nc" id="L272">      logger.info(&quot;Stopping the Engine&quot;);</span>
+<span class="nc" id="L273">      engine.shutdown();</span>
+<span class="nc" id="L274">      engine = null;</span>
     }
-<span class="nc bnc" id="L275" title="All 2 branches missed.">    if (executor != null) {</span>
-<span class="nc" id="L276">      executor.shutdown();</span>
-<span class="nc" id="L277">      executor = null;</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (executor != null) {</span>
+<span class="nc" id="L277">      executor.shutdown();</span>
+<span class="nc" id="L278">      executor = null;</span>
     }
-<span class="nc" id="L279">    logger.info(&quot;Engine stopped&quot;);</span>
-<span class="nc" id="L280">  }</span>
+<span class="nc" id="L280">    logger.info(&quot;Engine stopped&quot;);</span>
+<span class="nc" id="L281">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

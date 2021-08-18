@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>XmlUtil.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.xml</a> &gt; <span class="el_source">XmlUtil.java</span></div><h1>XmlUtil.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.xml;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.Writer;
+import java.util.List;
+
+/**
+ * XML utility that handles simple cases as:&lt;br&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;XPath as /x/y/z for a node and referring to root of Document&lt;/li&gt;
+ * &lt;li&gt;XPath as x/y/z for a node and referring to current referenced node&lt;/li&gt;
+ * &lt;li&gt;Any XPath can be a singleton (unique node referenced by the XPath) or
+ * multiple nodes (same XPath)&lt;/li&gt;
+ * &lt;li&gt;Only Element as Node: no Attribute or any other type within XML&lt;/li&gt;
+ * &lt;li&gt;Any other path is not supported: //x /x@y ./ ../&lt;/li&gt;
+ * &lt;li&gt;Supports special SubXml tree as element (singleton or multiple)&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public final class XmlUtil {
+
+  private static final String NODE_NOT_FOUND = &quot;Node not found: &quot;;
+
+  private XmlUtil() {
+  }
+
+  /**
+   * @return the newly created SAXReader
+   */
+  public static SAXReader getNewSaxReader() {
+<span class="nc" id="L64">    final SAXReader saxReader = new SAXReader();</span>
+    try {
+<span class="nc" id="L66">      saxReader.setFeature(</span>
+          &quot;http://apache.org/xml/features/disallow-doctype-decl&quot;, true);
+<span class="nc" id="L68">      saxReader.setFeature(</span>
+          &quot;http://apache.org/xml/features/nonvalidating/load-dtd-grammar&quot;,
+          false);
+<span class="nc" id="L71">      saxReader.setFeature(</span>
+          &quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;,
+          false);
+<span class="nc" id="L74">      saxReader.setFeature(&quot;http://xml.org/sax/features/resolve-dtd-uris&quot;,</span>
+                           false);
+<span class="nc" id="L76">      saxReader.setFeature(</span>
+          &quot;http://xml.org/sax/features/external-general-entities&quot;, false);
+<span class="nc" id="L78">      saxReader.setFeature(</span>
+          &quot;http://xml.org/sax/features/external-parameter-entities&quot;, false);
+<span class="nc" id="L80">      saxReader.setFeature(</span>
+          &quot;http://apache.org/xml/features/validation/id-idref-checking&quot;, false);
+<span class="nc" id="L82">    } catch (final SAXException e) {</span>
+      //Parse with external resources downloading allowed.
+<span class="nc" id="L84">    }</span>
+<span class="nc" id="L85">    return saxReader;</span>
+  }
+
+  /**
+   * @param filename
+   *
+   * @return Existing Document from filename
+   *
+   * @throws IOException
+   * @throws DocumentException
+   */
+  public static Document getDocument(final String filename)
+      throws IOException, DocumentException {
+<span class="nc" id="L98">    final File file = new File(filename);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (!file.canRead()) {</span>
+<span class="nc" id="L100">      throw new IOException(&quot;File is not readable: &quot; + filename);</span>
+    }
+<span class="nc" id="L102">    return getDocument(file);</span>
+  }
+
+  /**
+   * @param file
+   *
+   * @return Existing Document from file
+   *
+   * @throws IOException
+   * @throws DocumentException
+   */
+  public static Document getDocument(final File file)
+      throws IOException, DocumentException {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (!file.canRead()) {</span>
+<span class="nc" id="L116">      throw new IOException(&quot;File is not readable: &quot; + file.getPath());</span>
+    }
+<span class="nc" id="L118">    final SAXReader reader = getNewSaxReader();</span>
+<span class="nc" id="L119">    return reader.read(file);</span>
+  }
+
+  /**
+   * Read the document from the string
+   *
+   * @param document as String
+   *
+   * @return the Document
+   *
+   * @throws DocumentException
+   */
+  public static Document readDocument(final String document)
+      throws DocumentException {
+<span class="nc" id="L133">    return DocumentHelper.parseText(document);</span>
+  }
+
+  /**
+   * @param document
+   *
+   * @return the document as an XML string
+   */
+  public static String writeToString(final Document document) {
+<span class="nc" id="L142">    return document.asXML();</span>
+  }
+
+  /**
+   * @param element
+   *
+   * @return the element as an XML string
+   */
+  public static String writeToString(final Element element) {
+<span class="nc" id="L151">    return element.asXML();</span>
+  }
+
+  /**
+   * @return an empty new Document
+   */
+  public static Document createEmptyDocument() {
+<span class="nc" id="L158">    return DocumentHelper.createDocument();</span>
+  }
+
+  /**
+   * Save the document into the file
+   *
+   * @param filename
+   * @param document
+   *
+   * @throws IOException
+   */
+  public static void saveDocument(final String filename,
+                                  final Document document) throws IOException {
+<span class="nc" id="L171">    final File file = new File(filename);</span>
+<span class="nc" id="L172">    saveDocument(file, document);</span>
+<span class="nc" id="L173">  }</span>
+
+  /**
+   * Save the document into the file
+   *
+   * @param file
+   * @param document
+   *
+   * @throws IOException
+   */
+  public static void saveDocument(final File file, final Document document)
+      throws IOException {
+<span class="nc bnc" id="L185" title="All 4 branches missed.">    if (file.exists() &amp;&amp; !file.canWrite()) {</span>
+<span class="nc" id="L186">      throw new IOException(&quot;File is not writable: &quot; + file.getPath());</span>
+    }
+
+<span class="nc" id="L189">    saveDocument(new FileWriter(file), document);</span>
+<span class="nc" id="L190">  }</span>
+
+  /**
+   * Save the document into the Writer outWriter
+   *
+   * @param outWriter
+   * @param document
+   *
+   * @throws IOException
+   */
+  public static void saveDocument(final Writer outWriter,
+                                  final Document document) throws IOException {
+<span class="nc" id="L202">    final OutputFormat format = OutputFormat.createPrettyPrint();</span>
+<span class="nc" id="L203">    format.setEncoding(WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L204">    final XMLWriter writer = new XMLWriter(outWriter, format);</span>
+<span class="nc" id="L205">    writer.write(document);</span>
+<span class="nc" id="L206">    writer.flush();</span>
+<span class="nc" id="L207">    writer.close();</span>
+<span class="nc" id="L208">  }</span>
+
+  /**
+   * Save the branch from element into the file
+   *
+   * @param filename
+   * @param element
+   *
+   * @throws IOException
+   */
+  public static void saveElement(final String filename, final Element element)
+      throws IOException {
+<span class="nc" id="L220">    final File file = new File(filename);</span>
+<span class="nc" id="L221">    saveElement(file, element);</span>
+<span class="nc" id="L222">  }</span>
+
+  /**
+   * Save the branch from element into the file
+   *
+   * @param file
+   * @param element
+   *
+   * @throws IOException
+   */
+  public static void saveElement(final File file, final Element element)
+      throws IOException {
+<span class="nc bnc" id="L234" title="All 4 branches missed.">    if (file.exists() &amp;&amp; !file.canWrite()) {</span>
+<span class="nc" id="L235">      throw new IOException(&quot;File is not writable: &quot; + file.getPath());</span>
+    }
+<span class="nc" id="L237">    final OutputFormat format = OutputFormat.createPrettyPrint();</span>
+<span class="nc" id="L238">    format.setEncoding(WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L239">    final XMLWriter writer = new XMLWriter(new FileWriter(file), format);</span>
+<span class="nc" id="L240">    writer.write(element);</span>
+<span class="nc" id="L241">    writer.flush();</span>
+<span class="nc" id="L242">    writer.close();</span>
+<span class="nc" id="L243">  }</span>
+
+  /**
+   * Add or Get (if already existing) an element given by the path relative to
+   * the referent element and set the
+   * value
+   *
+   * @param ref
+   * @param path
+   * @param value
+   *
+   * @return the new added or already existing element with new value
+   */
+  public static Element addOrSetElement(final Element ref, final String path,
+                                        final String value) {
+<span class="nc" id="L258">    final Element current = addOrGetElement(ref, path);</span>
+<span class="nc" id="L259">    current.setText(value);</span>
+<span class="nc" id="L260">    return current;</span>
+  }
+
+  /**
+   * Add or Get (if already existing) an element given by the path relative to
+   * the referent element
+   *
+   * @param ref
+   * @param path
+   *
+   * @return the new added or already existing element
+   */
+  public static Element addOrGetElement(final Element ref, final String path) {
+<span class="nc" id="L273">    final String[] pathes = path.split(&quot;/&quot;);</span>
+<span class="nc" id="L274">    Element current = ref;</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">    for (final String nodename : pathes) {</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">      if (!nodename.isEmpty()) {</span>
+<span class="nc" id="L277">        final Element exist = current.element(nodename);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (exist == null) {</span>
+<span class="nc" id="L279">          current = current.addElement(nodename);</span>
+        } else {
+<span class="nc" id="L281">          current = exist;</span>
+        }
+      }
+    }
+<span class="nc" id="L285">    return current;</span>
+  }
+
+  /**
+   * Add an element given by the path relative to the referent element and set
+   * the value
+   *
+   * @param ref
+   * @param path
+   * @param value
+   *
+   * @return the new added element with value
+   */
+  public static Element addAndSetElementMultiple(final Element ref,
+                                                 final String path,
+                                                 final String value) {
+<span class="nc" id="L301">    final Element current = addAndGetElementMultiple(ref, path);</span>
+<span class="nc" id="L302">    current.setText(value);</span>
+<span class="nc" id="L303">    return current;</span>
+  }
+
+  /**
+   * Add an element given by the path relative to the referent element
+   *
+   * @param ref
+   * @param path
+   *
+   * @return the new added element
+   */
+  public static Element addAndGetElementMultiple(final Element ref,
+                                                 final String path) {
+<span class="nc" id="L316">    final String[] pathes = path.split(&quot;/&quot;);</span>
+<span class="nc" id="L317">    Element current = ref;</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">    for (int i = 0; i &lt; pathes.length - 1; i++) {</span>
+<span class="nc" id="L319">      final String nodename = pathes[i];</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">      if (!nodename.isEmpty()) {</span>
+<span class="nc" id="L321">        final Element exist = current.element(nodename);</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (exist == null) {</span>
+<span class="nc" id="L323">          current = current.addElement(nodename);</span>
+        } else {
+<span class="nc" id="L325">          current = exist;</span>
+        }
+      }
+    }
+<span class="nc" id="L329">    final String nodename = pathes[pathes.length - 1];</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">    if (!nodename.isEmpty()) {</span>
+<span class="nc" id="L331">      current = current.addElement(nodename);</span>
+    }
+<span class="nc" id="L333">    return current;</span>
+  }
+
+  /**
+   * @param ref
+   * @param path
+   *
+   * @return the parent element associated with the path relatively to the
+   *     referent element
+   *
+   * @throws DocumentException
+   */
+  public static Element getParentElement(final Element ref, final String path)
+      throws DocumentException {
+<span class="nc" id="L347">    String npath = path;</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">    while (npath.charAt(0) == '/') {</span>
+<span class="nc" id="L349">      npath = npath.substring(1);</span>
+    }
+<span class="nc" id="L351">    final Element current = (Element) ref.selectSingleNode(npath);</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L353">      throw new DocumentException(NODE_NOT_FOUND + path);</span>
+    }
+<span class="nc" id="L355">    return current.getParent();</span>
+  }
+
+  /**
+   * @param ref
+   * @param path
+   *
+   * @return the element associated with the path relatively to the referent
+   *     element
+   *
+   * @throws DocumentException
+   */
+  public static Element getElement(final Element ref, final String path)
+      throws DocumentException {
+<span class="nc" id="L369">    String npath = path;</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">    while (npath.charAt(0) == '/') {</span>
+<span class="nc" id="L371">      npath = npath.substring(1);</span>
+    }
+<span class="nc" id="L373">    final Element current = (Element) ref.selectSingleNode(npath);</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L375">      throw new DocumentException(NODE_NOT_FOUND + path);</span>
+    }
+<span class="nc" id="L377">    return current;</span>
+  }
+
+  /**
+   * @param ref
+   * @param path
+   *
+   * @return the element associated with the path relatively to the referent
+   *     element
+   *
+   * @throws DocumentException
+   */
+  public static List&lt;Node&gt; getElementMultiple(final Element ref,
+                                              final String path)
+      throws DocumentException {
+<span class="nc" id="L392">    String npath = path;</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">    while (npath.charAt(0) == '/') {</span>
+<span class="nc" id="L394">      npath = npath.substring(1);</span>
+    }
+<span class="nc" id="L396">    final List&lt;Node&gt; list = ref.selectNodes(npath);</span>
+<span class="nc bnc" id="L397" title="All 4 branches missed.">    if (list == null || list.isEmpty()) {</span>
+<span class="nc" id="L398">      throw new DocumentException(&quot;Nodes not found: &quot; + path);</span>
+    }
+<span class="nc" id="L400">    return list;</span>
+  }
+
+  /**
+   * Add or Get (if already existing) an element given by the path relative to
+   * the document and set the value
+   *
+   * @param doc
+   * @param path
+   * @param value
+   *
+   * @return the new added or already existing element with new value
+   */
+  public static Element addOrSetElement(final Document doc, final String path,
+                                        final String value) {
+<span class="nc" id="L415">    final Element current = addOrGetElement(doc, path);</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">    if (current != null) {</span>
+<span class="nc" id="L417">      current.setText(value);</span>
+    }
+<span class="nc" id="L419">    return current;</span>
+  }
+
+  /**
+   * Add or Get (if already existing) an element given by the path relative to
+   * the document
+   *
+   * @param doc
+   * @param path
+   *
+   * @return the new added or already existing element
+   */
+  public static Element addOrGetElement(final Document doc, final String path) {
+<span class="nc" id="L432">    final String[] pathes = path.split(&quot;/&quot;);</span>
+    int rank;
+<span class="nc bnc" id="L434" title="All 2 branches missed.">    for (rank = 0; rank &lt; pathes.length; rank++) {</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">      if (!pathes[rank].isEmpty()) {</span>
+<span class="nc" id="L436">        break; // found</span>
+      }
+    }
+<span class="nc bnc" id="L439" title="All 2 branches missed.">    if (rank &gt;= pathes.length) {</span>
+<span class="nc" id="L440">      return null; // Should not be !</span>
+    }
+<span class="nc" id="L442">    Element current = (Element) doc.selectSingleNode(pathes[rank]);</span>
+<span class="nc bnc" id="L443" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L444">      current = doc.addElement(pathes[rank]);</span>
+    }
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    for (int i = rank + 1; i &lt; pathes.length; i++) {</span>
+<span class="nc" id="L447">      final String nodename = pathes[i];</span>
+<span class="nc bnc" id="L448" title="All 2 branches missed.">      if (!nodename.isEmpty()) {</span>
+<span class="nc" id="L449">        final Element exist = current.element(nodename);</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        if (exist == null) {</span>
+<span class="nc" id="L451">          current = current.addElement(nodename);</span>
+        } else {
+<span class="nc" id="L453">          current = exist;</span>
+        }
+      }
+    }
+<span class="nc" id="L457">    return current;</span>
+  }
+
+  /**
+   * Add an element given by the path relative to the document and set the
+   * value
+   *
+   * @param doc
+   * @param path
+   * @param value
+   *
+   * @return the new added element with value
+   */
+  public static Element addAndSetElementMultiple(final Document doc,
+                                                 final String path,
+                                                 final String value) {
+<span class="nc" id="L473">    final Element current = addAndGetElementMultiple(doc, path);</span>
+<span class="nc bnc" id="L474" title="All 2 branches missed.">    if (current != null) {</span>
+<span class="nc" id="L475">      current.setText(value);</span>
+    }
+<span class="nc" id="L477">    return current;</span>
+  }
+
+  /**
+   * Add an element given by the path relative to the document
+   *
+   * @param doc
+   * @param path
+   *
+   * @return the new added element
+   */
+  public static Element addAndGetElementMultiple(final Document doc,
+                                                 final String path) {
+<span class="nc" id="L490">    final String[] pathes = path.split(&quot;/&quot;);</span>
+    int rank;
+<span class="nc bnc" id="L492" title="All 2 branches missed.">    for (rank = 0; rank &lt; pathes.length; rank++) {</span>
+<span class="nc bnc" id="L493" title="All 2 branches missed.">      if (!pathes[rank].isEmpty()) {</span>
+<span class="nc" id="L494">        break; // found</span>
+      }
+    }
+<span class="nc bnc" id="L497" title="All 2 branches missed.">    if (rank &gt;= pathes.length) {</span>
+<span class="nc" id="L498">      return null; // Should not be !</span>
+    }
+<span class="nc" id="L500">    Element current = (Element) doc.selectSingleNode(pathes[rank]);</span>
+<span class="nc bnc" id="L501" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L502">      current = doc.addElement(pathes[rank]);</span>
+    }
+<span class="nc bnc" id="L504" title="All 2 branches missed.">    if (rank == pathes.length - 1) {</span>
+      // Last level is the root !!! No multiple root is allowed !!!
+      // So just give back the root if it exists
+<span class="nc" id="L507">      return current;</span>
+    }
+<span class="nc bnc" id="L509" title="All 2 branches missed.">    for (int i = rank + 1; i &lt; pathes.length - 1; i++) {</span>
+<span class="nc" id="L510">      final String nodename = pathes[i];</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">      if (!nodename.isEmpty()) {</span>
+<span class="nc" id="L512">        final Element exist = current.element(nodename);</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">        if (exist == null) {</span>
+<span class="nc" id="L514">          current = current.addElement(nodename);</span>
+        } else {
+<span class="nc" id="L516">          current = exist;</span>
+        }
+      }
+    }
+<span class="nc" id="L520">    final String nodename = pathes[pathes.length - 1];</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">    if (!nodename.isEmpty()) {</span>
+<span class="nc" id="L522">      current = current.addElement(nodename);</span>
+    }
+<span class="nc" id="L524">    return current;</span>
+  }
+
+  /**
+   * @param doc
+   * @param path
+   *
+   * @return the Parent element associated with the path relatively to the
+   *     document
+   *
+   * @throws DocumentException
+   */
+  public static Element getParentElement(final Document doc, final String path)
+      throws DocumentException {
+<span class="nc" id="L538">    final Element current = (Element) doc.selectSingleNode(path);</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L540">      throw new DocumentException(NODE_NOT_FOUND + path);</span>
+    }
+<span class="nc" id="L542">    return current.getParent();</span>
+  }
+
+  /**
+   * @param doc
+   * @param path
+   *
+   * @return the element associated with the path relatively to the document
+   *
+   * @throws DocumentException
+   */
+  public static Element getElement(final Document doc, final String path)
+      throws DocumentException {
+<span class="nc" id="L555">    final Element current = (Element) doc.selectSingleNode(path);</span>
+<span class="nc bnc" id="L556" title="All 2 branches missed.">    if (current == null) {</span>
+<span class="nc" id="L557">      throw new DocumentException(NODE_NOT_FOUND + path);</span>
+    }
+<span class="nc" id="L559">    return current;</span>
+  }
+
+  /**
+   * @param doc
+   * @param path
+   *
+   * @return the element associated with the path relatively to the document
+   *
+   * @throws DocumentException
+   */
+  public static List&lt;Node&gt; getElementMultiple(final Document doc,
+                                              final String path)
+      throws DocumentException {
+<span class="nc" id="L573">    final List&lt;Node&gt; list = doc.selectNodes(path);</span>
+<span class="nc bnc" id="L574" title="All 4 branches missed.">    if (list == null || list.isEmpty()) {</span>
+<span class="nc" id="L575">      throw new DocumentException(&quot;Nodes not found: &quot; + path);</span>
+    }
+<span class="nc" id="L577">    return list;</span>
+  }
+
+  /**
+   * Remove extra space and tab, newline from beginning and end of String
+   *
+   * @param string
+   *
+   * @return the trimed string
+   */
+  public static String getExtraTrimed(final String string) {
+<span class="nc" id="L588">    return string.replaceAll(&quot;[\\s]+&quot;, &quot; &quot;).trim();</span>
+    // was (&quot;^[\\s]*|[\\s]*$ &quot;, &quot;&quot;)
+  }
+
+  /**
+   * Create the XmlValues from the XmlDevls and the Document
+   *
+   * @param doc
+   * @param decls
+   *
+   * @return XmlValues
+   */
+  public static XmlValue[] read(final Document doc, final XmlDecl[] decls) {
+    final XmlValue[] values;
+<span class="nc" id="L602">    final int len = decls.length;</span>
+<span class="nc" id="L603">    values = new XmlValue[len];</span>
+<span class="nc bnc" id="L604" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="nc" id="L605">      final XmlValue value = new XmlValue(decls[i]);</span>
+<span class="nc" id="L606">      values[i] = value;</span>
+<span class="nc bnc" id="L607" title="All 2 branches missed.">      if (decls[i].isSubXml()) {</span>
+<span class="nc bnc" id="L608" title="All 2 branches missed.">        if (decls[i].isMultiple()) {</span>
+          final List&lt;Node&gt; elts;
+          try {
+<span class="nc" id="L611">            elts = getElementMultiple(doc, decls[i].getXmlPath());</span>
+<span class="nc" id="L612">          } catch (final DocumentException e) {</span>
+<span class="nc" id="L613">            continue;</span>
+<span class="nc" id="L614">          }</span>
+<span class="nc" id="L615">          addValueToNodes(value, elts, decls[i]);</span>
+<span class="nc" id="L616">        } else {</span>
+          final Element element;
+          try {
+<span class="nc" id="L619">            element = getElement(doc, decls[i].getXmlPath());</span>
+<span class="nc" id="L620">          } catch (final DocumentException e) {</span>
+<span class="nc" id="L621">            continue;</span>
+<span class="nc" id="L622">          }</span>
+<span class="nc" id="L623">          setValueToElement(value, read(element, decls[i].getSubXml()));</span>
+<span class="nc" id="L624">        }</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">      } else if (decls[i].isMultiple()) {</span>
+        final List&lt;Node&gt; elts;
+        try {
+<span class="nc" id="L628">          elts = getElementMultiple(doc, decls[i].getXmlPath());</span>
+<span class="nc" id="L629">        } catch (final DocumentException e) {</span>
+<span class="nc" id="L630">          continue;</span>
+<span class="nc" id="L631">        }</span>
+<span class="nc" id="L632">        addFromStringToElements(value, elts);</span>
+<span class="nc" id="L633">      } else {</span>
+        final Element element;
+        try {
+<span class="nc" id="L636">          element = getElement(doc, decls[i].getXmlPath());</span>
+<span class="nc" id="L637">        } catch (final DocumentException e) {</span>
+<span class="nc" id="L638">          continue;</span>
+<span class="nc" id="L639">        }</span>
+<span class="nc" id="L640">        final String svalue = element.getText();</span>
+        try {
+<span class="nc" id="L642">          value.setFromString(getExtraTrimed(svalue));</span>
+<span class="nc" id="L643">        } catch (final InvalidArgumentException e) {</span>
+          // nothing
+<span class="nc" id="L645">        }</span>
+      }
+    }
+<span class="nc" id="L648">    return values;</span>
+  }
+
+  /**
+   * Create the XmlValues from the XmlDevls and the reference Element
+   *
+   * @param ref
+   * @param decls
+   *
+   * @return XmlValues
+   */
+  public static XmlValue[] read(final Element ref, final XmlDecl[] decls) {
+    final XmlValue[] values;
+<span class="nc" id="L661">    final int len = decls.length;</span>
+<span class="nc" id="L662">    values = new XmlValue[len];</span>
+<span class="nc bnc" id="L663" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="nc" id="L664">      final XmlValue value = new XmlValue(decls[i]);</span>
+<span class="nc" id="L665">      values[i] = value;</span>
+<span class="nc bnc" id="L666" title="All 2 branches missed.">      if (decls[i].isSubXml()) {</span>
+<span class="nc bnc" id="L667" title="All 2 branches missed.">        if (decls[i].isMultiple()) {</span>
+          final List&lt;Node&gt; elts;
+          try {
+<span class="nc" id="L670">            elts = getElementMultiple(ref, decls[i].getXmlPath());</span>
+<span class="nc" id="L671">          } catch (final DocumentException e) {</span>
+<span class="nc" id="L672">            continue;</span>
+<span class="nc" id="L673">          }</span>
+<span class="nc" id="L674">          addValueToNodes(value, elts, decls[i]);</span>
+<span class="nc" id="L675">        } else {</span>
+          final Element element;
+          try {
+<span class="nc" id="L678">            element = getElement(ref, decls[i].getXmlPath());</span>
+<span class="nc" id="L679">          } catch (final DocumentException e) {</span>
+<span class="nc" id="L680">            continue;</span>
+<span class="nc" id="L681">          }</span>
+<span class="nc" id="L682">          setValueToElement(value, read(element, decls[i].getSubXml()));</span>
+<span class="nc" id="L683">        }</span>
+<span class="nc bnc" id="L684" title="All 2 branches missed.">      } else if (decls[i].isMultiple()) {</span>
+        final List&lt;Node&gt; elts;
+        try {
+<span class="nc" id="L687">          elts = getElementMultiple(ref, decls[i].getXmlPath());</span>
+<span class="nc" id="L688">        } catch (final DocumentException e) {</span>
+<span class="nc" id="L689">          continue;</span>
+<span class="nc" id="L690">        }</span>
+<span class="nc" id="L691">        addFromStringToElements(value, elts);</span>
+<span class="nc" id="L692">      } else {</span>
+        final Element element;
+        try {
+<span class="nc" id="L695">          element = getElement(ref, decls[i].getXmlPath());</span>
+<span class="nc" id="L696">        } catch (final DocumentException e) {</span>
+<span class="nc" id="L697">          continue;</span>
+<span class="nc" id="L698">        }</span>
+<span class="nc" id="L699">        final String svalue = element.getText();</span>
+        try {
+<span class="nc" id="L701">          value.setFromString(getExtraTrimed(svalue));</span>
+<span class="nc" id="L702">        } catch (final InvalidArgumentException e) {</span>
+          // nothing
+<span class="nc" id="L704">        }</span>
+      }
+    }
+<span class="nc" id="L707">    return values;</span>
+  }
+
+  private static void addFromStringToElements(final XmlValue value,
+                                              final List&lt;Node&gt; elts) {
+<span class="nc bnc" id="L712" title="All 2 branches missed.">    for (final Node element : elts) {</span>
+<span class="nc" id="L713">      final String svalue = element.getText();</span>
+      try {
+<span class="nc" id="L715">        value.addFromString(getExtraTrimed(svalue));</span>
+<span class="nc" id="L716">      } catch (final InvalidObjectException e) {</span>
+        // nothing
+<span class="nc" id="L718">      } catch (final InvalidArgumentException e) {</span>
+        // nothing
+<span class="nc" id="L720">      }</span>
+<span class="nc" id="L721">    }</span>
+<span class="nc" id="L722">  }</span>
+
+  private static void setValueToElement(final XmlValue value,
+                                        final XmlValue[] read) {
+<span class="nc bnc" id="L726" title="All 2 branches missed.">    if (read == null) {</span>
+<span class="nc" id="L727">      return;</span>
+    }
+    try {
+<span class="nc" id="L730">      value.setValue(read);</span>
+<span class="nc" id="L731">    } catch (final InvalidObjectException e) {</span>
+      // nothing
+<span class="nc" id="L733">    }</span>
+<span class="nc" id="L734">  }</span>
+
+  private static void addValueToNodes(final XmlValue value,
+                                      final List&lt;Node&gt; elts,
+                                      final XmlDecl decl) {
+<span class="nc bnc" id="L739" title="All 2 branches missed.">    for (final Node element : elts) {</span>
+<span class="nc" id="L740">      final XmlValue[] newValue = read((Element) element, decl.getSubXml());</span>
+      try {
+<span class="nc" id="L742">        value.addValue(newValue);</span>
+<span class="nc" id="L743">      } catch (final InvalidObjectException e) {</span>
+        // nothing
+<span class="nc" id="L745">      }</span>
+<span class="nc" id="L746">    }</span>
+<span class="nc" id="L747">  }</span>
+
+  /**
+   * Add all nodes from XmlValues into Document
+   *
+   * @param doc
+   * @param values
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public static void write(final Document doc, final XmlValue[] values) {
+<span class="nc bnc" id="L757" title="All 2 branches missed.">    for (final XmlValue value : values) {</span>
+<span class="nc bnc" id="L758" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc bnc" id="L759" title="All 2 branches missed.">        if (value.isSubXml()) {</span>
+<span class="nc bnc" id="L760" title="All 2 branches missed.">          if (value.isMultiple()) {</span>
+<span class="nc" id="L761">            final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="nc bnc" id="L762" title="All 2 branches missed.">            for (final XmlValue[] object : list) {</span>
+<span class="nc" id="L763">              final Element ref =</span>
+<span class="nc" id="L764">                  addAndGetElementMultiple(doc, value.getXmlPath());</span>
+<span class="nc" id="L765">              write(ref, object);</span>
+<span class="nc" id="L766">            }</span>
+<span class="nc" id="L767">          } else {</span>
+<span class="nc" id="L768">            final Element ref = addOrGetElement(doc, value.getXmlPath());</span>
+<span class="nc" id="L769">            write(ref, value.getSubXml());</span>
+<span class="nc" id="L770">          }</span>
+<span class="nc bnc" id="L771" title="All 2 branches missed.">        } else if (value.isMultiple()) {</span>
+<span class="nc" id="L772">          final List&lt;?&gt; list = value.getList();</span>
+<span class="nc bnc" id="L773" title="All 2 branches missed.">          for (final Object object : list) {</span>
+<span class="nc" id="L774">            addAndSetElementMultiple(doc, value.getXmlPath(),</span>
+<span class="nc" id="L775">                                     object.toString());</span>
+<span class="nc" id="L776">          }</span>
+<span class="nc" id="L777">        } else {</span>
+<span class="nc" id="L778">          addOrSetElement(doc, value.getXmlPath(), value.getIntoString());</span>
+        }
+      }
+    }
+<span class="nc" id="L782">  }</span>
+
+  /**
+   * Add all nodes from XmlValues from the referenced Element
+   *
+   * @param ref
+   * @param values
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public static void write(final Element ref, final XmlValue[] values) {
+<span class="nc bnc" id="L792" title="All 2 branches missed.">    for (final XmlValue value : values) {</span>
+<span class="nc bnc" id="L793" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc bnc" id="L794" title="All 2 branches missed.">        if (value.isSubXml()) {</span>
+<span class="nc bnc" id="L795" title="All 2 branches missed.">          if (value.isMultiple()) {</span>
+<span class="nc" id="L796">            final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="nc bnc" id="L797" title="All 2 branches missed.">            for (final XmlValue[] object : list) {</span>
+<span class="nc" id="L798">              final Element newref =</span>
+<span class="nc" id="L799">                  addAndGetElementMultiple(ref, value.getXmlPath());</span>
+<span class="nc" id="L800">              write(newref, object);</span>
+<span class="nc" id="L801">            }</span>
+<span class="nc" id="L802">          } else {</span>
+<span class="nc" id="L803">            final Element newref = addOrGetElement(ref, value.getXmlPath());</span>
+<span class="nc" id="L804">            write(newref, value.getSubXml());</span>
+<span class="nc" id="L805">          }</span>
+<span class="nc bnc" id="L806" title="All 2 branches missed.">        } else if (value.isMultiple()) {</span>
+<span class="nc" id="L807">          final List&lt;?&gt; list = value.getList();</span>
+<span class="nc bnc" id="L808" title="All 2 branches missed.">          for (final Object object : list) {</span>
+<span class="nc" id="L809">            addAndSetElementMultiple(ref, value.getXmlPath(),</span>
+<span class="nc" id="L810">                                     object.toString());</span>
+<span class="nc" id="L811">          }</span>
+<span class="nc" id="L812">        } else {</span>
+<span class="nc" id="L813">          addOrSetElement(ref, value.getXmlPath(), value.getIntoString());</span>
+        }
+      }
+    }
+<span class="nc" id="L817">  }</span>
+
+  /**
+   * Write the given XML document to filename using the encoding
+   *
+   * @param filename
+   * @param encoding if null, default encoding UTF-8 will be used
+   * @param document
+   *
+   * @throws IOException
+   */
+  public static void writeXML(final String filename, final String encoding,
+                              final Document document) throws IOException {
+<span class="nc" id="L830">    final OutputFormat format = OutputFormat.createPrettyPrint();</span>
+<span class="nc bnc" id="L831" title="All 2 branches missed.">    if (encoding != null) {</span>
+<span class="nc" id="L832">      format.setEncoding(encoding);</span>
+    } else {
+<span class="nc" id="L834">      format.setEncoding(WaarpStringUtils.UTF8.name());</span>
+    }
+    final XMLWriter writer;
+<span class="nc" id="L837">    writer = new XMLWriter(new FileWriter(filename), format);</span>
+<span class="nc" id="L838">    writer.write(document);</span>
+    try {
+<span class="nc" id="L840">      writer.close();</span>
+<span class="nc" id="L841">    } catch (final IOException ignored) {</span>
+      // nothing
+<span class="nc" id="L843">    }</span>
+<span class="nc" id="L844">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

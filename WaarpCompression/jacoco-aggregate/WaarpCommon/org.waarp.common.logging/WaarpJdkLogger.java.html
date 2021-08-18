@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpJdkLogger.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Compression</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.logging</a> &gt; <span class="el_source">WaarpJdkLogger.java</span></div><h1>WaarpJdkLogger.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2012 The Netty Project
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the &quot;License&quot;); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+/**
+ * Copyright (c) 2004-2011 QOS.ch
+ * All rights reserved.
+ * &lt;p&gt;
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * &quot;Software&quot;), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * &lt;p&gt;
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * &lt;p&gt;
+ * THE SOFTWARE IS PROVIDED &quot;AS  IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+package org.waarp.common.logging;
+
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+/**
+ * &lt;a href=&quot;http://java.sun.com/javase/6/docs/technotes/guides/logging/index.html&quot;&gt;java.util.logging&lt;/a&gt;
+ * logger.
+ */
+public class WaarpJdkLogger extends AbstractWaarpLogger {
+
+  private static final long serialVersionUID = -1767272577989225979L;
+
+  final transient Logger logger;
+
+  WaarpJdkLogger(final Logger logger) {
+<span class="nc" id="L73">    super(logger.getName());</span>
+<span class="nc" id="L74">    this.logger = logger;</span>
+<span class="nc" id="L75">  }</span>
+
+  @Override
+  public final void setLevel(final WaarpLogLevel level) {
+<span class="nc bnc" id="L79" title="All 7 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L81">        logger.setLevel(Level.FINEST);</span>
+<span class="nc" id="L82">        break;</span>
+      case DEBUG:
+<span class="nc" id="L84">        logger.setLevel(Level.FINE);</span>
+<span class="nc" id="L85">        break;</span>
+      case INFO:
+<span class="nc" id="L87">        logger.setLevel(Level.INFO);</span>
+<span class="nc" id="L88">        break;</span>
+      case WARN:
+<span class="nc" id="L90">        logger.setLevel(Level.WARNING);</span>
+<span class="nc" id="L91">        break;</span>
+      case ERROR:
+<span class="nc" id="L93">        logger.setLevel(Level.SEVERE);</span>
+<span class="nc" id="L94">        break;</span>
+      case NONE:
+<span class="nc" id="L96">        logger.setLevel(Level.OFF);</span>
+        break;
+    }
+<span class="nc" id="L99">  }</span>
+
+  /**
+   * Is this logger instance enabled for the FINEST level?
+   *
+   * @return True if this Logger is enabled for level FINEST, false otherwise.
+   */
+  @Override
+  public final boolean isTraceEnabled() {
+<span class="nc" id="L108">    return logger.isLoggable(Level.FINEST);</span>
+  }
+
+  @Override
+  public final void junit(final int callee, final String msg) {
+<span class="nc" id="L113">    logger.warning(msg);</span>
+<span class="nc" id="L114">  }</span>
+
+  /**
+   * Log a message object at level FINEST.
+   *
+   * @param msg - the message object to be logged
+   */
+  @Override
+  public final void trace(final String msg) {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L124">      log(SELF, Level.FINEST, msg, null);</span>
+    }
+<span class="nc" id="L126">  }</span>
+
+  /**
+   * Log a message at level FINEST according to the specified format and
+   * argument.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for level FINEST.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param arg the argument
+   */
+  @Override
+  public final void trace(final String format, final Object arg) {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L143">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L144">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L146">  }</span>
+
+  /**
+   * Log a message at level FINEST according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the FINEST level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argA the first argument
+   * @param argB the second argument
+   */
+  @Override
+  public final void trace(final String format, final Object argA,
+                          final Object argB) {
+<span class="nc bnc" id="L164" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L165">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L166">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L168">  }</span>
+
+  /**
+   * Log a message at level FINEST according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the FINEST level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argArray an array of arguments
+   */
+  @Override
+  public final void trace(final String format, final Object... argArray) {
+<span class="nc bnc" id="L184" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L185">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="nc" id="L186">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L188">  }</span>
+
+  /**
+   * Log an exception (throwable) at level FINEST with an accompanying
+   * message.
+   *
+   * @param msg the message accompanying the exception
+   * @param t the exception (throwable) to log
+   */
+  @Override
+  public final void trace(final String msg, final Throwable t) {
+<span class="nc bnc" id="L199" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L200">      log(SELF, Level.FINEST, msg, t);</span>
+    }
+<span class="nc" id="L202">  }</span>
+
+  /**
+   * Is this logger instance enabled for the FINE level?
+   *
+   * @return True if this Logger is enabled for level FINE, false otherwise.
+   */
+  @Override
+  public final boolean isDebugEnabled() {
+<span class="nc" id="L211">    return logger.isLoggable(Level.FINE);</span>
+  }
+
+  /**
+   * Log a message object at level FINE.
+   *
+   * @param msg - the message object to be logged
+   */
+  @Override
+  public final void debug(final String msg) {
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L222">      log(SELF, Level.FINE, msg, null);</span>
+    }
+<span class="nc" id="L224">  }</span>
+
+  /**
+   * Log a message at level FINE according to the specified format and
+   * argument.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for level FINE.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param arg the argument
+   */
+  @Override
+  public final void debug(final String format, final Object arg) {
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L241">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L242">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L244">  }</span>
+
+  /**
+   * Log a message at level FINE according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the FINE level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argA the first argument
+   * @param argB the second argument
+   */
+  @Override
+  public final void debug(final String format, final Object argA,
+                          final Object argB) {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L263">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L264">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L266">  }</span>
+
+  /**
+   * Log a message at level FINE according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the FINE level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argArray an array of arguments
+   */
+  @Override
+  public final void debug(final String format, final Object... argArray) {
+<span class="nc bnc" id="L282" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L283">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="nc" id="L284">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L286">  }</span>
+
+  /**
+   * Log an exception (throwable) at level FINE with an accompanying message.
+   *
+   * @param msg the message accompanying the exception
+   * @param t the exception (throwable) to log
+   */
+  @Override
+  public final void debug(final String msg, final Throwable t) {
+<span class="nc bnc" id="L296" title="All 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L297">      log(SELF, Level.FINE, msg, t);</span>
+    }
+<span class="nc" id="L299">  }</span>
+
+  /**
+   * Is this logger instance enabled for the INFO level?
+   *
+   * @return True if this Logger is enabled for the INFO level, false
+   *     otherwise.
+   */
+  @Override
+  public final boolean isInfoEnabled() {
+<span class="nc" id="L309">    return logger.isLoggable(Level.INFO);</span>
+  }
+
+  /**
+   * Log a message object at the INFO level.
+   *
+   * @param msg - the message object to be logged
+   */
+  @Override
+  public final void info(final String msg) {
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="nc" id="L320">      log(SELF, Level.INFO, msg, null);</span>
+    }
+<span class="nc" id="L322">  }</span>
+
+  /**
+   * Log a message at level INFO according to the specified format and
+   * argument.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the INFO level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param arg the argument
+   */
+  @Override
+  public final void info(final String format, final Object arg) {
+<span class="nc bnc" id="L338" title="All 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="nc" id="L339">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L340">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L342">  }</span>
+
+  /**
+   * Log a message at the INFO level according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the INFO level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argA the first argument
+   * @param argB the second argument
+   */
+  @Override
+  public final void info(final String format, final Object argA,
+                         final Object argB) {
+<span class="nc bnc" id="L360" title="All 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="nc" id="L361">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L362">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L364">  }</span>
+
+  /**
+   * Log a message at level INFO according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the INFO level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argArray an array of arguments
+   */
+  @Override
+  public final void info(final String format, final Object... argArray) {
+<span class="nc bnc" id="L380" title="All 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="nc" id="L381">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="nc" id="L382">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L384">  }</span>
+
+  /**
+   * Log an exception (throwable) at the INFO level with an accompanying
+   * message.
+   *
+   * @param msg the message accompanying the exception
+   * @param t the exception (throwable) to log
+   */
+  @Override
+  public final void info(final String msg, final Throwable t) {
+<span class="nc bnc" id="L395" title="All 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="nc" id="L396">      log(SELF, Level.INFO, msg, t);</span>
+    }
+<span class="nc" id="L398">  }</span>
+
+  /**
+   * Is this logger instance enabled for the WARNING level?
+   *
+   * @return True if this Logger is enabled for the WARNING level, false
+   *     otherwise.
+   */
+  @Override
+  public final boolean isWarnEnabled() {
+<span class="nc" id="L408">    return logger.isLoggable(Level.WARNING);</span>
+  }
+
+  /**
+   * Log a message object at the WARNING level.
+   *
+   * @param msg - the message object to be logged
+   */
+  @Override
+  public final void warn(final String msg) {
+<span class="nc bnc" id="L418" title="All 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="nc" id="L419">      log(SELF, Level.WARNING, msg, null);</span>
+    }
+<span class="nc" id="L421">  }</span>
+
+  /**
+   * Log a message at the WARNING level according to the specified format and
+   * argument.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the WARNING level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param arg the argument
+   */
+  @Override
+  public final void warn(final String format, final Object arg) {
+<span class="nc bnc" id="L437" title="All 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="nc" id="L438">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L439">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L441">  }</span>
+
+  /**
+   * Log a message at the WARNING level according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the WARNING level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argA the first argument
+   * @param argB the second argument
+   */
+  @Override
+  public final void warn(final String format, final Object argA,
+                         final Object argB) {
+<span class="nc bnc" id="L459" title="All 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="nc" id="L460">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L461">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L463">  }</span>
+
+  /**
+   * Log a message at level WARNING according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the WARNING level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argArray an array of arguments
+   */
+  @Override
+  public final void warn(final String format, final Object... argArray) {
+<span class="nc bnc" id="L479" title="All 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="nc" id="L480">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="nc" id="L481">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L483">  }</span>
+
+  /**
+   * Log an exception (throwable) at the WARNING level with an accompanying
+   * message.
+   *
+   * @param msg the message accompanying the exception
+   * @param t the exception (throwable) to log
+   */
+  @Override
+  public final void warn(final String msg, final Throwable t) {
+<span class="nc bnc" id="L494" title="All 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="nc" id="L495">      log(SELF, Level.WARNING, msg, t);</span>
+    }
+<span class="nc" id="L497">  }</span>
+
+  /**
+   * Is this logger instance enabled for level SEVERE?
+   *
+   * @return True if this Logger is enabled for level SEVERE, false otherwise.
+   */
+  @Override
+  public final boolean isErrorEnabled() {
+<span class="nc" id="L506">    return logger.isLoggable(Level.SEVERE);</span>
+  }
+
+  /**
+   * Log a message object at the SEVERE level.
+   *
+   * @param msg - the message object to be logged
+   */
+  @Override
+  public final void error(final String msg) {
+<span class="nc bnc" id="L516" title="All 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="nc" id="L517">      log(SELF, Level.SEVERE, msg, null);</span>
+    }
+<span class="nc" id="L519">  }</span>
+
+  /**
+   * Log a message at the SEVERE level according to the specified format and
+   * argument.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the SEVERE level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param arg the argument
+   */
+  @Override
+  public final void error(final String format, final Object arg) {
+<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="nc" id="L536">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L537">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L539">  }</span>
+
+  /**
+   * Log a message at the SEVERE level according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the SEVERE level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param argA the first argument
+   * @param argB the second argument
+   */
+  @Override
+  public final void error(final String format, final Object argA,
+                          final Object argB) {
+<span class="nc bnc" id="L557" title="All 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="nc" id="L558">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L559">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L561">  }</span>
+
+  /**
+   * Log a message at level SEVERE according to the specified format and
+   * arguments.
+   *
+   * &lt;p&gt;
+   * This form avoids superfluous object creation when the logger is disabled
+   * for the SEVERE level.
+   * &lt;/p&gt;
+   *
+   * @param format the format string
+   * @param arguments an array of arguments
+   */
+  @Override
+  public final void error(final String format, final Object... arguments) {
+<span class="nc bnc" id="L577" title="All 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="nc" id="L578">      final FormattingTuple ft =</span>
+<span class="nc" id="L579">          MessageFormatter.arrayFormat(format, arguments);</span>
+<span class="nc" id="L580">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
+    }
+<span class="nc" id="L582">  }</span>
+
+  /**
+   * Log an exception (throwable) at the SEVERE level with an accompanying
+   * message.
+   *
+   * @param msg the message accompanying the exception
+   * @param t the exception (throwable) to log
+   */
+  @Override
+  public final void error(final String msg, final Throwable t) {
+<span class="nc bnc" id="L593" title="All 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="nc" id="L594">      log(SELF, Level.SEVERE, msg, t);</span>
+    }
+<span class="nc" id="L596">  }</span>
+
+  /**
+   * Log the message at the specified level with the specified throwable if
+   * any.
+   * This method creates a LogRecord
+   * and fills in caller date before calling this instance's JDK14 logger.
+   * &lt;p&gt;
+   * See bug report #13 for more details.
+   */
+  private void log(final String callerFQCN, final Level level, final String msg,
+                   final Throwable t) {
+    // millis and thread are filled by the constructor
+<span class="nc" id="L609">    final LogRecord record = new LogRecord(level, msg);</span>
+<span class="nc" id="L610">    record.setLoggerName(name());</span>
+<span class="nc" id="L611">    record.setThrown(t);</span>
+<span class="nc" id="L612">    fillCallerData(callerFQCN, record);</span>
+<span class="nc" id="L613">    logger.log(record);</span>
+<span class="nc" id="L614">  }</span>
+
+<span class="nc" id="L616">  static final String SELF = WaarpJdkLogger.class.getName();</span>
+<span class="nc" id="L617">  static final String SUPER = AbstractWaarpLogger.class.getName();</span>
+
+  /**
+   * Fill in caller data if possible.
+   *
+   * @param record The record to update
+   */
+  private static void fillCallerData(final String callerFQCN,
+                                     final LogRecord record) {
+<span class="nc" id="L626">    final StackTraceElement[] steArray = new Throwable().getStackTrace();</span>
+
+<span class="nc" id="L628">    int selfIndex = -1;</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">    for (int i = 0; i &lt; steArray.length; i++) {</span>
+<span class="nc" id="L630">      final String className = steArray[i].getClassName();</span>
+<span class="nc bnc" id="L631" title="All 4 branches missed.">      if (className.equals(callerFQCN) || className.equals(SUPER)) {</span>
+<span class="nc" id="L632">        selfIndex = i;</span>
+<span class="nc" id="L633">        break;</span>
+      }
+    }
+
+<span class="nc" id="L637">    int found = -1;</span>
+<span class="nc bnc" id="L638" title="All 2 branches missed.">    for (int i = selfIndex + 1; i &lt; steArray.length; i++) {</span>
+<span class="nc" id="L639">      final String className = steArray[i].getClassName();</span>
+<span class="nc bnc" id="L640" title="All 4 branches missed.">      if (!(className.equals(callerFQCN) || className.equals(SUPER))) {</span>
+<span class="nc" id="L641">        found = i;</span>
+<span class="nc" id="L642">        break;</span>
+      }
+    }
+
+<span class="nc bnc" id="L646" title="All 2 branches missed.">    if (found != -1) {</span>
+<span class="nc" id="L647">      final StackTraceElement ste = steArray[found];</span>
+      // setting the class name has the side effect of setting
+      // the needToInferCaller variable to false.
+<span class="nc" id="L650">      record.setSourceClassName(ste.getClassName());</span>
+<span class="nc" id="L651">      record.setSourceMethodName(ste.getMethodName());</span>
+    }
+<span class="nc" id="L653">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

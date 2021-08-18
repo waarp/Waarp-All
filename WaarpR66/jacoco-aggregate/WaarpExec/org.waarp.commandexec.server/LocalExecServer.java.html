@@ -57,8 +57,8 @@ import java.net.InetSocketAddress;
    * @throws Exception
    */
   public static void main(final String[] args) throws Exception {
-<span class="nc" id="L60">    WaarpLoggerFactory</span>
-<span class="nc" id="L61">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L60">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="nc" id="L62">    int port = 9999;</span>
     final InetAddress addr;
 <span class="nc" id="L64">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
@@ -75,24 +75,25 @@ import java.net.InetSocketAddress;
     // Configure the server.
     try {
 <span class="nc" id="L77">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L78">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);</span>
+<span class="nc" id="L78">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, workerGroup,</span>
+                                        30000);
 
       // Configure the pipeline factory.
-<span class="nc" id="L81">      bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));</span>
+<span class="nc" id="L82">      bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));</span>
 
       // Bind and start to accept incoming connections only on local address.
-<span class="nc" id="L84">      final ChannelFuture future =</span>
-<span class="nc" id="L85">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
+<span class="nc" id="L85">      final ChannelFuture future =</span>
+<span class="nc" id="L86">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
 
       // Wait until the server socket is closed.
-<span class="nc" id="L88">      future.channel().closeFuture().sync();</span>
+<span class="nc" id="L89">      future.channel().closeFuture().sync();</span>
     } finally {
       // Shut down all event loops to terminate all threads.
-<span class="nc" id="L91">      workerGroup.shutdownGracefully();</span>
+<span class="nc" id="L92">      workerGroup.shutdownGracefully();</span>
 
       // Wait until all threads are terminated.
-<span class="nc" id="L94">      workerGroup.terminationFuture().sync();</span>
+<span class="nc" id="L95">      workerGroup.terminationFuture().sync();</span>
     }
-<span class="nc" id="L96">  }</span>
+<span class="nc" id="L97">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

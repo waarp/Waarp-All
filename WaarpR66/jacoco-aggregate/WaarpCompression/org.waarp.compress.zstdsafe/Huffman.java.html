@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>Huffman.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdsafe</a> &gt; <span class="el_source">Huffman.java</span></div><h1>Huffman.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdsafe;
+
+import java.util.Arrays;
+
+import static org.waarp.compress.zstdsafe.BitInputStream.*;
+import static org.waarp.compress.zstdsafe.Constants.*;
+import static org.waarp.compress.zstdsafe.UnsafeUtil.*;
+import static org.waarp.compress.zstdsafe.Util.*;
+
+<span class="nc" id="L43">class Huffman {</span>
+  public static final int MAX_SYMBOL = 255;
+  public static final int MAX_SYMBOL_COUNT = MAX_SYMBOL + 1;
+
+  public static final int MAX_TABLE_LOG = 12;
+  public static final int MIN_TABLE_LOG = 5;
+  public static final int MAX_FSE_TABLE_LOG = 6;
+  public static final String NOT_ENOUGH_INPUT_BYTES = &quot;Not enough input bytes&quot;;
+  public static final String INPUT_IS_CORRUPTED = &quot;Input is corrupted&quot;;
+
+  // stats
+<span class="nc" id="L54">  private final byte[] weights = new byte[MAX_SYMBOL + 1];</span>
+<span class="nc" id="L55">  private final int[] ranks = new int[MAX_TABLE_LOG + 1];</span>
+
+  // table
+<span class="nc" id="L58">  private int tableLog = -1;</span>
+<span class="nc" id="L59">  private final byte[] symbols = new byte[1 &lt;&lt; MAX_TABLE_LOG];</span>
+<span class="nc" id="L60">  private final byte[] numbersOfBits = new byte[1 &lt;&lt; MAX_TABLE_LOG];</span>
+
+<span class="nc" id="L62">  private final FseTableReader reader = new FseTableReader();</span>
+<span class="nc" id="L63">  private final FiniteStateEntropy.Table fseTable =</span>
+      new FiniteStateEntropy.Table(MAX_FSE_TABLE_LOG);
+
+  public boolean isLoaded() {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    return tableLog != -1;</span>
+  }
+
+  public int readTable(final byte[] inputBase, final int inputAddress,
+                       final int size) {
+<span class="nc" id="L72">    Arrays.fill(ranks, 0);</span>
+<span class="nc" id="L73">    int input = inputAddress;</span>
+
+    // read table header
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    verify(size &gt; 0, input, NOT_ENOUGH_INPUT_BYTES);</span>
+<span class="nc" id="L77">    int inputSize = inputBase[input++] &amp; 0xFF;</span>
+
+    final int outputSize;
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (inputSize &gt;= 128) {</span>
+<span class="nc" id="L81">      outputSize = inputSize - 127;</span>
+<span class="nc" id="L82">      inputSize = ((outputSize + 1) / 2);</span>
+
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      verify(inputSize + 1 &lt;= size, input, NOT_ENOUGH_INPUT_BYTES);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">      verify(outputSize &lt;= MAX_SYMBOL + 1, input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      for (int i = 0; i &lt; outputSize; i += 2) {</span>
+<span class="nc" id="L88">        final int value = inputBase[input + i / 2] &amp; 0xFF;</span>
+<span class="nc" id="L89">        weights[i] = (byte) (value &gt;&gt;&gt; 4);</span>
+<span class="nc" id="L90">        weights[i + 1] = (byte) (value &amp; 0xF);</span>
+      }
+    } else {
+<span class="nc bnc" id="L93" title="All 2 branches missed.">      verify(inputSize + 1 &lt;= size, input, NOT_ENOUGH_INPUT_BYTES);</span>
+
+<span class="nc" id="L95">      final int inputLimit = input + inputSize;</span>
+<span class="nc" id="L96">      input += reader.readFseTable(fseTable, inputBase, input, inputLimit,</span>
+                                   FiniteStateEntropy.MAX_SYMBOL,
+                                   MAX_FSE_TABLE_LOG);
+<span class="nc" id="L99">      outputSize =</span>
+<span class="nc" id="L100">          FiniteStateEntropy.decompress(fseTable, inputBase, input, inputLimit,</span>
+                                        weights);
+    }
+
+<span class="nc" id="L104">    int totalWeight = 0;</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    for (int i = 0; i &lt; outputSize; i++) {</span>
+<span class="nc" id="L106">      ranks[weights[i]]++;</span>
+<span class="nc" id="L107">      totalWeight +=</span>
+          (1 &lt;&lt; weights[i]) &gt;&gt; 1;   // TODO same as 1 &lt;&lt; (weights[n] - 1)?
+    }
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    verify(totalWeight != 0, input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc" id="L112">    tableLog = Util.highestBit(totalWeight) + 1;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    verify(tableLog &lt;= MAX_TABLE_LOG, input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc" id="L115">    final int total = 1 &lt;&lt; tableLog;</span>
+<span class="nc" id="L116">    final int rest = total - totalWeight;</span>
+<span class="nc" id="L117">    verify(isPowerOf2(rest), input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc" id="L119">    final int lastWeight = Util.highestBit(rest) + 1;</span>
+
+<span class="nc" id="L121">    weights[outputSize] = (byte) lastWeight;</span>
+<span class="nc" id="L122">    ranks[lastWeight]++;</span>
+
+<span class="nc" id="L124">    final int numberOfSymbols = outputSize + 1;</span>
+
+    // populate table
+<span class="nc" id="L127">    int nextRankStart = 0;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    for (int i = 1; i &lt; tableLog + 1; ++i) {</span>
+<span class="nc" id="L129">      final int current = nextRankStart;</span>
+<span class="nc" id="L130">      nextRankStart += ranks[i] &lt;&lt; (i - 1);</span>
+<span class="nc" id="L131">      ranks[i] = current;</span>
+    }
+
+<span class="nc bnc" id="L134" title="All 2 branches missed.">    for (int n = 0; n &lt; numberOfSymbols; n++) {</span>
+<span class="nc" id="L135">      final int weight = weights[n];</span>
+<span class="nc" id="L136">      final int length = (1 &lt;&lt; weight) &gt;&gt; 1;  // TODO: 1 &lt;&lt; (weight - 1) ??</span>
+
+<span class="nc" id="L138">      final byte symbol = (byte) n;</span>
+<span class="nc" id="L139">      final byte numberOfBits = (byte) (tableLog + 1 - weight);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">      for (int i = ranks[weight]; i &lt; ranks[weight] + length; i++) {</span>
+<span class="nc" id="L141">        symbols[i] = symbol;</span>
+<span class="nc" id="L142">        numbersOfBits[i] = numberOfBits;</span>
+      }
+<span class="nc" id="L144">      ranks[weight] += length;</span>
+    }
+
+<span class="nc bnc" id="L147" title="All 4 branches missed.">    verify(ranks[1] &gt;= 2 &amp;&amp; (ranks[1] &amp; 1) == 0, input, INPUT_IS_CORRUPTED);</span>
+
+<span class="nc" id="L149">    return inputSize + 1;</span>
+  }
+
+  public void decodeSingleStream(final byte[] inputBase, final int inputAddress,
+                                 final int inputLimit, final byte[] outputBase,
+                                 final int outputAddress,
+                                 final int outputLimit) {
+<span class="nc" id="L156">    final BitInputStream.Initializer initializer =</span>
+        new BitInputStream.Initializer(inputBase, inputAddress, inputLimit);
+<span class="nc" id="L158">    initializer.initialize();</span>
+
+<span class="nc" id="L160">    long bits = initializer.getBits();</span>
+<span class="nc" id="L161">    int bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L162">    int currentAddress = initializer.getCurrentAddress();</span>
+
+<span class="nc" id="L164">    final int tableLog1 = this.tableLog;</span>
+<span class="nc" id="L165">    final byte[] numbersOfBits1 = this.numbersOfBits;</span>
+<span class="nc" id="L166">    final byte[] symbols1 = this.symbols;</span>
+
+    // 4 symbols at a time
+<span class="nc" id="L169">    int output = outputAddress;</span>
+<span class="nc" id="L170">    final int fastOutputLimit = outputLimit - 4;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    while (output &lt; fastOutputLimit) {</span>
+<span class="nc" id="L172">      final BitInputStream.Loader loader =</span>
+          new BitInputStream.Loader(inputBase, inputAddress, currentAddress,
+                                    bits, bitsConsumed);
+<span class="nc" id="L175">      final boolean done = loader.load();</span>
+<span class="nc" id="L176">      bits = loader.getBits();</span>
+<span class="nc" id="L177">      bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L178">      currentAddress = loader.getCurrentAddress();</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L180">        break;</span>
+      }
+
+<span class="nc" id="L183">      bitsConsumed =</span>
+<span class="nc" id="L184">          decodeSymbol(outputBase, output, bits, bitsConsumed, tableLog1,</span>
+                       numbersOfBits1, symbols1);
+<span class="nc" id="L186">      bitsConsumed =</span>
+<span class="nc" id="L187">          decodeSymbol(outputBase, output + 1, bits, bitsConsumed, tableLog1,</span>
+                       numbersOfBits1, symbols1);
+<span class="nc" id="L189">      bitsConsumed =</span>
+<span class="nc" id="L190">          decodeSymbol(outputBase, output + 2, bits, bitsConsumed, tableLog1,</span>
+                       numbersOfBits1, symbols1);
+<span class="nc" id="L192">      bitsConsumed =</span>
+<span class="nc" id="L193">          decodeSymbol(outputBase, output + 3, bits, bitsConsumed, tableLog1,</span>
+                       numbersOfBits1, symbols1);
+<span class="nc" id="L195">      output += SIZE_OF_INT;</span>
+<span class="nc" id="L196">    }</span>
+
+<span class="nc" id="L198">    decodeTail(inputBase, inputAddress, currentAddress, bitsConsumed, bits,</span>
+               outputBase, output, outputLimit);
+<span class="nc" id="L200">  }</span>
+
+  public void decode4Streams(final byte[] inputBase, final int inputAddress,
+                             final int inputLimit, final byte[] outputBase,
+                             final int outputAddress, final int outputLimit) {
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    verify(inputLimit - inputAddress &gt;= 10, inputAddress,</span>
+           INPUT_IS_CORRUPTED); // jump table + 1 byte per stream
+
+<span class="nc" id="L208">    final int start1 =</span>
+        inputAddress + 3 * SIZE_OF_SHORT; // for the shorts we read below
+<span class="nc" id="L210">    final int start2 = start1 + (getShort(inputBase, inputAddress) &amp; 0xFFFF);</span>
+<span class="nc" id="L211">    final int start3 =</span>
+<span class="nc" id="L212">        start2 + (getShort(inputBase, inputAddress + 2) &amp; 0xFFFF);</span>
+<span class="nc" id="L213">    final int start4 =</span>
+<span class="nc" id="L214">        start3 + (getShort(inputBase, inputAddress + 4) &amp; 0xFFFF);</span>
+
+<span class="nc" id="L216">    BitInputStream.Initializer initializer =</span>
+        new BitInputStream.Initializer(inputBase, start1, start2);
+<span class="nc" id="L218">    initializer.initialize();</span>
+<span class="nc" id="L219">    int stream1bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L220">    int stream1currentAddress = initializer.getCurrentAddress();</span>
+<span class="nc" id="L221">    long stream1bits = initializer.getBits();</span>
+
+<span class="nc" id="L223">    initializer = new BitInputStream.Initializer(inputBase, start2, start3);</span>
+<span class="nc" id="L224">    initializer.initialize();</span>
+<span class="nc" id="L225">    int stream2bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L226">    int stream2currentAddress = initializer.getCurrentAddress();</span>
+<span class="nc" id="L227">    long stream2bits = initializer.getBits();</span>
+
+<span class="nc" id="L229">    initializer = new BitInputStream.Initializer(inputBase, start3, start4);</span>
+<span class="nc" id="L230">    initializer.initialize();</span>
+<span class="nc" id="L231">    int stream3bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L232">    int stream3currentAddress = initializer.getCurrentAddress();</span>
+<span class="nc" id="L233">    long stream3bits = initializer.getBits();</span>
+
+<span class="nc" id="L235">    initializer = new BitInputStream.Initializer(inputBase, start4, inputLimit);</span>
+<span class="nc" id="L236">    initializer.initialize();</span>
+<span class="nc" id="L237">    int stream4bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L238">    int stream4currentAddress = initializer.getCurrentAddress();</span>
+<span class="nc" id="L239">    long stream4bits = initializer.getBits();</span>
+
+<span class="nc" id="L241">    final int segmentSize = (outputLimit - outputAddress + 3) / 4;</span>
+
+<span class="nc" id="L243">    final int outputStart2 = outputAddress + segmentSize;</span>
+<span class="nc" id="L244">    final int outputStart3 = outputStart2 + segmentSize;</span>
+<span class="nc" id="L245">    final int outputStart4 = outputStart3 + segmentSize;</span>
+
+<span class="nc" id="L247">    int output1 = outputAddress;</span>
+<span class="nc" id="L248">    int output2 = outputStart2;</span>
+<span class="nc" id="L249">    int output3 = outputStart3;</span>
+<span class="nc" id="L250">    int output4 = outputStart4;</span>
+
+<span class="nc" id="L252">    final int fastOutputLimit = outputLimit - 7;</span>
+<span class="nc" id="L253">    final int tableLog1 = this.tableLog;</span>
+<span class="nc" id="L254">    final byte[] numbersOfBits1 = this.numbersOfBits;</span>
+<span class="nc" id="L255">    final byte[] symbols1 = this.symbols;</span>
+
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    while (output4 &lt; fastOutputLimit) {</span>
+<span class="nc" id="L258">      stream1bitsConsumed =</span>
+<span class="nc" id="L259">          decodeSymbol(outputBase, output1, stream1bits, stream1bitsConsumed,</span>
+                       tableLog1, numbersOfBits1, symbols1);
+<span class="nc" id="L261">      stream2bitsConsumed =</span>
+<span class="nc" id="L262">          decodeSymbol(outputBase, output2, stream2bits, stream2bitsConsumed,</span>
+                       tableLog1, numbersOfBits1, symbols1);
+<span class="nc" id="L264">      stream3bitsConsumed =</span>
+<span class="nc" id="L265">          decodeSymbol(outputBase, output3, stream3bits, stream3bitsConsumed,</span>
+                       tableLog1, numbersOfBits1, symbols1);
+<span class="nc" id="L267">      stream4bitsConsumed =</span>
+<span class="nc" id="L268">          decodeSymbol(outputBase, output4, stream4bits, stream4bitsConsumed,</span>
+                       tableLog1, numbersOfBits1, symbols1);
+
+<span class="nc" id="L271">      stream1bitsConsumed = decodeSymbol(outputBase, output1 + 1, stream1bits,</span>
+                                         stream1bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L274">      stream2bitsConsumed = decodeSymbol(outputBase, output2 + 1, stream2bits,</span>
+                                         stream2bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L277">      stream3bitsConsumed = decodeSymbol(outputBase, output3 + 1, stream3bits,</span>
+                                         stream3bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L280">      stream4bitsConsumed = decodeSymbol(outputBase, output4 + 1, stream4bits,</span>
+                                         stream4bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+
+<span class="nc" id="L284">      stream1bitsConsumed = decodeSymbol(outputBase, output1 + 2, stream1bits,</span>
+                                         stream1bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L287">      stream2bitsConsumed = decodeSymbol(outputBase, output2 + 2, stream2bits,</span>
+                                         stream2bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L290">      stream3bitsConsumed = decodeSymbol(outputBase, output3 + 2, stream3bits,</span>
+                                         stream3bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L293">      stream4bitsConsumed = decodeSymbol(outputBase, output4 + 2, stream4bits,</span>
+                                         stream4bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+
+<span class="nc" id="L297">      stream1bitsConsumed = decodeSymbol(outputBase, output1 + 3, stream1bits,</span>
+                                         stream1bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L300">      stream2bitsConsumed = decodeSymbol(outputBase, output2 + 3, stream2bits,</span>
+                                         stream2bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L303">      stream3bitsConsumed = decodeSymbol(outputBase, output3 + 3, stream3bits,</span>
+                                         stream3bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+<span class="nc" id="L306">      stream4bitsConsumed = decodeSymbol(outputBase, output4 + 3, stream4bits,</span>
+                                         stream4bitsConsumed, tableLog1,
+                                         numbersOfBits1, symbols1);
+
+<span class="nc" id="L310">      output1 += SIZE_OF_INT;</span>
+<span class="nc" id="L311">      output2 += SIZE_OF_INT;</span>
+<span class="nc" id="L312">      output3 += SIZE_OF_INT;</span>
+<span class="nc" id="L313">      output4 += SIZE_OF_INT;</span>
+
+<span class="nc" id="L315">      BitInputStream.Loader loader =</span>
+          new BitInputStream.Loader(inputBase, start1, stream1currentAddress,
+                                    stream1bits, stream1bitsConsumed);
+<span class="nc" id="L318">      boolean done = loader.load();</span>
+<span class="nc" id="L319">      stream1bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L320">      stream1bits = loader.getBits();</span>
+<span class="nc" id="L321">      stream1currentAddress = loader.getCurrentAddress();</span>
+
+<span class="nc bnc" id="L323" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L324">        break;</span>
+      }
+
+<span class="nc" id="L327">      loader =</span>
+          new BitInputStream.Loader(inputBase, start2, stream2currentAddress,
+                                    stream2bits, stream2bitsConsumed);
+<span class="nc" id="L330">      done = loader.load();</span>
+<span class="nc" id="L331">      stream2bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L332">      stream2bits = loader.getBits();</span>
+<span class="nc" id="L333">      stream2currentAddress = loader.getCurrentAddress();</span>
+
+<span class="nc bnc" id="L335" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L336">        break;</span>
+      }
+
+<span class="nc" id="L339">      loader =</span>
+          new BitInputStream.Loader(inputBase, start3, stream3currentAddress,
+                                    stream3bits, stream3bitsConsumed);
+<span class="nc" id="L342">      done = loader.load();</span>
+<span class="nc" id="L343">      stream3bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L344">      stream3bits = loader.getBits();</span>
+<span class="nc" id="L345">      stream3currentAddress = loader.getCurrentAddress();</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L347">        break;</span>
+      }
+
+<span class="nc" id="L350">      loader =</span>
+          new BitInputStream.Loader(inputBase, start4, stream4currentAddress,
+                                    stream4bits, stream4bitsConsumed);
+<span class="nc" id="L353">      done = loader.load();</span>
+<span class="nc" id="L354">      stream4bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L355">      stream4bits = loader.getBits();</span>
+<span class="nc" id="L356">      stream4currentAddress = loader.getCurrentAddress();</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L358">        break;</span>
+      }
+<span class="nc" id="L360">    }</span>
+
+<span class="nc bnc" id="L362" title="All 6 branches missed.">    verify(output1 &lt;= outputStart2 &amp;&amp; output2 &lt;= outputStart3 &amp;&amp;</span>
+           output3 &lt;= outputStart4, inputAddress, INPUT_IS_CORRUPTED);
+
+    /// finish streams one by one
+<span class="nc" id="L366">    decodeTail(inputBase, start1, stream1currentAddress, stream1bitsConsumed,</span>
+               stream1bits, outputBase, output1, outputStart2);
+<span class="nc" id="L368">    decodeTail(inputBase, start2, stream2currentAddress, stream2bitsConsumed,</span>
+               stream2bits, outputBase, output2, outputStart3);
+<span class="nc" id="L370">    decodeTail(inputBase, start3, stream3currentAddress, stream3bitsConsumed,</span>
+               stream3bits, outputBase, output3, outputStart4);
+<span class="nc" id="L372">    decodeTail(inputBase, start4, stream4currentAddress, stream4bitsConsumed,</span>
+               stream4bits, outputBase, output4, outputLimit);
+<span class="nc" id="L374">  }</span>
+
+  private void decodeTail(final byte[] inputBase, final int startAddress,
+                          int currentAddress, int bitsConsumed, long bits,
+                          final byte[] outputBase, int outputAddress,
+                          final int outputLimit) {
+<span class="nc" id="L380">    final int tableLog1 = this.tableLog;</span>
+<span class="nc" id="L381">    final byte[] numbersOfBits1 = this.numbersOfBits;</span>
+<span class="nc" id="L382">    final byte[] symbols1 = this.symbols;</span>
+
+    // closer to the end
+<span class="nc bnc" id="L385" title="All 2 branches missed.">    while (outputAddress &lt; outputLimit) {</span>
+<span class="nc" id="L386">      final BitInputStream.Loader loader =</span>
+          new BitInputStream.Loader(inputBase, startAddress, currentAddress,
+                                    bits, bitsConsumed);
+<span class="nc" id="L389">      final boolean done = loader.load();</span>
+<span class="nc" id="L390">      bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L391">      bits = loader.getBits();</span>
+<span class="nc" id="L392">      currentAddress = loader.getCurrentAddress();</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L394">        break;</span>
+      }
+
+<span class="nc" id="L397">      bitsConsumed =</span>
+<span class="nc" id="L398">          decodeSymbol(outputBase, outputAddress++, bits, bitsConsumed,</span>
+                       tableLog1, numbersOfBits1, symbols1);
+<span class="nc" id="L400">    }</span>
+
+    // not more data in bit stream, so no need to reload
+<span class="nc bnc" id="L403" title="All 2 branches missed.">    while (outputAddress &lt; outputLimit) {</span>
+<span class="nc" id="L404">      bitsConsumed =</span>
+<span class="nc" id="L405">          decodeSymbol(outputBase, outputAddress++, bits, bitsConsumed,</span>
+                       tableLog1, numbersOfBits1, symbols1);
+    }
+
+<span class="nc" id="L409">    verify(isEndOfStream(startAddress, currentAddress, bitsConsumed),</span>
+           startAddress, &quot;Bit stream is not fully consumed&quot;);
+<span class="nc" id="L411">  }</span>
+
+  private static int decodeSymbol(final byte[] outputBase,
+                                  final int outputAddress,
+                                  final long bitContainer,
+                                  final int bitsConsumed, final int tableLog,
+                                  final byte[] numbersOfBits,
+                                  final byte[] symbols) {
+<span class="nc" id="L419">    final int value = (int) peekBitsFast(bitsConsumed, bitContainer, tableLog);</span>
+<span class="nc" id="L420">    outputBase[outputAddress] = symbols[value];</span>
+<span class="nc" id="L421">    return bitsConsumed + numbersOfBits[value];</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

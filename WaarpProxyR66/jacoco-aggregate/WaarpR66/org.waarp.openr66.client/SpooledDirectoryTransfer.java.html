@@ -31,6 +31,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
@@ -47,7 +48,6 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.io.File;
@@ -121,8 +121,8 @@ public class SpooledDirectoryTransfer implements Runnable {
    */
   protected static volatile WaarpLogger logger;
 
-<span class="fc" id="L124">  protected static String infoArgs =</span>
-<span class="fc" id="L125">      Messages.getString(&quot;SpooledDirectoryTransfer.0&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L124">  protected static String infoArgs =</span>
+<span class="nc" id="L125">      Messages.getString(&quot;SpooledDirectoryTransfer.0&quot;); //$NON-NLS-1$</span>
 
   protected static final String NO_INFO_ARGS = &quot;noinfo&quot;;
 
@@ -184,170 +184,164 @@ public class SpooledDirectoryTransfer implements Runnable {
    */
   public SpooledDirectoryTransfer(final R66Future future,
                                   final Arguments arguments,
-<span class="fc" id="L187">                                  final NetworkTransaction networkTransaction) {</span>
-<span class="fc bfc" id="L188" title="All 2 branches covered.">    if (logger == null) {</span>
-<span class="fc" id="L189">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
+<span class="nc" id="L187">                                  final NetworkTransaction networkTransaction) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L189">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
     }
-<span class="fc" id="L191">    this.future = future;</span>
-<span class="fc" id="L192">    this.name = arguments.name;</span>
-<span class="fc" id="L193">    this.directory = arguments.localDirectory;</span>
-<span class="fc" id="L194">    statusFile = arguments.statusFile;</span>
-<span class="fc" id="L195">    stopFile = arguments.stopFile;</span>
-<span class="fc" id="L196">    this.ruleName = arguments.rule;</span>
-<span class="fc" id="L197">    this.fileInfo = arguments.fileInfo;</span>
-<span class="fc" id="L198">    this.isMD5 = arguments.isMd5;</span>
-<span class="fc" id="L199">    this.remoteHosts = arguments.remoteHosts;</span>
-<span class="fc" id="L200">    this.blocksize = arguments.block;</span>
-<span class="fc" id="L201">    regexFilter = arguments.regex;</span>
-<span class="fc" id="L202">    elapseTime = arguments.elapsed;</span>
-<span class="fc" id="L203">    this.submit = arguments.toSubmit;</span>
-<span class="pc bpc" id="L204" title="3 of 4 branches missed.">    this.nolog = arguments.noLog &amp;&amp; !arguments.toSubmit;</span>
-<span class="fc" id="L205">    AbstractTransfer.nolog = this.nolog;</span>
-<span class="fc" id="L206">    recurs = arguments.recursive;</span>
-<span class="fc" id="L207">    elapseWaarpTime = arguments.elapsedWaarp;</span>
-<span class="fc bfc" id="L208" title="All 2 branches covered.">    if (this.submit) {</span>
-<span class="fc" id="L209">      this.parallel = false;</span>
+<span class="nc" id="L191">    this.future = future;</span>
+<span class="nc" id="L192">    this.name = arguments.name;</span>
+<span class="nc" id="L193">    this.directory = arguments.localDirectory;</span>
+<span class="nc" id="L194">    statusFile = arguments.statusFile;</span>
+<span class="nc" id="L195">    stopFile = arguments.stopFile;</span>
+<span class="nc" id="L196">    this.ruleName = arguments.rule;</span>
+<span class="nc" id="L197">    this.fileInfo = arguments.fileInfo;</span>
+<span class="nc" id="L198">    this.isMD5 = arguments.isMd5;</span>
+<span class="nc" id="L199">    this.remoteHosts = arguments.remoteHosts;</span>
+<span class="nc" id="L200">    this.blocksize = arguments.block;</span>
+<span class="nc" id="L201">    regexFilter = arguments.regex;</span>
+<span class="nc" id="L202">    elapseTime = arguments.elapsed;</span>
+<span class="nc" id="L203">    this.submit = arguments.toSubmit;</span>
+<span class="nc bnc" id="L204" title="All 4 branches missed.">    this.nolog = arguments.noLog &amp;&amp; !arguments.toSubmit;</span>
+<span class="nc" id="L205">    AbstractTransfer.nolog = this.nolog;</span>
+<span class="nc" id="L206">    recurs = arguments.recursive;</span>
+<span class="nc" id="L207">    elapseWaarpTime = arguments.elapsedWaarp;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    if (this.submit) {</span>
+<span class="nc" id="L209">      this.parallel = false;</span>
     } else {
-<span class="fc" id="L211">      this.parallel = arguments.isParallel;</span>
+<span class="nc" id="L211">      this.parallel = arguments.isParallel;</span>
     }
-<span class="fc" id="L213">    limitParallelTasks = arguments.limitParallel;</span>
-<span class="fc" id="L214">    waarpHosts = arguments.waarpHosts;</span>
-<span class="fc" id="L215">    this.minimalSize = arguments.minimalSize;</span>
-<span class="fc" id="L216">    normalInfoAsWarn = arguments.logWarn;</span>
-<span class="fc" id="L217">    this.ignoreAlreadyUsed = arguments.ignoreAlreadyUsed;</span>
-<span class="fc" id="L218">    this.networkTransaction = networkTransaction;</span>
-<span class="fc" id="L219">  }</span>
+<span class="nc" id="L213">    limitParallelTasks = arguments.limitParallel;</span>
+<span class="nc" id="L214">    waarpHosts = arguments.waarpHosts;</span>
+<span class="nc" id="L215">    this.minimalSize = arguments.minimalSize;</span>
+<span class="nc" id="L216">    normalInfoAsWarn = arguments.logWarn;</span>
+<span class="nc" id="L217">    this.ignoreAlreadyUsed = arguments.ignoreAlreadyUsed;</span>
+<span class="nc" id="L218">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L219">  }</span>
 
   @Override
   public void run() {
-<span class="fc" id="L223">    setSent(0);</span>
-<span class="fc" id="L224">    setError(0);</span>
+<span class="nc" id="L223">    setSent(0);</span>
+<span class="nc" id="L224">    setError(0);</span>
     // first check if rule is for SEND
     final DbRule dbrule;
     try {
-<span class="fc" id="L228">      dbrule = new DbRule(ruleName);</span>
+<span class="nc" id="L228">      dbrule = new DbRule(ruleName);</span>
 <span class="nc" id="L229">    } catch (final WaarpDatabaseException e1) {</span>
-<span class="nc" id="L230">      logger.error(Messages.getString(&quot;Transfer.18&quot;), e1); //$NON-NLS-1$</span>
-<span class="nc" id="L231">      future.setFailure(e1);</span>
-<span class="nc" id="L232">      if (Configuration.configuration</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">              .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L234">        Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L235">            .setFailure(new Exception(</span>
-<span class="nc" id="L236">                Messages.getString(&quot;Transfer.18&quot;) + e1.getMessage()));</span>
+<span class="nc" id="L230">      logger.error(Messages.getString(&quot;Transfer.18&quot;) + &quot;: {}&quot;,</span>
+<span class="nc" id="L231">                   e1.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L232">      future.setFailure(e1);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+          null) {
+<span class="nc" id="L235">        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L236">            new Exception(Messages.getString(&quot;Transfer.18&quot;) + e1.getMessage()));</span>
       }
 <span class="nc" id="L238">      return;</span>
-<span class="fc" id="L239">    }</span>
-<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (dbrule.isRecvMode()) {</span>
+<span class="nc" id="L239">    }</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (dbrule.isRecvMode()) {</span>
 <span class="nc" id="L241">      logger.error(</span>
 <span class="nc" id="L242">          Messages.getString(&quot;SpooledDirectoryTransfer.5&quot;)); //$NON-NLS-1$</span>
 <span class="nc" id="L243">      future.cancel();</span>
-<span class="nc" id="L244">      if (Configuration.configuration</span>
-<span class="nc bnc" id="L245" title="All 2 branches missed.">              .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L246">        Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L247">            .setFailure(new Exception(</span>
-<span class="nc" id="L248">                Messages.getString(&quot;SpooledDirectoryTransfer.5&quot;)));</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+          null) {
+<span class="nc" id="L246">        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L247">            new Exception(Messages.getString(&quot;SpooledDirectoryTransfer.5&quot;)));</span>
       }
-<span class="nc" id="L250">      return;</span>
+<span class="nc" id="L249">      return;</span>
     }
-<span class="fc" id="L252">    final File status = new File(statusFile);</span>
-<span class="pc bpc" id="L253" title="1 of 2 branches missed.">    if (status.isDirectory()) {</span>
-<span class="nc" id="L254">      logger.error(</span>
-<span class="nc" id="L255">          Messages.getString(&quot;SpooledDirectoryTransfer.6&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L256">      future.cancel();</span>
-<span class="nc" id="L257">      if (Configuration.configuration</span>
-<span class="nc bnc" id="L258" title="All 2 branches missed.">              .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L259">        Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L260">            .setFailure(new Exception(</span>
-<span class="nc" id="L261">                Messages.getString(&quot;SpooledDirectoryTransfer.6&quot;)));</span>
+<span class="nc" id="L251">    final File status = new File(statusFile);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">    if (status.isDirectory()) {</span>
+<span class="nc" id="L253">      logger.error(</span>
+<span class="nc" id="L254">          Messages.getString(&quot;SpooledDirectoryTransfer.6&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L255">      future.cancel();</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+          null) {
+<span class="nc" id="L258">        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L259">            new Exception(Messages.getString(&quot;SpooledDirectoryTransfer.6&quot;)));</span>
       }
-<span class="nc" id="L263">      return;</span>
+<span class="nc" id="L261">      return;</span>
     }
-<span class="fc" id="L265">    final File stop = new File(stopFile);</span>
-<span class="pc bpc" id="L266" title="1 of 2 branches missed.">    if (stop.isDirectory()) {</span>
-<span class="nc" id="L267">      logger.error(</span>
-<span class="nc" id="L268">          Messages.getString(&quot;SpooledDirectoryTransfer.7&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L269">      future.cancel();</span>
-<span class="nc" id="L270">      if (Configuration.configuration</span>
-<span class="nc bnc" id="L271" title="All 2 branches missed.">              .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L272">        Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L273">            .setFailure(new Exception(</span>
-<span class="nc" id="L274">                Messages.getString(&quot;SpooledDirectoryTransfer.7&quot;)));</span>
+<span class="nc" id="L263">    final File stop = new File(stopFile);</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">    if (stop.isDirectory()) {</span>
+<span class="nc" id="L265">      logger.error(</span>
+<span class="nc" id="L266">          Messages.getString(&quot;SpooledDirectoryTransfer.7&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L267">      future.cancel();</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+          null) {
+<span class="nc" id="L270">        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L271">            new Exception(Messages.getString(&quot;SpooledDirectoryTransfer.7&quot;)));</span>
       }
-<span class="nc" id="L276">      return;</span>
-<span class="pc bpc" id="L277" title="1 of 2 branches missed.">    } else if (stop.exists()) {</span>
-<span class="nc" id="L278">      logger</span>
-<span class="nc" id="L279">          .warn(Messages.getString(&quot;SpooledDirectoryTransfer.8&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L280">      future.setSuccess();</span>
-<span class="nc" id="L281">      if (Configuration.configuration</span>
-<span class="nc bnc" id="L282" title="All 2 branches missed.">              .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L283">        Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L284">            .setFailure(new Exception(</span>
-<span class="nc" id="L285">                Messages.getString(&quot;SpooledDirectoryTransfer.8&quot;)));</span>
+<span class="nc" id="L273">      return;</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    } else if (stop.exists()) {</span>
+<span class="nc" id="L275">      logger.warn(</span>
+<span class="nc" id="L276">          Messages.getString(&quot;SpooledDirectoryTransfer.8&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L277">      future.setSuccess();</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+          null) {
+<span class="nc" id="L280">        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L281">            new Exception(Messages.getString(&quot;SpooledDirectoryTransfer.8&quot;)));</span>
       }
-<span class="nc" id="L287">      return;</span>
+<span class="nc" id="L283">      return;</span>
     }
-<span class="fc bfc" id="L289" title="All 2 branches covered.">    for (final String dirname : directory) {</span>
-<span class="fc" id="L290">      final File dir = new File(dirname);</span>
-<span class="pc bpc" id="L291" title="1 of 2 branches missed.">      if (!dir.isDirectory()) {</span>
-<span class="nc" id="L292">        logger.error(Messages.getString(&quot;SpooledDirectoryTransfer.9&quot;) + &quot; : &quot; +</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">    for (final String dirname : directory) {</span>
+<span class="nc" id="L286">      final File dir = new File(dirname);</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">      if (!dir.isDirectory()) {</span>
+<span class="nc" id="L288">        logger.error(Messages.getString(&quot;SpooledDirectoryTransfer.9&quot;) + &quot; : &quot; +</span>
                      dir); //$NON-NLS-1$
-<span class="nc" id="L294">        future.cancel();</span>
-<span class="nc" id="L295">        if (Configuration.configuration</span>
-<span class="nc bnc" id="L296" title="All 2 branches missed.">                .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L297">          Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L298">              .setFailure(new Exception(</span>
-<span class="nc" id="L299">                  Messages.getString(&quot;SpooledDirectoryTransfer.9&quot;)));</span>
+<span class="nc" id="L290">        future.cancel();</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+            null) {
+<span class="nc" id="L293">          Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L294">              new Exception(Messages.getString(&quot;SpooledDirectoryTransfer.9&quot;)));</span>
         }
-<span class="nc" id="L301">        return;</span>
+<span class="nc" id="L296">        return;</span>
       }
-<span class="fc" id="L303">    }</span>
-<span class="fc" id="L304">    FileFilter filter = null;</span>
-<span class="pc bpc" id="L305" title="1 of 2 branches missed.">    if (regexFilter != null) {</span>
-<span class="nc" id="L306">      filter = new RegexFileFilter(regexFilter, minimalSize);</span>
-<span class="pc bpc" id="L307" title="1 of 2 branches missed.">    } else if (minimalSize &gt; 0) {</span>
-<span class="fc" id="L308">      filter = new RegexFileFilter(minimalSize);</span>
+<span class="nc" id="L298">    }</span>
+<span class="nc" id="L299">    FileFilter filter = null;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">    if (regexFilter != null) {</span>
+<span class="nc" id="L301">      filter = new RegexFileFilter(regexFilter, minimalSize);</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">    } else if (minimalSize &gt; 0) {</span>
+<span class="nc" id="L303">      filter = new RegexFileFilter(minimalSize);</span>
     }
-<span class="fc" id="L310">    final FileMonitorCommandRunnableFuture commandValidFile =</span>
-<span class="fc" id="L311">        initializeFileMonitorCommandRunnableFuture(status, stop, filter);</span>
+<span class="nc" id="L305">    final FileMonitorCommandRunnableFuture commandValidFile =</span>
+<span class="nc" id="L306">        initializeFileMonitorCommandRunnableFuture(status, stop, filter);</span>
     File dir;
-<span class="pc bpc" id="L313" title="1 of 2 branches missed.">    if (!monitor.initialized()) {</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">    if (!monitor.initialized()) {</span>
       // wrong
-<span class="nc" id="L315">      logger.error(</span>
-<span class="nc" id="L316">          Messages.getString(&quot;Configuration.WrongInit&quot;) + &quot; : already running&quot;);</span>
-<span class="nc" id="L317">      future.cancel();</span>
-<span class="nc" id="L318">      if (Configuration.configuration</span>
-<span class="nc bnc" id="L319" title="All 2 branches missed.">              .getShutdownConfiguration().serviceFuture != null) {</span>
-<span class="nc" id="L320">        Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L321">            .setFailure(new Exception(</span>
-<span class="nc" id="L322">                Messages.getString(&quot;Configuration.WrongInit&quot;) +</span>
-                &quot; : already running&quot;));
+<span class="nc" id="L310">      logger.error(</span>
+<span class="nc" id="L311">          Messages.getString(&quot;Configuration.WrongInit&quot;) + &quot; : already running&quot;);</span>
+<span class="nc" id="L312">      future.cancel();</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+          null) {
+<span class="nc" id="L315">        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(</span>
+<span class="nc" id="L316">            new Exception(Messages.getString(&quot;Configuration.WrongInit&quot;) +</span>
+                          &quot; : already running&quot;));
       }
-<span class="nc" id="L325">      return;</span>
+<span class="nc" id="L319">      return;</span>
     }
-<span class="fc" id="L327">    commandValidFile.setMonitor(monitor);</span>
-<span class="fc bfc" id="L328" title="All 2 branches covered.">    if (parallel) {</span>
-<span class="fc" id="L329">      final FileMonitorCommandFactory factory =</span>
-<span class="fc" id="L330">          new FileMonitorCommandFactory() {</span>
+<span class="nc" id="L321">    commandValidFile.setMonitor(monitor);</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">    if (parallel) {</span>
+<span class="nc" id="L323">      final FileMonitorCommandFactory factory =</span>
+<span class="nc" id="L324">          new FileMonitorCommandFactory() {</span>
 
             @Override
-            public FileMonitorCommandRunnableFuture create(
+            public final FileMonitorCommandRunnableFuture create(
                 final FileItem fileItem) {
-<span class="fc" id="L335">              final SpooledRunner runner = new SpooledRunner(fileItem);</span>
-<span class="fc" id="L336">              runner.setMonitor(monitor);</span>
-<span class="fc" id="L337">              return runner;</span>
+<span class="nc" id="L329">              final SpooledRunner runner = new SpooledRunner(fileItem);</span>
+<span class="nc" id="L330">              runner.setMonitor(monitor);</span>
+<span class="nc" id="L331">              return runner;</span>
             }
           };
-<span class="fc" id="L340">      monitor.setCommandValidFileFactory(factory, limitParallelTasks);</span>
+<span class="nc" id="L334">      monitor.setCommandValidFileFactory(factory, limitParallelTasks);</span>
     }
-<span class="fc" id="L342">    final FileMonitor monitorArg = monitor;</span>
-<span class="pc bpc" id="L343" title="2 of 4 branches missed.">    if (waarpHosts != null &amp;&amp; !waarpHosts.isEmpty()) {</span>
-<span class="fc" id="L344">      setWaarpHostCommand(monitorArg);</span>
+<span class="nc" id="L336">    final FileMonitor monitorArg = monitor;</span>
+<span class="nc bnc" id="L337" title="All 4 branches missed.">    if (waarpHosts != null &amp;&amp; !waarpHosts.isEmpty()) {</span>
+<span class="nc" id="L338">      setWaarpHostCommand(monitorArg);</span>
     }
-<span class="pc bpc" id="L346" title="1 of 2 branches missed.">    for (int i = 1; i &lt; directory.size(); i++) {</span>
-<span class="nc" id="L347">      dir = new File(directory.get(i));</span>
-<span class="nc" id="L348">      monitor.addDirectory(dir);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">    for (int i = 1; i &lt; directory.size(); i++) {</span>
+<span class="nc" id="L341">      dir = new File(directory.get(i));</span>
+<span class="nc" id="L342">      monitor.addDirectory(dir);</span>
     }
-<span class="fc" id="L350">    logger.warn(&quot;SpooledDirectoryTransfer starts name:&quot; + name + &quot; directory:&quot; +</span>
+<span class="nc" id="L344">    logger.warn(&quot;SpooledDirectoryTransfer starts name:&quot; + name + &quot; directory:&quot; +</span>
                 directory + &quot; statusFile:&quot; + statusFile + &quot; stopFile:&quot; +
                 stopFile + &quot; rulename:&quot; + ruleName + &quot; fileinfo:&quot; + fileInfo +
                 &quot; hosts:&quot; + remoteHosts + &quot; regex:&quot; + regexFilter +
@@ -356,108 +350,107 @@ public class SpooledDirectoryTransfer implements Runnable {
                 &quot; parallel:&quot; + parallel + &quot; limitParallel:&quot; +
                 limitParallelTasks + &quot; submit:&quot; + submit + &quot; recursive:&quot; +
                 recurs);
-<span class="fc" id="L359">    monitor.start();</span>
-<span class="fc" id="L360">    monitor.waitForStopFile();</span>
-<span class="fc" id="L361">    future.setSuccess();</span>
-<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
+<span class="nc" id="L353">    monitor.start();</span>
+<span class="nc" id="L354">    monitor.waitForStopFile();</span>
+<span class="nc" id="L355">    future.setSuccess();</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">    if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=</span>
         null) {
-<span class="nc" id="L364">      Configuration.configuration.getShutdownConfiguration().serviceFuture</span>
-<span class="nc" id="L365">          .setSuccess();</span>
+<span class="nc" id="L358">      Configuration.configuration.getShutdownConfiguration().serviceFuture.setSuccess();</span>
     }
-<span class="fc" id="L367">  }</span>
+<span class="nc" id="L360">  }</span>
 
   private void setWaarpHostCommand(final FileMonitor monitorArg) {
     final FileMonitorCommandRunnableFuture waarpHostCommand;
-<span class="fc" id="L371">    waarpHostCommand = new FileMonitorCommandRunnableFuture() {</span>
+<span class="nc" id="L364">    waarpHostCommand = new FileMonitorCommandRunnableFuture() {</span>
       @Override
       public void run(final FileItem notused) {
         try {
-<span class="fc" id="L375">          Thread.currentThread().setName(&quot;FileMonitorInformation_&quot; + name);</span>
-<span class="pc bpc" id="L376" title="1 of 4 branches missed.">          if (admin.getSession() != null &amp;&amp; admin.getSession().isDisActive()) {</span>
-<span class="nc" id="L377">            admin.getSession().checkConnectionNoException();</span>
+<span class="nc" id="L368">          Thread.currentThread().setName(&quot;FileMonitorInformation_&quot; + name);</span>
+<span class="nc bnc" id="L369" title="All 4 branches missed.">          if (admin.getSession() != null &amp;&amp; admin.getSession().isDisActive()) {</span>
+<span class="nc" id="L370">            admin.getSession().checkConnectionNoException();</span>
           }
-<span class="fc" id="L379">          String status = monitorArg.getStatus();</span>
-<span class="fc bfc" id="L380" title="All 2 branches covered.">          if (normalInfoAsWarn) {</span>
-<span class="fc" id="L381">            logger.warn(&quot;Will inform back Waarp hosts of current history: &quot; +</span>
-<span class="fc" id="L382">                        monitorArg.getCurrentHistoryNb());</span>
+<span class="nc" id="L372">          String status = monitorArg.getStatus();</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">          if (normalInfoAsWarn) {</span>
+<span class="nc" id="L374">            logger.warn(&quot;Will inform back Waarp hosts of current history: &quot; +</span>
+<span class="nc" id="L375">                        monitorArg.getCurrentHistoryNb());</span>
           } else {
-<span class="fc" id="L384">            logger.info(&quot;Will inform back Waarp hosts of current history: {}&quot;,</span>
-<span class="fc" id="L385">                        monitorArg.getCurrentHistoryNb());</span>
+<span class="nc" id="L377">            logger.info(&quot;Will inform back Waarp hosts of current history: {}&quot;,</span>
+<span class="nc" id="L378">                        monitorArg.getCurrentHistoryNb());</span>
           }
-<span class="fc bfc" id="L387" title="All 2 branches covered.">          for (String host : waarpHosts) {</span>
-<span class="pc bpc" id="L388" title="1 of 2 branches missed.">            if (host == null) {</span>
-<span class="nc" id="L389">              continue;</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">          for (String host : waarpHosts) {</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">            if (host == null) {</span>
+<span class="nc" id="L382">              continue;</span>
             }
-<span class="fc" id="L391">            host = host.trim();</span>
-<span class="pc bpc" id="L392" title="1 of 2 branches missed.">            if (!host.isEmpty()) {</span>
-<span class="fc" id="L393">              final R66Future r66Future = new R66Future(true);</span>
-<span class="fc" id="L394">              final BusinessRequestPacket packet = new BusinessRequestPacket(</span>
-<span class="fc" id="L395">                  SpooledInformTask.class.getName() + ' ' + status, 0);</span>
-<span class="fc" id="L396">              final BusinessRequest transaction =</span>
+<span class="nc" id="L384">            host = host.trim();</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">            if (!host.isEmpty()) {</span>
+<span class="nc" id="L386">              final R66Future r66Future = new R66Future(true);</span>
+<span class="nc" id="L387">              final BusinessRequestPacket packet = new BusinessRequestPacket(</span>
+<span class="nc" id="L388">                  SpooledInformTask.class.getName() + ' ' + status, 0);</span>
+<span class="nc" id="L389">              final BusinessRequest transaction =</span>
                   new BusinessRequest(networkTransaction, r66Future, host,
                                       packet);
-<span class="fc" id="L399">              transaction.run();</span>
-<span class="fc" id="L400">              r66Future.awaitOrInterruptible();</span>
-<span class="pc bpc" id="L401" title="1 of 2 branches missed.">              if (!r66Future.isSuccess()) {</span>
-<span class="nc" id="L402">                logger.info(&quot;Can't inform Waarp server: {} since {}&quot;, host,</span>
-<span class="nc" id="L403">                            r66Future.getCause());</span>
+<span class="nc" id="L392">              transaction.run();</span>
+<span class="nc" id="L393">              r66Future.awaitOrInterruptible();</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">              if (!r66Future.isSuccess()) {</span>
+<span class="nc" id="L395">                logger.info(&quot;Can't inform Waarp server: {} since {}&quot;, host,</span>
+<span class="nc" id="L396">                            r66Future.getCause());</span>
               } else {
-<span class="fc" id="L405">                final R66Result result = r66Future.getResult();</span>
-<span class="pc bpc" id="L406" title="1 of 2 branches missed.">                if (result == null) {</span>
-<span class="nc" id="L407">                  monitorArg.setNextAsFullStatus();</span>
+<span class="nc" id="L398">                final R66Result result = r66Future.getResult();</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">                if (result == null) {</span>
+<span class="nc" id="L400">                  monitorArg.setNextAsFullStatus();</span>
                 } else {
-<span class="fc" id="L409">                  status = (String) result.getOther();</span>
-<span class="pc bpc" id="L410" title="2 of 4 branches missed.">                  if (status == null || status.equalsIgnoreCase(NEEDFULL)) {</span>
-<span class="nc" id="L411">                    monitorArg.setNextAsFullStatus();</span>
+<span class="nc" id="L402">                  status = (String) result.getOther();</span>
+<span class="nc bnc" id="L403" title="All 4 branches missed.">                  if (status == null || status.equalsIgnoreCase(NEEDFULL)) {</span>
+<span class="nc" id="L404">                    monitorArg.setNextAsFullStatus();</span>
                   }
                 }
-<span class="fc" id="L414">                logger.debug(&quot;Inform back Waarp hosts over for: {}&quot;, host);</span>
+<span class="nc" id="L407">                logger.debug(&quot;Inform back Waarp hosts over for: {}&quot;, host);</span>
               }
             }
-<span class="fc" id="L417">          }</span>
-<span class="nc" id="L418">        } catch (final Throwable e) {</span>
-<span class="nc" id="L419">          logger.error(&quot;Issue during Waarp information&quot;, e);</span>
+<span class="nc" id="L410">          }</span>
+<span class="nc" id="L411">        } catch (final Throwable e) {</span>
+<span class="nc" id="L412">          logger.error(&quot;Issue during Waarp information&quot;, e);</span>
           // ignore
-<span class="fc" id="L421">        }</span>
-<span class="fc" id="L422">      }</span>
+<span class="nc" id="L414">        }</span>
+<span class="nc" id="L415">      }</span>
     };
-<span class="fc" id="L424">    monitor.setCommandCheckIteration(waarpHostCommand);</span>
-<span class="fc" id="L425">    monitor.setElapseWaarpTime(elapseWaarpTime);</span>
-<span class="fc" id="L426">  }</span>
+<span class="nc" id="L417">    monitor.setCommandCheckIteration(waarpHostCommand);</span>
+<span class="nc" id="L418">    monitor.setElapseWaarpTime(elapseWaarpTime);</span>
+<span class="nc" id="L419">  }</span>
 
   private FileMonitorCommandRunnableFuture initializeFileMonitorCommandRunnableFuture(
       final File status, final File stop, final FileFilter filter) {
     // Will be used if no parallelism
-<span class="fc" id="L431">    final FileMonitorCommandRunnableFuture commandValidFile =</span>
+<span class="nc" id="L424">    final FileMonitorCommandRunnableFuture commandValidFile =</span>
         new SpooledRunner(null);
-<span class="fc" id="L433">    final FileMonitorCommandRunnableFuture waarpRemovedCommand =</span>
-<span class="fc" id="L434">        new FileMonitorCommandRunnableFuture() {</span>
+<span class="nc" id="L426">    final FileMonitorCommandRunnableFuture waarpRemovedCommand =</span>
+<span class="nc" id="L427">        new FileMonitorCommandRunnableFuture() {</span>
           @Override
           public void run(final FileItem file) {
-<span class="pc bpc" id="L437" title="1 of 2 branches missed.">            if (normalInfoAsWarn) {</span>
-<span class="fc" id="L438">              logger.warn(&quot;File removed: {}&quot;, file.file);</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">            if (normalInfoAsWarn) {</span>
+<span class="nc" id="L431">              logger.warn(&quot;File removed: {}&quot;, file.file);</span>
             } else {
-<span class="nc" id="L440">              logger.info(&quot;File removed: {}&quot;, file.file);</span>
+<span class="nc" id="L433">              logger.info(&quot;File removed: {}&quot;, file.file);</span>
             }
-<span class="fc" id="L442">          }</span>
+<span class="nc" id="L435">          }</span>
         };
-<span class="fc" id="L444">    final File dir = new File(directory.get(0));</span>
-<span class="fc" id="L445">    monitor = new FileMonitor(name, status, stop, dir, null, elapseTime, filter,</span>
+<span class="nc" id="L437">    final File dir = new File(directory.get(0));</span>
+<span class="nc" id="L438">    monitor = new FileMonitor(name, status, stop, dir, null, elapseTime, filter,</span>
                               recurs, commandValidFile, waarpRemovedCommand,
                               null);
-<span class="fc" id="L448">    monitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);</span>
-<span class="fc" id="L449">    return commandValidFile;</span>
+<span class="nc" id="L441">    monitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);</span>
+<span class="nc" id="L442">    return commandValidFile;</span>
   }
 
   public void stop() {
-<span class="nc bnc" id="L453" title="All 2 branches missed.">    if (monitor != null) {</span>
-<span class="nc" id="L454">      logger.info(&quot;Stop Monitor&quot;);</span>
-<span class="nc" id="L455">      monitor.stop();</span>
-<span class="nc" id="L456">      logger.info(&quot;Monitor Stopped&quot;);</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (monitor != null) {</span>
+<span class="nc" id="L447">      logger.info(&quot;Stop Monitor&quot;);</span>
+<span class="nc" id="L448">      monitor.stop();</span>
+<span class="nc" id="L449">      logger.info(&quot;Monitor Stopped&quot;);</span>
     } else {
-<span class="nc" id="L458">      logger.warn(&quot;NO MONITOR found&quot;);</span>
+<span class="nc" id="L451">      logger.warn(&quot;NO MONITOR found&quot;);</span>
     }
-<span class="nc" id="L460">  }</span>
+<span class="nc" id="L453">  }</span>
 
   public class SpooledRunner extends FileMonitorCommandRunnableFuture {
     private static final String REQUEST_INFORMATION_FAILURE =
@@ -465,243 +458,244 @@ public class SpooledDirectoryTransfer implements Runnable {
     private static final String REMOTE2 = &quot;&lt;/REMOTE&gt;&quot;;
     private static final String REMOTE = &quot;&lt;REMOTE&gt;&quot;;
 
-<span class="fc" id="L468">    public SpooledRunner(final FileItem fileItem) {</span>
-<span class="fc" id="L469">      super(fileItem);</span>
-<span class="pc bpc" id="L470" title="1 of 2 branches missed.">      if (logger == null) {</span>
-<span class="nc" id="L471">        logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
+<span class="nc" id="L461">    public SpooledRunner(final FileItem fileItem) {</span>
+<span class="nc" id="L462">      super(fileItem);</span>
+<span class="nc bnc" id="L463" title="All 2 branches missed.">      if (logger == null) {</span>
+<span class="nc" id="L464">        logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
       }
-<span class="fc" id="L473">    }</span>
+<span class="nc" id="L466">    }</span>
 
     @Override
     public void run(final FileItem fileItem) {
-<span class="fc" id="L477">      setFileItem(fileItem);</span>
-<span class="fc" id="L478">      checkReuse(ignoreAlreadyUsed);</span>
-<span class="pc bpc" id="L479" title="1 of 4 branches missed.">      if (admin.getSession() != null &amp;&amp; admin.getSession().isDisActive()) {</span>
-<span class="nc" id="L480">        admin.getSession().checkConnectionNoException();</span>
+<span class="nc" id="L470">      setFileItem(fileItem);</span>
+<span class="nc" id="L471">      checkReuse(ignoreAlreadyUsed);</span>
+<span class="nc bnc" id="L472" title="All 4 branches missed.">      if (admin.getSession() != null &amp;&amp; admin.getSession().isDisActive()) {</span>
+<span class="nc" id="L473">        admin.getSession().checkConnectionNoException();</span>
       }
-<span class="fc" id="L482">      boolean finalStatus = false;</span>
-<span class="fc" id="L483">      int ko = 0;</span>
-<span class="fc" id="L484">      long specialId =</span>
-<span class="pc bpc" id="L485" title="1 of 2 branches missed.">          remoteHosts.size() &gt; 1? ILLEGALVALUE : fileItem.specialId;</span>
-<span class="fc" id="L486">      long newSpecialId = ILLEGALVALUE;</span>
+<span class="nc" id="L475">      boolean finalStatus = false;</span>
+<span class="nc" id="L476">      int ko = 0;</span>
+<span class="nc" id="L477">      long specialId =</span>
+<span class="nc bnc" id="L478" title="All 2 branches missed.">          remoteHosts.size() &gt; 1? ILLEGALVALUE : fileItem.specialId;</span>
+<span class="nc" id="L479">      long newSpecialId = ILLEGALVALUE;</span>
       // check if already launched before
-<span class="pc bpc" id="L488" title="1 of 2 branches missed.">      if (isIgnored(ignoreAlreadyUsed)) {</span>
+<span class="nc bnc" id="L481" title="All 2 branches missed.">      if (isIgnored(ignoreAlreadyUsed)) {</span>
         // Nothing to do
-<span class="nc" id="L490">        return;</span>
+<span class="nc" id="L483">        return;</span>
       }
-<span class="fc" id="L492">      specialId = checkReuseUniqueHost(fileItem, specialId);</span>
+<span class="nc" id="L485">      specialId = checkReuseUniqueHost(fileItem, specialId);</span>
       try {
-<span class="fc bfc" id="L494" title="All 2 branches covered.">        for (String host : remoteHosts) {</span>
-<span class="pc bpc" id="L495" title="1 of 2 branches missed.">          if (host == null) {</span>
-<span class="nc" id="L496">            continue;</span>
+<span class="nc bnc" id="L487" title="All 2 branches missed.">        for (String host : remoteHosts) {</span>
+<span class="nc bnc" id="L488" title="All 2 branches missed.">          if (host == null) {</span>
+<span class="nc" id="L489">            continue;</span>
           }
-<span class="fc" id="L498">          host = host.trim();</span>
-<span class="pc bpc" id="L499" title="1 of 2 branches missed.">          if (!host.isEmpty()) {</span>
-<span class="fc" id="L500">            final String filename = fileItem.file.getAbsolutePath();</span>
-<span class="fc" id="L501">            logger</span>
-<span class="fc" id="L502">                .info(&quot;Launch transfer to &quot; + host + &quot; with file &quot; + filename);</span>
-<span class="fc" id="L503">            R66Future r66Future = new R66Future(true);</span>
+<span class="nc" id="L491">          host = host.trim();</span>
+<span class="nc bnc" id="L492" title="All 2 branches missed.">          if (!host.isEmpty()) {</span>
+<span class="nc" id="L493">            final String filename = fileItem.file.getAbsolutePath();</span>
+<span class="nc" id="L494">            logger.info(</span>
+                &quot;Launch transfer to &quot; + host + &quot; with file &quot; + filename);
+<span class="nc" id="L496">            R66Future r66Future = new R66Future(true);</span>
             final String text;
-<span class="fc bfc" id="L505" title="All 2 branches covered.">            if (submit) {</span>
-<span class="fc" id="L506">              text = submitTransfer(specialId, host, filename, r66Future);</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">            if (submit) {</span>
+<span class="nc" id="L499">              text = submitTransfer(specialId, host, filename, r66Future);</span>
             } else {
-<span class="fc bfc" id="L508" title="All 2 branches covered.">              if (specialId != ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L501" title="All 2 branches missed.">              if (specialId != ILLEGALVALUE) {</span>
                 // Clean previously transfer if any
-<span class="fc" id="L510">                cleanPreviousTransfer(specialId, host, filename, r66Future);</span>
+<span class="nc" id="L503">                cleanPreviousTransfer(specialId, host, filename, r66Future);</span>
               }
-<span class="fc" id="L512">              text = &quot;Direct Transfer: &quot;;</span>
-<span class="fc" id="L513">              r66Future = new R66Future(true);</span>
-<span class="fc" id="L514">              directTransfer(host, filename, r66Future, text);</span>
+<span class="nc" id="L505">              text = &quot;Direct Transfer: &quot;;</span>
+<span class="nc" id="L506">              r66Future = new R66Future(true);</span>
+<span class="nc" id="L507">              directTransfer(host, filename, r66Future, text);</span>
             }
-<span class="fc" id="L516">            r66Future.awaitOrInterruptible();</span>
-<span class="fc" id="L517">            final R66Result r66result = r66Future.getResult();</span>
-<span class="fc bfc" id="L518" title="All 2 branches covered.">            if (r66Future.isSuccess()) {</span>
-<span class="fc" id="L519">              finalStatus = true;</span>
-<span class="fc" id="L520">              newSpecialId =</span>
-<span class="fc" id="L521">                  finalizeInSuccess(newSpecialId, host, text, r66result);</span>
+<span class="nc" id="L509">            r66Future.awaitOrInterruptible();</span>
+<span class="nc" id="L510">            final R66Result r66result = r66Future.getResult();</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">            if (r66Future.isSuccess()) {</span>
+<span class="nc" id="L512">              finalStatus = true;</span>
+<span class="nc" id="L513">              newSpecialId =</span>
+<span class="nc" id="L514">                  finalizeInSuccess(newSpecialId, host, text, r66result);</span>
             } else {
-<span class="fc" id="L523">              setError(getError() + 1);</span>
-<span class="fc" id="L524">              ko++;</span>
+<span class="nc" id="L516">              setError(getError() + 1);</span>
+<span class="nc" id="L517">              ko++;</span>
               final DbTaskRunner runner;
-<span class="pc bpc" id="L526" title="1 of 2 branches missed.">              if (r66result != null) {</span>
-<span class="fc" id="L527">                String errMsg = &quot;Unknown Error Message&quot;;</span>
-<span class="pc bpc" id="L528" title="1 of 2 branches missed.">                if (r66Future.getCause() != null) {</span>
-<span class="fc" id="L529">                  errMsg = r66Future.getCause().getMessage();</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">              if (r66result != null) {</span>
+<span class="nc" id="L520">                String errMsg = &quot;Unknown Error Message&quot;;</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">                if (r66Future.getCause() != null) {</span>
+<span class="nc" id="L522">                  errMsg = r66Future.getCause().getMessage();</span>
                 }
-<span class="fc" id="L531">                final boolean isConnectionImpossible =</span>
-<span class="pc bpc" id="L532" title="2 of 4 branches missed.">                    r66result.getCode() == ErrorCode.ConnectionImpossible &amp;&amp;</span>
+<span class="nc" id="L524">                final boolean isConnectionImpossible =</span>
+<span class="nc bnc" id="L525" title="All 4 branches missed.">                    r66result.getCode() == ErrorCode.ConnectionImpossible &amp;&amp;</span>
                     !normalInfoAsWarn;
-<span class="fc" id="L534">                runner = r66result.getRunner();</span>
-<span class="pc bpc" id="L535" title="1 of 2 branches missed.">                if (runner != null) {</span>
-<span class="fc" id="L536">                  newSpecialId = koOnFoundRunner(host, text, runner, errMsg,</span>
+<span class="nc" id="L527">                runner = r66result.getRunner();</span>
+<span class="nc bnc" id="L528" title="All 2 branches missed.">                if (runner != null) {</span>
+<span class="nc" id="L529">                  newSpecialId = koOnFoundRunner(host, text, runner, errMsg,</span>
                                                  isConnectionImpossible);
                 } else {
-<span class="nc" id="L539">                  ko = getKoOnNoRunner(ko, host, r66Future, text, r66result,</span>
+<span class="nc" id="L532">                  ko = getKoOnNoRunner(ko, host, r66Future, text, r66result,</span>
                                        isConnectionImpossible);
                 }
-<span class="fc" id="L542">              } else {</span>
-<span class="nc" id="L543">                logger.error(</span>
-<span class="nc" id="L544">                    text + Messages.getString(REQUEST_INFORMATION_FAILURE)</span>
+<span class="nc" id="L535">              } else {</span>
+<span class="nc" id="L536">                logger.error(</span>
+<span class="nc" id="L537">                    text + Messages.getString(REQUEST_INFORMATION_FAILURE)</span>
                     //$NON-NLS-1$
-<span class="nc" id="L546">                    + REMOTE + host + REMOTE2, r66Future.getCause());</span>
+<span class="nc" id="L539">                    + REMOTE + host + REMOTE2, r66Future.getCause());</span>
               }
             }
           }
-<span class="fc" id="L550">        }</span>
-<span class="nc" id="L551">      } catch (final Throwable e) {</span>
+<span class="nc" id="L543">        }</span>
+<span class="nc" id="L544">      } catch (final Throwable e) {</span>
         // catch any exception
-<span class="nc" id="L553">        logger.error(&quot;Error in SpooledDirectory&quot;, e);</span>
-<span class="nc" id="L554">        finalStatus = false;</span>
-<span class="fc" id="L555">      }</span>
-<span class="pc bpc" id="L556" title="1 of 2 branches missed.">      specialId = remoteHosts.size() &gt; 1? ILLEGALVALUE : newSpecialId;</span>
-<span class="fc bfc" id="L557" title="All 2 branches covered.">      if (ko &gt; 0) {</span>
+<span class="nc" id="L546">        logger.error(&quot;Error in SpooledDirectory&quot;, e);</span>
+<span class="nc" id="L547">        finalStatus = false;</span>
+<span class="nc" id="L548">      }</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">      specialId = remoteHosts.size() &gt; 1? ILLEGALVALUE : newSpecialId;</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">      if (ko &gt; 0) {</span>
         // If at least one is in error, the transfer is in error so should be redone
-<span class="fc" id="L559">        finalStatus = false;</span>
+<span class="nc" id="L552">        finalStatus = false;</span>
       }
-<span class="fc" id="L561">      finalizeValidFile(finalStatus, specialId);</span>
-<span class="fc" id="L562">    }</span>
+<span class="nc" id="L554">      finalizeValidFile(finalStatus, specialId);</span>
+<span class="nc" id="L555">    }</span>
 
     private void directTransfer(final String host, final String filename,
                                 final R66Future r66Future, final String text) {
-<span class="fc" id="L566">      final DirectTransfer transaction =</span>
+<span class="nc" id="L559">      final DirectTransfer transaction =</span>
           new DirectTransfer(r66Future, host, filename, ruleName, fileInfo,
                              isMD5, blocksize, ILLEGALVALUE,
                              networkTransaction);
-<span class="pc bpc" id="L570" title="1 of 2 branches missed.">      if (!fileInfo.contains(&quot;-nofollow&quot;)) {</span>
-<span class="fc" id="L571">        TransferArgs.forceAnalyzeFollow(transaction);</span>
+<span class="nc bnc" id="L563" title="All 2 branches missed.">      if (!fileInfo.contains(&quot;-nofollow&quot;)) {</span>
+<span class="nc" id="L564">        TransferArgs.forceAnalyzeFollow(transaction);</span>
       }
       // If retry indefinitely is useful transaction.setLimitRetryConnection(true)
-<span class="fc" id="L574">      transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="fc" id="L575">      logger.info(&quot;{}{}&quot;, text, host);</span>
-<span class="fc" id="L576">      transaction.run();</span>
-<span class="fc" id="L577">    }</span>
+<span class="nc" id="L567">      transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="nc" id="L568">      logger.info(&quot;{}{}&quot;, text, host);</span>
+<span class="nc" id="L569">      transaction.run();</span>
+<span class="nc" id="L570">    }</span>
 
     private String submitTransfer(final long specialId, final String host,
                                   final String filename,
                                   final R66Future r66Future) {
       final String text;
-<span class="fc" id="L583">      text = &quot;Submit Transfer: &quot;;</span>
-<span class="fc" id="L584">      final SubmitTransfer transaction =</span>
+<span class="nc" id="L576">      text = &quot;Submit Transfer: &quot;;</span>
+<span class="nc" id="L577">      final SubmitTransfer transaction =</span>
           new SubmitTransfer(r66Future, host, filename, ruleName, fileInfo,
                              isMD5, blocksize, specialId, null);
-<span class="pc bpc" id="L587" title="1 of 2 branches missed.">      if (!fileInfo.contains(&quot;-nofollow&quot;)) {</span>
-<span class="fc" id="L588">        TransferArgs.forceAnalyzeFollow(transaction);</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">      if (!fileInfo.contains(&quot;-nofollow&quot;)) {</span>
+<span class="nc" id="L581">        TransferArgs.forceAnalyzeFollow(transaction);</span>
       }
-<span class="fc" id="L590">      transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="fc" id="L591">      logger.info(&quot;{}{}&quot;, text, host);</span>
-<span class="fc" id="L592">      transaction.run();</span>
-<span class="fc" id="L593">      return text;</span>
+<span class="nc" id="L583">      transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="nc" id="L584">      logger.info(&quot;{}{}&quot;, text, host);</span>
+<span class="nc" id="L585">      transaction.run();</span>
+<span class="nc" id="L586">      return text;</span>
     }
 
     private long koOnFoundRunner(final String host, final String text,
                                  final DbTaskRunner runner, final String errMsg,
                                  final boolean isConnectionImpossible) {
       final long newSpecialId;
-<span class="fc" id="L600">      newSpecialId = runner.getSpecialId();</span>
-<span class="fc" id="L601">      DbTaskRunner.removeNoDbSpecialId(newSpecialId);</span>
-<span class="pc bpc" id="L602" title="1 of 2 branches missed.">      if (isConnectionImpossible) {</span>
-<span class="nc bnc" id="L603" title="All 2 branches missed.">        if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L604">          logger.info(&quot;{}{}{}{}{}{}{}{}&quot;, text,</span>
-<span class="nc" id="L605">                      Messages.getString(REQUEST_INFORMATION_FAILURE),</span>
+<span class="nc" id="L593">      newSpecialId = runner.getSpecialId();</span>
+<span class="nc" id="L594">      DbTaskRunner.removeNoDbSpecialId(newSpecialId);</span>
+<span class="nc bnc" id="L595" title="All 2 branches missed.">      if (isConnectionImpossible) {</span>
+<span class="nc bnc" id="L596" title="All 2 branches missed.">        if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L597">          logger.info(&quot;{}{}{}{}{}{}{}{}&quot;, text,</span>
+<span class="nc" id="L598">                      Messages.getString(REQUEST_INFORMATION_FAILURE),</span>
                       //$NON-NLS-1$
-<span class="nc" id="L607">                      runner.toShortString(), REMOTE, host, &quot;&lt;/REMOTE&gt;&lt;REASON&gt;&quot;,</span>
+<span class="nc" id="L600">                      runner.toShortString(), REMOTE, host, &quot;&lt;/REMOTE&gt;&lt;REASON&gt;&quot;,</span>
                       errMsg, &quot;&lt;/REASON&gt;&quot;);
         }
       } else {
-<span class="fc" id="L611">        logger.error(text + Messages.getString(REQUEST_INFORMATION_FAILURE) +</span>
+<span class="nc" id="L604">        logger.error(text + Messages.getString(REQUEST_INFORMATION_FAILURE) +</span>
                      //$NON-NLS-1$
-<span class="fc" id="L613">                     runner.toShortString() + REMOTE + host +</span>
+<span class="nc" id="L606">                     runner.toShortString() + REMOTE + host +</span>
                      &quot;&lt;/REMOTE&gt;&lt;REASON&gt;&quot; + errMsg + &quot;&lt;/REASON&gt;&quot;);
       }
-<span class="fc" id="L616">      return newSpecialId;</span>
+<span class="nc" id="L609">      return newSpecialId;</span>
     }
 
     private int getKoOnNoRunner(int ko, final String host,
                                 final R66Future r66Future, final String text,
                                 final R66Result r66result,
                                 final boolean isConnectionImpossible) {
-<span class="nc bnc" id="L623" title="All 2 branches missed.">      if (isConnectionImpossible) {</span>
-<span class="nc" id="L624">        logger.info(&quot;{}{}{}{}{}&quot;, text,</span>
-<span class="nc" id="L625">                    Messages.getString(REQUEST_INFORMATION_FAILURE), REMOTE,</span>
-<span class="nc" id="L626">                    host, REMOTE2, r66Future.getCause());</span>
+<span class="nc bnc" id="L616" title="All 2 branches missed.">      if (isConnectionImpossible) {</span>
+<span class="nc" id="L617">        logger.info(&quot;{}{}{}{}{}&quot;, text,</span>
+<span class="nc" id="L618">                    Messages.getString(REQUEST_INFORMATION_FAILURE), REMOTE,</span>
+<span class="nc" id="L619">                    host, REMOTE2, r66Future.getCause());</span>
       } else {
-<span class="nc bnc" id="L628" title="All 2 branches missed.">        if (r66result.getCode() == QueryRemotelyUnknown) {</span>
-<span class="nc" id="L629">          logger.info(&quot;Transfer not found {}{}{}&quot;, REMOTE, host, REMOTE2);</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">        if (r66result.getCode() == QueryRemotelyUnknown) {</span>
+<span class="nc" id="L622">          logger.info(&quot;Transfer not found {}{}{}&quot;, REMOTE, host, REMOTE2);</span>
           // False negative
-<span class="nc" id="L631">          ko--;</span>
-<span class="nc" id="L632">          setError(getError() - 1);</span>
+<span class="nc" id="L624">          ko--;</span>
+<span class="nc" id="L625">          setError(getError() - 1);</span>
         } else {
-<span class="nc" id="L634">          logger.error(</span>
-<span class="nc" id="L635">              text + Messages.getString(REQUEST_INFORMATION_FAILURE) + REMOTE +</span>
-<span class="nc" id="L636">              host + REMOTE2, r66Future.getCause());</span>
+<span class="nc" id="L627">          logger.error(</span>
+<span class="nc" id="L628">              text + Messages.getString(REQUEST_INFORMATION_FAILURE) + REMOTE +</span>
+<span class="nc" id="L629">              host + REMOTE2, r66Future.getCause());</span>
         }
       }
-<span class="nc" id="L639">      return ko;</span>
+<span class="nc" id="L632">      return ko;</span>
     }
 
     private long finalizeInSuccess(long newSpecialId, final String host,
                                    final String text,
                                    final R66Result r66result) {
-<span class="fc" id="L645">      setSent(getSent() + 1);</span>
+<span class="nc" id="L638">      setSent(getSent() + 1);</span>
       final DbTaskRunner runner;
-<span class="pc bpc" id="L647" title="1 of 2 branches missed.">      if (r66result != null) {</span>
-<span class="fc" id="L648">        runner = r66result.getRunner();</span>
-<span class="pc bpc" id="L649" title="1 of 2 branches missed.">        if (runner != null) {</span>
-<span class="fc" id="L650">          newSpecialId = runner.getSpecialId();</span>
-<span class="fc" id="L651">          String status =</span>
-<span class="fc" id="L652">              Messages.getString(&quot;RequestInformation.Success&quot;); //$NON-NLS-1$</span>
-<span class="pc bpc" id="L653" title="1 of 2 branches missed.">          if (runner.getErrorInfo() == ErrorCode.Warning) {</span>
-<span class="nc" id="L654">            status =</span>
-<span class="nc" id="L655">                Messages.getString(&quot;RequestInformation.Warned&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">      if (r66result != null) {</span>
+<span class="nc" id="L641">        runner = r66result.getRunner();</span>
+<span class="nc bnc" id="L642" title="All 2 branches missed.">        if (runner != null) {</span>
+<span class="nc" id="L643">          newSpecialId = runner.getSpecialId();</span>
+<span class="nc" id="L644">          String status =</span>
+<span class="nc" id="L645">              Messages.getString(&quot;RequestInformation.Success&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L646" title="All 2 branches missed.">          if (runner.getErrorInfo() == ErrorCode.Warning) {</span>
+<span class="nc" id="L647">            status =</span>
+<span class="nc" id="L648">                Messages.getString(&quot;RequestInformation.Warned&quot;); //$NON-NLS-1$</span>
           }
-<span class="fc bfc" id="L657" title="All 2 branches covered.">          if (normalInfoAsWarn) {</span>
-<span class="fc" id="L658">            logger.warn(</span>
-<span class="fc" id="L659">                text + &quot; status: &quot; + status + &quot;     &quot; + runner.toShortString() +</span>
+<span class="nc bnc" id="L650" title="All 2 branches missed.">          if (normalInfoAsWarn) {</span>
+<span class="nc" id="L651">            logger.warn(</span>
+<span class="nc" id="L652">                text + &quot; status: &quot; + status + &quot;     &quot; + runner.toShortString() +</span>
                 &quot;     &lt;REMOTE&gt;&quot; + host + REMOTE2 + &quot;     &lt;FILEFINAL&gt;&quot; +
-<span class="fc bfc" id="L661" title="All 2 branches covered.">                (r66result.getFile() != null?</span>
-<span class="fc" id="L662">                    r66result.getFile() + &quot;&lt;/FILEFINAL&gt;&quot; : &quot;no file&quot;));</span>
-<span class="pc bpc" id="L663" title="1 of 2 branches missed.">          } else if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L664">            logger.info(</span>
+<span class="nc bnc" id="L654" title="All 2 branches missed.">                (r66result.getFile() != null?</span>
+<span class="nc" id="L655">                    r66result.getFile() + &quot;&lt;/FILEFINAL&gt;&quot; : &quot;no file&quot;));</span>
+<span class="nc bnc" id="L656" title="All 2 branches missed.">          } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L657">            logger.info(</span>
                 &quot;{} status: {}     {}     &lt;REMOTE&gt;{}&lt;/REMOTE&gt;     &lt;FILEFINAL&gt;{}&quot;,
-<span class="nc" id="L666">                text, status, runner.toShortString(), host,</span>
-<span class="nc bnc" id="L667" title="All 2 branches missed.">                (r66result.getFile() != null?</span>
-<span class="nc" id="L668">                    r66result.getFile() + &quot;&lt;/FILEFINAL&gt;&quot; : &quot;no file&quot;));</span>
+<span class="nc" id="L659">                text, status, runner.toShortString(), host,</span>
+<span class="nc bnc" id="L660" title="All 2 branches missed.">                (r66result.getFile() != null?</span>
+<span class="nc" id="L661">                    r66result.getFile() + &quot;&lt;/FILEFINAL&gt;&quot; : &quot;no file&quot;));</span>
           }
-<span class="pc bpc" id="L670" title="3 of 4 branches missed.">          if (nolog &amp;&amp; !submit) {</span>
+<span class="nc bnc" id="L663" title="All 4 branches missed.">          if (nolog &amp;&amp; !submit) {</span>
             // In case of success, delete the runner
             try {
-<span class="nc" id="L673">              runner.delete();</span>
-<span class="nc" id="L674">            } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L675">              logger.warn(&quot;Cannot apply nolog to     &quot; + runner.toShortString(),</span>
-                          e);
-<span class="nc" id="L677">            }</span>
+<span class="nc" id="L666">              runner.delete();</span>
+<span class="nc" id="L667">            } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L668">              logger.warn(</span>
+<span class="nc" id="L669">                  &quot;Cannot apply nolog to     &quot; + runner.toShortString() +</span>
+<span class="nc" id="L670">                  &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L671">            }</span>
           }
-<span class="fc" id="L679">          DbTaskRunner.removeNoDbSpecialId(newSpecialId);</span>
-<span class="fc" id="L680">        } else {</span>
-<span class="nc bnc" id="L681" title="All 2 branches missed.">          if (normalInfoAsWarn) {</span>
-<span class="nc" id="L682">            logger.warn(text + Messages.getString(&quot;RequestInformation.Success&quot;)</span>
+<span class="nc" id="L673">          DbTaskRunner.removeNoDbSpecialId(newSpecialId);</span>
+<span class="nc" id="L674">        } else {</span>
+<span class="nc bnc" id="L675" title="All 2 branches missed.">          if (normalInfoAsWarn) {</span>
+<span class="nc" id="L676">            logger.warn(text + Messages.getString(&quot;RequestInformation.Success&quot;)</span>
                         //$NON-NLS-1$
                         + REMOTE + host + REMOTE2);
           } else {
-<span class="nc" id="L686">            logger.info(&quot;{}{}{}{}{}&quot;, text,</span>
-<span class="nc" id="L687">                        Messages.getString(&quot;RequestInformation.Success&quot;),</span>
+<span class="nc" id="L680">            logger.info(&quot;{}{}{}{}{}&quot;, text,</span>
+<span class="nc" id="L681">                        Messages.getString(&quot;RequestInformation.Success&quot;),</span>
                         //$NON-NLS-1$
                         REMOTE, host, REMOTE2);
           }
         }
       } else {
-<span class="nc bnc" id="L693" title="All 2 branches missed.">        if (normalInfoAsWarn) {</span>
-<span class="nc" id="L694">          logger.warn(text + Messages.getString(&quot;RequestInformation.Success&quot;)</span>
+<span class="nc bnc" id="L687" title="All 2 branches missed.">        if (normalInfoAsWarn) {</span>
+<span class="nc" id="L688">          logger.warn(text + Messages.getString(&quot;RequestInformation.Success&quot;)</span>
                       //$NON-NLS-1$
                       + REMOTE + host + REMOTE2);
         } else {
-<span class="nc" id="L698">          logger.info(&quot;{}{}{}{}{}&quot;, text,</span>
-<span class="nc" id="L699">                      Messages.getString(&quot;RequestInformation.Success&quot;),</span>
+<span class="nc" id="L692">          logger.info(&quot;{}{}{}{}{}&quot;, text,</span>
+<span class="nc" id="L693">                      Messages.getString(&quot;RequestInformation.Success&quot;),</span>
                       //$NON-NLS-1$
                       REMOTE, host, REMOTE2);
         }
       }
-<span class="fc" id="L704">      return newSpecialId;</span>
+<span class="nc" id="L698">      return newSpecialId;</span>
     }
 
     private void cleanPreviousTransfer(final long specialId, final String host,
@@ -709,262 +703,263 @@ public class SpooledDirectoryTransfer implements Runnable {
                                        final R66Future r66Future) {
       final String text;
       try {
-<span class="fc" id="L712">        final String srequester = Configuration.configuration.getHostId(host);</span>
-<span class="fc" id="L713">        text =</span>
+<span class="nc" id="L706">        final String srequester = Configuration.configuration.getHostId(host);</span>
+<span class="nc" id="L707">        text =</span>
             &quot;Request Transfer Cancelled: &quot; + specialId + ' ' + filename + ' ';
         // Cancel
-<span class="fc" id="L716">        logger.debug(&quot;Will try to cancel {}&quot;, specialId);</span>
-<span class="fc" id="L717">        final RequestTransfer transaction2 =</span>
+<span class="nc" id="L710">        logger.debug(&quot;Will try to cancel {}&quot;, specialId);</span>
+<span class="nc" id="L711">        final RequestTransfer transaction2 =</span>
             new RequestTransfer(r66Future, specialId, host, srequester, true,
                                 false, false, networkTransaction);
-<span class="fc" id="L720">        transaction2.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="fc" id="L721">        logger.warn(text + host);</span>
-<span class="fc" id="L722">        transaction2.run();</span>
+<span class="nc" id="L714">        transaction2.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="nc" id="L715">        logger.warn(text + host);</span>
+<span class="nc" id="L716">        transaction2.run();</span>
         // special task
-<span class="fc" id="L724">        r66Future.awaitOrInterruptible();</span>
-<span class="nc" id="L725">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc bnc" id="L726" title="All 2 branches missed.">        if (admin.getSession() != null) {</span>
-<span class="nc" id="L727">          admin.getSession().checkConnectionNoException();</span>
+<span class="nc" id="L718">        r66Future.awaitOrInterruptible();</span>
+<span class="nc" id="L719">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L720" title="All 2 branches missed.">        if (admin.getSession() != null) {</span>
+<span class="nc" id="L721">          admin.getSession().checkConnectionNoException();</span>
         }
-<span class="nc" id="L729">        logger.warn(Messages.getString(&quot;RequestTransfer.5&quot;) + host,</span>
-                    e); //$NON-NLS-1$
-<span class="fc" id="L731">      }</span>
-<span class="fc" id="L732">    }</span>
+<span class="nc" id="L723">        logger.warn(Messages.getString(&quot;RequestTransfer.5&quot;) + host + &quot; : {}&quot;,</span>
+<span class="nc" id="L724">                    e.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L725">      }</span>
+<span class="nc" id="L726">    }</span>
 
     private long checkReuseUniqueHost(final FileItem fileItem, long specialId) {
-<span class="pc bpc" id="L735" title="1 of 4 branches missed.">      if (isReuse() &amp;&amp; remoteHosts.size() == 1) {</span>
+<span class="nc bnc" id="L729" title="All 4 branches missed.">      if (isReuse() &amp;&amp; remoteHosts.size() == 1) {</span>
         // if specialId is not IllegalValue, then used was necessarily true
         // before
-<span class="fc bfc" id="L738" title="All 2 branches covered.">        if (!submit) {</span>
+<span class="nc bnc" id="L732" title="All 2 branches missed.">        if (!submit) {</span>
           // reset fileItem usage
-<span class="fc" id="L740">          setValid(fileItem);</span>
+<span class="nc" id="L734">          setValid(fileItem);</span>
         } else {
           // Cancel the unique previous transfer
-<span class="fc" id="L743">          String host = remoteHosts.get(0);</span>
-<span class="pc bpc" id="L744" title="1 of 2 branches missed.">          if (host == null) {</span>
-<span class="nc" id="L745">            return specialId;</span>
+<span class="nc" id="L737">          String host = remoteHosts.get(0);</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">          if (host == null) {</span>
+<span class="nc" id="L739">            return specialId;</span>
           }
-<span class="fc" id="L747">          host = host.trim();</span>
-<span class="pc bpc" id="L748" title="1 of 2 branches missed.">          if (!host.isEmpty()) {</span>
-<span class="fc" id="L749">            final String filename = fileItem.file.getAbsolutePath();</span>
-<span class="fc" id="L750">            final String text =</span>
+<span class="nc" id="L741">          host = host.trim();</span>
+<span class="nc bnc" id="L742" title="All 2 branches missed.">          if (!host.isEmpty()) {</span>
+<span class="nc" id="L743">            final String filename = fileItem.file.getAbsolutePath();</span>
+<span class="nc" id="L744">            final String text =</span>
                 &quot;Request Transfer to be cancelled: &quot; + fileItem.specialId +
                 ' ' + filename + ' ';
             try {
-<span class="fc" id="L754">              final R66Future r66Future = new R66Future(true);</span>
-<span class="fc" id="L755">              final String srequester =</span>
-<span class="fc" id="L756">                  Configuration.configuration.getHostId(host);</span>
+<span class="nc" id="L748">              final R66Future r66Future = new R66Future(true);</span>
+<span class="nc" id="L749">              final String srequester =</span>
+<span class="nc" id="L750">                  Configuration.configuration.getHostId(host);</span>
               // Try restart
-<span class="fc" id="L758">              final RequestTransfer transaction =</span>
+<span class="nc" id="L752">              final RequestTransfer transaction =</span>
                   new RequestTransfer(r66Future, fileItem.specialId, host,
                                       srequester, true, false, false,
                                       networkTransaction);
-<span class="fc" id="L762">              transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="fc" id="L763">              logger.info(&quot;{}{}&quot;, text, host);</span>
+<span class="nc" id="L756">              transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="nc" id="L757">              logger.info(&quot;{}{}&quot;, text, host);</span>
               // special task
-<span class="fc" id="L765">              transaction.run();</span>
-<span class="fc" id="L766">              r66Future.awaitOrInterruptible();</span>
+<span class="nc" id="L759">              transaction.run();</span>
+<span class="nc" id="L760">              r66Future.awaitOrInterruptible();</span>
               // reset fileItem usage
-<span class="fc" id="L768">              setValid(fileItem);</span>
-<span class="fc" id="L769">              specialId = fileItem.specialId;</span>
-<span class="nc" id="L770">            } catch (final WaarpDatabaseException e) {</span>
-<span class="nc bnc" id="L771" title="All 2 branches missed.">              if (admin.getSession() != null) {</span>
-<span class="nc" id="L772">                admin.getSession().checkConnectionNoException();</span>
+<span class="nc" id="L762">              setValid(fileItem);</span>
+<span class="nc" id="L763">              specialId = fileItem.specialId;</span>
+<span class="nc" id="L764">            } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L765" title="All 2 branches missed.">              if (admin.getSession() != null) {</span>
+<span class="nc" id="L766">                admin.getSession().checkConnectionNoException();</span>
               }
-<span class="nc" id="L774">              logger.warn(Messages.getString(&quot;RequestTransfer.5&quot;) + host,</span>
-                          e); //$NON-NLS-1$
-<span class="fc" id="L776">            }</span>
+<span class="nc" id="L768">              logger.warn(</span>
+<span class="nc" id="L769">                  Messages.getString(&quot;RequestTransfer.5&quot;) + host + &quot; : {}&quot;,</span>
+<span class="nc" id="L770">                  e.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L771">            }</span>
           }
         }
       }
-<span class="fc" id="L780">      return specialId;</span>
+<span class="nc" id="L775">      return specialId;</span>
     }
   }
 
   /**
    * Default arguments
    */
-<span class="fc" id="L787">  public static class Arguments {</span>
+<span class="nc" id="L782">  public static class Arguments {</span>
     private String name;
-<span class="fc" id="L789">    private final List&lt;String&gt; remoteHosts = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L790">    private final List&lt;String&gt; localDirectory = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L784">    private final List&lt;String&gt; remoteHosts = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L785">    private final List&lt;String&gt; localDirectory = new ArrayList&lt;String&gt;();</span>
     private String rule;
-<span class="fc" id="L792">    private String fileInfo = NO_INFO_ARGS;</span>
+<span class="nc" id="L787">    private String fileInfo = NO_INFO_ARGS;</span>
     private boolean isMd5;
-<span class="fc" id="L794">    private int block = 0x10000; // 64K as default</span>
+<span class="nc" id="L789">    private int block = 0x10000; // 64K as default</span>
     private String statusFile;
     private String stopFile;
     private String regex;
-<span class="fc" id="L798">    private long elapsed = 1000;</span>
-<span class="fc" id="L799">    private long elapsedWaarp = 5000;</span>
-<span class="fc" id="L800">    private boolean toSubmit = true;</span>
+<span class="nc" id="L793">    private long elapsed = 1000;</span>
+<span class="nc" id="L794">    private long elapsedWaarp = 5000;</span>
+<span class="nc" id="L795">    private boolean toSubmit = true;</span>
     private boolean noLog;
     private boolean recursive;
-<span class="fc" id="L803">    private final List&lt;String&gt; waarpHosts = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L804">    private boolean isParallel = true;</span>
+<span class="nc" id="L798">    private final List&lt;String&gt; waarpHosts = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L799">    private boolean isParallel = true;</span>
     private int limitParallel;
     private long minimalSize;
-<span class="fc" id="L807">    private boolean logWarn = true;</span>
-<span class="fc" id="L808">    private boolean ignoreAlreadyUsed = false;</span>
+<span class="nc" id="L802">    private boolean logWarn = true;</span>
+<span class="nc" id="L803">    private boolean ignoreAlreadyUsed = false;</span>
 
-    public String getName() {
-<span class="fc" id="L811">      return name;</span>
+    public final String getName() {
+<span class="nc" id="L806">      return name;</span>
     }
 
-    public void setName(final String name) {
-<span class="fc" id="L815">      this.name = name;</span>
-<span class="fc" id="L816">    }</span>
+    public final void setName(final String name) {
+<span class="nc" id="L810">      this.name = name;</span>
+<span class="nc" id="L811">    }</span>
 
-    public List&lt;String&gt; getRemoteHosts() {
-<span class="fc" id="L819">      return remoteHosts;</span>
+    public final List&lt;String&gt; getRemoteHosts() {
+<span class="nc" id="L814">      return remoteHosts;</span>
     }
 
-    public List&lt;String&gt; getLocalDirectory() {
-<span class="fc" id="L823">      return localDirectory;</span>
+    public final List&lt;String&gt; getLocalDirectory() {
+<span class="nc" id="L818">      return localDirectory;</span>
     }
 
-    public String getRule() {
-<span class="fc" id="L827">      return rule;</span>
+    public final String getRule() {
+<span class="nc" id="L822">      return rule;</span>
     }
 
-    public void setRule(final String rule) {
-<span class="fc" id="L831">      this.rule = rule;</span>
-<span class="fc" id="L832">    }</span>
+    public final void setRule(final String rule) {
+<span class="nc" id="L826">      this.rule = rule;</span>
+<span class="nc" id="L827">    }</span>
 
-    public String getFileInfo() {
-<span class="fc" id="L835">      return fileInfo;</span>
+    public final String getFileInfo() {
+<span class="nc" id="L830">      return fileInfo;</span>
     }
 
-    public void setFileInfo(final String fileInfo) {
-<span class="fc" id="L839">      this.fileInfo = fileInfo;</span>
-<span class="fc" id="L840">    }</span>
+    public final void setFileInfo(final String fileInfo) {
+<span class="nc" id="L834">      this.fileInfo = fileInfo;</span>
+<span class="nc" id="L835">    }</span>
 
-    public boolean isMd5() {
-<span class="nc" id="L843">      return isMd5;</span>
+    public final boolean isMd5() {
+<span class="nc" id="L838">      return isMd5;</span>
     }
 
-    public void setMd5(final boolean md5) {
-<span class="fc" id="L847">      this.isMd5 = md5;</span>
-<span class="fc" id="L848">    }</span>
+    public final void setMd5(final boolean md5) {
+<span class="nc" id="L842">      this.isMd5 = md5;</span>
+<span class="nc" id="L843">    }</span>
 
-    public int getBlock() {
-<span class="fc" id="L851">      return block;</span>
+    public final int getBlock() {
+<span class="nc" id="L846">      return block;</span>
     }
 
-    public void setBlock(final int block) {
-<span class="fc" id="L855">      this.block = block;</span>
-<span class="fc" id="L856">    }</span>
+    public final void setBlock(final int block) {
+<span class="nc" id="L850">      this.block = block;</span>
+<span class="nc" id="L851">    }</span>
 
-    public String getStatusFile() {
-<span class="fc" id="L859">      return statusFile;</span>
+    public final String getStatusFile() {
+<span class="nc" id="L854">      return statusFile;</span>
     }
 
-    public void setStatusFile(final String statusFile) {
-<span class="fc" id="L863">      this.statusFile = statusFile;</span>
-<span class="fc" id="L864">    }</span>
+    public final void setStatusFile(final String statusFile) {
+<span class="nc" id="L858">      this.statusFile = statusFile;</span>
+<span class="nc" id="L859">    }</span>
 
-    public String getStopFile() {
-<span class="fc" id="L867">      return stopFile;</span>
+    public final String getStopFile() {
+<span class="nc" id="L862">      return stopFile;</span>
     }
 
-    public void setStopFile(final String stopFile) {
-<span class="fc" id="L871">      this.stopFile = stopFile;</span>
-<span class="fc" id="L872">    }</span>
+    public final void setStopFile(final String stopFile) {
+<span class="nc" id="L866">      this.stopFile = stopFile;</span>
+<span class="nc" id="L867">    }</span>
 
-    public String getRegex() {
-<span class="nc" id="L875">      return regex;</span>
+    public final String getRegex() {
+<span class="nc" id="L870">      return regex;</span>
     }
 
-    public void setRegex(final String regex) {
-<span class="fc" id="L879">      this.regex = regex;</span>
-<span class="fc" id="L880">    }</span>
+    public final void setRegex(final String regex) {
+<span class="nc" id="L874">      this.regex = regex;</span>
+<span class="nc" id="L875">    }</span>
 
-    public long getElapsed() {
-<span class="nc" id="L883">      return elapsed;</span>
+    public final long getElapsed() {
+<span class="nc" id="L878">      return elapsed;</span>
     }
 
-    public void setElapsed(final long elapsed) {
-<span class="fc" id="L887">      this.elapsed = elapsed;</span>
-<span class="fc" id="L888">    }</span>
+    public final void setElapsed(final long elapsed) {
+<span class="nc" id="L882">      this.elapsed = elapsed;</span>
+<span class="nc" id="L883">    }</span>
 
-    public long getElapsedWaarp() {
-<span class="nc" id="L891">      return elapsedWaarp;</span>
+    public final long getElapsedWaarp() {
+<span class="nc" id="L886">      return elapsedWaarp;</span>
     }
 
-    public void setElapsedWaarp(final long elapsedWaarp) {
-<span class="fc" id="L895">      this.elapsedWaarp = elapsedWaarp;</span>
-<span class="fc" id="L896">    }</span>
+    public final void setElapsedWaarp(final long elapsedWaarp) {
+<span class="nc" id="L890">      this.elapsedWaarp = elapsedWaarp;</span>
+<span class="nc" id="L891">    }</span>
 
-    public boolean isToSubmit() {
-<span class="nc" id="L899">      return toSubmit;</span>
+    public final boolean isToSubmit() {
+<span class="nc" id="L894">      return toSubmit;</span>
     }
 
-    public void setToSubmit(final boolean toSubmit) {
-<span class="fc" id="L903">      this.toSubmit = toSubmit;</span>
-<span class="fc" id="L904">    }</span>
+    public final void setToSubmit(final boolean toSubmit) {
+<span class="nc" id="L898">      this.toSubmit = toSubmit;</span>
+<span class="nc" id="L899">    }</span>
 
-    public boolean isNoLog() {
-<span class="nc" id="L907">      return noLog;</span>
+    public final boolean isNoLog() {
+<span class="nc" id="L902">      return noLog;</span>
     }
 
-    public void setNoLog(final boolean noLog) {
-<span class="fc" id="L911">      this.noLog = noLog;</span>
-<span class="fc" id="L912">    }</span>
+    public final void setNoLog(final boolean noLog) {
+<span class="nc" id="L906">      this.noLog = noLog;</span>
+<span class="nc" id="L907">    }</span>
 
-    public boolean isRecursive() {
-<span class="nc" id="L915">      return recursive;</span>
+    public final boolean isRecursive() {
+<span class="nc" id="L910">      return recursive;</span>
     }
 
-    public void setRecursive(final boolean recursive) {
-<span class="fc" id="L919">      this.recursive = recursive;</span>
-<span class="fc" id="L920">    }</span>
+    public final void setRecursive(final boolean recursive) {
+<span class="nc" id="L914">      this.recursive = recursive;</span>
+<span class="nc" id="L915">    }</span>
 
-    public List&lt;String&gt; getWaarpHosts() {
-<span class="fc" id="L923">      return waarpHosts;</span>
+    public final List&lt;String&gt; getWaarpHosts() {
+<span class="nc" id="L918">      return waarpHosts;</span>
     }
 
-    public boolean isParallel() {
-<span class="nc" id="L927">      return isParallel;</span>
+    public final boolean isParallel() {
+<span class="nc" id="L922">      return isParallel;</span>
     }
 
-    public void setParallel(final boolean parallel) {
-<span class="fc" id="L931">      this.isParallel = parallel;</span>
-<span class="fc" id="L932">    }</span>
+    public final void setParallel(final boolean parallel) {
+<span class="nc" id="L926">      this.isParallel = parallel;</span>
+<span class="nc" id="L927">    }</span>
 
-    public int getLimitParallel() {
-<span class="nc" id="L935">      return limitParallel;</span>
+    public final int getLimitParallel() {
+<span class="nc" id="L930">      return limitParallel;</span>
     }
 
-    public void setLimitParallel(final int limitParallel) {
-<span class="fc" id="L939">      this.limitParallel = limitParallel;</span>
-<span class="fc" id="L940">    }</span>
+    public final void setLimitParallel(final int limitParallel) {
+<span class="nc" id="L934">      this.limitParallel = limitParallel;</span>
+<span class="nc" id="L935">    }</span>
 
-    public long getMinimalSize() {
-<span class="nc" id="L943">      return minimalSize;</span>
+    public final long getMinimalSize() {
+<span class="nc" id="L938">      return minimalSize;</span>
     }
 
-    public void setMinimalSize(final long minimalSize) {
-<span class="fc" id="L947">      this.minimalSize = minimalSize;</span>
-<span class="fc" id="L948">    }</span>
+    public final void setMinimalSize(final long minimalSize) {
+<span class="nc" id="L942">      this.minimalSize = minimalSize;</span>
+<span class="nc" id="L943">    }</span>
 
-    public boolean isLogWarn() {
-<span class="nc" id="L951">      return logWarn;</span>
+    public final boolean isLogWarn() {
+<span class="nc" id="L946">      return logWarn;</span>
     }
 
-    public void setLogWarn(final boolean logWarn) {
-<span class="fc" id="L955">      this.logWarn = logWarn;</span>
-<span class="fc" id="L956">    }</span>
+    public final void setLogWarn(final boolean logWarn) {
+<span class="nc" id="L950">      this.logWarn = logWarn;</span>
+<span class="nc" id="L951">    }</span>
 
-    public boolean isIgnoreAlreadyUsed() {
-<span class="nc" id="L959">      return ignoreAlreadyUsed;</span>
+    public final boolean isIgnoreAlreadyUsed() {
+<span class="nc" id="L954">      return ignoreAlreadyUsed;</span>
     }
 
-    public void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
-<span class="fc" id="L963">      this.ignoreAlreadyUsed = ignoreAlreadyUsed;</span>
-<span class="fc" id="L964">    }</span>
+    public final void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
+<span class="nc" id="L958">      this.ignoreAlreadyUsed = ignoreAlreadyUsed;</span>
+<span class="nc" id="L959">    }</span>
   }
 
-<span class="fc" id="L967">  protected static final List&lt;Arguments&gt; arguments = new ArrayList&lt;Arguments&gt;();</span>
+<span class="nc" id="L962">  protected static final List&lt;Arguments&gt; arguments = new ArrayList&lt;Arguments&gt;();</span>
   private static final String XML_ROOT = &quot;/config/&quot;;
   private static final String XML_SPOOLEDDAEMON = &quot;spooleddaemon&quot;;
   private static final String XML_STOPFILE = &quot;stopfile&quot;;
@@ -990,7 +985,7 @@ public class SpooledDirectoryTransfer implements Runnable {
   private static final String XML_LOG_WARN = &quot;logWarn&quot;;
   private static final String XML_IGNORED_ALREADY_USED = &quot;ignoreAlreadyUsed&quot;;
 
-<span class="fc" id="L993">  private static final XmlDecl[] subSpooled = {</span>
+<span class="nc" id="L988">  private static final XmlDecl[] subSpooled = {</span>
       new XmlDecl(XmlType.STRING, XML_NAME),
       new XmlDecl(XML_TO, XmlType.STRING, XML_TO, true),
       new XmlDecl(XmlType.STRING, XML_RULE),
@@ -1011,172 +1006,171 @@ public class SpooledDirectoryTransfer implements Runnable {
       new XmlDecl(XmlType.BOOLEAN, XML_IGNORED_ALREADY_USED),
       new XmlDecl(XmlType.LONG, XML_MINIMAL_SIZE)
   };
-<span class="fc" id="L1014">  private static final XmlDecl[] spooled = {</span>
+<span class="nc" id="L1009">  private static final XmlDecl[] spooled = {</span>
       new XmlDecl(XmlType.STRING, XML_STOPFILE),
       new XmlDecl(XmlType.BOOLEAN, XML_LOG_WARN),
       new XmlDecl(XML_SPOOLED, XmlType.XVAL, XML_SPOOLED, subSpooled, true)
   };
-<span class="fc" id="L1019">  private static final XmlDecl[] configSpooled = {</span>
+<span class="nc" id="L1014">  private static final XmlDecl[] configSpooled = {</span>
       new XmlDecl(XML_SPOOLEDDAEMON, XmlType.XVAL, XML_ROOT + XML_SPOOLEDDAEMON,
                   spooled, false)
   };
 
   @SuppressWarnings(&quot;unchecked&quot;)
   protected static boolean getParamsFromConfigFile(final String filename) {
-<span class="pc bpc" id="L1026" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L1027">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
+<span class="nc bnc" id="L1021" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L1022">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
     }
     final Document document;
     // Open config file
     try {
-<span class="fc" id="L1032">      document = XmlUtil.getNewSaxReader().read(filename);</span>
-<span class="nc" id="L1033">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L1034">      logger.error(</span>
-<span class="nc" id="L1035">          Messages.getString(&quot;FileBasedConfiguration.CannotReadXml&quot;) + filename,</span>
-          e); //$NON-NLS-1$
-<span class="nc" id="L1037">      return false;</span>
-<span class="fc" id="L1038">    }</span>
-<span class="pc bpc" id="L1039" title="1 of 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L1040">      logger.error(Messages.getString(&quot;FileBasedConfiguration.CannotReadXml&quot;) +</span>
+<span class="nc" id="L1027">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1028">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1029">      logger.error(Messages.getString(&quot;FileBasedConfiguration.CannotReadXml&quot;) +</span>
+<span class="nc" id="L1030">                   filename + &quot;: {}&quot;, e.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L1031">      return false;</span>
+<span class="nc" id="L1032">    }</span>
+<span class="nc bnc" id="L1033" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1034">      logger.error(Messages.getString(&quot;FileBasedConfiguration.CannotReadXml&quot;) +</span>
                    filename); //$NON-NLS-1$
-<span class="nc" id="L1042">      return false;</span>
+<span class="nc" id="L1036">      return false;</span>
     }
-<span class="fc" id="L1044">    final XmlValue[] configuration = XmlUtil.read(document, configSpooled);</span>
-<span class="fc" id="L1045">    final XmlHash hashConfig = new XmlHash(configuration);</span>
-<span class="fc" id="L1046">    XmlValue value = hashConfig.get(XML_STOPFILE);</span>
+<span class="nc" id="L1038">    final XmlValue[] configuration = XmlUtil.read(document, configSpooled);</span>
+<span class="nc" id="L1039">    final XmlHash hashConfig = new XmlHash(configuration);</span>
+<span class="nc" id="L1040">    XmlValue value = hashConfig.get(XML_STOPFILE);</span>
     final String stopfile;
-<span class="pc bpc" id="L1048" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
-<span class="fc" id="L1049">      return false;</span>
+<span class="nc bnc" id="L1042" title="All 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1043">      return false;</span>
     }
-<span class="nc" id="L1051">    stopfile = value.getString();</span>
-<span class="nc" id="L1052">    value = hashConfig.get(XML_LOG_WARN);</span>
-<span class="nc" id="L1053">    boolean logWarn = true;</span>
-<span class="nc bnc" id="L1054" title="All 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1055">      logWarn = value.getBoolean();</span>
+<span class="nc" id="L1045">    stopfile = value.getString();</span>
+<span class="nc" id="L1046">    value = hashConfig.get(XML_LOG_WARN);</span>
+<span class="nc" id="L1047">    boolean logWarn = true;</span>
+<span class="nc bnc" id="L1048" title="All 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1049">      logWarn = value.getBoolean();</span>
     }
-<span class="nc" id="L1057">    value = hashConfig.get(XML_SPOOLED);</span>
-<span class="nc bnc" id="L1058" title="All 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc bnc" id="L1059" title="All 2 branches missed.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
-<span class="nc" id="L1060">        final Arguments arg = new Arguments();</span>
-<span class="nc" id="L1061">        arg.setStopFile(stopfile);</span>
-<span class="nc" id="L1062">        arg.setLogWarn(logWarn);</span>
-<span class="nc" id="L1063">        final XmlHash subHash = new XmlHash(xml);</span>
-<span class="nc" id="L1064">        value = subHash.get(XML_NAME);</span>
-<span class="nc bnc" id="L1065" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1066">          arg.setName(value.getString());</span>
+<span class="nc" id="L1051">    value = hashConfig.get(XML_SPOOLED);</span>
+<span class="nc bnc" id="L1052" title="All 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="nc bnc" id="L1053" title="All 2 branches missed.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
+<span class="nc" id="L1054">        final Arguments arg = new Arguments();</span>
+<span class="nc" id="L1055">        arg.setStopFile(stopfile);</span>
+<span class="nc" id="L1056">        arg.setLogWarn(logWarn);</span>
+<span class="nc" id="L1057">        final XmlHash subHash = new XmlHash(xml);</span>
+<span class="nc" id="L1058">        value = subHash.get(XML_NAME);</span>
+<span class="nc bnc" id="L1059" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1060">          arg.setName(value.getString());</span>
         }
-<span class="nc" id="L1068">        value = subHash.get(XML_TO);</span>
-<span class="nc bnc" id="L1069" title="All 4 branches missed.">        if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc bnc" id="L1070" title="All 2 branches missed.">          for (final String to : (Iterable&lt;String&gt;) value.getList()) {</span>
-<span class="nc bnc" id="L1071" title="All 2 branches missed.">            if (to.trim().isEmpty()) {</span>
-<span class="nc" id="L1072">              continue;</span>
+<span class="nc" id="L1062">        value = subHash.get(XML_TO);</span>
+<span class="nc bnc" id="L1063" title="All 4 branches missed.">        if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="nc bnc" id="L1064" title="All 2 branches missed.">          for (final String to : (Iterable&lt;String&gt;) value.getList()) {</span>
+<span class="nc bnc" id="L1065" title="All 2 branches missed.">            if (to.trim().isEmpty()) {</span>
+<span class="nc" id="L1066">              continue;</span>
             }
-<span class="nc" id="L1074">            arg.getRemoteHosts().add(to.trim());</span>
-<span class="nc" id="L1075">          }</span>
-<span class="nc bnc" id="L1076" title="All 2 branches missed.">          if (arg.getRemoteHosts().isEmpty()) {</span>
-<span class="nc" id="L1077">            logger.warn(&quot;to directive is empty but must not&quot;);</span>
-<span class="nc" id="L1078">            continue;</span>
+<span class="nc" id="L1068">            arg.getRemoteHosts().add(to.trim());</span>
+<span class="nc" id="L1069">          }</span>
+<span class="nc bnc" id="L1070" title="All 2 branches missed.">          if (arg.getRemoteHosts().isEmpty()) {</span>
+<span class="nc" id="L1071">            logger.warn(&quot;to directive is empty but must not&quot;);</span>
+<span class="nc" id="L1072">            continue;</span>
           }
         } else {
-<span class="nc" id="L1081">          logger.warn(&quot;to directive is empty but must not&quot;);</span>
-<span class="nc" id="L1082">          continue;</span>
+<span class="nc" id="L1075">          logger.warn(&quot;to directive is empty but must not&quot;);</span>
+<span class="nc" id="L1076">          continue;</span>
         }
-<span class="nc" id="L1084">        value = subHash.get(XML_RULE);</span>
-<span class="nc bnc" id="L1085" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1086">          arg.setRule(value.getString());</span>
+<span class="nc" id="L1078">        value = subHash.get(XML_RULE);</span>
+<span class="nc bnc" id="L1079" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1080">          arg.setRule(value.getString());</span>
         } else {
-<span class="nc" id="L1088">          logger.warn(&quot;rule directive is empty but must not&quot;);</span>
-<span class="nc" id="L1089">          continue;</span>
+<span class="nc" id="L1082">          logger.warn(&quot;rule directive is empty but must not&quot;);</span>
+<span class="nc" id="L1083">          continue;</span>
         }
-<span class="nc" id="L1091">        value = subHash.get(XML_STATUSFILE);</span>
-<span class="nc bnc" id="L1092" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1093">          arg.setStatusFile(value.getString());</span>
+<span class="nc" id="L1085">        value = subHash.get(XML_STATUSFILE);</span>
+<span class="nc bnc" id="L1086" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1087">          arg.setStatusFile(value.getString());</span>
         } else {
-<span class="nc" id="L1095">          logger.warn(&quot;statusfile directive is empty but must not&quot;);</span>
-<span class="nc" id="L1096">          continue;</span>
+<span class="nc" id="L1089">          logger.warn(&quot;statusfile directive is empty but must not&quot;);</span>
+<span class="nc" id="L1090">          continue;</span>
         }
-<span class="nc" id="L1098">        value = subHash.get(XML_DIRECTORY);</span>
-<span class="nc bnc" id="L1099" title="All 4 branches missed.">        if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc bnc" id="L1100" title="All 2 branches missed.">          for (final String dir : (Iterable&lt;String&gt;) value.getList()) {</span>
-<span class="nc bnc" id="L1101" title="All 2 branches missed.">            if (dir.trim().isEmpty()) {</span>
-<span class="nc" id="L1102">              continue;</span>
+<span class="nc" id="L1092">        value = subHash.get(XML_DIRECTORY);</span>
+<span class="nc bnc" id="L1093" title="All 4 branches missed.">        if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="nc bnc" id="L1094" title="All 2 branches missed.">          for (final String dir : (Iterable&lt;String&gt;) value.getList()) {</span>
+<span class="nc bnc" id="L1095" title="All 2 branches missed.">            if (dir.trim().isEmpty()) {</span>
+<span class="nc" id="L1096">              continue;</span>
             }
-<span class="nc" id="L1104">            arg.getLocalDirectory().add(dir.trim());</span>
-<span class="nc" id="L1105">          }</span>
-<span class="nc bnc" id="L1106" title="All 2 branches missed.">          if (arg.getLocalDirectory().isEmpty()) {</span>
-<span class="nc" id="L1107">            logger.warn(&quot;directory directive is empty but must not&quot;);</span>
-<span class="nc" id="L1108">            continue;</span>
+<span class="nc" id="L1098">            arg.getLocalDirectory().add(dir.trim());</span>
+<span class="nc" id="L1099">          }</span>
+<span class="nc bnc" id="L1100" title="All 2 branches missed.">          if (arg.getLocalDirectory().isEmpty()) {</span>
+<span class="nc" id="L1101">            logger.warn(&quot;directory directive is empty but must not&quot;);</span>
+<span class="nc" id="L1102">            continue;</span>
           }
         } else {
-<span class="nc" id="L1111">          logger.warn(&quot;directory directive is empty but must not&quot;);</span>
-<span class="nc" id="L1112">          continue;</span>
+<span class="nc" id="L1105">          logger.warn(&quot;directory directive is empty but must not&quot;);</span>
+<span class="nc" id="L1106">          continue;</span>
         }
-<span class="nc" id="L1114">        value = subHash.get(XML_REGEX);</span>
-<span class="nc bnc" id="L1115" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1116">          arg.setRegex(value.getString());</span>
+<span class="nc" id="L1108">        value = subHash.get(XML_REGEX);</span>
+<span class="nc bnc" id="L1109" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1110">          arg.setRegex(value.getString());</span>
         }
-<span class="nc" id="L1118">        value = subHash.get(XML_RECURSIVE);</span>
-<span class="nc bnc" id="L1119" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1120">          arg.setRecursive(value.getBoolean());</span>
+<span class="nc" id="L1112">        value = subHash.get(XML_RECURSIVE);</span>
+<span class="nc bnc" id="L1113" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1114">          arg.setRecursive(value.getBoolean());</span>
         }
-<span class="nc" id="L1122">        value = subHash.get(XML_ELAPSE);</span>
-<span class="nc bnc" id="L1123" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1124">          arg.setElapsed(value.getLong());</span>
+<span class="nc" id="L1116">        value = subHash.get(XML_ELAPSE);</span>
+<span class="nc bnc" id="L1117" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1118">          arg.setElapsed(value.getLong());</span>
         }
-<span class="nc" id="L1126">        value = subHash.get(XML_SUBMIT);</span>
-<span class="nc bnc" id="L1127" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1128">          arg.setToSubmit(value.getBoolean());</span>
+<span class="nc" id="L1120">        value = subHash.get(XML_SUBMIT);</span>
+<span class="nc bnc" id="L1121" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1122">          arg.setToSubmit(value.getBoolean());</span>
         }
-<span class="nc" id="L1130">        value = subHash.get(XML_PARALLEL);</span>
-<span class="nc bnc" id="L1131" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1132">          arg.setParallel(value.getBoolean());</span>
+<span class="nc" id="L1124">        value = subHash.get(XML_PARALLEL);</span>
+<span class="nc bnc" id="L1125" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1126">          arg.setParallel(value.getBoolean());</span>
         }
-<span class="nc" id="L1134">        value = subHash.get(XML_LIMIT_PARALLEL);</span>
-<span class="nc bnc" id="L1135" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1136">          arg.setLimitParallel(value.getInteger());</span>
+<span class="nc" id="L1128">        value = subHash.get(XML_LIMIT_PARALLEL);</span>
+<span class="nc bnc" id="L1129" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1130">          arg.setLimitParallel(value.getInteger());</span>
         }
-<span class="nc" id="L1138">        value = subHash.get(XML_INFO);</span>
-<span class="nc bnc" id="L1139" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1140">          arg.setFileInfo(value.getString());</span>
+<span class="nc" id="L1132">        value = subHash.get(XML_INFO);</span>
+<span class="nc bnc" id="L1133" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1134">          arg.setFileInfo(value.getString());</span>
         }
-<span class="nc" id="L1142">        value = subHash.get(XML_MD_5);</span>
-<span class="nc bnc" id="L1143" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1144">          arg.setMd5(value.getBoolean());</span>
+<span class="nc" id="L1136">        value = subHash.get(XML_MD_5);</span>
+<span class="nc bnc" id="L1137" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1138">          arg.setMd5(value.getBoolean());</span>
         }
-<span class="nc" id="L1146">        value = subHash.get(XML_BLOCK);</span>
-<span class="nc bnc" id="L1147" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1148">          arg.setBlock(value.getInteger());</span>
+<span class="nc" id="L1140">        value = subHash.get(XML_BLOCK);</span>
+<span class="nc bnc" id="L1141" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1142">          arg.setBlock(value.getInteger());</span>
         }
-<span class="nc" id="L1150">        value = subHash.get(XML_NOLOG);</span>
-<span class="nc bnc" id="L1151" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1152">          arg.setNoLog(value.getBoolean());</span>
+<span class="nc" id="L1144">        value = subHash.get(XML_NOLOG);</span>
+<span class="nc bnc" id="L1145" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1146">          arg.setNoLog(value.getBoolean());</span>
         }
-<span class="nc" id="L1154">        value = subHash.get(XML_WAARP);</span>
-<span class="nc bnc" id="L1155" title="All 4 branches missed.">        if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc bnc" id="L1156" title="All 2 branches missed.">          for (final String host : (Iterable&lt;String&gt;) value.getList()) {</span>
-<span class="nc bnc" id="L1157" title="All 2 branches missed.">            if (host.trim().isEmpty()) {</span>
-<span class="nc" id="L1158">              continue;</span>
+<span class="nc" id="L1148">        value = subHash.get(XML_WAARP);</span>
+<span class="nc bnc" id="L1149" title="All 4 branches missed.">        if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="nc bnc" id="L1150" title="All 2 branches missed.">          for (final String host : (Iterable&lt;String&gt;) value.getList()) {</span>
+<span class="nc bnc" id="L1151" title="All 2 branches missed.">            if (host.trim().isEmpty()) {</span>
+<span class="nc" id="L1152">              continue;</span>
             }
-<span class="nc" id="L1160">            arg.getWaarpHosts().add(host.trim());</span>
-<span class="nc" id="L1161">          }</span>
+<span class="nc" id="L1154">            arg.getWaarpHosts().add(host.trim());</span>
+<span class="nc" id="L1155">          }</span>
         }
-<span class="nc" id="L1163">        value = subHash.get(XML_ELAPSE_WAARP);</span>
-<span class="nc bnc" id="L1164" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1165">          arg.setElapsedWaarp(value.getLong());</span>
+<span class="nc" id="L1157">        value = subHash.get(XML_ELAPSE_WAARP);</span>
+<span class="nc bnc" id="L1158" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1159">          arg.setElapsedWaarp(value.getLong());</span>
         }
-<span class="nc" id="L1167">        value = subHash.get(XML_MINIMAL_SIZE);</span>
-<span class="nc bnc" id="L1168" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1169">          arg.setMinimalSize(value.getLong());</span>
+<span class="nc" id="L1161">        value = subHash.get(XML_MINIMAL_SIZE);</span>
+<span class="nc bnc" id="L1162" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1163">          arg.setMinimalSize(value.getLong());</span>
         }
-<span class="nc" id="L1171">        value = subHash.get(XML_IGNORED_ALREADY_USED);</span>
-<span class="nc bnc" id="L1172" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="nc" id="L1173">          arg.setIgnoreAlreadyUsed(value.getBoolean());</span>
+<span class="nc" id="L1165">        value = subHash.get(XML_IGNORED_ALREADY_USED);</span>
+<span class="nc bnc" id="L1166" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1167">          arg.setIgnoreAlreadyUsed(value.getBoolean());</span>
         }
-<span class="nc" id="L1175">        arguments.add(arg);</span>
-<span class="nc" id="L1176">      }</span>
+<span class="nc" id="L1169">        arguments.add(arg);</span>
+<span class="nc" id="L1170">      }</span>
     }
-<span class="nc" id="L1178">    hashConfig.clear();</span>
-<span class="nc bnc" id="L1179" title="All 2 branches missed.">    return !arguments.isEmpty();</span>
+<span class="nc" id="L1172">    hashConfig.clear();</span>
+<span class="nc bnc" id="L1173" title="All 2 branches missed.">    return !arguments.isEmpty();</span>
   }
 
   /**
@@ -1187,160 +1181,160 @@ public class SpooledDirectoryTransfer implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(final String[] args) {
-<span class="fc bfc" id="L1190" title="All 2 branches covered.">    if (logger == null) {</span>
-<span class="fc" id="L1191">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
+<span class="nc bnc" id="L1184" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L1185">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
     }
-<span class="fc" id="L1193">    infoArgs = Messages.getString(&quot;SpooledDirectoryTransfer.0&quot;); //$NON-NLS-1$</span>
-<span class="pc bpc" id="L1194" title="1 of 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L1195">      logger.error(infoArgs);</span>
+<span class="nc" id="L1187">    infoArgs = Messages.getString(&quot;SpooledDirectoryTransfer.0&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L1188" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L1189">      logger.error(infoArgs);</span>
+<span class="nc" id="L1190">      return false;</span>
+    }
+<span class="nc bnc" id="L1192" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
+<span class="nc" id="L1194">      logger.error(</span>
+<span class="nc" id="L1195">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
 <span class="nc" id="L1196">      return false;</span>
     }
-<span class="fc" id="L1198">    if (!FileBasedConfiguration</span>
-<span class="pc bpc" id="L1199" title="1 of 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
-<span class="nc" id="L1200">      logger.error(</span>
-<span class="nc" id="L1201">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L1202">      return false;</span>
-    }
     // Now check if the configuration file contains already elements of specifications
-<span class="pc bpc" id="L1205" title="1 of 2 branches missed.">    if (!getParamsFromConfigFile(args[0])) {</span>
-<span class="pc bpc" id="L1206" title="1 of 2 branches missed.">      if (args.length &lt; 11) {</span>
-<span class="nc" id="L1207">        logger.error(infoArgs);</span>
-<span class="nc" id="L1208">        return false;</span>
+<span class="nc bnc" id="L1199" title="All 2 branches missed.">    if (!getParamsFromConfigFile(args[0])) {</span>
+<span class="nc bnc" id="L1200" title="All 2 branches missed.">      if (args.length &lt; 11) {</span>
+<span class="nc" id="L1201">        logger.error(infoArgs);</span>
+<span class="nc" id="L1202">        return false;</span>
       }
       // Now set default values from configuration
-<span class="fc" id="L1211">      final Arguments arg = new Arguments();</span>
-<span class="fc" id="L1212">      arg.setBlock(Configuration.configuration.getBlockSize());</span>
-<span class="fc" id="L1213">      int i = 1;</span>
+<span class="nc" id="L1205">      final Arguments arg = new Arguments();</span>
+<span class="nc" id="L1206">      arg.setBlock(Configuration.configuration.getBlockSize());</span>
+<span class="nc" id="L1207">      int i = 1;</span>
       try {
-<span class="fc bfc" id="L1215" title="All 2 branches covered.">        for (i = 1; i &lt; args.length; i++) {</span>
-<span class="fc bfc" id="L1216" title="All 2 branches covered.">          if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1217">            i++;</span>
-<span class="fc" id="L1218">            final String[] rhosts = args[i].split(&quot;,&quot;);</span>
-<span class="fc bfc" id="L1219" title="All 2 branches covered.">            for (String string : rhosts) {</span>
-<span class="fc" id="L1220">              string = string.trim();</span>
-<span class="pc bpc" id="L1221" title="1 of 2 branches missed.">              if (string.isEmpty()) {</span>
-<span class="nc" id="L1222">                continue;</span>
+<span class="nc bnc" id="L1209" title="All 2 branches missed.">        for (i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L1210" title="All 2 branches missed.">          if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1211">            i++;</span>
+<span class="nc" id="L1212">            final String[] rhosts = args[i].split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L1213" title="All 2 branches missed.">            for (String string : rhosts) {</span>
+<span class="nc" id="L1214">              string = string.trim();</span>
+<span class="nc bnc" id="L1215" title="All 2 branches missed.">              if (string.isEmpty()) {</span>
+<span class="nc" id="L1216">                continue;</span>
               }
-<span class="fc" id="L1224">              if (Configuration.configuration.getAliases()</span>
-<span class="pc bpc" id="L1225" title="1 of 2 branches missed.">                                             .containsKey(string)) {</span>
-<span class="nc" id="L1226">                string = Configuration.configuration.getAliases().get(string);</span>
+<span class="nc" id="L1218">              if (Configuration.configuration.getAliases()</span>
+<span class="nc bnc" id="L1219" title="All 2 branches missed.">                                             .containsKey(string)) {</span>
+<span class="nc" id="L1220">                string = Configuration.configuration.getAliases().get(string);</span>
               }
-<span class="fc" id="L1228">              arg.getRemoteHosts().add(string);</span>
+<span class="nc" id="L1222">              arg.getRemoteHosts().add(string);</span>
             }
-<span class="fc bfc" id="L1230" title="All 2 branches covered.">          } else if (&quot;-name&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1231">            i++;</span>
-<span class="fc" id="L1232">            arg.setName(args[i]);</span>
-<span class="fc bfc" id="L1233" title="All 2 branches covered.">          } else if (&quot;-directory&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1234">            i++;</span>
-<span class="fc" id="L1235">            final String[] dir = args[i].split(&quot;,&quot;);</span>
-<span class="fc bfc" id="L1236" title="All 2 branches covered.">            for (final String string : dir) {</span>
-<span class="pc bpc" id="L1237" title="1 of 2 branches missed.">              if (string.trim().isEmpty()) {</span>
-<span class="nc" id="L1238">                continue;</span>
+<span class="nc bnc" id="L1224" title="All 2 branches missed.">          } else if (&quot;-name&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1225">            i++;</span>
+<span class="nc" id="L1226">            arg.setName(args[i]);</span>
+<span class="nc bnc" id="L1227" title="All 2 branches missed.">          } else if (&quot;-directory&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1228">            i++;</span>
+<span class="nc" id="L1229">            final String[] dir = args[i].split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L1230" title="All 2 branches missed.">            for (final String string : dir) {</span>
+<span class="nc bnc" id="L1231" title="All 2 branches missed.">              if (string.trim().isEmpty()) {</span>
+<span class="nc" id="L1232">                continue;</span>
               }
-<span class="fc" id="L1240">              arg.getLocalDirectory().add(string.trim());</span>
+<span class="nc" id="L1234">              arg.getLocalDirectory().add(string.trim());</span>
             }
-<span class="fc bfc" id="L1242" title="All 2 branches covered.">          } else if (&quot;-rule&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1243">            i++;</span>
-<span class="fc" id="L1244">            arg.setRule(args[i]);</span>
-<span class="fc bfc" id="L1245" title="All 2 branches covered.">          } else if (&quot;-statusfile&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1246">            i++;</span>
-<span class="fc" id="L1247">            arg.setStatusFile(args[i]);</span>
-<span class="fc bfc" id="L1248" title="All 2 branches covered.">          } else if (&quot;-stopfile&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1249">            i++;</span>
-<span class="fc" id="L1250">            arg.setStopFile(args[i]);</span>
-<span class="fc bfc" id="L1251" title="All 2 branches covered.">          } else if (&quot;-info&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1252">            i++;</span>
-<span class="fc" id="L1253">            arg.setFileInfo(args[i]);</span>
-<span class="fc bfc" id="L1254" title="All 2 branches covered.">          } else if (&quot;-md5&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1255">            arg.setMd5(true);</span>
-<span class="fc bfc" id="L1256" title="All 2 branches covered.">          } else if (&quot;-block&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1257">            i++;</span>
-<span class="fc" id="L1258">            arg.setBlock(Integer.parseInt(args[i]));</span>
-<span class="pc bpc" id="L1259" title="1 of 2 branches missed.">            if (arg.getBlock() &lt; 100) {</span>
-<span class="nc" id="L1260">              logger.error(Messages.getString(&quot;AbstractTransfer.1&quot;) +</span>
-<span class="nc" id="L1261">                           arg.getBlock()); //$NON-NLS-1$</span>
-<span class="nc" id="L1262">              return false;</span>
+<span class="nc bnc" id="L1236" title="All 2 branches missed.">          } else if (&quot;-rule&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1237">            i++;</span>
+<span class="nc" id="L1238">            arg.setRule(args[i]);</span>
+<span class="nc bnc" id="L1239" title="All 2 branches missed.">          } else if (&quot;-statusfile&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1240">            i++;</span>
+<span class="nc" id="L1241">            arg.setStatusFile(args[i]);</span>
+<span class="nc bnc" id="L1242" title="All 2 branches missed.">          } else if (&quot;-stopfile&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1243">            i++;</span>
+<span class="nc" id="L1244">            arg.setStopFile(args[i]);</span>
+<span class="nc bnc" id="L1245" title="All 2 branches missed.">          } else if (&quot;-info&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1246">            i++;</span>
+<span class="nc" id="L1247">            arg.setFileInfo(args[i]);</span>
+<span class="nc bnc" id="L1248" title="All 2 branches missed.">          } else if (&quot;-md5&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1249">            arg.setMd5(true);</span>
+<span class="nc bnc" id="L1250" title="All 2 branches missed.">          } else if (&quot;-block&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1251">            i++;</span>
+<span class="nc" id="L1252">            arg.setBlock(Integer.parseInt(args[i]));</span>
+<span class="nc bnc" id="L1253" title="All 2 branches missed.">            if (arg.getBlock() &lt; 100) {</span>
+<span class="nc" id="L1254">              logger.error(Messages.getString(&quot;AbstractTransfer.1&quot;) +</span>
+<span class="nc" id="L1255">                           arg.getBlock()); //$NON-NLS-1$</span>
+<span class="nc" id="L1256">              return false;</span>
             }
-<span class="pc bpc" id="L1264" title="1 of 2 branches missed.">          } else if (&quot;-nolog&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L1265">            arg.setNoLog(true);</span>
-<span class="fc bfc" id="L1266" title="All 2 branches covered.">          } else if (&quot;-submit&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1267">            arg.setToSubmit(true);</span>
-<span class="fc bfc" id="L1268" title="All 2 branches covered.">          } else if (&quot;-direct&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1269">            arg.setToSubmit(false);</span>
-<span class="pc bpc" id="L1270" title="1 of 2 branches missed.">          } else if (&quot;-recursive&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L1271">            arg.setRecursive(true);</span>
-<span class="pc bpc" id="L1272" title="1 of 2 branches missed.">          } else if (&quot;-logWarn&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L1273">            arg.setLogWarn(true);</span>
-<span class="fc bfc" id="L1274" title="All 2 branches covered.">          } else if (&quot;-notlogWarn&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1275">            arg.setLogWarn(false);</span>
-<span class="pc bpc" id="L1276" title="1 of 2 branches missed.">          } else if (&quot;-regex&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L1277">            i++;</span>
-<span class="nc" id="L1278">            arg.setRegex(args[i]);</span>
-<span class="fc bfc" id="L1279" title="All 2 branches covered.">          } else if (&quot;-waarp&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1280">            i++;</span>
-<span class="fc" id="L1281">            final String[] host = args[i].split(&quot;,&quot;);</span>
-<span class="fc bfc" id="L1282" title="All 2 branches covered.">            for (final String string : host) {</span>
-<span class="pc bpc" id="L1283" title="1 of 2 branches missed.">              if (string.trim().isEmpty()) {</span>
-<span class="nc" id="L1284">                continue;</span>
+<span class="nc bnc" id="L1258" title="All 2 branches missed.">          } else if (&quot;-nolog&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1259">            arg.setNoLog(true);</span>
+<span class="nc bnc" id="L1260" title="All 2 branches missed.">          } else if (&quot;-submit&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1261">            arg.setToSubmit(true);</span>
+<span class="nc bnc" id="L1262" title="All 2 branches missed.">          } else if (&quot;-direct&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1263">            arg.setToSubmit(false);</span>
+<span class="nc bnc" id="L1264" title="All 2 branches missed.">          } else if (&quot;-recursive&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1265">            arg.setRecursive(true);</span>
+<span class="nc bnc" id="L1266" title="All 2 branches missed.">          } else if (&quot;-logWarn&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1267">            arg.setLogWarn(true);</span>
+<span class="nc bnc" id="L1268" title="All 2 branches missed.">          } else if (&quot;-notlogWarn&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1269">            arg.setLogWarn(false);</span>
+<span class="nc bnc" id="L1270" title="All 2 branches missed.">          } else if (&quot;-regex&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1271">            i++;</span>
+<span class="nc" id="L1272">            arg.setRegex(args[i]);</span>
+<span class="nc bnc" id="L1273" title="All 2 branches missed.">          } else if (&quot;-waarp&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1274">            i++;</span>
+<span class="nc" id="L1275">            final String[] host = args[i].split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L1276" title="All 2 branches missed.">            for (final String string : host) {</span>
+<span class="nc bnc" id="L1277" title="All 2 branches missed.">              if (string.trim().isEmpty()) {</span>
+<span class="nc" id="L1278">                continue;</span>
               }
-<span class="fc" id="L1286">              arg.getWaarpHosts().add(string.trim());</span>
+<span class="nc" id="L1280">              arg.getWaarpHosts().add(string.trim());</span>
             }
-<span class="fc bfc" id="L1288" title="All 2 branches covered.">          } else if (&quot;-elapse&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1289">            i++;</span>
-<span class="fc" id="L1290">            arg.setElapsed(Long.parseLong(args[i]));</span>
-<span class="fc bfc" id="L1291" title="All 2 branches covered.">          } else if (&quot;-elapseWaarp&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1292">            i++;</span>
-<span class="fc" id="L1293">            arg.setElapsedWaarp(Long.parseLong(args[i]));</span>
-<span class="fc bfc" id="L1294" title="All 2 branches covered.">          } else if (&quot;-minimalSize&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1295">            i++;</span>
-<span class="fc" id="L1296">            arg.setMinimalSize(Long.parseLong(args[i]));</span>
-<span class="fc bfc" id="L1297" title="All 2 branches covered.">          } else if (&quot;-limitParallel&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1298">            i++;</span>
-<span class="fc" id="L1299">            arg.setLimitParallel(Integer.parseInt(args[i]));</span>
-<span class="pc bpc" id="L1300" title="1 of 2 branches missed.">          } else if (&quot;-parallel&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L1301">            arg.setParallel(true);</span>
-<span class="pc bpc" id="L1302" title="1 of 2 branches missed.">          } else if (&quot;-sequential&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L1303">            arg.setParallel(false);</span>
-<span class="fc bfc" id="L1304" title="All 2 branches covered.">          } else if (&quot;-ignoreAlreadyUsed&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L1305">            arg.setIgnoreAlreadyUsed(true);</span>
+<span class="nc bnc" id="L1282" title="All 2 branches missed.">          } else if (&quot;-elapse&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1283">            i++;</span>
+<span class="nc" id="L1284">            arg.setElapsed(Long.parseLong(args[i]));</span>
+<span class="nc bnc" id="L1285" title="All 2 branches missed.">          } else if (&quot;-elapseWaarp&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1286">            i++;</span>
+<span class="nc" id="L1287">            arg.setElapsedWaarp(Long.parseLong(args[i]));</span>
+<span class="nc bnc" id="L1288" title="All 2 branches missed.">          } else if (&quot;-minimalSize&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1289">            i++;</span>
+<span class="nc" id="L1290">            arg.setMinimalSize(Long.parseLong(args[i]));</span>
+<span class="nc bnc" id="L1291" title="All 2 branches missed.">          } else if (&quot;-limitParallel&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1292">            i++;</span>
+<span class="nc" id="L1293">            arg.setLimitParallel(Integer.parseInt(args[i]));</span>
+<span class="nc bnc" id="L1294" title="All 2 branches missed.">          } else if (&quot;-parallel&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1295">            arg.setParallel(true);</span>
+<span class="nc bnc" id="L1296" title="All 2 branches missed.">          } else if (&quot;-sequential&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1297">            arg.setParallel(false);</span>
+<span class="nc bnc" id="L1298" title="All 2 branches missed.">          } else if (&quot;-ignoreAlreadyUsed&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L1299">            arg.setIgnoreAlreadyUsed(true);</span>
           }
         }
-<span class="nc" id="L1308">      } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L1309">        logger</span>
-<span class="nc" id="L1310">            .error(Messages.getString(&quot;AbstractTransfer.20&quot;) + i); //$NON-NLS-1$</span>
-<span class="nc" id="L1311">        return false;</span>
-<span class="fc" id="L1312">      }</span>
-<span class="pc bpc" id="L1313" title="1 of 2 branches missed.">      if (arg.getFileInfo() == null) {</span>
-<span class="nc" id="L1314">        arg.setFileInfo(NO_INFO_ARGS);</span>
+<span class="nc" id="L1302">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L1303">        logger.error(</span>
+<span class="nc" id="L1304">            Messages.getString(&quot;AbstractTransfer.20&quot;) + i); //$NON-NLS-1$</span>
+<span class="nc" id="L1305">        return false;</span>
+<span class="nc" id="L1306">      }</span>
+<span class="nc bnc" id="L1307" title="All 2 branches missed.">      if (arg.getFileInfo() == null) {</span>
+<span class="nc" id="L1308">        arg.setFileInfo(NO_INFO_ARGS);</span>
       }
-<span class="pc bpc" id="L1316" title="1 of 2 branches missed.">      if (arg.getName() == null) {</span>
-<span class="nc" id="L1317">        arg.setName(Configuration.configuration.getHostId() + &quot; : &quot; +</span>
-<span class="nc" id="L1318">                    arg.getLocalDirectory());</span>
+<span class="nc bnc" id="L1310" title="All 2 branches missed.">      if (arg.getName() == null) {</span>
+<span class="nc" id="L1311">        arg.setName(Configuration.configuration.getHostId() + &quot; : &quot; +</span>
+<span class="nc" id="L1312">                    arg.getLocalDirectory());</span>
       }
-<span class="pc bpc" id="L1320" title="2 of 4 branches missed.">      if (!arg.getRemoteHosts().isEmpty() &amp;&amp; arg.getRule() != null &amp;&amp;</span>
-<span class="pc bpc" id="L1321" title="2 of 4 branches missed.">          !arg.getLocalDirectory().isEmpty() &amp;&amp; arg.getStatusFile() != null &amp;&amp;</span>
-<span class="pc bpc" id="L1322" title="1 of 2 branches missed.">          arg.getStopFile() != null) {</span>
-<span class="fc" id="L1323">        arguments.add(arg);</span>
-<span class="fc" id="L1324">        return true;</span>
+<span class="nc bnc" id="L1314" title="All 4 branches missed.">      if (!arg.getRemoteHosts().isEmpty() &amp;&amp; arg.getRule() != null &amp;&amp;</span>
+<span class="nc bnc" id="L1315" title="All 4 branches missed.">          !arg.getLocalDirectory().isEmpty() &amp;&amp; arg.getStatusFile() != null &amp;&amp;</span>
+<span class="nc bnc" id="L1316" title="All 2 branches missed.">          arg.getStopFile() != null) {</span>
+<span class="nc" id="L1317">        arguments.add(arg);</span>
+<span class="nc" id="L1318">        return true;</span>
       }
-<span class="nc" id="L1326">      logger.error(Messages.getString(&quot;SpooledDirectoryTransfer.56&quot;) +</span>
+<span class="nc" id="L1320">      logger.error(Messages.getString(&quot;SpooledDirectoryTransfer.56&quot;) +</span>
                    //$NON-NLS-1$
                    infoArgs);
-<span class="nc" id="L1329">      return false;</span>
+<span class="nc" id="L1323">      return false;</span>
     }
-<span class="nc bnc" id="L1331" title="All 2 branches missed.">    return !arguments.isEmpty();</span>
+<span class="nc bnc" id="L1325" title="All 2 branches missed.">    return !arguments.isEmpty();</span>
   }
 
   public static void main(final String[] args) {
-<span class="nc" id="L1335">    WaarpLoggerFactory</span>
-<span class="nc" id="L1336">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L1337" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L1338">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
+<span class="nc" id="L1329">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L1331" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L1332">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
     }
-<span class="nc" id="L1340">    initialize(args, true);</span>
-<span class="nc" id="L1341">  }</span>
+<span class="nc" id="L1334">    initialize(args, true);</span>
+<span class="nc" id="L1335">  }</span>
 
-<span class="fc" id="L1343">  public static final List&lt;SpooledDirectoryTransfer&gt; list =</span>
+<span class="nc" id="L1337">  public static final List&lt;SpooledDirectoryTransfer&gt; list =</span>
       new ArrayList&lt;SpooledDirectoryTransfer&gt;();
   public static NetworkTransaction networkTransactionStatic;
   public static ExecutorService executorService;
@@ -1354,62 +1348,61 @@ public class SpooledDirectoryTransfer implements Runnable {
    */
   public static boolean initialize(final String[] args,
                                    final boolean normalStart) {
-<span class="nc bnc" id="L1357" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L1358">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
+<span class="nc bnc" id="L1351" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L1352">      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);</span>
     }
-<span class="nc" id="L1360">    arguments.clear();</span>
-<span class="nc bnc" id="L1361" title="All 2 branches missed.">    if (!getParams(args)) {</span>
-<span class="nc" id="L1362">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L1363" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L1364">        admin.close();</span>
+<span class="nc" id="L1354">    arguments.clear();</span>
+<span class="nc bnc" id="L1355" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L1356">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L1357" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L1358">        admin.close();</span>
       }
-<span class="nc bnc" id="L1366" title="All 2 branches missed.">      if (normalStart) {</span>
-<span class="nc" id="L1367">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L1368">        System.exit(2);//NOSONAR</span>
+<span class="nc bnc" id="L1360" title="All 2 branches missed.">      if (normalStart) {</span>
+<span class="nc" id="L1361">        WaarpSystemUtil.systemExit(2);</span>
       }
-<span class="nc" id="L1370">      return false;</span>
+<span class="nc" id="L1363">      return false;</span>
     }
 
-<span class="nc" id="L1373">    Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L1374">    networkTransactionStatic = new NetworkTransaction();</span>
+<span class="nc" id="L1366">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L1367">    networkTransactionStatic = new NetworkTransaction();</span>
     try {
-<span class="nc" id="L1376">      executorService = Executors.newCachedThreadPool(</span>
+<span class="nc" id="L1369">      executorService = Executors.newCachedThreadPool(</span>
           new WaarpThreadFactory(&quot;SpooledDirectoryDaemon&quot;));
-<span class="nc bnc" id="L1378" title="All 2 branches missed.">      for (final Arguments arg : arguments) {</span>
-<span class="nc" id="L1379">        final R66Future future = new R66Future(true);</span>
-<span class="nc" id="L1380">        final SpooledDirectoryTransfer spooled =</span>
+<span class="nc bnc" id="L1371" title="All 2 branches missed.">      for (final Arguments arg : arguments) {</span>
+<span class="nc" id="L1372">        final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L1373">        final SpooledDirectoryTransfer spooled =</span>
             new SpooledDirectoryTransfer(future, arg, networkTransactionStatic);
-<span class="nc" id="L1382">        executorService.submit(spooled);</span>
-<span class="nc" id="L1383">        list.add(spooled);</span>
-<span class="nc" id="L1384">      }</span>
-<span class="nc" id="L1385">      arguments.clear();</span>
-<span class="nc" id="L1386">      Thread.sleep(1000);</span>
-<span class="nc" id="L1387">      executorService.shutdown();</span>
-<span class="nc" id="L1388">      Configuration.configuration.launchStatistics();</span>
-<span class="nc bnc" id="L1389" title="All 2 branches missed.">      if (normalStart) {</span>
-<span class="nc" id="L1390">        while (!executorService</span>
-<span class="nc bnc" id="L1391" title="All 2 branches missed.">            .awaitTermination(Configuration.configuration.getTimeoutCon(),</span>
-                              TimeUnit.MILLISECONDS)) {
-<span class="nc" id="L1393">          Thread.sleep(Configuration.configuration.getTimeoutCon());</span>
+<span class="nc" id="L1375">        executorService.submit(spooled);</span>
+<span class="nc" id="L1376">        list.add(spooled);</span>
+<span class="nc" id="L1377">      }</span>
+<span class="nc" id="L1378">      arguments.clear();</span>
+<span class="nc" id="L1379">      Thread.sleep(1000);</span>
+<span class="nc" id="L1380">      executorService.shutdown();</span>
+<span class="nc" id="L1381">      Configuration.configuration.launchStatistics();</span>
+<span class="nc bnc" id="L1382" title="All 2 branches missed.">      if (normalStart) {</span>
+<span class="nc bnc" id="L1383" title="All 2 branches missed.">        while (!executorService.awaitTermination(</span>
+<span class="nc" id="L1384">            Configuration.configuration.getTimeoutCon(),</span>
+            TimeUnit.MILLISECONDS)) {
+<span class="nc" id="L1386">          Thread.sleep(Configuration.configuration.getTimeoutCon());</span>
         }
-<span class="nc bnc" id="L1395" title="All 2 branches missed.">        for (final SpooledDirectoryTransfer spooledDirectoryTransfer : list) {</span>
-<span class="nc" id="L1396">          logger.warn(Messages.getString(&quot;SpooledDirectoryTransfer.58&quot;) +</span>
+<span class="nc bnc" id="L1388" title="All 2 branches missed.">        for (final SpooledDirectoryTransfer spooledDirectoryTransfer : list) {</span>
+<span class="nc" id="L1389">          logger.warn(Messages.getString(&quot;SpooledDirectoryTransfer.58&quot;) +</span>
                       spooledDirectoryTransfer.name + &quot;: &quot; +
-<span class="nc" id="L1398">                      spooledDirectoryTransfer.getSent() + &quot; success, &quot; +</span>
-<span class="nc" id="L1399">                      spooledDirectoryTransfer.getError() + Messages.getString(</span>
+<span class="nc" id="L1391">                      spooledDirectoryTransfer.getSent() + &quot; success, &quot; +</span>
+<span class="nc" id="L1392">                      spooledDirectoryTransfer.getError() + Messages.getString(</span>
               &quot;SpooledDirectoryTransfer.60&quot;)); //$NON-NLS-1$
-<span class="nc" id="L1401">        }</span>
-<span class="nc" id="L1402">        list.clear();</span>
+<span class="nc" id="L1394">        }</span>
+<span class="nc" id="L1395">        list.clear();</span>
       }
-<span class="nc" id="L1404">      return true;</span>
-<span class="nc" id="L1405">    } catch (final Throwable e) {</span>
-<span class="nc" id="L1406">      logger.error(&quot;Exception&quot;, e);</span>
-<span class="nc" id="L1407">      return false;</span>
+<span class="nc" id="L1397">      return true;</span>
+<span class="nc" id="L1398">    } catch (final Throwable e) {</span>
+<span class="nc" id="L1399">      logger.error(&quot;Exception&quot;, e);</span>
+<span class="nc" id="L1400">      return false;</span>
     } finally {
-<span class="nc bnc" id="L1409" title="All 2 branches missed.">      if (normalStart) {</span>
-<span class="nc" id="L1410">        WaarpShutdownHook.shutdownWillStart();</span>
-<span class="nc" id="L1411">        networkTransactionStatic.closeAll();</span>
-<span class="nc" id="L1412">        System.exit(0);//NOSONAR</span>
+<span class="nc bnc" id="L1402" title="All 2 branches missed.">      if (normalStart) {</span>
+<span class="nc" id="L1403">        WaarpShutdownHook.shutdownWillStart();</span>
+<span class="nc" id="L1404">        networkTransactionStatic.closeAll();</span>
+<span class="nc" id="L1405">        WaarpSystemUtil.systemExit(0);</span>
       }
     }
   }
@@ -1417,30 +1410,30 @@ public class SpooledDirectoryTransfer implements Runnable {
   /**
    * @return the sent
    */
-  public long getSent() {
-<span class="fc" id="L1421">    return sent;</span>
+  public final long getSent() {
+<span class="nc" id="L1414">    return sent;</span>
   }
 
   /**
    * @param sent the sent to set
    */
   private void setSent(final long sent) {
-<span class="fc" id="L1428">    this.sent = sent;</span>
-<span class="fc" id="L1429">  }</span>
+<span class="nc" id="L1421">    this.sent = sent;</span>
+<span class="nc" id="L1422">  }</span>
 
   /**
    * @return the error
    */
-  public long getError() {
-<span class="fc" id="L1435">    return error;</span>
+  public final long getError() {
+<span class="nc" id="L1428">    return error;</span>
   }
 
   /**
    * @param error the error to set
    */
   private void setError(final long error) {
-<span class="fc" id="L1442">    this.error = error;</span>
-<span class="fc" id="L1443">  }</span>
+<span class="nc" id="L1435">    this.error = error;</span>
+<span class="nc" id="L1436">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

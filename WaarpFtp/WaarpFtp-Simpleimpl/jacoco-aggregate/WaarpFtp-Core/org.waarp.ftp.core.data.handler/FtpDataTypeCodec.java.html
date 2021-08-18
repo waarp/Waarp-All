@@ -127,11 +127,11 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    * @param type
    * @param subType
    */
-<span class="fc" id="L130">  FtpDataTypeCodec(final TransferType type, final TransferSubType subType) {</span>
-<span class="fc" id="L131">    setCharset(null);</span>
-<span class="fc" id="L132">    this.type = type;</span>
-<span class="fc" id="L133">    this.subType = subType;</span>
-<span class="fc" id="L134">  }</span>
+<span class="nc" id="L130">  FtpDataTypeCodec(final TransferType type, final TransferSubType subType) {</span>
+<span class="nc" id="L131">    setCharset(null);</span>
+<span class="nc" id="L132">    this.type = type;</span>
+<span class="nc" id="L133">    this.subType = subType;</span>
+<span class="nc" id="L134">  }</span>
 
   /**
    * @return the subType
@@ -144,16 +144,16 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    * @param type the type to set
    * @param subType the subType to set
    */
-  public void setFullType(final TransferType type,
-                          final TransferSubType subType) {
-<span class="fc" id="L149">    this.type = type;</span>
-<span class="fc" id="L150">    this.subType = subType;</span>
-<span class="fc" id="L151">  }</span>
+  public final void setFullType(final TransferType type,
+                                final TransferSubType subType) {
+<span class="nc" id="L149">    this.type = type;</span>
+<span class="nc" id="L150">    this.subType = subType;</span>
+<span class="nc" id="L151">  }</span>
 
   /**
    * @return the type
    */
-  public TransferType getType() {
+  public final TransferType getType() {
 <span class="nc" id="L157">    return type;</span>
   }
 
@@ -163,20 +163,20 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    * @param charset
    */
   private void setCharset(final Charset charset) {
-<span class="pc bpc" id="L166" title="1 of 2 branches missed.">    if (charset == null) {</span>
-<span class="fc" id="L167">      charsetName = Charset.defaultCharset();</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (charset == null) {</span>
+<span class="nc" id="L167">      charsetName = Charset.defaultCharset();</span>
     } else {
 <span class="nc" id="L169">      charsetName = charset;</span>
     }
-<span class="fc" id="L171">  }</span>
+<span class="nc" id="L171">  }</span>
 
   @Override
   protected void decode(final ChannelHandlerContext ctx, final DataBlock msg,
                         final List&lt;Object&gt; out) throws Exception {
     // Is an ASCII or EBCDIC mode or IMAGE mode
-<span class="pc bpc" id="L177" title="1 of 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
-<span class="fc" id="L178">      out.add(msg);</span>
-<span class="fc" id="L179">      return;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
+<span class="nc" id="L178">      out.add(msg);</span>
+<span class="nc" id="L179">      return;</span>
 <span class="nc bnc" id="L180" title="All 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
 <span class="nc" id="L181">      final byte[] bytes = msg.getByteBlock();</span>
 <span class="nc" id="L182">      msg.setBlock(decode(bytes));</span>
@@ -194,7 +194,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    *
    * @return the byteBuf
    */
-  protected byte[] decode(final byte[] byteBuf) {
+  protected final byte[] decode(final byte[] byteBuf) {
 <span class="nc" id="L198">    return new String(byteBuf, type.charset).getBytes(charsetName);</span>
   }
 
@@ -202,14 +202,14 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
   protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
                         final List&lt;Object&gt; out) throws Exception {
     // Is an ASCII or EBCDIC mode or IMAGE mode
-<span class="fc bfc" id="L205" title="All 2 branches covered.">    if (type == TransferType.IMAGE) {</span>
-<span class="fc" id="L206">      out.add(msg);</span>
-<span class="fc" id="L207">      return;</span>
-<span class="pc bpc" id="L208" title="3 of 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
-<span class="fc" id="L209">      final byte[] bytes = msg.getByteBlock();</span>
-<span class="fc" id="L210">      msg.setBlock(encode(bytes));</span>
-<span class="fc" id="L211">      out.add(msg);</span>
-<span class="fc" id="L212">      return;</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
+<span class="nc" id="L206">      out.add(msg);</span>
+<span class="nc" id="L207">      return;</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
+<span class="nc" id="L209">      final byte[] bytes = msg.getByteBlock();</span>
+<span class="nc" id="L210">      msg.setBlock(encode(bytes));</span>
+<span class="nc" id="L211">      out.add(msg);</span>
+<span class="nc" id="L212">      return;</span>
     }
     // Type unimplemented
 <span class="nc" id="L215">    throw new InvalidArgumentException(</span>
@@ -222,8 +222,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    *
    * @return the encoded buffer
    */
-  protected byte[] encode(final byte[] byteBuf) {
-<span class="fc" id="L226">    return new String(byteBuf, charsetName).getBytes(type.charset);</span>
+  protected final byte[] encode(final byte[] byteBuf) {
+<span class="nc" id="L226">    return new String(byteBuf, charsetName).getBytes(type.charset);</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

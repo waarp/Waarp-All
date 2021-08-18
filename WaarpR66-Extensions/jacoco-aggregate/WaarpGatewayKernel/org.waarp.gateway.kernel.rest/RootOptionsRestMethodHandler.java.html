@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RootOptionsRestMethodHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.rest</a> &gt; <span class="el_source">RootOptionsRestMethodHandler.java</span></div><h1>RootOptionsRestMethodHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.rest;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+
+/**
+ * RestMethod handler to implement Root Options handler
+ */
+public class RootOptionsRestMethodHandler extends RestMethodHandler {
+
+  public static final String ROOT = &quot;root&quot;;
+
+  public RootOptionsRestMethodHandler(final RestConfiguration config) {
+<span class="nc" id="L41">    super(ROOT, &quot;/&quot;, true, config, METHOD.OPTIONS);</span>
+<span class="nc" id="L42">  }</span>
+
+  @Override
+  public final void checkHandlerSessionCorrectness(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result) {
+    // nothing
+<span class="nc" id="L49">  }</span>
+
+  @Override
+  public final void getFileUpload(final HttpRestHandler handler,
+                                  final FileUpload data,
+                                  final RestArgument arguments,
+                                  final RestArgument result) {
+    // nothing
+<span class="nc" id="L57">  }</span>
+
+  @Override
+  public final Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                              final RestArgument arguments,
+                              final RestArgument result) {
+<span class="nc" id="L63">    return null;</span>
+  }
+
+  @Override
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body) {
+    // nothing
+<span class="nc" id="L72">  }</span>
+
+  @Override
+  public final ChannelFuture sendResponse(final HttpRestHandler handler,
+                                          final ChannelHandlerContext ctx,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final Object body,
+                                          final HttpResponseStatus status) {
+<span class="nc" id="L81">    return sendOptionsResponse(handler, ctx, result, status);</span>
+  }
+
+  @Override
+  public final void optionsCommand(final HttpRestHandler handler,
+                                   final RestArgument arguments,
+                                   final RestArgument result) {
+<span class="nc" id="L88">    result.setCommand(COMMAND_TYPE.OPTIONS);</span>
+<span class="nc" id="L89">    final METHOD[] realmethods = METHOD.values();</span>
+<span class="nc" id="L90">    final boolean[] allMethods = new boolean[realmethods.length];</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">      for (final METHOD methoditem : method.methods) {</span>
+<span class="nc" id="L93">        allMethods[methoditem.ordinal()] = true;</span>
+<span class="nc" id="L94">      }</span>
+<span class="nc" id="L95">    }</span>
+<span class="nc" id="L96">    StringBuilder allow = null;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">    for (int i = 0; i &lt; allMethods.length; i++) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">      if (allMethods[i]) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (allow == null) {</span>
+<span class="nc" id="L100">          allow = new StringBuilder(realmethods[i].name());</span>
+        } else {
+<span class="nc" id="L102">          allow.append(',').append(realmethods[i].name());</span>
+        }
+      }
+    }
+<span class="nc" id="L106">    StringBuilder allowUri = null;</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (allowUri == null) {</span>
+<span class="nc" id="L109">        allowUri = new StringBuilder(method.path);</span>
+      } else {
+<span class="nc" id="L111">        allowUri.append(',').append(method.path);</span>
+      }
+<span class="nc" id="L113">    }</span>
+<span class="nc" id="L114">    final ArrayNode array = JsonHandler.createArrayNode();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
+<span class="nc" id="L116">      final ArrayNode array2 = method.getDetailedAllow();</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">      if (method != this) {</span>
+<span class="nc" id="L118">        array.addObject().putArray(method.path).addAll(array2);</span>
+      } else {
+<span class="nc" id="L120">        array.addObject().putArray(ROOT).addAll(array2);</span>
+      }
+<span class="nc" id="L122">    }</span>
+<span class="nc bnc" id="L123" title="All 4 branches missed.">    if (allow != null &amp;&amp; allowUri != null) {</span>
+<span class="nc" id="L124">      result.addOptions(allow.toString(), allowUri.toString(), array);</span>
+    }
+<span class="nc" id="L126">  }</span>
+
+  @Override
+  protected final ArrayNode getDetailedAllow() {
+<span class="nc" id="L130">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+
+<span class="nc" id="L132">    final ObjectNode node2 = node.addObject().putObject(METHOD.OPTIONS.name());</span>
+<span class="nc" id="L133">    node2.put(RestArgument.REST_FIELD.JSON_PATH.field, path);</span>
+<span class="nc" id="L134">    node2.put(RestArgument.REST_ROOT_FIELD.JSON_COMMAND.field,</span>
+<span class="nc" id="L135">              COMMAND_TYPE.OPTIONS.name());</span>
+
+<span class="nc" id="L137">    return node;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

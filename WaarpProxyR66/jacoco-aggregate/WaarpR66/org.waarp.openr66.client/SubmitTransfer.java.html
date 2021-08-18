@@ -24,14 +24,13 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.sql.Timestamp;
@@ -48,70 +47,70 @@ public class SubmitTransfer extends AbstractTransfer {
                         final String transferInfo, final boolean isMD5,
                         final int blocksize, final long id,
                         final Timestamp starttime) {
-<span class="fc" id="L51">    super(SubmitTransfer.class, future, filename, rulename, transferInfo, isMD5,</span>
+<span class="nc" id="L50">    super(SubmitTransfer.class, future, filename, rulename, transferInfo, isMD5,</span>
           remoteHost, blocksize, id, starttime);
-<span class="fc" id="L53">  }</span>
+<span class="nc" id="L52">  }</span>
 
   @Override
   public void run() {
-<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L58">      logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L57">      logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);</span>
     }
-<span class="fc" id="L60">    final DbTaskRunner taskRunner = initRequest();</span>
-<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (taskRunner == null) {</span>
-<span class="nc" id="L62">      logger.info(&quot;Cannot prepare task&quot;);</span>
-<span class="nc bnc" id="L63" title="All 4 branches missed.">      if (future.isFailed() &amp;&amp; future.getResult() != null) {</span>
-<span class="nc" id="L64">        return;</span>
+<span class="nc" id="L59">    final DbTaskRunner taskRunner = initRequest();</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (taskRunner == null) {</span>
+<span class="nc" id="L61">      logger.info(&quot;Cannot prepare task&quot;);</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">      if (future.isFailed() &amp;&amp; future.getResult() != null) {</span>
+<span class="nc" id="L63">        return;</span>
       }
-<span class="nc" id="L66">      final R66Result result =</span>
+<span class="nc" id="L65">      final R66Result result =</span>
           new R66Result(new OpenR66DatabaseGlobalException(), null, true,
                         ErrorCode.Internal, null);
-<span class="nc" id="L69">      future.setResult(result);</span>
-<span class="nc" id="L70">      future.setFailure(result.getException());</span>
-<span class="nc" id="L71">      return;</span>
+<span class="nc" id="L68">      future.setResult(result);</span>
+<span class="nc" id="L69">      future.setFailure(result.getException());</span>
+<span class="nc" id="L70">      return;</span>
     }
-<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (transferArgs.getId() != ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (transferArgs.getId() != ILLEGALVALUE) {</span>
       // Resubmit call, some checks are needed
-<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (!taskRunner.restart(true)) {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">      if (!taskRunner.restart(true)) {</span>
         // cannot be done from there =&gt; must be done through IHM
-<span class="nc" id="L77">        logger.info(&quot;Cannot prepare task from there. IHM must be used&quot;);</span>
-<span class="nc" id="L78">        final R66Result result = new R66Result(</span>
+<span class="nc" id="L76">        logger.info(&quot;Cannot prepare task from there. IHM must be used&quot;);</span>
+<span class="nc" id="L77">        final R66Result result = new R66Result(</span>
             new OpenR66DatabaseGlobalException(
                 &quot;Cannot prepare task from there. IHM must be used&quot;), null, true,
             ErrorCode.Internal, taskRunner);
-<span class="nc" id="L82">        future.setResult(result);</span>
-<span class="nc" id="L83">        future.setFailure(result.getException());</span>
-<span class="nc" id="L84">        return;</span>
+<span class="nc" id="L81">        future.setResult(result);</span>
+<span class="nc" id="L82">        future.setFailure(result.getException());</span>
+<span class="nc" id="L83">        return;</span>
       }
     } else {
-<span class="fc" id="L87">      taskRunner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);</span>
+<span class="nc" id="L86">      taskRunner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);</span>
     }
-<span class="pc bpc" id="L89" title="1 of 2 branches missed.">    if (!taskRunner.forceSaveStatus()) {</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (!taskRunner.forceSaveStatus()) {</span>
       try {
-<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (!taskRunner.specialSubmit()) {</span>
-<span class="nc" id="L92">          logger.info(&quot;Cannot prepare task&quot;);</span>
-<span class="nc" id="L93">          final R66Result result = new R66Result(</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (!taskRunner.specialSubmit()) {</span>
+<span class="nc" id="L91">          logger.info(&quot;Cannot prepare task&quot;);</span>
+<span class="nc" id="L92">          final R66Result result = new R66Result(</span>
               new OpenR66DatabaseGlobalException(&quot;Cannot prepare Task&quot;), null,
               true, ErrorCode.Internal, taskRunner);
-<span class="nc" id="L96">          future.setResult(result);</span>
-<span class="nc" id="L97">          future.setFailure(result.getException());</span>
-<span class="nc" id="L98">          return;</span>
+<span class="nc" id="L95">          future.setResult(result);</span>
+<span class="nc" id="L96">          future.setFailure(result.getException());</span>
+<span class="nc" id="L97">          return;</span>
         }
-<span class="nc" id="L100">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L101">        logger.info(&quot;Cannot prepare task&quot;);</span>
-<span class="nc" id="L102">        final R66Result result = new R66Result(</span>
-            new OpenR66DatabaseGlobalException(&quot;Cannot prepare Task&quot;), null,
+<span class="nc" id="L99">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L100">        logger.info(&quot;Cannot prepare task&quot;);</span>
+<span class="nc" id="L101">        final R66Result result = new R66Result(</span>
+            new OpenR66DatabaseGlobalException(&quot;Cannot prepare Task&quot;, e), null,
             true, ErrorCode.Internal, taskRunner);
-<span class="nc" id="L105">        future.setResult(result);</span>
-<span class="nc" id="L106">        future.setFailure(result.getException());</span>
-<span class="nc" id="L107">        return;</span>
-<span class="nc" id="L108">      }</span>
+<span class="nc" id="L104">        future.setResult(result);</span>
+<span class="nc" id="L105">        future.setFailure(result.getException());</span>
+<span class="nc" id="L106">        return;</span>
+<span class="nc" id="L107">      }</span>
     }
-<span class="fc" id="L110">    final R66Result result =</span>
+<span class="nc" id="L109">    final R66Result result =</span>
         new R66Result(null, false, ErrorCode.InitOk, taskRunner);
-<span class="fc" id="L112">    future.setResult(result);</span>
-<span class="fc" id="L113">    future.setSuccess();</span>
-<span class="fc" id="L114">  }</span>
+<span class="nc" id="L111">    future.setResult(result);</span>
+<span class="nc" id="L112">    future.setSuccess();</span>
+<span class="nc" id="L113">  }</span>
 
   /**
    * @param args configuration file, the remoteHost Id, the file to
@@ -121,64 +120,60 @@ public class SubmitTransfer extends AbstractTransfer {
    *     blocksize if different than default
    */
   public static void main(final String[] args) {
-<span class="nc" id="L124">    WaarpLoggerFactory</span>
-<span class="nc" id="L125">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L127">      logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);</span>
+<span class="nc" id="L123">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L125" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L126">      logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);</span>
     }
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (!getParams(args, true)) {</span>
-<span class="nc" id="L130">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L132">        SysErrLogger.FAKE_LOGGER.sysout(</span>
-<span class="nc" id="L133">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (!getParams(args, true)) {</span>
+<span class="nc" id="L129">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L131">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L132">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
       }
-<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L136">        admin.close();</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L135">        admin.close();</span>
       }
-<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L139">        return;</span>
-      }
-<span class="nc" id="L141">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L142">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L137">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L138">      return;</span>
     }
-<span class="nc" id="L144">    final R66Future future = new R66Future(true);</span>
-<span class="nc" id="L145">    final SubmitTransfer transaction =</span>
+<span class="nc" id="L140">    final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L141">    final SubmitTransfer transaction =</span>
         new SubmitTransfer(future, rhost, localFilename, rule, transferInfo,
                            ismd5, block, idt, ttimestart);
-<span class="nc" id="L148">    transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
-<span class="nc" id="L149">    transaction.run();</span>
-<span class="nc" id="L150">    future.awaitOrInterruptible();</span>
-<span class="nc" id="L151">    final DbTaskRunner runner = future.getResult().getRunner();</span>
-<span class="nc" id="L152">    final OutputFormat outputFormat =</span>
-<span class="nc" id="L153">        new OutputFormat(SubmitTransfer.class.getSimpleName(), args);</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="nc" id="L155">      prepareSubmitOkOutputFormat(runner, outputFormat);</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (transaction.normalInfoAsWarn) {</span>
-<span class="nc" id="L157">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">      } else if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L159">        logger.info(outputFormat.loggerOut());</span>
+<span class="nc" id="L144">    transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
+<span class="nc" id="L145">    transaction.run();</span>
+<span class="nc" id="L146">    future.awaitOrInterruptible();</span>
+<span class="nc" id="L147">    final DbTaskRunner runner = future.getResult().getRunner();</span>
+<span class="nc" id="L148">    final OutputFormat outputFormat =</span>
+<span class="nc" id="L149">        new OutputFormat(SubmitTransfer.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="nc" id="L151">      prepareSubmitOkOutputFormat(runner, outputFormat);</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      if (transaction.normalInfoAsWarn) {</span>
+<span class="nc" id="L153">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L155">        logger.info(outputFormat.loggerOut());</span>
       }
-<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L162">        outputFormat.sysout();</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L158">        outputFormat.sysout();</span>
       }
     } else {
-<span class="nc" id="L165">      prepareSubmitKoOutputFormat(future, runner, outputFormat);</span>
-<span class="nc bnc" id="L166" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L167">        outputFormat.sysout();</span>
+<span class="nc" id="L161">      prepareSubmitKoOutputFormat(future, runner, outputFormat);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L163">        outputFormat.sysout();</span>
       }
-<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L170">        return;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">      if (WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L166">        return;</span>
       }
-<span class="nc" id="L172">      admin.close();</span>
-<span class="nc" id="L173">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L174">      System.exit(future.getResult().getCode().ordinal());</span>
+<span class="nc" id="L168">      admin.close();</span>
+<span class="nc" id="L169">      WaarpSystemUtil.systemExit(future.getResult().getCode().ordinal());</span>
+<span class="nc" id="L170">      return;</span>
     }
-<span class="nc" id="L176">    admin.close();</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L178">      return;</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">    if (!WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L173">      admin.close();</span>
+<span class="nc" id="L174">      WaarpSystemUtil.systemExit(0);</span>
     }
-<span class="nc" id="L180">    System.exit(0);//NOSONAR</span>
-<span class="nc" id="L181">  }</span>
+<span class="nc" id="L176">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

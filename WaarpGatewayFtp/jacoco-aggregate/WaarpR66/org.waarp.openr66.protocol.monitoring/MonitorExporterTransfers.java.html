@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MonitorExporterTransfers.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.monitoring</a> &gt; <span class="el_source">MonitorExporterTransfers.java</span></div><h1>MonitorExporterTransfers.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.monitoring;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.channel.EventLoopGroup;
+import org.apache.http.HttpHost;
+import org.joda.time.DateTime;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.client.TransferArgs;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.TransferDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbHostConfiguration;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
+
+import javax.ws.rs.InternalServerErrorException;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.waarp.openr66.dao.database.DBTransferDAO.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * The Monitor exports Transfers into a Json Format to a remote API REST
+ * or an Elasticsearch server (if JRE &gt;= 8)
+ * in order to allow to monitor multiple Waarp Servers from one central
+ * monitoring, such as using Elasticsearch with Kibana/Grafana through RESP
+ * API from Logstash engine or equivalent, or your own REST API server
+ * or a Elasticsearch server.&lt;br&gt;
+ * &lt;br&gt;
+ * Json format is:
+ * &lt;pre&gt;{@code
+ *  {
+ *    &quot;results&quot;: [                            # Array of Transfer information
+ *      {
+ *        &quot;specialId&quot;: 12345,                     # Id as Long (-2^63 to 2^63 - 1)
+ *        &quot;uniqueId&quot;: &quot;owner.requester.requested.specialId&quot;, # Unique global Id
+ *        &quot;hostId&quot;: &quot;R66Owner&quot;,                   # R66 Owner (Server name)
+ *        &quot;globalStep&quot;: &quot;step&quot;,                   # Global Current Step
+ *        &quot;globalLastStep&quot;: &quot;laststep&quot;,           # Global Last Step previous Current
+ *        &quot;step&quot;: 1,                              # Current Step in Global Current Step
+ *        &quot;rank&quot;: 123,                            # Current Rank in transfer step
+ *        &quot;status&quot;: &quot;status&quot;,                     # Current status
+ *        &quot;stepStatus&quot;: &quot;stepstatus&quot;,             # Status of previous Step
+ *        &quot;originalFilename&quot;: &quot;originalFilename&quot;, # Original Filename
+ *        &quot;originalSize&quot;: 123456,                 # Original file size
+ *        &quot;filename&quot;: &quot;filename&quot;,                 # Resolved local filename
+ *        &quot;ruleName&quot;: &quot;ruleName&quot;,                 # Rule name
+ *        &quot;blockSize&quot;: 123,                       # Block size during transfer
+ *        &quot;fileInfo&quot;: &quot;fileInfo&quot;,                 # File information, containing associated file transfer information
+ *        &quot;followId&quot;: 123456,                     # Follow Id as Long (-2^63 to 2^63 - 1)
+ *        &quot;transferInfo&quot;: &quot;transferInfo as Json&quot;, # Transfer internal information as Json String
+ *        &quot;start&quot;: &quot;2021-03-28T11:55:15Z&quot;,        # Start date time of the transfer operation
+ *        &quot;stop&quot;: &quot;2021-03-28T11:58:32Z&quot;,         # Current last date time event of the transfer operation
+ *        &quot;requested&quot;: &quot;requested&quot;,               # Requested R66 hostname
+ *        &quot;requester&quot;: &quot;requester&quot;,               # Requester R66 hostname
+ *        &quot;retrieve&quot;: true,                       # True if the request is a Pull, False if it is a Push
+ *        &quot;errorCode&quot;: &quot;errorCode&quot;,               # Code of error as one char
+ *        &quot;errorMessage&quot;: &quot;errorMessage&quot;,         # String message of current Error
+ *        &quot;waarpMonitor&quot;: {                       # Extra information for indexing if necessary
+ *          &quot;from&quot;: &quot;2021-03-28T11:58:15Z&quot;,       # filter from (could be empty if none)
+ *          &quot;to&quot;: &quot;2021-03-28T11:59:15Z&quot;,         # filter to
+ *          &quot;index&quot;: &quot;r66owner&quot;                   # R66 Hostname lowercase
+ *        }
+ *      },
+ *      ...
+ *    ]
+ *  }
+ * }&lt;/pre&gt;
+ * And the header of the HTTP request will contain:&lt;br&gt;
+ * X-WAARP-ID (as the host Id), X-WAARP-START (as the waarpMonitor.from),
+ * X-WAARP-STOP  (as the waarpMonitor.to)
+ */
+public class MonitorExporterTransfers extends Thread implements Closeable {
+<span class="nc" id="L110">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L111">      WaarpLoggerFactory.getLogger(MonitorExporterTransfers.class);</span>
+
+  public static final boolean MONITOR_KEEP_CONNECTION_DEFAULT = true;
+  public static final boolean MONITOR_INTERVAL_INCLUDED_DEFAULT = true;
+  public static final boolean MONITOR_LONG_AS_STRING_DEFAULT = false;
+
+  public static final String HEADER_WAARP_ID = &quot;X-WAARP-ID&quot;;
+  public static final String HEADER_WAARP_START = &quot;X-WAARP-START&quot;;
+  public static final String HEADER_WAARP_STOP = &quot;X-WAARP-STOP&quot;;
+
+  public static final String SPECIAL_ID = &quot;specialId&quot;;
+  public static final String FOLLOW_ID = &quot;followId&quot;;
+  public static final String UNIQUE_ID = &quot;uniqueId&quot;;
+  public static final String HOST_ID = &quot;hostId&quot;;
+  public static final String ORIGINAL_SIZE = &quot;originalSize&quot;;
+  public static final String RESULTS = &quot;results&quot;;
+  public static final String WAARP_MONITOR = &quot;waarpMonitor&quot;;
+  public static final String FROM_DATE_TIME = &quot;from&quot;;
+  public static final String TO_DATE_TIME = &quot;to&quot;;
+  public static final String INDEX_NAME = &quot;index&quot;;
+
+  private final boolean intervalMonitoringIncluded;
+  private final boolean transformLongAsString;
+  private final boolean asApiRest;
+  private final HttpMonitoringExporterClient httpMonitoringExporterClient;
+  private final ElasticsearchMonitoringExporterClient
+      elasticsearchMonitoringExporterClient;
+  private final DbHostConfiguration hostConfiguration;
+
+  private DateTime lastDateTime;
+  private Timestamp lastTimestamp;
+
+  /**
+   * Note that only one among (basicAuthent, token, apikey) is allowed and
+   * will be taken into account.
+   *
+   * @param remoteBaseUrl as 'http://myhost.com:8080' or 'https://myhost.com:8443'
+   * @param endpoint as '/waarpr66monitor' or simply '/'
+   * @param basicAuthent Basic Authent in Base64 format to connect to
+   *     REST API if any (Basic authentication from 'username:paswwd')
+   *     (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param keepConnection True to keep the connexion opened, False to release the connexion each time
+   * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
+   * @param transformLongAsString True to transform Long as String (ELK)
+   * @param group the EventLoopGroup to use for HttpMonitoringExporterClient
+   *
+   * @throws IllegalArgumentException if the setup is in error
+   */
+  public MonitorExporterTransfers(final String remoteBaseUrl,
+                                  final String endpoint,
+                                  final String basicAuthent, final String token,
+                                  final String apiKey,
+                                  final boolean keepConnection,
+                                  final boolean intervalMonitoringIncluded,
+                                  final boolean transformLongAsString,
+<span class="nc" id="L170">                                  final EventLoopGroup group) {</span>
+    try {
+<span class="nc" id="L172">      ParametersChecker.checkSanityString(remoteBaseUrl, endpoint);</span>
+<span class="nc" id="L173">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L174">      throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L175">    }</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(remoteBaseUrl)) {</span>
+<span class="nc" id="L177">      throw new IllegalArgumentException(&quot;RemoteBaseUrl cannot be null&quot;);</span>
+    }
+<span class="nc" id="L179">    this.intervalMonitoringIncluded = intervalMonitoringIncluded;</span>
+<span class="nc" id="L180">    this.transformLongAsString = transformLongAsString;</span>
+<span class="nc" id="L181">    this.asApiRest = true;</span>
+<span class="nc" id="L182">    this.elasticsearchMonitoringExporterClient = null;</span>
+<span class="nc" id="L183">    this.httpMonitoringExporterClient =</span>
+        new HttpMonitoringExporterClient(remoteBaseUrl, basicAuthent, token,
+                                         apiKey, endpoint, keepConnection,
+                                         group);
+<span class="nc" id="L187">    DbHostConfiguration temp = null;</span>
+    try {
+<span class="nc" id="L189">      temp = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L190">    } catch (final WaarpDatabaseException e) {//NOSONAR</span>
+<span class="nc" id="L191">      logger.error(e.getMessage());</span>
+<span class="nc" id="L192">    }</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">    if (temp == null) {</span>
+<span class="nc" id="L194">      DbHostConfiguration.getLastDateTimeMonitoring(</span>
+<span class="nc" id="L195">          Configuration.configuration.getHostId());</span>
+      try {
+<span class="nc" id="L197">        temp = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L198">      } catch (final WaarpDatabaseException e) {//NOSONAR</span>
+<span class="nc" id="L199">        logger.error(e.getMessage());</span>
+<span class="nc" id="L200">      }</span>
+    }
+<span class="nc" id="L202">    this.hostConfiguration = temp;</span>
+<span class="nc" id="L203">    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();//NOSONAR</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (lastDateTime != null) {</span>
+<span class="nc" id="L205">      lastTimestamp = new Timestamp(lastDateTime.getMillis());</span>
+    }
+<span class="nc" id="L207">  }</span>
+
+  /**
+   * The index can be a combination of a fixed name and extra dynamic
+   * information:&lt;br&gt;
+   * &lt;ul&gt;
+   *   &lt;li&gt;%%WAARPHOST%% to be replaced by R66 host name&lt;/li&gt;
+   *   &lt;li&gt;%%DATETIME%% to be replaced by date in format YYYY.MM.dd.HH.mm&lt;/li&gt;
+   *   &lt;li&gt;%%DATEHOUR%% to be replaced by date in format YYYY.MM.dd.HH&lt;/li&gt;
+   *   &lt;li&gt;%%DATE%% to be replaced by date in format YYYY.MM.dd&lt;/li&gt;
+   *   &lt;li&gt;%%YEARMONTH%% to be replaced by date in format YYYY.MM&lt;/li&gt;
+   *   &lt;li&gt;%%YEAR%% to be replaced by date in format YYYY&lt;/li&gt;
+   * &lt;/ul&gt;
+   * &lt;br&gt;DATE is about current last-time check.&lt;br&gt;
+   * So 'waarpr66-%%WAARPHOST%%-%%DATE%%' will give for instance
+   * 'waarpr66-hosta-2021-06-21' as index name.&lt;br&gt;
+   * Note that only one among (username/pwd, token, apikey) is allowed and
+   * will be taken into account.
+   *
+   * @param remoteBaseUrl as 'http://myelastic.com:9200' or 'https://myelastic.com:9201'
+   * @param prefix as '/prefix' or null if none
+   * @param index as 'waarpr66monitor' as the index name within
+   *     Elasticsearch, including extra dynamic information
+   * @param username username to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param pwd password to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
+   * @param transformLongAsString True to transform Long as String (ELK)
+   * @param compression True to compress REST exchanges between the client
+   *     and the Elasticsearch server
+   *
+   * @throws IllegalArgumentException if the setup is in error
+   */
+  public MonitorExporterTransfers(final String remoteBaseUrl,
+                                  final String prefix, final String index,
+                                  final String username, final String pwd,
+                                  final String token, final String apiKey,
+                                  final boolean intervalMonitoringIncluded,
+                                  final boolean transformLongAsString,
+<span class="nc" id="L251">                                  final boolean compression) {</span>
+    try {
+<span class="nc" id="L253">      ParametersChecker.checkSanityString(remoteBaseUrl, index);</span>
+<span class="nc" id="L254">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L255">      throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L256">    }</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(remoteBaseUrl, index)) {</span>
+<span class="nc" id="L258">      throw new IllegalArgumentException(</span>
+          &quot;RemoteBaseUrl or Index cannot be null&quot;);
+    }
+<span class="nc" id="L261">    this.intervalMonitoringIncluded = intervalMonitoringIncluded;</span>
+<span class="nc" id="L262">    this.transformLongAsString = transformLongAsString;</span>
+<span class="nc" id="L263">    this.asApiRest = false;</span>
+<span class="nc" id="L264">    this.httpMonitoringExporterClient = null;</span>
+<span class="nc" id="L265">    final String[] urls = remoteBaseUrl.split(&quot;,&quot;);</span>
+<span class="nc" id="L266">    final ArrayList&lt;HttpHost&gt; httpHostArray =</span>
+        new ArrayList&lt;HttpHost&gt;(urls.length);
+<span class="nc bnc" id="L268" title="All 2 branches missed.">    for (final String url : urls) {</span>
+      try {
+<span class="nc" id="L270">        final URI finalUri = new URI(url);</span>
+<span class="nc" id="L271">        final String host =</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">            finalUri.getHost() == null? &quot;127.0.0.1&quot; : finalUri.getHost();</span>
+<span class="nc" id="L273">        final int port = finalUri.getPort();</span>
+<span class="nc" id="L274">        final String scheme =</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">            finalUri.getScheme() == null? &quot;http&quot; : finalUri.getScheme();</span>
+<span class="nc" id="L276">        logger.info(&quot;Elasticsearch from {} Host: {} on port {} using {}&quot;, url,</span>
+<span class="nc" id="L277">                    host, port, scheme);</span>
+<span class="nc" id="L278">        httpHostArray.add(new HttpHost(host, port, scheme));</span>
+<span class="nc" id="L279">      } catch (final URISyntaxException e) {</span>
+<span class="nc" id="L280">        logger.error(&quot;URI syntax error: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L281">        throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L282">      }</span>
+    }
+<span class="nc" id="L284">    this.elasticsearchMonitoringExporterClient =</span>
+<span class="nc" id="L285">        ElasticsearchMonitoringExporterClientBuilder.getFactory()</span>
+<span class="nc" id="L286">                                                    .createElasticsearchClient(</span>
+                                                        username, pwd, token,
+                                                        apiKey, prefix, index,
+                                                        compression,
+<span class="nc" id="L290">                                                        httpHostArray.toArray(</span>
+                                                            new HttpHost[0]));
+<span class="nc" id="L292">    DbHostConfiguration temp = null;</span>
+    try {
+<span class="nc" id="L294">      temp = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L295">    } catch (final WaarpDatabaseException e) {//NOSONAR</span>
+<span class="nc" id="L296">      logger.error(e.getMessage());</span>
+<span class="nc" id="L297">    }</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">    if (temp == null) {</span>
+<span class="nc" id="L299">      DbHostConfiguration.getLastDateTimeMonitoring(</span>
+<span class="nc" id="L300">          Configuration.configuration.getHostId());</span>
+      try {
+<span class="nc" id="L302">        temp = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L303">      } catch (final WaarpDatabaseException e) {//NOSONAR</span>
+<span class="nc" id="L304">        logger.error(e.getMessage());</span>
+<span class="nc" id="L305">      }</span>
+    }
+<span class="nc" id="L307">    this.hostConfiguration = temp;</span>
+<span class="nc" id="L308">    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();//NOSONAR</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">    if (lastDateTime != null) {</span>
+<span class="nc" id="L310">      lastTimestamp = new Timestamp(lastDateTime.getMillis());</span>
+    }
+<span class="nc" id="L312">  }</span>
+
+  @Override
+  public void run() {
+<span class="nc" id="L316">    final DateTime now = new DateTime();</span>
+<span class="nc" id="L317">    final Timestamp timestamp = new Timestamp(now.getMillis());</span>
+<span class="nc" id="L318">    logger.info(&quot;Start from {} to {}&quot;, lastDateTime, now);</span>
+<span class="nc" id="L319">    final TransferConverter.Order order = TransferConverter.Order.ascId;</span>
+<span class="nc" id="L320">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(2);</span>
+<span class="nc" id="L321">    filters.add(DbTaskRunner.getOwnerFilter());</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">    if (lastTimestamp != null) {</span>
+<span class="nc" id="L323">      filters.add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, lastTimestamp,</span>
+                             timestamp));
+    } else {
+<span class="nc" id="L326">      filters.add(new Filter(TRANSFER_STOP_FIELD, &quot;&lt;=&quot;, timestamp));</span>
+    }
+<span class="nc" id="L328">    TransferDAO transferDAO = null;</span>
+    List&lt;Transfer&gt; transferList;
+    try {
+<span class="nc" id="L331">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L332">      transferList = transferDAO.find(filters, order.column, order.ascend);</span>
+<span class="nc" id="L333">      logger.debug(&quot;Get List {}&quot;, transferList.size());</span>
+<span class="nc" id="L334">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L335">      logger.error(e.getMessage());</span>
+<span class="nc" id="L336">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L338">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="nc bnc" id="L340" title="All 2 branches missed.">    if (transferList.isEmpty()) {</span>
+<span class="nc" id="L341">      logger.info(&quot;No Transfer from {} to {}&quot;, lastDateTime, now);</span>
+<span class="nc" id="L342">      lastDateTime = now;</span>
+<span class="nc" id="L343">      lastTimestamp = timestamp;</span>
+<span class="nc" id="L344">      hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
+<span class="nc" id="L345">      return;</span>
+    }
+<span class="nc" id="L347">    logger.debug(&quot;Create Json&quot;);</span>
+
+<span class="nc" id="L349">    final ObjectNode monitoredTransfers = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L350">    final ArrayNode resultList = monitoredTransfers.putArray(RESULTS);</span>
+<span class="nc" id="L351">    final String owner = Configuration.configuration.getHostId();</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    for (final Transfer transfer : transferList) {</span>
+<span class="nc" id="L353">      final ObjectNode item = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L354">      final long specialId = item.get(TransferFields.TRANSFER_ID).asLong();</span>
+<span class="nc" id="L355">      final String transferInfo =</span>
+<span class="nc" id="L356">          item.get(TransferFields.TRANSFER_INFO).asText();</span>
+<span class="nc" id="L357">      final ObjectNode root = JsonHandler.getFromString(transferInfo);</span>
+<span class="nc" id="L358">      long followId = Long.MIN_VALUE;</span>
+<span class="nc" id="L359">      long originalSize = -1;</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (root != null) {</span>
+<span class="nc" id="L361">        JsonNode node = root.get(TransferArgs.FOLLOW_JSON_KEY);</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">        if (node != null) {</span>
+<span class="nc" id="L363">          followId = node.asLong();</span>
+        }
+<span class="nc" id="L365">        node = root.get(DbTaskRunner.JSON_ORIGINALSIZE);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (node != null) {</span>
+<span class="nc" id="L367">          originalSize = node.asLong();</span>
+        }
+      }
+<span class="nc bnc" id="L370" title="All 2 branches missed.">      if (transformLongAsString) {</span>
+<span class="nc" id="L371">        item.put(SPECIAL_ID, Long.toString(specialId));</span>
+<span class="nc" id="L372">        item.put(FOLLOW_ID, Long.toString(followId));</span>
+<span class="nc" id="L373">        item.put(ORIGINAL_SIZE, Long.toString(originalSize));</span>
+      } else {
+<span class="nc" id="L375">        item.put(SPECIAL_ID, specialId);</span>
+<span class="nc" id="L376">        item.put(FOLLOW_ID, followId);</span>
+<span class="nc" id="L377">        item.put(ORIGINAL_SIZE, originalSize);</span>
+      }
+<span class="nc" id="L379">      final String uniqueId =</span>
+<span class="nc" id="L380">          owner + &quot;.&quot; + item.get(TransferFields.REQUESTER).asText() + &quot;.&quot; +</span>
+<span class="nc" id="L381">          item.get(TransferFields.REQUESTED).asText() + &quot;.&quot; + specialId;</span>
+<span class="nc" id="L382">      item.put(UNIQUE_ID, uniqueId);</span>
+<span class="nc" id="L383">      item.put(HOST_ID, owner);</span>
+<span class="nc" id="L384">      item.remove(TransferFields.TRANSFER_ID);</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">      if (intervalMonitoringIncluded) {</span>
+<span class="nc" id="L386">        final ObjectNode waarpMonitor = item.putObject(WAARP_MONITOR);</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">        waarpMonitor.put(FROM_DATE_TIME,</span>
+<span class="nc" id="L388">                         lastDateTime != null? lastDateTime.toString() : &quot;&quot;);</span>
+<span class="nc" id="L389">        waarpMonitor.put(TO_DATE_TIME, now.toString());</span>
+<span class="nc" id="L390">        waarpMonitor.put(INDEX_NAME, owner.toLowerCase());</span>
+      }
+<span class="nc" id="L392">      resultList.add(item);</span>
+<span class="nc" id="L393">    }</span>
+<span class="nc" id="L394">    final int size = resultList.size();</span>
+<span class="nc" id="L395">    logger.debug(&quot;Create Json {}&quot;, size);</span>
+<span class="nc" id="L396">    transferList.clear();</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">    if (asApiRest) {</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">      if (httpMonitoringExporterClient.post(monitoredTransfers, lastDateTime,</span>
+                                            now,
+<span class="nc" id="L400">                                            Configuration.configuration.getHostId())) {</span>
+<span class="nc" id="L401">        logger.info(&quot;Transferred from {} to {} = {}&quot;, lastDateTime, now, size);</span>
+<span class="nc" id="L402">        lastDateTime = now;</span>
+<span class="nc" id="L403">        lastTimestamp = timestamp;</span>
+<span class="nc" id="L404">        hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
+      } else {
+<span class="nc" id="L406">        logger.error(&quot;Not Transferred from {} to {} = {}&quot;, lastDateTime, now,</span>
+<span class="nc" id="L407">                     size);</span>
+      }
+<span class="nc bnc" id="L409" title="All 2 branches missed.">    } else if (elasticsearchMonitoringExporterClient.post(monitoredTransfers,</span>
+                                                          lastDateTime, now,
+<span class="nc" id="L411">                                                          Configuration.configuration.getHostId())) {</span>
+<span class="nc" id="L412">      logger.info(&quot;ES Transferred from {} to {} = {}&quot;, lastDateTime, now, size);</span>
+<span class="nc" id="L413">      lastDateTime = now;</span>
+<span class="nc" id="L414">      lastTimestamp = timestamp;</span>
+<span class="nc" id="L415">      hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
+    } else {
+<span class="nc" id="L417">      logger.error(&quot;ES Not Transferred from {} to {} = {}&quot;, lastDateTime, now,</span>
+<span class="nc" id="L418">                   size);</span>
+    }
+<span class="nc" id="L420">  }</span>
+
+  @Override
+  public void close() throws IOException {
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    if (httpMonitoringExporterClient != null) {</span>
+<span class="nc" id="L425">      httpMonitoringExporterClient.close();</span>
+    }
+<span class="nc bnc" id="L427" title="All 2 branches missed.">    if (elasticsearchMonitoringExporterClient != null) {</span>
+<span class="nc" id="L428">      elasticsearchMonitoringExporterClient.close();</span>
+    }
+<span class="nc" id="L430">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

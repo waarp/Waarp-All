@@ -29,8 +29,8 @@
 <a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">package</strong> org.waarp.openr66.protocol.http.restv2.errors;
 <a class="jxr_linenumber" name="L22" href="#L22">22</a>  
 <a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.node.ArrayNode;
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.node.JsonNodeFactory;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.node.ObjectNode;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.node.ObjectNode;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.json.JsonHandler;
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  
 <a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> java.util.List;
@@ -81,12 +81,12 @@
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  <em class="jxr_javadoccomment">   * @return the serialized list of errors.</em>
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>    <strong class="jxr_keyword">public</strong> ObjectNode makeNode(<strong class="jxr_keyword">final</strong> Locale lang) {
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>      <strong class="jxr_keyword">final</strong> ArrayNode errorsArray = <strong class="jxr_keyword">new</strong> ArrayNode(JsonNodeFactory.instance);
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> ObjectNode makeNode(<strong class="jxr_keyword">final</strong> Locale lang) {
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>      <strong class="jxr_keyword">final</strong> ArrayNode errorsArray = JsonHandler.createArrayNode();
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>      <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">final</strong> <a name="RestError" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestError.html#RestError">RestError</a> error : errors) {
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>        errorsArray.add(error.makeNode(lang));
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>      }
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>      <strong class="jxr_keyword">final</strong> ObjectNode response = <strong class="jxr_keyword">new</strong> ObjectNode(JsonNodeFactory.instance);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>      <strong class="jxr_keyword">final</strong> ObjectNode response = JsonHandler.createObjectNode();
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>      response.putArray(<span class="jxr_string">"errors"</span>).addAll(errorsArray);
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>  
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>      <strong class="jxr_keyword">return</strong> response;

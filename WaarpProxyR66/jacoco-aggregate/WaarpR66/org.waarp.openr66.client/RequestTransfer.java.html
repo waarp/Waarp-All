@@ -25,7 +25,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.commander.CommanderNoDb;
@@ -51,7 +51,6 @@ import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.localhandler.packet.json.RestartTransferJsonPacket;
 import org.waarp.openr66.protocol.localhandler.packet.json.StopOrCancelJsonPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.text.ParseException;
@@ -71,9 +70,9 @@ public class RequestTransfer implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-<span class="fc" id="L74">  protected static String infoArgs =</span>
-<span class="fc" id="L75">      Messages.getString(&quot;RequestTransfer.0&quot;) //$NON-NLS-1$</span>
-<span class="fc" id="L76">      + Messages.getString(&quot;Message.OutputFormat&quot;);</span>
+<span class="nc" id="L73">  protected static String infoArgs =</span>
+<span class="nc" id="L74">      Messages.getString(&quot;RequestTransfer.0&quot;) //$NON-NLS-1$</span>
+<span class="nc" id="L75">      + Messages.getString(&quot;Message.OutputFormat&quot;);</span>
 
   protected final NetworkTransaction networkTransaction;
   final R66Future future;
@@ -84,7 +83,7 @@ public class RequestTransfer implements Runnable {
   final boolean stop;
   final boolean restart;
   final String restarttime;
-<span class="fc" id="L87">  boolean normalInfoAsWarn = true;</span>
+<span class="nc" id="L86">  boolean normalInfoAsWarn = true;</span>
 
   static long sspecialId;
   static String srequested;
@@ -94,7 +93,7 @@ public class RequestTransfer implements Runnable {
   static boolean sstop;
   static boolean srestart;
   static String srestarttime;
-<span class="fc" id="L97">  protected static boolean snormalInfoAsWarn = true;</span>
+<span class="nc" id="L96">  protected static boolean snormalInfoAsWarn = true;</span>
 
   /**
    * Parse the parameter and set current values
@@ -104,29 +103,30 @@ public class RequestTransfer implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(final String[] args) {
-<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L108">      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L107">      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
     }
-<span class="nc" id="L110">    infoArgs = Messages.getString(&quot;RequestTransfer.0&quot;) +</span>
-<span class="nc" id="L111">               Messages.getString(&quot;Message.OutputFormat&quot;); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L112" title="All 2 branches missed.">    if (args.length &lt; 5) {</span>
-<span class="nc" id="L113">      logger.error(infoArgs);</span>
-<span class="nc" id="L114">      return false;</span>
+<span class="nc" id="L109">    infoArgs = Messages.getString(&quot;RequestTransfer.0&quot;) +</span>
+<span class="nc" id="L110">               Messages.getString(&quot;Message.OutputFormat&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (args.length &lt; 5) {</span>
+<span class="nc" id="L112">      logger.error(infoArgs);</span>
+<span class="nc" id="L113">      return false;</span>
     }
-<span class="nc" id="L116">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
-<span class="nc" id="L118">      logger.error(</span>
-<span class="nc" id="L119">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L120">      return false;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
+<span class="nc" id="L117">      logger.error(</span>
+<span class="nc" id="L118">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L119">      return false;</span>
     }
-<span class="nc bnc" id="L122" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L123" title="All 2 branches missed.">      if (&quot;-id&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L124">        i++;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">      if (&quot;-id&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L123">        i++;</span>
         try {
-<span class="nc" id="L126">          sspecialId = Long.parseLong(args[i]);</span>
-<span class="nc" id="L127">        } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L128">          logger.error(Messages.getString(&quot;RequestTransfer.1&quot;) + args[i],</span>
-                       e); //$NON-NLS-1$
+<span class="nc" id="L125">          sspecialId = Long.parseLong(args[i]);</span>
+<span class="nc" id="L126">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L127">          logger.error(</span>
+<span class="nc" id="L128">              Messages.getString(&quot;RequestTransfer.1&quot;) + args[i] + &quot;: {}&quot;,</span>
+<span class="nc" id="L129">              e.getMessage()); //$NON-NLS-1$</span>
 <span class="nc" id="L130">          return false;</span>
 <span class="nc" id="L131">        }</span>
 <span class="nc bnc" id="L132" title="All 2 branches missed.">      } else if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
@@ -139,64 +139,66 @@ public class RequestTransfer implements Runnable {
         try {
 <span class="nc" id="L140">          srequester = Configuration.configuration.getHostId(srequested);</span>
 <span class="nc" id="L141">        } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L142">          logger.error(Messages.getString(&quot;RequestTransfer.5&quot;) + srequested,</span>
-                       e); //$NON-NLS-1$
-<span class="nc" id="L144">          return false;</span>
-<span class="nc" id="L145">        }</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">      } else if (&quot;-from&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L147">        i++;</span>
-<span class="nc" id="L148">        srequester = args[i];</span>
-<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (Configuration.configuration.getAliases().containsKey(srequester)) {</span>
-<span class="nc" id="L150">          srequester = Configuration.configuration.getAliases().get(srequester);</span>
+<span class="nc" id="L142">          logger.error(</span>
+<span class="nc" id="L143">              Messages.getString(&quot;RequestTransfer.5&quot;) + srequested + &quot;: {}&quot;,</span>
+<span class="nc" id="L144">              e.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L145">          return false;</span>
+<span class="nc" id="L146">        }</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">      } else if (&quot;-from&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L148">        i++;</span>
+<span class="nc" id="L149">        srequester = args[i];</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (Configuration.configuration.getAliases().containsKey(srequester)) {</span>
+<span class="nc" id="L151">          srequester = Configuration.configuration.getAliases().get(srequester);</span>
         }
-<span class="nc" id="L152">        rhost = srequester;</span>
+<span class="nc" id="L153">        rhost = srequester;</span>
         try {
-<span class="nc" id="L154">          srequested = Configuration.configuration.getHostId(srequester);</span>
-<span class="nc" id="L155">        } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L156">          logger.error(Messages.getString(&quot;RequestTransfer.5&quot;) + srequester,</span>
-                       e); //$NON-NLS-1$
-<span class="nc" id="L158">          return false;</span>
-<span class="nc" id="L159">        }</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">      } else if (&quot;-cancel&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L161">        scancel = true;</span>
-<span class="nc bnc" id="L162" title="All 2 branches missed.">      } else if (&quot;-stop&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L163">        sstop = true;</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">      } else if (&quot;-restart&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L165">        srestart = true;</span>
-<span class="nc bnc" id="L166" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L167">        i++;</span>
-<span class="nc" id="L168">        srestarttime = args[i];</span>
-<span class="nc bnc" id="L169" title="All 2 branches missed.">      } else if (&quot;-logWarn&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L170">        snormalInfoAsWarn = true;</span>
-<span class="nc bnc" id="L171" title="All 2 branches missed.">      } else if (&quot;-notlogWarn&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L172">        snormalInfoAsWarn = false;</span>
-<span class="nc bnc" id="L173" title="All 2 branches missed.">      } else if (&quot;-delay&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L174">        i++;</span>
-<span class="nc" id="L175">        final SimpleDateFormat dateFormat =</span>
+<span class="nc" id="L155">          srequested = Configuration.configuration.getHostId(srequester);</span>
+<span class="nc" id="L156">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L157">          logger.error(</span>
+<span class="nc" id="L158">              Messages.getString(&quot;RequestTransfer.5&quot;) + srequester + &quot;: {}&quot;,</span>
+<span class="nc" id="L159">              e.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L160">          return false;</span>
+<span class="nc" id="L161">        }</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      } else if (&quot;-cancel&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L163">        scancel = true;</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      } else if (&quot;-stop&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L165">        sstop = true;</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      } else if (&quot;-restart&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L167">        srestart = true;</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L169">        i++;</span>
+<span class="nc" id="L170">        srestarttime = args[i];</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">      } else if (&quot;-logWarn&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L172">        snormalInfoAsWarn = true;</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">      } else if (&quot;-notlogWarn&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L174">        snormalInfoAsWarn = false;</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">      } else if (&quot;-delay&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L176">        i++;</span>
+<span class="nc" id="L177">        final SimpleDateFormat dateFormat =</span>
             new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
-<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (args[i].charAt(0) == '+') {</span>
-<span class="nc" id="L178">          final Date date = new Date(System.currentTimeMillis() +</span>
-<span class="nc" id="L179">                                     Long.parseLong(args[i].substring(1)));</span>
-<span class="nc" id="L180">          srestarttime = dateFormat.format(date);</span>
-<span class="nc" id="L181">        } else {</span>
-<span class="nc" id="L182">          final Date date = new Date(Long.parseLong(args[i]));</span>
-<span class="nc" id="L183">          srestarttime = dateFormat.format(date);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (args[i].charAt(0) == '+') {</span>
+<span class="nc" id="L180">          final Date date = new Date(System.currentTimeMillis() +</span>
+<span class="nc" id="L181">                                     Long.parseLong(args[i].substring(1)));</span>
+<span class="nc" id="L182">          srestarttime = dateFormat.format(date);</span>
+<span class="nc" id="L183">        } else {</span>
+<span class="nc" id="L184">          final Date date = new Date(Long.parseLong(args[i]));</span>
+<span class="nc" id="L185">          srestarttime = dateFormat.format(date);</span>
         }
       }
-<span class="nc" id="L186">      OutputFormat.getParams(args);</span>
+<span class="nc" id="L188">      OutputFormat.getParams(args);</span>
     }
-<span class="nc bnc" id="L188" title="All 12 branches missed.">    if (scancel &amp;&amp; srestart || scancel &amp;&amp; sstop || srestart &amp;&amp; sstop) {</span>
-<span class="nc" id="L189">      logger.error(</span>
-<span class="nc" id="L190">          Messages.getString(&quot;RequestTransfer.15&quot;) + infoArgs); //$NON-NLS-1$</span>
-<span class="nc" id="L191">      return false;</span>
+<span class="nc bnc" id="L190" title="All 12 branches missed.">    if (scancel &amp;&amp; srestart || scancel &amp;&amp; sstop || srestart &amp;&amp; sstop) {</span>
+<span class="nc" id="L191">      logger.error(</span>
+<span class="nc" id="L192">          Messages.getString(&quot;RequestTransfer.15&quot;) + infoArgs); //$NON-NLS-1$</span>
+<span class="nc" id="L193">      return false;</span>
     }
-<span class="nc bnc" id="L193" title="All 4 branches missed.">    if (sspecialId == ILLEGALVALUE || srequested == null) {</span>
-<span class="nc" id="L194">      logger.error(</span>
-<span class="nc" id="L195">          Messages.getString(&quot;RequestTransfer.16&quot;) + infoArgs); //$NON-NLS-1$</span>
-<span class="nc" id="L196">      return false;</span>
+<span class="nc bnc" id="L195" title="All 4 branches missed.">    if (sspecialId == ILLEGALVALUE || srequested == null) {</span>
+<span class="nc" id="L196">      logger.error(</span>
+<span class="nc" id="L197">          Messages.getString(&quot;RequestTransfer.16&quot;) + infoArgs); //$NON-NLS-1$</span>
+<span class="nc" id="L198">      return false;</span>
     }
 
-<span class="nc" id="L199">    return true;</span>
+<span class="nc" id="L201">    return true;</span>
   }
 
   /**
@@ -214,9 +216,9 @@ public class RequestTransfer implements Runnable {
                          final boolean cancel, final boolean stop,
                          final boolean restart,
                          final NetworkTransaction networkTransaction) {
-<span class="fc" id="L217">    this(future, specialId, requested, requester, cancel, stop, restart, null,</span>
+<span class="nc" id="L219">    this(future, specialId, requested, requester, cancel, stop, restart, null,</span>
          networkTransaction);
-<span class="fc" id="L219">  }</span>
+<span class="nc" id="L221">  }</span>
 
   /**
    * @param future
@@ -233,218 +235,218 @@ public class RequestTransfer implements Runnable {
                          final String requested, final String requester,
                          final boolean cancel, final boolean stop,
                          final boolean restart, final String restarttime,
-<span class="fc" id="L236">                         final NetworkTransaction networkTransaction) {</span>
-<span class="fc" id="L237">    this.future = future;</span>
-<span class="fc" id="L238">    this.specialId = specialId;</span>
-<span class="fc" id="L239">    this.requested = requested;</span>
-<span class="fc" id="L240">    this.requester = requester;</span>
-<span class="fc" id="L241">    this.cancel = cancel;</span>
-<span class="fc" id="L242">    this.stop = stop;</span>
-<span class="fc" id="L243">    this.restart = restart;</span>
-<span class="fc" id="L244">    this.restarttime = restarttime;</span>
-<span class="fc" id="L245">    this.networkTransaction = networkTransaction;</span>
-<span class="fc bfc" id="L246" title="All 2 branches covered.">    if (logger == null) {</span>
-<span class="fc" id="L247">      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
+<span class="nc" id="L238">                         final NetworkTransaction networkTransaction) {</span>
+<span class="nc" id="L239">    this.future = future;</span>
+<span class="nc" id="L240">    this.specialId = specialId;</span>
+<span class="nc" id="L241">    this.requested = requested;</span>
+<span class="nc" id="L242">    this.requester = requester;</span>
+<span class="nc" id="L243">    this.cancel = cancel;</span>
+<span class="nc" id="L244">    this.stop = stop;</span>
+<span class="nc" id="L245">    this.restart = restart;</span>
+<span class="nc" id="L246">    this.restarttime = restarttime;</span>
+<span class="nc" id="L247">    this.networkTransaction = networkTransaction;</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L249">      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
     }
-<span class="fc" id="L249">  }</span>
+<span class="nc" id="L251">  }</span>
 
   @Override
   public void run() {
-<span class="fc" id="L253">    DbTaskRunner runner = null;</span>
+<span class="nc" id="L255">    DbTaskRunner runner = null;</span>
     try {
-<span class="pc bpc" id="L255" title="1 of 2 branches missed.">      if (logger == null) {</span>
-<span class="nc" id="L256">        logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">      if (logger == null) {</span>
+<span class="nc" id="L258">        logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
       }
       try {
-<span class="fc" id="L259">        runner = new DbTaskRunner(null, null, specialId, requester, requested);</span>
-<span class="fc" id="L260">        logger.info(&quot;Found previous Runner: {}&quot;, runner);</span>
-<span class="fc" id="L261">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L261">        runner = new DbTaskRunner(null, null, specialId, requester, requested);</span>
+<span class="nc" id="L262">        logger.info(&quot;Found previous Runner: {}&quot;, runner);</span>
+<span class="nc" id="L263">      } catch (final WaarpDatabaseException e) {</span>
         // Maybe we can ask to the remote
-<span class="fc" id="L263">        final R66Future futureInfo = new R66Future(true);</span>
-<span class="fc" id="L264">        final RequestInformation requestInformation =</span>
+<span class="nc" id="L265">        final R66Future futureInfo = new R66Future(true);</span>
+<span class="nc" id="L266">        final RequestInformation requestInformation =</span>
             new RequestInformation(futureInfo, requested, null, null, (byte) -1,
                                    specialId, true, networkTransaction);
-<span class="fc" id="L267">        requestInformation.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="fc" id="L268">        requestInformation.run();</span>
-<span class="fc" id="L269">        futureInfo.awaitOrInterruptible();</span>
-<span class="pc bpc" id="L270" title="1 of 2 branches missed.">        if (futureInfo.isSuccess()) {</span>
-<span class="fc" id="L271">          final R66Result r66result = futureInfo.getResult();</span>
-<span class="fc" id="L272">          final ValidPacket info = (ValidPacket) r66result.getOther();</span>
-<span class="fc" id="L273">          final String xml = info.getSheader();</span>
+<span class="nc" id="L269">        requestInformation.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="nc" id="L270">        requestInformation.run();</span>
+<span class="nc" id="L271">        futureInfo.awaitOrInterruptible();</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (futureInfo.isSuccess()) {</span>
+<span class="nc" id="L273">          final R66Result r66result = futureInfo.getResult();</span>
+<span class="nc" id="L274">          final ValidPacket info = (ValidPacket) r66result.getOther();</span>
+<span class="nc" id="L275">          final String xml = info.getSheader();</span>
           try {
-<span class="fc" id="L275">            runner = DbTaskRunner.fromStringXml(xml, true);</span>
-<span class="fc" id="L276">            runner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="nc" id="L277">            runner = DbTaskRunner.fromStringXml(xml, true);</span>
+<span class="nc" id="L278">            runner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
             // useful ?
-<span class="fc" id="L278">            CommanderNoDb.todoList.add(runner);</span>
+<span class="nc" id="L280">            CommanderNoDb.todoList.add(runner);</span>
 
-<span class="fc" id="L280">            logger.info(&quot;Get Runner from remote: {}&quot;, runner);</span>
-<span class="pc bpc" id="L281" title="2 of 4 branches missed.">            if (runner.getSpecialId() == ILLEGALVALUE || !runner.isSender()) {</span>
-<span class="nc" id="L282">              logger.error(</span>
-<span class="nc" id="L283">                  Messages.getString(&quot;RequestTransfer.18&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L284">              future.setResult(</span>
+<span class="nc" id="L282">            logger.info(&quot;Get Runner from remote: {}&quot;, runner);</span>
+<span class="nc bnc" id="L283" title="All 4 branches missed.">            if (runner.getSpecialId() == ILLEGALVALUE || !runner.isSender()) {</span>
+<span class="nc" id="L284">              logger.error(</span>
+<span class="nc" id="L285">                  Messages.getString(&quot;RequestTransfer.18&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L286">              future.setResult(</span>
                   new R66Result(new OpenR66DatabaseGlobalException(e), null,
                                 true, ErrorCode.Internal, null));
-<span class="nc" id="L287">              future.setFailure(e);</span>
-<span class="nc" id="L288">              return;</span>
+<span class="nc" id="L289">              future.setFailure(e);</span>
+<span class="nc" id="L290">              return;</span>
             }
-<span class="pc bpc" id="L290" title="1 of 2 branches missed.">            if (runner.isAllDone()) {</span>
-<span class="fc" id="L291">              logger.error(</span>
-<span class="fc" id="L292">                  Messages.getString(&quot;RequestTransfer.21&quot;)); //$NON-NLS-1$</span>
-<span class="fc" id="L293">              future.setResult(</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">            if (runner.isAllDone()) {</span>
+<span class="nc" id="L293">              logger.error(</span>
+<span class="nc" id="L294">                  Messages.getString(&quot;RequestTransfer.21&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L295">              future.setResult(</span>
                   new R66Result(new OpenR66DatabaseGlobalException(e), null,
                                 true, ErrorCode.Internal, null));
-<span class="fc" id="L296">              future.setFailure(e);</span>
-<span class="fc" id="L297">              return;</span>
+<span class="nc" id="L298">              future.setFailure(e);</span>
+<span class="nc" id="L299">              return;</span>
             }
-<span class="nc" id="L299">          } catch (final OpenR66ProtocolBusinessException e1) {</span>
-<span class="nc" id="L300">            logger</span>
-<span class="nc" id="L301">                .error(Messages.getString(&quot;RequestTransfer.18&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L302">            future.setResult(</span>
+<span class="nc" id="L301">          } catch (final OpenR66ProtocolBusinessException e1) {</span>
+<span class="nc" id="L302">            logger.error(</span>
+<span class="nc" id="L303">                Messages.getString(&quot;RequestTransfer.18&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L304">            future.setResult(</span>
                 new R66Result(new OpenR66DatabaseGlobalException(e1), null,
                               true, ErrorCode.Internal, null));
-<span class="nc" id="L305">            future.setFailure(e);</span>
-<span class="nc" id="L306">            return;</span>
-<span class="nc" id="L307">          }</span>
-<span class="nc" id="L308">        } else {</span>
-<span class="nc" id="L309">          logger.error(Messages.getString(&quot;RequestTransfer.18&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L310">          future.setResult(</span>
+<span class="nc" id="L307">            future.setFailure(e);</span>
+<span class="nc" id="L308">            return;</span>
+<span class="nc" id="L309">          }</span>
+<span class="nc" id="L310">        } else {</span>
+<span class="nc" id="L311">          logger.error(Messages.getString(&quot;RequestTransfer.18&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L312">          future.setResult(</span>
               new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                             ErrorCode.Internal, null));
-<span class="nc" id="L313">          future.setFailure(e);</span>
-<span class="nc" id="L314">          return;</span>
+<span class="nc" id="L315">          future.setFailure(e);</span>
+<span class="nc" id="L316">          return;</span>
         }
-<span class="fc" id="L316">      }</span>
-<span class="pc bpc" id="L317" title="2 of 6 branches missed.">      if (cancel || stop || restart) {</span>
-<span class="pc bpc" id="L318" title="1 of 2 branches missed.">        if (cancel) {</span>
+<span class="nc" id="L318">      }</span>
+<span class="nc bnc" id="L319" title="All 6 branches missed.">      if (cancel || stop || restart) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (cancel) {</span>
           // Cancel the task and delete any file if in retrieve
-<span class="fc bfc" id="L320" title="All 2 branches covered.">          if (runner.isAllDone()) {</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">          if (runner.isAllDone()) {</span>
             // nothing to do since already finished
-<span class="fc" id="L322">            setDone(runner);</span>
-<span class="fc" id="L323">            logger.info(&quot;Transfer already finished: {}&quot;, runner);</span>
-<span class="fc" id="L324">            future.setResult(</span>
+<span class="nc" id="L324">            setDone(runner);</span>
+<span class="nc" id="L325">            logger.info(&quot;Transfer already finished: {}&quot;, runner);</span>
+<span class="nc" id="L326">            future.setResult(</span>
                 new R66Result(null, true, ErrorCode.TransferOk, runner));
-<span class="fc" id="L326">            future.getResult().setRunner(runner);</span>
-<span class="fc" id="L327">            future.setSuccess();</span>
+<span class="nc" id="L328">            future.getResult().setRunner(runner);</span>
+<span class="nc" id="L329">            future.setSuccess();</span>
           } else {
             // Send a request of cancel
-<span class="fc" id="L330">            final ErrorCode code =</span>
-<span class="fc" id="L331">                sendStopOrCancel(LocalPacketFactory.CANCELPACKET);</span>
-<span class="fc" id="L332">            future.setResult(new R66Result(null, true, code, runner));</span>
-<span class="fc" id="L333">            future.getResult().setRunner(runner);</span>
-<span class="pc bpc" id="L334" title="1 of 3 branches missed.">            switch (code) {</span>
+<span class="nc" id="L332">            final ErrorCode code =</span>
+<span class="nc" id="L333">                sendStopOrCancel(LocalPacketFactory.CANCELPACKET);</span>
+<span class="nc" id="L334">            future.setResult(new R66Result(null, true, code, runner));</span>
+<span class="nc" id="L335">            future.getResult().setRunner(runner);</span>
+<span class="nc bnc" id="L336" title="All 3 branches missed.">            switch (code) {</span>
               case CompleteOk:
-<span class="fc" id="L336">                logger.info(&quot;Transfer cancel requested and done: {}&quot;, runner);</span>
-<span class="fc" id="L337">                future.setSuccess();</span>
-<span class="fc" id="L338">                break;</span>
+<span class="nc" id="L338">                logger.info(&quot;Transfer cancel requested and done: {}&quot;, runner);</span>
+<span class="nc" id="L339">                future.setSuccess();</span>
+<span class="nc" id="L340">                break;</span>
               case TransferOk:
-<span class="fc" id="L340">                logger</span>
-<span class="fc" id="L341">                    .info(&quot;Transfer cancel requested but already finished: {}&quot;,</span>
-                          runner);
-<span class="fc" id="L343">                future.setSuccess();</span>
-<span class="fc" id="L344">                break;</span>
+<span class="nc" id="L342">                logger.info(</span>
+                    &quot;Transfer cancel requested but already finished: {}&quot;,
+                    runner);
+<span class="nc" id="L345">                future.setSuccess();</span>
+<span class="nc" id="L346">                break;</span>
               default:
-<span class="nc" id="L346">                logger.info(&quot;Transfer cancel requested but internal error: {}&quot;,</span>
+<span class="nc" id="L348">                logger.info(&quot;Transfer cancel requested but internal error: {}&quot;,</span>
                             runner);
-<span class="nc" id="L348">                future.setFailure(new WaarpDatabaseException(</span>
+<span class="nc" id="L350">                future.setFailure(new WaarpDatabaseException(</span>
                     &quot;Transfer cancel requested but internal error&quot;));
                 break;
             }
-<span class="fc" id="L352">          }</span>
-<span class="nc bnc" id="L353" title="All 2 branches missed.">        } else if (stop) {</span>
+<span class="nc" id="L354">          }</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        } else if (stop) {</span>
           // Just stop the task
           // Send a request
-<span class="nc" id="L356">          final ErrorCode code =</span>
-<span class="nc" id="L357">              sendStopOrCancel(LocalPacketFactory.STOPPACKET);</span>
-<span class="nc" id="L358">          future.setResult(new R66Result(null, true, code, runner));</span>
-<span class="nc" id="L359">          future.getResult().setRunner(runner);</span>
-<span class="nc bnc" id="L360" title="All 3 branches missed.">          switch (code) {</span>
+<span class="nc" id="L358">          final ErrorCode code =</span>
+<span class="nc" id="L359">              sendStopOrCancel(LocalPacketFactory.STOPPACKET);</span>
+<span class="nc" id="L360">          future.setResult(new R66Result(null, true, code, runner));</span>
+<span class="nc" id="L361">          future.getResult().setRunner(runner);</span>
+<span class="nc bnc" id="L362" title="All 3 branches missed.">          switch (code) {</span>
             case CompleteOk:
-<span class="nc" id="L362">              logger.info(&quot;Transfer stop requested and done: {}&quot;, runner);</span>
-<span class="nc" id="L363">              future.setSuccess();</span>
-<span class="nc" id="L364">              break;</span>
+<span class="nc" id="L364">              logger.info(&quot;Transfer stop requested and done: {}&quot;, runner);</span>
+<span class="nc" id="L365">              future.setSuccess();</span>
+<span class="nc" id="L366">              break;</span>
             case TransferOk:
-<span class="nc" id="L366">              logger.info(&quot;Transfer stop requested but already finished: {}&quot;,</span>
+<span class="nc" id="L368">              logger.info(&quot;Transfer stop requested but already finished: {}&quot;,</span>
                           runner);
-<span class="nc" id="L368">              future.setSuccess();</span>
-<span class="nc" id="L369">              break;</span>
+<span class="nc" id="L370">              future.setSuccess();</span>
+<span class="nc" id="L371">              break;</span>
             default:
-<span class="nc" id="L371">              logger.info(&quot;Transfer stop requested but internal error: {}&quot;,</span>
+<span class="nc" id="L373">              logger.info(&quot;Transfer stop requested but internal error: {}&quot;,</span>
                           runner);
-<span class="nc" id="L373">              future.setFailure(new WaarpDatabaseException(</span>
+<span class="nc" id="L375">              future.setFailure(new WaarpDatabaseException(</span>
                   &quot;Transfer stop requested but internal error&quot;));
               break;
           }
-<span class="nc bnc" id="L377" title="All 2 branches missed.">        } else if (restart) {</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        } else if (restart) {</span>
           // Restart if already stopped and not finished
-<span class="nc" id="L379">          final ErrorCode code =</span>
-<span class="nc" id="L380">              sendValid(runner, LocalPacketFactory.VALIDPACKET);</span>
-<span class="nc" id="L381">          future.setResult(new R66Result(null, true, code, runner));</span>
-<span class="nc" id="L382">          future.getResult().setRunner(runner);</span>
-<span class="nc bnc" id="L383" title="All 7 branches missed.">          switch (code) {</span>
+<span class="nc" id="L381">          final ErrorCode code =</span>
+<span class="nc" id="L382">              sendValid(runner, LocalPacketFactory.VALIDPACKET);</span>
+<span class="nc" id="L383">          future.setResult(new R66Result(null, true, code, runner));</span>
+<span class="nc" id="L384">          future.getResult().setRunner(runner);</span>
+<span class="nc bnc" id="L385" title="All 7 branches missed.">          switch (code) {</span>
             case QueryStillRunning:
-<span class="nc" id="L385">              logger.info(</span>
+<span class="nc" id="L387">              logger.info(</span>
                   &quot;Transfer restart requested but already active and running: {}&quot;,
                   runner);
-<span class="nc" id="L388">              future.setSuccess();</span>
-<span class="nc" id="L389">              break;</span>
+<span class="nc" id="L390">              future.setSuccess();</span>
+<span class="nc" id="L391">              break;</span>
             case Running:
-<span class="nc" id="L391">              logger.info(&quot;Transfer restart requested but already running: {}&quot;,</span>
+<span class="nc" id="L393">              logger.info(&quot;Transfer restart requested but already running: {}&quot;,</span>
                           runner);
-<span class="nc" id="L393">              future.setSuccess();</span>
-<span class="nc" id="L394">              break;</span>
+<span class="nc" id="L395">              future.setSuccess();</span>
+<span class="nc" id="L396">              break;</span>
             case PreProcessingOk:
-<span class="nc" id="L396">              logger</span>
-<span class="nc" id="L397">                  .info(&quot;Transfer restart requested and restarted: {}&quot;, runner);</span>
-<span class="nc" id="L398">              future.setSuccess();</span>
-<span class="nc" id="L399">              break;</span>
+<span class="nc" id="L398">              logger.info(&quot;Transfer restart requested and restarted: {}&quot;,</span>
+                          runner);
+<span class="nc" id="L400">              future.setSuccess();</span>
+<span class="nc" id="L401">              break;</span>
             case CompleteOk:
-<span class="nc" id="L401">              logger.info(&quot;Transfer restart requested but already finished: {}&quot;,</span>
+<span class="nc" id="L403">              logger.info(&quot;Transfer restart requested but already finished: {}&quot;,</span>
                           runner);
-<span class="nc" id="L403">              future.setSuccess();</span>
-<span class="nc" id="L404">              break;</span>
+<span class="nc" id="L405">              future.setSuccess();</span>
+<span class="nc" id="L406">              break;</span>
             case RemoteError:
-<span class="nc" id="L406">              logger.info(&quot;Transfer restart requested but remote error: {}&quot;,</span>
+<span class="nc" id="L408">              logger.info(&quot;Transfer restart requested but remote error: {}&quot;,</span>
                           runner);
-<span class="nc" id="L408">              future.setSuccess();</span>
-<span class="nc" id="L409">              break;</span>
+<span class="nc" id="L410">              future.setSuccess();</span>
+<span class="nc" id="L411">              break;</span>
             case PassThroughMode:
-<span class="nc" id="L411">              logger.info(</span>
+<span class="nc" id="L413">              logger.info(</span>
                   &quot;Transfer not restarted since it is in PassThrough mode: {}&quot;,
                   runner);
-<span class="nc" id="L414">              future.setSuccess();</span>
-<span class="nc" id="L415">              break;</span>
+<span class="nc" id="L416">              future.setSuccess();</span>
+<span class="nc" id="L417">              break;</span>
             default:
-<span class="nc" id="L417">              logger.info(&quot;Transfer restart requested but internal error: {}&quot;,</span>
+<span class="nc" id="L419">              logger.info(&quot;Transfer restart requested but internal error: {}&quot;,</span>
                           runner);
-<span class="nc" id="L419">              future.setFailure(new WaarpDatabaseException(</span>
+<span class="nc" id="L421">              future.setFailure(new WaarpDatabaseException(</span>
                   &quot;Transfer restart requested but internal error&quot;));
               break;
           }
-<span class="nc" id="L423">        }</span>
+<span class="nc" id="L425">        }</span>
       } else {
         // Only request
-<span class="pc bpc" id="L426" title="1 of 2 branches missed.">        if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L427">          logger.info(&quot;Transfer information: {}    {}&quot;, future.isDone(),</span>
-<span class="nc" id="L428">                      runner.toShortString());</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">        if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L429">          logger.info(&quot;Transfer information: {}    {}&quot;, future.isDone(),</span>
+<span class="nc" id="L430">                      runner.toShortString());</span>
         }
-<span class="fc" id="L430">        future.setResult(</span>
-<span class="fc" id="L431">            new R66Result(null, true, runner.getErrorInfo(), runner));</span>
-<span class="fc" id="L432">        future.setSuccess();</span>
+<span class="nc" id="L432">        future.setResult(</span>
+<span class="nc" id="L433">            new R66Result(null, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L434">        future.setSuccess();</span>
       }
     } finally {
-<span class="pc bpc" id="L435" title="1 of 2 branches missed.">      if (!future.isDone()) {</span>
-<span class="nc bnc" id="L436" title="All 2 branches missed.">        if (runner != null) {</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">      if (!future.isDone()) {</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">        if (runner != null) {</span>
           // Default set to success
-<span class="nc" id="L438">          future.setResult(</span>
-<span class="nc" id="L439">              new R66Result(null, true, runner.getErrorInfo(), runner));</span>
-<span class="nc" id="L440">          future.setSuccess();</span>
+<span class="nc" id="L440">          future.setResult(</span>
+<span class="nc" id="L441">              new R66Result(null, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L442">          future.setSuccess();</span>
         } else {
-<span class="nc" id="L442">          future.setFailure(new WaarpDatabaseException(</span>
+<span class="nc" id="L444">          future.setFailure(new WaarpDatabaseException(</span>
               &quot;Transfer requested but internal error&quot;));
         }
       }
     }
-<span class="fc" id="L447">  }</span>
+<span class="nc" id="L449">  }</span>
 
   /**
    * Set the runner to DONE
@@ -452,358 +454,357 @@ public class RequestTransfer implements Runnable {
    * @param runner
    */
   private void setDone(final DbTaskRunner runner) {
-<span class="pc bpc" id="L455" title="1 of 2 branches missed.">    if (runner.getUpdatedInfo() != UpdatedInfo.DONE) {</span>
-<span class="nc" id="L456">      runner.changeUpdatedInfo(UpdatedInfo.DONE);</span>
-<span class="nc" id="L457">      runner.forceSaveStatus();</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">    if (runner.getUpdatedInfo() != UpdatedInfo.DONE) {</span>
+<span class="nc" id="L458">      runner.changeUpdatedInfo(UpdatedInfo.DONE);</span>
+<span class="nc" id="L459">      runner.forceSaveStatus();</span>
     }
-<span class="fc" id="L459">  }</span>
+<span class="nc" id="L461">  }</span>
 
   private ErrorCode sendValid(final DbTaskRunner runner, final byte code) {
     DbHostAuth host;
-<span class="nc" id="L463">    host = R66Auth.getServerAuth(requester);</span>
-<span class="nc bnc" id="L464" title="All 2 branches missed.">    if (host == null) {</span>
-<span class="nc" id="L465">      logger.error(</span>
-<span class="nc" id="L466">          Messages.getString(&quot;RequestTransfer.39&quot;) + requester); //$NON-NLS-1$</span>
-<span class="nc" id="L467">      final OpenR66Exception e =</span>
+<span class="nc" id="L465">    host = R66Auth.getServerAuth(requester);</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">    if (host == null) {</span>
+<span class="nc" id="L467">      logger.error(</span>
+<span class="nc" id="L468">          Messages.getString(&quot;RequestTransfer.39&quot;) + requester); //$NON-NLS-1$</span>
+<span class="nc" id="L469">      final OpenR66Exception e =</span>
           new OpenR66RunnerErrorException(&quot;Requester host cannot be found&quot;);
-<span class="nc" id="L469">      future.setResult(</span>
+<span class="nc" id="L471">      future.setResult(</span>
           new R66Result(e, null, true, ErrorCode.TransferError, null));
-<span class="nc" id="L471">      future.setFailure(e);</span>
-<span class="nc" id="L472">      return ErrorCode.Internal;</span>
+<span class="nc" id="L473">      future.setFailure(e);</span>
+<span class="nc" id="L474">      return ErrorCode.Internal;</span>
     }
     // check if requester is &quot;client&quot; so no connect from him but direct action
-<span class="nc" id="L475">    logger.debug(&quot;Requester Host isClient: {}&quot;, host.isClient());</span>
-<span class="nc bnc" id="L476" title="All 2 branches missed.">    if (host.isClient()) {</span>
-<span class="nc bnc" id="L477" title="All 2 branches missed.">      if (code == LocalPacketFactory.VALIDPACKET) {</span>
-<span class="nc bnc" id="L478" title="All 2 branches missed.">        if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L479">          logger.info(&quot;{} {}&quot;, Messages.getString(&quot;RequestTransfer.42&quot;),</span>
-<span class="nc" id="L480">                      runner.toShortString());//$NON-NLS-1$</span>
+<span class="nc" id="L477">    logger.debug(&quot;Requester Host isClient: {}&quot;, host.isClient());</span>
+<span class="nc bnc" id="L478" title="All 2 branches missed.">    if (host.isClient()) {</span>
+<span class="nc bnc" id="L479" title="All 2 branches missed.">      if (code == LocalPacketFactory.VALIDPACKET) {</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">        if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L481">          logger.info(&quot;{} {}&quot;, Messages.getString(&quot;RequestTransfer.42&quot;),</span>
+<span class="nc" id="L482">                      runner.toShortString());//$NON-NLS-1$</span>
         }
-<span class="nc" id="L482">        final R66Future transfer = new R66Future(true);</span>
-<span class="nc" id="L483">        final DirectTransfer transaction =</span>
-<span class="nc" id="L484">            new DirectTransfer(transfer, runner.getRequested(),</span>
-<span class="nc" id="L485">                               runner.getOriginalFilename(), runner.getRuleId(),</span>
-<span class="nc" id="L486">                               runner.getFileInformation(), false,</span>
-<span class="nc" id="L487">                               runner.getBlocksize(), runner.getSpecialId(),</span>
+<span class="nc" id="L484">        final R66Future transfer = new R66Future(true);</span>
+<span class="nc" id="L485">        final DirectTransfer transaction =</span>
+<span class="nc" id="L486">            new DirectTransfer(transfer, runner.getRequested(),</span>
+<span class="nc" id="L487">                               runner.getOriginalFilename(), runner.getRuleId(),</span>
+<span class="nc" id="L488">                               runner.getFileInformation(), false,</span>
+<span class="nc" id="L489">                               runner.getBlocksize(), runner.getSpecialId(),</span>
                                networkTransaction);
-<span class="nc" id="L489">        transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="nc" id="L490">        transaction.run();</span>
-<span class="nc" id="L491">        transfer.awaitOrInterruptible();</span>
-<span class="nc" id="L492">        logger.info(&quot;Request done with {}&quot;,</span>
-<span class="nc bnc" id="L493" title="All 2 branches missed.">                    (transfer.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
-<span class="nc bnc" id="L494" title="All 2 branches missed.">        if (transfer.isSuccess()) {</span>
-<span class="nc" id="L495">          future.setResult(</span>
+<span class="nc" id="L491">        transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="nc" id="L492">        transaction.run();</span>
+<span class="nc" id="L493">        transfer.awaitOrInterruptible();</span>
+<span class="nc" id="L494">        logger.info(&quot;Request done with {}&quot;,</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">                    (transfer.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        if (transfer.isSuccess()) {</span>
+<span class="nc" id="L497">          future.setResult(</span>
               new R66Result(null, true, ErrorCode.PreProcessingOk, runner));
-<span class="nc" id="L497">          future.getResult().setRunner(runner);</span>
-<span class="nc" id="L498">          future.setSuccess();</span>
-<span class="nc" id="L499">          return ErrorCode.PreProcessingOk;</span>
+<span class="nc" id="L499">          future.getResult().setRunner(runner);</span>
+<span class="nc" id="L500">          future.setSuccess();</span>
+<span class="nc" id="L501">          return ErrorCode.PreProcessingOk;</span>
         } else {
-<span class="nc" id="L501">          final R66Result result = transfer.getResult();</span>
-<span class="nc" id="L502">          ErrorCode error = ErrorCode.Internal;</span>
-<span class="nc bnc" id="L503" title="All 2 branches missed.">          if (result != null) {</span>
-<span class="nc" id="L504">            error = result.getCode();</span>
+<span class="nc" id="L503">          final R66Result result = transfer.getResult();</span>
+<span class="nc" id="L504">          ErrorCode error = ErrorCode.Internal;</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">          if (result != null) {</span>
+<span class="nc" id="L506">            error = result.getCode();</span>
           }
-<span class="nc" id="L506">          final OpenR66Exception e = new OpenR66RunnerErrorException(</span>
-<span class="nc" id="L507">              &quot;Transfer in direct mode failed: &quot; + error.getMesg());</span>
-<span class="nc" id="L508">          future.setFailure(e);</span>
-<span class="nc" id="L509">          return error;</span>
+<span class="nc" id="L508">          final OpenR66Exception e = new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L509">              &quot;Transfer in direct mode failed: &quot; + error.getMesg());</span>
+<span class="nc" id="L510">          future.setFailure(e);</span>
+<span class="nc" id="L511">          return error;</span>
         }
       } else {
         // get remote host instead
-<span class="nc" id="L513">        host = R66Auth.getServerAuth(requested);</span>
-<span class="nc bnc" id="L514" title="All 2 branches missed.">        if (host == null) {</span>
-<span class="nc" id="L515">          logger.error(Messages.getString(&quot;Message.HostNotFound&quot;) +</span>
+<span class="nc" id="L515">        host = R66Auth.getServerAuth(requested);</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">        if (host == null) {</span>
+<span class="nc" id="L517">          logger.error(Messages.getString(&quot;Message.HostNotFound&quot;) +</span>
                        requested); //$NON-NLS-1$
-<span class="nc" id="L517">          final OpenR66Exception e =</span>
+<span class="nc" id="L519">          final OpenR66Exception e =</span>
               new OpenR66RunnerErrorException(&quot;Requested host cannot be found&quot;);
-<span class="nc" id="L519">          future.setResult(</span>
+<span class="nc" id="L521">          future.setResult(</span>
               new R66Result(e, null, true, ErrorCode.TransferError, null));
-<span class="nc" id="L521">          future.setFailure(e);</span>
-<span class="nc" id="L522">          return ErrorCode.ConnectionImpossible;</span>
+<span class="nc" id="L523">          future.setFailure(e);</span>
+<span class="nc" id="L524">          return ErrorCode.ConnectionImpossible;</span>
         }
       }
     }
 
-<span class="nc" id="L527">    final LocalChannelReference localChannelReference =</span>
-<span class="nc" id="L528">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
-<span class="nc bnc" id="L529" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L530">      return ErrorCode.ConnectionImpossible;</span>
+<span class="nc" id="L529">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L530">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
+<span class="nc bnc" id="L531" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L532">      return ErrorCode.ConnectionImpossible;</span>
     }
-<span class="nc" id="L532">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
-<span class="nc" id="L533">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
+<span class="nc" id="L534">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
+<span class="nc" id="L535">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
     final AbstractLocalPacket packet;
-<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (useJson) {</span>
-<span class="nc" id="L536">      final RestartTransferJsonPacket node = new RestartTransferJsonPacket();</span>
-<span class="nc" id="L537">      node.setComment(REQUEST_ON_TRANSFER);</span>
-<span class="nc" id="L538">      node.setRequested(requested);</span>
-<span class="nc" id="L539">      node.setRequester(requester);</span>
-<span class="nc" id="L540">      node.setSpecialid(specialId);</span>
-<span class="nc bnc" id="L541" title="All 4 branches missed.">      if (restarttime != null &amp;&amp; code == LocalPacketFactory.VALIDPACKET) {</span>
+<span class="nc bnc" id="L537" title="All 2 branches missed.">    if (useJson) {</span>
+<span class="nc" id="L538">      final RestartTransferJsonPacket node = new RestartTransferJsonPacket();</span>
+<span class="nc" id="L539">      node.setComment(REQUEST_ON_TRANSFER);</span>
+<span class="nc" id="L540">      node.setRequested(requested);</span>
+<span class="nc" id="L541">      node.setRequester(requester);</span>
+<span class="nc" id="L542">      node.setSpecialid(specialId);</span>
+<span class="nc bnc" id="L543" title="All 4 branches missed.">      if (restarttime != null &amp;&amp; code == LocalPacketFactory.VALIDPACKET) {</span>
         // restart time set
-<span class="nc" id="L543">        logger.debug(&quot;Restart with time: {}&quot;, restarttime);</span>
+<span class="nc" id="L545">        logger.debug(&quot;Restart with time: {}&quot;, restarttime);</span>
         // time to reschedule in yyyyMMddHHmmss format
-<span class="nc" id="L545">        final SimpleDateFormat dateFormat =</span>
+<span class="nc" id="L547">        final SimpleDateFormat dateFormat =</span>
             new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
         try {
-<span class="nc" id="L548">          final Date date = dateFormat.parse(restarttime);</span>
-<span class="nc" id="L549">          node.setRestarttime(date);</span>
-<span class="nc" id="L550">        } catch (final ParseException ignored) {</span>
+<span class="nc" id="L550">          final Date date = dateFormat.parse(restarttime);</span>
+<span class="nc" id="L551">          node.setRestarttime(date);</span>
+<span class="nc" id="L552">        } catch (final ParseException ignored) {</span>
           // nothing
-<span class="nc" id="L552">        }</span>
+<span class="nc" id="L554">        }</span>
       }
-<span class="nc" id="L554">      packet = new JsonCommandPacket(node, code);</span>
-<span class="nc" id="L555">    } else {</span>
-<span class="nc bnc" id="L556" title="All 4 branches missed.">      if (restarttime != null &amp;&amp; code == LocalPacketFactory.VALIDPACKET) {</span>
+<span class="nc" id="L556">      packet = new JsonCommandPacket(node, code);</span>
+<span class="nc" id="L557">    } else {</span>
+<span class="nc bnc" id="L558" title="All 4 branches missed.">      if (restarttime != null &amp;&amp; code == LocalPacketFactory.VALIDPACKET) {</span>
         // restart time set
-<span class="nc" id="L558">        logger.debug(&quot;Restart with time: {}&quot;, restarttime);</span>
-<span class="nc" id="L559">        packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
+<span class="nc" id="L560">        logger.debug(&quot;Restart with time: {}&quot;, restarttime);</span>
+<span class="nc" id="L561">        packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
                                  requested + ' ' + requester + ' ' + specialId +
                                  ' ' + restarttime, code);
       } else {
-<span class="nc" id="L563">        packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
+<span class="nc" id="L565">        packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
                                  requested + ' ' + requester + ' ' + specialId,
                                  code);
       }
     }
-<span class="nc" id="L568">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
-<span class="nc" id="L569">    if (AbstractTransfer</span>
-<span class="nc bnc" id="L570" title="All 2 branches missed.">        .sendValidPacket(host, localChannelReference, packet, future)) {</span>
-<span class="nc" id="L571">      return ErrorCode.Internal;</span>
+<span class="nc" id="L570">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">    if (AbstractTransfer.sendValidPacket(host, localChannelReference, packet,</span>
+                                         future)) {
+<span class="nc" id="L573">      return ErrorCode.Internal;</span>
     }
 
-<span class="nc" id="L574">    logger</span>
-<span class="nc bnc" id="L575" title="All 2 branches missed.">        .info(&quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
-<span class="nc" id="L576">    final R66Result result = future.getResult();</span>
-<span class="nc bnc" id="L577" title="All 2 branches missed.">    if (result != null) {</span>
-<span class="nc" id="L578">      return result.getCode();</span>
+<span class="nc" id="L576">    logger.info(</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L578">    final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L579" title="All 2 branches missed.">    if (result != null) {</span>
+<span class="nc" id="L580">      return result.getCode();</span>
     }
-<span class="nc" id="L580">    return ErrorCode.Internal;</span>
+<span class="nc" id="L582">    return ErrorCode.Internal;</span>
   }
 
   private ErrorCode sendStopOrCancel(final byte code) {
     final DbHostAuth host;
-<span class="fc" id="L585">    host = R66Auth.getServerAuth(requester);</span>
-<span class="pc bpc" id="L586" title="1 of 2 branches missed.">    if (host == null) {</span>
-<span class="nc" id="L587">      logger.error(</span>
-<span class="nc" id="L588">          Messages.getString(&quot;RequestTransfer.39&quot;) + requester); //$NON-NLS-1$</span>
-<span class="nc" id="L589">      final OpenR66Exception e =</span>
+<span class="nc" id="L587">    host = R66Auth.getServerAuth(requester);</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">    if (host == null) {</span>
+<span class="nc" id="L589">      logger.error(</span>
+<span class="nc" id="L590">          Messages.getString(&quot;RequestTransfer.39&quot;) + requester); //$NON-NLS-1$</span>
+<span class="nc" id="L591">      final OpenR66Exception e =</span>
           new OpenR66RunnerErrorException(&quot;Requester host cannot be found&quot;);
-<span class="nc" id="L591">      future.setResult(</span>
+<span class="nc" id="L593">      future.setResult(</span>
           new R66Result(e, null, true, ErrorCode.TransferError, null));
-<span class="nc" id="L593">      future.setFailure(e);</span>
-<span class="nc" id="L594">      return ErrorCode.Internal;</span>
+<span class="nc" id="L595">      future.setFailure(e);</span>
+<span class="nc" id="L596">      return ErrorCode.Internal;</span>
     }
 
-<span class="fc" id="L597">    final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L598">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
-<span class="pc bpc" id="L599" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L600">      return ErrorCode.ConnectionImpossible;</span>
+<span class="nc" id="L599">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L600">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
+<span class="nc bnc" id="L601" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L602">      return ErrorCode.ConnectionImpossible;</span>
     }
 
-<span class="fc" id="L603">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
-<span class="fc" id="L604">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
+<span class="nc" id="L605">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
+<span class="nc" id="L606">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
     final AbstractLocalPacket packet;
-<span class="pc bpc" id="L606" title="1 of 2 branches missed.">    if (useJson) {</span>
-<span class="fc" id="L607">      final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();</span>
-<span class="fc" id="L608">      node.setComment(REQUEST_ON_TRANSFER);</span>
-<span class="fc" id="L609">      node.setRequested(requested);</span>
-<span class="fc" id="L610">      node.setRequester(requester);</span>
-<span class="fc" id="L611">      node.setSpecialid(specialId);</span>
-<span class="fc" id="L612">      packet = new JsonCommandPacket(node, code);</span>
-<span class="fc" id="L613">    } else {</span>
-<span class="nc" id="L614">      packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
+<span class="nc bnc" id="L608" title="All 2 branches missed.">    if (useJson) {</span>
+<span class="nc" id="L609">      final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();</span>
+<span class="nc" id="L610">      node.setComment(REQUEST_ON_TRANSFER);</span>
+<span class="nc" id="L611">      node.setRequested(requested);</span>
+<span class="nc" id="L612">      node.setRequester(requester);</span>
+<span class="nc" id="L613">      node.setSpecialid(specialId);</span>
+<span class="nc" id="L614">      packet = new JsonCommandPacket(node, code);</span>
+<span class="nc" id="L615">    } else {</span>
+<span class="nc" id="L616">      packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
                                requested + ' ' + requester + ' ' + specialId,
                                code);
     }
-<span class="fc" id="L618">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
-<span class="fc" id="L619">    if (!AbstractTransfer</span>
-<span class="pc bpc" id="L620" title="1 of 2 branches missed.">        .sendValidPacket(host, localChannelReference, packet, future)) {</span>
-<span class="nc" id="L621">      return ErrorCode.Internal;</span>
+<span class="nc" id="L620">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">    if (!AbstractTransfer.sendValidPacket(host, localChannelReference, packet,</span>
+                                          future)) {
+<span class="nc" id="L623">      return ErrorCode.Internal;</span>
     }
 
-<span class="fc" id="L624">    logger</span>
-<span class="pc bpc" id="L625" title="1 of 2 branches missed.">        .info(&quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
-<span class="fc" id="L626">    final R66Result result = future.getResult();</span>
-<span class="pc bpc" id="L627" title="1 of 2 branches missed.">    if (result != null) {</span>
-<span class="fc" id="L628">      return result.getCode();</span>
+<span class="nc" id="L626">    logger.info(</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L628">    final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">    if (result != null) {</span>
+<span class="nc" id="L630">      return result.getCode();</span>
     }
-<span class="nc" id="L630">    return ErrorCode.Internal;</span>
+<span class="nc" id="L632">    return ErrorCode.Internal;</span>
   }
 
   /**
    * @param args
    */
   public static void main(final String[] args) {
-<span class="nc" id="L637">    WaarpLoggerFactory</span>
-<span class="nc" id="L638">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L639" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L640">      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
+<span class="nc" id="L639">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L641" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L642">      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);</span>
     }
-<span class="nc bnc" id="L642" title="All 2 branches missed.">    if (!getParams(args)) {</span>
-<span class="nc" id="L643">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L644" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L645">        SysErrLogger.FAKE_LOGGER.sysout(</span>
-<span class="nc" id="L646">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L644" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L645">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L646" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L647">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L648">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
       }
-<span class="nc bnc" id="L648" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L649">        admin.close();</span>
+<span class="nc bnc" id="L650" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L651">        admin.close();</span>
       }
-<span class="nc bnc" id="L651" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L652">        return;</span>
-      }
-<span class="nc" id="L654">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L655">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L653">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L654">      return;</span>
     }
-<span class="nc" id="L657">    int value = 99;</span>
+<span class="nc" id="L656">    int value = 99;</span>
     try {
-<span class="nc" id="L659">      Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L660">      final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
-<span class="nc" id="L661">      final R66Future result = new R66Future(true);</span>
-<span class="nc" id="L662">      final RequestTransfer requestTransfer =</span>
+<span class="nc" id="L658">      Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L659">      final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+<span class="nc" id="L660">      final R66Future result = new R66Future(true);</span>
+<span class="nc" id="L661">      final RequestTransfer requestTransfer =</span>
           new RequestTransfer(result, sspecialId, srequested, srequester,
                               scancel, sstop, srestart, srestarttime,
                               networkTransaction);
-<span class="nc" id="L666">      requestTransfer.normalInfoAsWarn = snormalInfoAsWarn;</span>
-<span class="nc" id="L667">      requestTransfer.run();</span>
-<span class="nc" id="L668">      result.awaitOrInterruptible();</span>
-<span class="nc" id="L669">      final R66Result finalValue = result.getResult();</span>
-<span class="nc" id="L670">      final OutputFormat outputFormat =</span>
-<span class="nc" id="L671">          new OutputFormat(RequestTransfer.class.getSimpleName(), args);</span>
-<span class="nc bnc" id="L672" title="All 6 branches missed.">      if (scancel || sstop || srestart) {</span>
-<span class="nc bnc" id="L673" title="All 2 branches missed.">        if (scancel) {</span>
-<span class="nc" id="L674">          value = cancel(result, requestTransfer, finalValue, outputFormat);</span>
-<span class="nc bnc" id="L675" title="All 2 branches missed.">        } else if (sstop) {</span>
-<span class="nc" id="L676">          value = stop(result, requestTransfer, finalValue, outputFormat);</span>
-<span class="nc bnc" id="L677" title="All 2 branches missed.">        } else if (srestart) {</span>
-<span class="nc" id="L678">          value = restart(result, requestTransfer, finalValue, outputFormat);</span>
+<span class="nc" id="L665">      requestTransfer.normalInfoAsWarn = snormalInfoAsWarn;</span>
+<span class="nc" id="L666">      requestTransfer.run();</span>
+<span class="nc" id="L667">      result.awaitOrInterruptible();</span>
+<span class="nc" id="L668">      final R66Result finalValue = result.getResult();</span>
+<span class="nc" id="L669">      final OutputFormat outputFormat =</span>
+<span class="nc" id="L670">          new OutputFormat(RequestTransfer.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L671" title="All 6 branches missed.">      if (scancel || sstop || srestart) {</span>
+<span class="nc bnc" id="L672" title="All 2 branches missed.">        if (scancel) {</span>
+<span class="nc" id="L673">          value = cancel(result, requestTransfer, finalValue, outputFormat);</span>
+<span class="nc bnc" id="L674" title="All 2 branches missed.">        } else if (sstop) {</span>
+<span class="nc" id="L675">          value = stop(result, requestTransfer, finalValue, outputFormat);</span>
+<span class="nc bnc" id="L676" title="All 2 branches missed.">        } else if (srestart) {</span>
+<span class="nc" id="L677">          value = restart(result, requestTransfer, finalValue, outputFormat);</span>
         }
       } else {
-<span class="nc" id="L681">        value = 0;</span>
+<span class="nc" id="L680">        value = 0;</span>
         // Only request
-<span class="nc" id="L683">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L684">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L685">            .getString(&quot;RequestTransfer.83&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L686">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc bnc" id="L687" title="All 2 branches missed.">        if (result.isDone()) {</span>
-<span class="nc" id="L688">          outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L682">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L683">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.83&quot;)); //$NON-NLS-1$
+<span class="nc" id="L685">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc bnc" id="L686" title="All 2 branches missed.">        if (result.isDone()) {</span>
+<span class="nc" id="L687">          outputFormat.setValueString(result.getRunner().getJson());</span>
         }
-<span class="nc bnc" id="L690" title="All 2 branches missed.">        if (requestTransfer.normalInfoAsWarn) {</span>
-<span class="nc" id="L691">          logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L692" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L693">          logger.info(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">        if (requestTransfer.normalInfoAsWarn) {</span>
+<span class="nc" id="L690">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L691" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L692">          logger.info(outputFormat.loggerOut());</span>
         }
-<span class="nc bnc" id="L695" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L696">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L694" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L695">          outputFormat.sysout();</span>
         }
       }
     } finally {
-<span class="nc bnc" id="L700" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L701">        admin.close();</span>
+<span class="nc bnc" id="L699" title="All 2 branches missed.">      if (!WaarpSystemUtil.isJunit()) {</span>
+<span class="nc bnc" id="L700" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L701">          admin.close();</span>
+        }
+<span class="nc" id="L703">        WaarpSystemUtil.systemExit(value);</span>
       }
-<span class="nc" id="L703">      System.exit(value);//NOSONAR</span>
     }
-<span class="nc" id="L705">  }</span>
+<span class="nc" id="L706">  }</span>
 
   private static int restart(final R66Future result,
                              final RequestTransfer requestTransfer,
                              final R66Result finalValue,
                              final OutputFormat outputFormat) {
     final int value;
-<span class="nc bnc" id="L712" title="All 7 branches missed.">    switch (finalValue.getCode()) {</span>
+<span class="nc bnc" id="L713" title="All 7 branches missed.">    switch (finalValue.getCode()) {</span>
       case QueryStillRunning:
-<span class="nc" id="L714">        value = 0;</span>
-<span class="nc" id="L715">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L716">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L717">            .getString(&quot;RequestTransfer.76&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L718">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L719">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L720">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L721" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L722">          outputFormat.sysout();</span>
+<span class="nc" id="L715">        value = 0;</span>
+<span class="nc" id="L716">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L717">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.76&quot;)); //$NON-NLS-1$
+<span class="nc" id="L719">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L720">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L721">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L722" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L723">          outputFormat.sysout();</span>
         }
         break;
       case Running:
-<span class="nc" id="L726">        value = 0;</span>
-<span class="nc" id="L727">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L728">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L729">            .getString(&quot;RequestTransfer.77&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L730">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L731">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L732">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L733" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L734">          outputFormat.sysout();</span>
+<span class="nc" id="L727">        value = 0;</span>
+<span class="nc" id="L728">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L729">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.77&quot;)); //$NON-NLS-1$
+<span class="nc" id="L731">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L732">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L733">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L734" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L735">          outputFormat.sysout();</span>
         }
         break;
       case PreProcessingOk:
-<span class="nc" id="L738">        value = 0;</span>
-<span class="nc" id="L739">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L740">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L741">            .getString(&quot;RequestTransfer.78&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L742">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L743">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc bnc" id="L744" title="All 2 branches missed.">        if (requestTransfer.normalInfoAsWarn) {</span>
-<span class="nc" id="L745">          logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L746" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L747">          logger.info(outputFormat.loggerOut());</span>
+<span class="nc" id="L739">        value = 0;</span>
+<span class="nc" id="L740">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L741">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.78&quot;)); //$NON-NLS-1$
+<span class="nc" id="L743">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L744">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc bnc" id="L745" title="All 2 branches missed.">        if (requestTransfer.normalInfoAsWarn) {</span>
+<span class="nc" id="L746">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L747" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L748">          logger.info(outputFormat.loggerOut());</span>
         }
-<span class="nc bnc" id="L749" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L750">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L750" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L751">          outputFormat.sysout();</span>
         }
         break;
       case CompleteOk:
-<span class="nc" id="L754">        value = 4;</span>
-<span class="nc" id="L755">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L756">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L757">            .getString(&quot;RequestTransfer.79&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L758">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L759">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L760">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L761" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L762">          outputFormat.sysout();</span>
+<span class="nc" id="L755">        value = 4;</span>
+<span class="nc" id="L756">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L757">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.79&quot;)); //$NON-NLS-1$
+<span class="nc" id="L759">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L760">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L761">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L762" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L763">          outputFormat.sysout();</span>
         }
         break;
       case RemoteError:
-<span class="nc" id="L766">        value = 5;</span>
-<span class="nc" id="L767">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L768">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L769">            .getString(&quot;RequestTransfer.80&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L770">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L771">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L772">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L773" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L774">          outputFormat.sysout();</span>
+<span class="nc" id="L767">        value = 5;</span>
+<span class="nc" id="L768">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L769">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.80&quot;)); //$NON-NLS-1$
+<span class="nc" id="L771">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L772">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L773">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L774" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L775">          outputFormat.sysout();</span>
         }
         break;
       case PassThroughMode:
-<span class="nc" id="L778">        value = 6;</span>
-<span class="nc" id="L779">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L780">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L781">            .getString(&quot;RequestTransfer.81&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L782">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L783">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L784">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L785" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L786">          outputFormat.sysout();</span>
+<span class="nc" id="L779">        value = 6;</span>
+<span class="nc" id="L780">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L781">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.81&quot;)); //$NON-NLS-1$
+<span class="nc" id="L783">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L784">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L785">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L786" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L787">          outputFormat.sysout();</span>
         }
         break;
       default:
-<span class="nc" id="L790">        value = 3;</span>
-<span class="nc" id="L791">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L792">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L793">            .getString(&quot;RequestTransfer.82&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L794">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L795">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc bnc" id="L796" title="All 2 branches missed.">        if (result.getCause() != null) {</span>
-<span class="nc" id="L797">          outputFormat</span>
-<span class="nc" id="L798">              .setValue(FIELDS.error.name(), result.getCause().getMessage());</span>
+<span class="nc" id="L791">        value = 3;</span>
+<span class="nc" id="L792">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L793">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.82&quot;)); //$NON-NLS-1$
+<span class="nc" id="L795">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L796">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc bnc" id="L797" title="All 2 branches missed.">        if (result.getCause() != null) {</span>
+<span class="nc" id="L798">          outputFormat.setValue(FIELDS.error.name(),</span>
+<span class="nc" id="L799">                                result.getCause().getMessage());</span>
         }
-<span class="nc" id="L800">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L801" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L802">          outputFormat.sysout();</span>
+<span class="nc" id="L801">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L802" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L803">          outputFormat.sysout();</span>
         }
         break;
     }
-<span class="nc" id="L806">    return value;</span>
+<span class="nc" id="L807">    return value;</span>
   }
 
   private static int stop(final R66Future result,
@@ -811,53 +812,53 @@ public class RequestTransfer implements Runnable {
                           final R66Result finalValue,
                           final OutputFormat outputFormat) {
     final int value;
-<span class="nc bnc" id="L814" title="All 3 branches missed.">    switch (finalValue.getCode()) {</span>
+<span class="nc bnc" id="L815" title="All 3 branches missed.">    switch (finalValue.getCode()) {</span>
       case CompleteOk:
-<span class="nc" id="L816">        value = 0;</span>
-<span class="nc" id="L817">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L818">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L819">            .getString(&quot;RequestTransfer.73&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L820">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L821">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc bnc" id="L822" title="All 2 branches missed.">        if (requestTransfer.normalInfoAsWarn) {</span>
-<span class="nc" id="L823">          logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L824" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L825">          logger.info(outputFormat.loggerOut());</span>
+<span class="nc" id="L817">        value = 0;</span>
+<span class="nc" id="L818">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L819">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.73&quot;)); //$NON-NLS-1$
+<span class="nc" id="L821">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L822">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc bnc" id="L823" title="All 2 branches missed.">        if (requestTransfer.normalInfoAsWarn) {</span>
+<span class="nc" id="L824">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L825" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L826">          logger.info(outputFormat.loggerOut());</span>
         }
-<span class="nc bnc" id="L827" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L828">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L828" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L829">          outputFormat.sysout();</span>
         }
         break;
       case TransferOk:
-<span class="nc" id="L832">        value = 0;</span>
-<span class="nc" id="L833">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L834">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L835">            .getString(&quot;RequestTransfer.74&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L836">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L837">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L838">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L839" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L840">          outputFormat.sysout();</span>
+<span class="nc" id="L833">        value = 0;</span>
+<span class="nc" id="L834">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L835">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.74&quot;)); //$NON-NLS-1$
+<span class="nc" id="L837">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L838">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L839">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L840" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L841">          outputFormat.sysout();</span>
         }
         break;
       default:
-<span class="nc" id="L844">        value = 3;</span>
-<span class="nc" id="L845">        outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L846">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L847">            .getString(&quot;RequestTransfer.75&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L848">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L849">        outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc bnc" id="L850" title="All 2 branches missed.">        if (result.getCause() != null) {</span>
-<span class="nc" id="L851">          outputFormat</span>
-<span class="nc" id="L852">              .setValue(FIELDS.error.name(), result.getCause().getMessage());</span>
+<span class="nc" id="L845">        value = 3;</span>
+<span class="nc" id="L846">        outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L847">        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+            &quot;RequestTransfer.75&quot;)); //$NON-NLS-1$
+<span class="nc" id="L849">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L850">        outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc bnc" id="L851" title="All 2 branches missed.">        if (result.getCause() != null) {</span>
+<span class="nc" id="L852">          outputFormat.setValue(FIELDS.error.name(),</span>
+<span class="nc" id="L853">                                result.getCause().getMessage());</span>
         }
-<span class="nc" id="L854">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L855" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L856">          outputFormat.sysout();</span>
+<span class="nc" id="L855">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L856" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L857">          outputFormat.sysout();</span>
         }
         break;
     }
-<span class="nc" id="L860">    return value;</span>
+<span class="nc" id="L861">    return value;</span>
   }
 
   private static int cancel(final R66Future result,
@@ -865,67 +866,67 @@ public class RequestTransfer implements Runnable {
                             final R66Result finalValue,
                             final OutputFormat outputFormat) {
     final int value;
-<span class="nc bnc" id="L868" title="All 2 branches missed.">    if (result.isSuccess()) {</span>
-<span class="nc" id="L869">      value = 0;</span>
-<span class="nc" id="L870">      outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L871">      outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L872">          .getString(&quot;RequestTransfer.21&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L873">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L874">      outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc bnc" id="L875" title="All 2 branches missed.">      if (requestTransfer.normalInfoAsWarn) {</span>
-<span class="nc" id="L876">        logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L877" title="All 2 branches missed.">      } else if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L878">        logger.info(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L869" title="All 2 branches missed.">    if (result.isSuccess()) {</span>
+<span class="nc" id="L870">      value = 0;</span>
+<span class="nc" id="L871">      outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L872">      outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+          &quot;RequestTransfer.21&quot;)); //$NON-NLS-1$
+<span class="nc" id="L874">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L875">      outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc bnc" id="L876" title="All 2 branches missed.">      if (requestTransfer.normalInfoAsWarn) {</span>
+<span class="nc" id="L877">        logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L878" title="All 2 branches missed.">      } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L879">        logger.info(outputFormat.loggerOut());</span>
       }
-<span class="nc bnc" id="L880" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L881">        outputFormat.sysout();</span>
+<span class="nc bnc" id="L881" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L882">        outputFormat.sysout();</span>
       }
     } else {
-<span class="nc bnc" id="L884" title="All 3 branches missed.">      switch (finalValue.getCode()) {</span>
+<span class="nc bnc" id="L885" title="All 3 branches missed.">      switch (finalValue.getCode()) {</span>
         case CompleteOk:
-<span class="nc" id="L886">          value = 0;</span>
-<span class="nc" id="L887">          outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L888">          outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L889">              .getString(&quot;RequestTransfer.70&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L890">          outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L891">          outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L892">          logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L893" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L894">            outputFormat.sysout();</span>
+<span class="nc" id="L887">          value = 0;</span>
+<span class="nc" id="L888">          outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L889">          outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+              &quot;RequestTransfer.70&quot;)); //$NON-NLS-1$
+<span class="nc" id="L891">          outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L892">          outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L893">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L894" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L895">            outputFormat.sysout();</span>
           }
           break;
         case TransferOk:
-<span class="nc" id="L898">          value = 3;</span>
-<span class="nc" id="L899">          outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L900">          outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L901">              .getString(&quot;RequestTransfer.71&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L902">          outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L903">          outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc" id="L904">          logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L905" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L906">            outputFormat.sysout();</span>
+<span class="nc" id="L899">          value = 3;</span>
+<span class="nc" id="L900">          outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L901">          outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+              &quot;RequestTransfer.71&quot;)); //$NON-NLS-1$
+<span class="nc" id="L903">          outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L904">          outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc" id="L905">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L906" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L907">            outputFormat.sysout();</span>
           }
           break;
         default:
-<span class="nc" id="L910">          value = 4;</span>
-<span class="nc" id="L911">          outputFormat.setValue(FIELDS.status.name(), value);</span>
-<span class="nc" id="L912">          outputFormat.setValue(FIELDS.statusTxt.name(), Messages</span>
-<span class="nc" id="L913">              .getString(&quot;RequestTransfer.72&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L914">          outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L915">          outputFormat.setValueString(result.getRunner().getJson());</span>
-<span class="nc bnc" id="L916" title="All 2 branches missed.">          if (result.getCause() != null) {</span>
-<span class="nc" id="L917">            outputFormat</span>
-<span class="nc" id="L918">                .setValue(FIELDS.error.name(), result.getCause().getMessage());</span>
+<span class="nc" id="L911">          value = 4;</span>
+<span class="nc" id="L912">          outputFormat.setValue(FIELDS.status.name(), value);</span>
+<span class="nc" id="L913">          outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(</span>
+              &quot;RequestTransfer.72&quot;)); //$NON-NLS-1$
+<span class="nc" id="L915">          outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L916">          outputFormat.setValueString(result.getRunner().getJson());</span>
+<span class="nc bnc" id="L917" title="All 2 branches missed.">          if (result.getCause() != null) {</span>
+<span class="nc" id="L918">            outputFormat.setValue(FIELDS.error.name(),</span>
+<span class="nc" id="L919">                                  result.getCause().getMessage());</span>
           }
-<span class="nc" id="L920">          logger.error(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L921" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L922">            outputFormat.sysout();</span>
+<span class="nc" id="L921">          logger.error(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L922" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L923">            outputFormat.sysout();</span>
           }
           break;
       }
     }
-<span class="nc" id="L927">    return value;</span>
+<span class="nc" id="L928">    return value;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpFuture.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Compression</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.future</a> &gt; <span class="el_source">WaarpFuture.java</span></div><h1>WaarpFuture.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.future;
+
+import org.waarp.common.logging.SysErrLogger;
+
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.*;
+
+/**
+ * Ftp Future operation&lt;br&gt;
+ * Completely inspired from the excellent ChannelFuture of Netty, but without
+ * any channel inside.
+ */
+public class WaarpFuture implements WaarpFutureInterface {
+<span class="nc" id="L34">  private static final Throwable CANCELLED = new Throwable();</span>
+
+  private final boolean cancellable;
+
+  private volatile boolean done;
+
+  private Throwable cause;
+
+  private int waiters;
+
+  /**
+   * Creates a new instance.
+   */
+<span class="nc" id="L47">  public WaarpFuture() {</span>
+<span class="nc" id="L48">    cancellable = false;</span>
+<span class="nc" id="L49">  }</span>
+
+  /**
+   * Creates a new instance.
+   *
+   * @param cancellable {@code true} if and only if this future can be
+   *     canceled
+   */
+<span class="nc" id="L57">  public WaarpFuture(final boolean cancellable) {</span>
+<span class="nc" id="L58">    this.cancellable = cancellable;</span>
+<span class="nc" id="L59">  }</span>
+
+  /**
+   * Returns {@code true} if and only if this future is complete, regardless
+   * of
+   * whether the operation was
+   * successful, failed, or canceled.
+   *
+   * @return True if the future is complete
+   */
+  @Override
+  public final boolean isDone() {
+<span class="nc" id="L71">    return done;</span>
+  }
+
+  /**
+   * Returns {@code true} if and only if the operation was completed
+   * successfully.
+   *
+   * @return True if the future is successful
+   */
+  @Override
+  public final boolean isSuccess() {
+<span class="nc bnc" id="L82" title="All 4 branches missed.">    return done &amp;&amp; cause == null;</span>
+  }
+
+  /**
+   * Returns {@code true} if and only if the operation was completed but
+   * unsuccessfully.
+   *
+   * @return True if the future is done but unsuccessful
+   */
+  @Override
+  public final boolean isFailed() {
+<span class="nc bnc" id="L93" title="All 4 branches missed.">    return done &amp;&amp; cause != null;</span>
+  }
+
+  /**
+   * Returns the cause of the failed operation if the operation has failed.
+   *
+   * @return the cause of the failure. {@code null} if succeeded or this
+   *     future
+   *     is not completed yet.
+   */
+  @Override
+  public final Throwable getCause() {
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (cause != CANCELLED) {</span>
+<span class="nc" id="L106">      return cause;</span>
+    }
+<span class="nc" id="L108">    return null;</span>
+  }
+
+  /**
+   * Returns {@code true} if and only if this future was canceled by a {@link
+   * #cancel()} method.
+   *
+   * @return True if the future was canceled
+   */
+  @Override
+  public final boolean isCancelled() {
+<span class="nc bnc" id="L119" title="All 4 branches missed.">    return done &amp;&amp; cause == CANCELLED;</span>
+  }
+
+  /**
+   * Rethrows the exception that caused this future fail if this future is
+   * complete and failed.
+   */
+  @Override
+  public final WaarpFuture rethrowIfFailed() throws Exception {
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (!isDone()) {</span>
+<span class="nc" id="L129">      return this;</span>
+    }
+
+<span class="nc" id="L132">    final Throwable causeNew = getCause();</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (causeNew == null) {</span>
+<span class="nc" id="L134">      return this;</span>
+    }
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">    if (causeNew instanceof Exception) {</span>
+<span class="nc" id="L138">      throw (Exception) causeNew;</span>
+    }
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (causeNew instanceof Error) {</span>
+<span class="nc" id="L142">      throw (Error) causeNew;</span>
+    }
+
+<span class="nc" id="L145">    throw new RuntimeException(causeNew);</span>
+  }
+
+  /**
+   * @return True if the Future is done or False if interrupted
+   */
+  @Override
+  public final boolean awaitOrInterruptible() {
+<span class="nc bnc" id="L153" title="All 2 branches missed.">    while (!Thread.interrupted()) {</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (awaitOrInterruptible(1, SECONDS)) {</span>
+<span class="nc" id="L155">        return true;</span>
+      }
+    }
+<span class="nc" id="L158">    return false;</span>
+  }
+
+  /**
+   * @param timeoutMilliseconds
+   *
+   * @return True if the Future is done or False if interrupted
+   */
+  @Override
+  public final boolean awaitOrInterruptible(final long timeoutMilliseconds) {
+<span class="nc" id="L168">    return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),</span>
+                                false);
+  }
+
+  /**
+   * @param timeout
+   * @param unit
+   *
+   * @return True if the Future is done or False if interrupted
+   */
+  @Override
+  public final boolean awaitOrInterruptible(final long timeout,
+                                            final TimeUnit unit) {
+<span class="nc" id="L181">    return awaitOrInterruptible(unit.toNanos(timeout), false);</span>
+  }
+
+  /**
+   * @param timeoutNanos
+   * @param interruptable
+   *
+   * @return True if the Future is done or False if interrupted
+   */
+  private boolean awaitOrInterruptible(final long timeoutNanos,
+                                       final boolean interruptable) {
+    try {
+<span class="nc bnc" id="L193" title="All 4 branches missed.">      if (await0(timeoutNanos, interruptable) &amp;&amp; !Thread.interrupted()) {</span>
+<span class="nc" id="L194">        return true;</span>
+      }
+<span class="nc" id="L196">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L197">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L198">    }</span>
+<span class="nc" id="L199">    return false;</span>
+  }
+
+  private boolean await0(final long timeoutNanos, final boolean interruptable)
+      throws InterruptedException {
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (done) {</span>
+<span class="nc" id="L205">      return done;</span>
+    }
+<span class="nc bnc" id="L207" title="All 2 branches missed.">    if (timeoutNanos &lt;= 0) {</span>
+<span class="nc" id="L208">      return done;</span>
+    }
+<span class="nc bnc" id="L210" title="All 4 branches missed.">    if (interruptable &amp;&amp; Thread.interrupted()) {</span>
+<span class="nc" id="L211">      throw new InterruptedException();</span>
+    }
+
+<span class="nc" id="L214">    final long startTime = System.nanoTime();</span>
+<span class="nc" id="L215">    long waitTime = timeoutNanos;</span>
+<span class="nc" id="L216">    boolean interrupted = false;</span>
+
+    try {
+      for (; ; ) {
+<span class="nc" id="L220">        synchronized (this) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">          if (done) {</span>
+<span class="nc" id="L222">            return done;</span>
+          }
+<span class="nc" id="L224">          waiters++;</span>
+
+          try {
+<span class="nc" id="L227">            wait(waitTime / 1000000, (int) (waitTime % 1000000));</span>
+<span class="nc" id="L228">          } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L229">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">            if (interruptable) {</span>
+<span class="nc" id="L231">              throw e;</span>
+            } else {
+<span class="nc" id="L233">              interrupted = true;</span>
+            }
+          } finally {
+<span class="nc" id="L236">            waiters--;</span>
+          }
+<span class="nc" id="L238">        }</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (done) {</span>
+<span class="nc" id="L240">          return true;</span>
+        }
+<span class="nc" id="L242">        waitTime = timeoutNanos - (System.nanoTime() - startTime);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (waitTime &lt;= 0) {</span>
+<span class="nc" id="L244">          return done;</span>
+        }
+      }
+    } finally {
+<span class="nc bnc" id="L248" title="All 2 branches missed.">      if (interrupted) {</span>
+<span class="nc" id="L249">        Thread.currentThread().interrupt();</span>
+      }
+    }
+  }
+
+  /**
+   * Marks this future as a success and notifies all listeners.
+   *
+   * @return {@code true} if and only if successfully marked this future as a
+   *     success. Otherwise {@code false}
+   *     because this future is already marked as either a success or a
+   *     failure.
+   */
+  @Override
+  public final boolean setSuccess() {
+<span class="nc" id="L264">    synchronized (this) {</span>
+      // Allow only once.
+<span class="nc bnc" id="L266" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L267">        return false;</span>
+      }
+
+<span class="nc" id="L270">      done = true;</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">      if (waiters &gt; 0) {</span>
+<span class="nc" id="L272">        notifyAll();</span>
+      }
+<span class="nc" id="L274">    }</span>
+<span class="nc" id="L275">    return true;</span>
+  }
+
+  /**
+   * Marks this future as a failure and notifies all listeners.
+   *
+   * @param cause
+   *
+   * @return {@code true} if and only if successfully marked this future as a
+   *     failure. Otherwise {@code false}
+   *     because this future is already marked as either a success or a
+   *     failure.
+   */
+  @Override
+  public final boolean setFailure(final Throwable cause) {
+<span class="nc" id="L290">    synchronized (this) {</span>
+      // Allow only once.
+<span class="nc bnc" id="L292" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L293">        return false;</span>
+      }
+
+<span class="nc" id="L296">      this.cause = cause;</span>
+<span class="nc" id="L297">      done = true;</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">      if (waiters &gt; 0) {</span>
+<span class="nc" id="L299">        notifyAll();</span>
+      }
+<span class="nc" id="L301">    }</span>
+<span class="nc" id="L302">    return true;</span>
+  }
+
+  /**
+   * Cancels the operation associated with this future and notifies all
+   * listeners if canceled successfully.
+   *
+   * @return {@code true} if and only if the operation has been canceled.
+   *     {@code
+   *     false} if the operation can't
+   *     be canceled or is already completed.
+   */
+  @Override
+  public final boolean cancel() {
+<span class="nc bnc" id="L316" title="All 2 branches missed.">    if (!cancellable) {</span>
+<span class="nc" id="L317">      return false;</span>
+    }
+<span class="nc" id="L319">    synchronized (this) {</span>
+      // Allow only once.
+<span class="nc bnc" id="L321" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L322">        return false;</span>
+      }
+
+<span class="nc" id="L325">      cause = CANCELLED;</span>
+<span class="nc" id="L326">      done = true;</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">      if (waiters &gt; 0) {</span>
+<span class="nc" id="L328">        notifyAll();</span>
+      }
+<span class="nc" id="L330">    }</span>
+<span class="nc" id="L331">    return true;</span>
+  }
+
+  /**
+   * Experimental: try to re-enable the future
+   */
+  @Override
+  public final void reset() {
+<span class="nc" id="L339">    synchronized (this) {</span>
+<span class="nc" id="L340">      done = false;</span>
+<span class="nc" id="L341">      cause = null;</span>
+<span class="nc" id="L342">    }</span>
+<span class="nc" id="L343">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

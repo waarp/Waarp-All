@@ -40,41 +40,45 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
   /**
    * Internal Logger
    */
-<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(DbModelMariadb.class);</span>
+<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(DbModelMariadb.class);</span>
 
-<span class="fc" id="L46">  private static final DbType type = DbType.MariaDB;</span>
+<span class="nc" id="L46">  private static final DbType type = DbType.MariaDB;</span>
 
-<span class="fc" id="L48">  protected static class DbTypeResolverMariadDb</span>
+<span class="nc" id="L48">  protected static class DbTypeResolverMariadDb</span>
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
-    public String getType(final int sqlType) {
-<span class="fc" id="L53">      return DBType.getType(sqlType);</span>
+    public final String getType(final int sqlType) {
+<span class="nc" id="L53">      return DBType.getType(sqlType);</span>
     }
 
     @Override
-    public String getCreateTable() {
+    public final String getCreateTable() {
 <span class="nc" id="L58">      return &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
     }
 
     @Override
-    public String getCreateIndex() {
+    public final String getCreateIndex() {
 <span class="nc" id="L63">      return &quot;CREATE INDEX IF NOT EXISTS &quot;;</span>
     }
 
+    @Override
+    public final DbType getDbType() {
+<span class="nc" id="L68">      return type;</span>
+    }
   }
 
   static {
-<span class="fc" id="L69">    dbTypeResolver = new DbTypeResolverMariadDb();</span>
-<span class="fc" id="L70">  }</span>
+<span class="nc" id="L73">    dbTypeResolver = new DbTypeResolverMariadDb();</span>
+<span class="nc" id="L74">  }</span>
 
   protected MariaDbDataSource mysqlConnectionPoolDataSource;
   protected DbConnectionPool pool;
 
   @Override
-  public DbType getDbType() {
-<span class="fc" id="L77">    return type;</span>
+  public final DbType getDbType() {
+<span class="nc" id="L81">    return type;</span>
   }
 
   /**
@@ -92,32 +96,32 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
                            final String dbpasswd, final Timer timer,
                            final long delay)
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L95">    this();</span>
-<span class="fc" id="L96">    mysqlConnectionPoolDataSource = new MariaDbDataSource();</span>
+<span class="nc" id="L99">    this();</span>
+<span class="nc" id="L100">    mysqlConnectionPoolDataSource = new MariaDbDataSource();</span>
     try {
-<span class="fc" id="L98">      mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
-<span class="nc" id="L99">    } catch (final SQLException e) {</span>
-<span class="nc" id="L100">      throw new WaarpDatabaseNoConnectionException(&quot;Url setting is wrong&quot;, e);</span>
-<span class="fc" id="L101">    }</span>
+<span class="nc" id="L102">      mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
+<span class="nc" id="L103">    } catch (final SQLException e) {</span>
+<span class="nc" id="L104">      throw new WaarpDatabaseNoConnectionException(&quot;Url setting is wrong&quot;, e);</span>
+<span class="nc" id="L105">    }</span>
 
     try {
-<span class="fc" id="L104">      mysqlConnectionPoolDataSource.setUser(dbuser);</span>
-<span class="fc" id="L105">      mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
-<span class="nc" id="L106">    } catch (final SQLException e) {</span>
-<span class="nc" id="L107">      throw new WaarpDatabaseNoConnectionException(&quot;Wrong username or password&quot;,</span>
+<span class="nc" id="L108">      mysqlConnectionPoolDataSource.setUser(dbuser);</span>
+<span class="nc" id="L109">      mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="nc" id="L110">    } catch (final SQLException e) {</span>
+<span class="nc" id="L111">      throw new WaarpDatabaseNoConnectionException(&quot;Wrong username or password&quot;,</span>
                                                    e);
-<span class="fc" id="L109">    }</span>
+<span class="nc" id="L113">    }</span>
     // Create a pool with no limit
-<span class="pc bpc" id="L111" title="3 of 4 branches missed.">    if (timer != null &amp;&amp; delay != 0) {</span>
-<span class="nc" id="L112">      pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">    if (timer != null &amp;&amp; delay != 0) {</span>
+<span class="nc" id="L116">      pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);</span>
     } else {
-<span class="fc" id="L114">      pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
+<span class="nc" id="L118">      pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
     }
 
-<span class="fc" id="L117">    logger.info(&quot;Some info: MaxConn: {} LogTimeout: {} ForceClose: {}&quot;,</span>
-<span class="fc" id="L118">                pool.getMaxConnections(), pool.getLoginTimeout(),</span>
-<span class="fc" id="L119">                pool.getTimeoutForceClose());</span>
-<span class="fc" id="L120">  }</span>
+<span class="nc" id="L121">    logger.info(&quot;Some info: MaxConn: {} LogTimeout: {} ForceClose: {}&quot;,</span>
+<span class="nc" id="L122">                pool.getMaxConnections(), pool.getLoginTimeout(),</span>
+<span class="nc" id="L123">                pool.getTimeoutForceClose());</span>
+<span class="nc" id="L124">  }</span>
 
   /**
    * Create the object and initialize if necessary the driver
@@ -131,69 +135,71 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
   protected DbModelMariadb(final String dbserver, final String dbuser,
                            final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L134">    this(dbserver, dbuser, dbpasswd, null, 0);</span>
-<span class="fc" id="L135">  }</span>
+<span class="nc" id="L138">    this(dbserver, dbuser, dbpasswd, null, 0);</span>
+<span class="nc" id="L139">  }</span>
 
   /**
    * Create the object and initialize if necessary the driver
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-<span class="fc" id="L142">  protected DbModelMariadb() throws WaarpDatabaseNoConnectionException {</span>
-<span class="fc bfc" id="L143" title="All 2 branches covered.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
-<span class="fc" id="L144">      return;</span>
+<span class="nc" id="L146">  protected DbModelMariadb() throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="nc" id="L148">      return;</span>
     }
     try {
-<span class="fc" id="L147">      DriverManager.registerDriver(new Driver());</span>
-<span class="fc" id="L148">      DbModelFactory.classLoaded.add(type.name());</span>
-<span class="nc" id="L149">    } catch (final SQLException e) {</span>
+<span class="nc" id="L151">      DriverManager.registerDriver(new Driver());</span>
+<span class="nc" id="L152">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="nc" id="L153">    } catch (final SQLException e) {</span>
       // SQLException
-<span class="nc" id="L151">      logger.error(</span>
-<span class="nc" id="L152">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
-<span class="nc" id="L153">      DbSession.error(e);</span>
-<span class="nc" id="L154">      throw new WaarpDatabaseNoConnectionException(</span>
-<span class="nc" id="L155">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
-<span class="fc" id="L156">    }</span>
-<span class="fc" id="L157">  }</span>
+<span class="nc" id="L155">      logger.error(</span>
+<span class="nc" id="L156">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
+<span class="nc" id="L157">      DbSession.error(e);</span>
+<span class="nc" id="L158">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L159">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
+<span class="nc" id="L160">    }</span>
+<span class="nc" id="L161">  }</span>
 
   @Override
-  public Connection getDbConnection(final String server, final String user,
-                                    final String passwd) throws SQLException {
-<span class="fc" id="L162">    synchronized (this) {</span>
-<span class="fc bfc" id="L163" title="All 2 branches covered.">      if (pool != null) {</span>
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
+<span class="nc" id="L168">    synchronized (this) {</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (pool != null) {</span>
         try {
-<span class="nc" id="L165">          return pool.getConnection();</span>
-<span class="fc" id="L166">        } catch (final SQLException e) {</span>
+<span class="nc" id="L171">          return pool.getConnection();</span>
+<span class="nc" id="L172">        } catch (final SQLException e) {</span>
           // try to renew the pool
-<span class="fc" id="L168">          mysqlConnectionPoolDataSource = new MariaDbDataSource();</span>
-<span class="fc" id="L169">          mysqlConnectionPoolDataSource.setUrl(server);</span>
-<span class="fc" id="L170">          mysqlConnectionPoolDataSource.setUser(user);</span>
-<span class="fc" id="L171">          mysqlConnectionPoolDataSource.setPassword(passwd);</span>
-<span class="fc" id="L172">          pool.resetPoolDataSource(mysqlConnectionPoolDataSource);</span>
+<span class="nc" id="L174">          mysqlConnectionPoolDataSource = new MariaDbDataSource();</span>
+<span class="nc" id="L175">          mysqlConnectionPoolDataSource.setUrl(server);</span>
+<span class="nc" id="L176">          mysqlConnectionPoolDataSource.setUser(user);</span>
+<span class="nc" id="L177">          mysqlConnectionPoolDataSource.setPassword(passwd);</span>
+<span class="nc" id="L178">          pool.resetPoolDataSource(mysqlConnectionPoolDataSource);</span>
           try {
-<span class="nc" id="L174">            return pool.getConnection();</span>
-<span class="fc" id="L175">          } catch (final SQLException e2) {</span>
-<span class="fc" id="L176">            pool.dispose();</span>
-<span class="fc" id="L177">            pool = null;</span>
-<span class="fc" id="L178">            return super.getDbConnection(server, user, passwd);</span>
+<span class="nc" id="L180">            return pool.getConnection();</span>
+<span class="nc" id="L181">          } catch (final SQLException e2) {</span>
+<span class="nc" id="L182">            pool.dispose();</span>
+<span class="nc" id="L183">            pool = null;</span>
+<span class="nc" id="L184">            return super.getDbConnection(server, user, passwd);</span>
           }
         }
       }
-<span class="fc" id="L182">    }</span>
-<span class="fc" id="L183">    return super.getDbConnection(server, user, passwd);</span>
+<span class="nc" id="L188">    }</span>
+<span class="nc" id="L189">    return super.getDbConnection(server, user, passwd);</span>
   }
 
   @Override
   public synchronized void releaseResources() {
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">    if (pool != null) {</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    if (pool != null) {</span>
       try {
-<span class="nc" id="L190">        pool.dispose();</span>
-<span class="nc" id="L191">      } catch (final SQLException ignored) {</span>
-<span class="nc" id="L192">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="nc" id="L193">      }</span>
+<span class="nc" id="L196">        pool.dispose();</span>
+<span class="nc" id="L197">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L198">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L199">      }</span>
     }
-<span class="fc" id="L195">    pool = null;</span>
-<span class="fc" id="L196">  }</span>
+<span class="nc" id="L201">    pool = null;</span>
+<span class="nc" id="L202">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

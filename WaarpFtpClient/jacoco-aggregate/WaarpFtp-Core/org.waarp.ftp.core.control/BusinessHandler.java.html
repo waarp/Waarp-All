@@ -36,7 +36,7 @@ import org.waarp.ftp.core.session.FtpSession;
  */
 public abstract class BusinessHandler {
   private static final String FILENAME = &quot; \&quot;filename\&quot;&quot;;
-<span class="fc" id="L39">  private static final String[] PROPERTIES_0_LENGTH = new String[0];</span>
+<span class="nc" id="L39">  private static final String[] PROPERTIES_0_LENGTH = new String[0];</span>
   /**
    * NettyHandler that holds this BusinessHandler
    */
@@ -50,25 +50,25 @@ public abstract class BusinessHandler {
   /**
    * Constructor with no argument (mandatory)
    */
-<span class="fc" id="L53">  protected BusinessHandler() {</span>
+<span class="nc" id="L53">  protected BusinessHandler() {</span>
     // nothing to do
-<span class="fc" id="L55">  }</span>
+<span class="nc" id="L55">  }</span>
 
   /**
    * Called when the NetworkHandler is created
    *
    * @param networkHandler the networkHandler to set
    */
-  public void setNetworkHandler(final NetworkHandler networkHandler) {
-<span class="fc" id="L63">    this.networkHandler = networkHandler;</span>
-<span class="fc" id="L64">    session = this.networkHandler.getFtpSession();</span>
-<span class="fc" id="L65">  }</span>
+  public final void setNetworkHandler(final NetworkHandler networkHandler) {
+<span class="nc" id="L63">    this.networkHandler = networkHandler;</span>
+<span class="nc" id="L64">    session = this.networkHandler.getFtpSession();</span>
+<span class="nc" id="L65">  }</span>
 
   /**
    * @return the networkHandler
    */
-  public NetworkHandler getNetworkHandler() {
-<span class="fc" id="L71">    return networkHandler;</span>
+  public final NetworkHandler getNetworkHandler() {
+<span class="nc" id="L71">    return networkHandler;</span>
   }
 
   // Some helpful functions
@@ -76,8 +76,8 @@ public abstract class BusinessHandler {
   /**
    * @return the ftpSession
    */
-  public FtpSession getFtpSession() {
-<span class="fc" id="L80">    return session;</span>
+  public final FtpSession getFtpSession() {
+<span class="nc" id="L80">    return session;</span>
   }
 
   /**
@@ -113,8 +113,8 @@ public abstract class BusinessHandler {
    */
   public abstract String getFeatMessage();
 
-  protected String getSslFeatMessage() {
-<span class="fc" id="L117">    return &quot;AUTH TLS\nAUTH SSL\nCCC\nPROT P\nPROT C&quot;;</span>
+  protected final String getSslFeatMessage() {
+<span class="nc" id="L117">    return &quot;AUTH TLS\nAUTH SSL\nCCC\nPROT P\nPROT C&quot;;</span>
   }
 
   /**
@@ -122,46 +122,47 @@ public abstract class BusinessHandler {
    *     surrounding by &quot;Extensions
    *     supported:\n&quot; and &quot;\nEnd&quot;
    */
-  protected String getDefaultFeatMessage() {
-<span class="fc" id="L126">    final StringBuilder builder = new StringBuilder();</span>
-<span class="fc" id="L127">    builder.append(FtpCommandCode.MDTM.name()).append('\n')</span>
-<span class="fc" id="L128">           .append(FtpCommandCode.MLSD.name())</span>
-<span class="fc" id="L129">           .append(getFtpSession().getDir().getOptsMLSx().getFeat())</span>
-<span class="fc" id="L130">           .append('\n').append(FtpCommandCode.MLST.name())</span>
-<span class="fc" id="L131">           .append(getFtpSession().getDir().getOptsMLSx().getFeat())</span>
-<span class="fc" id="L132">           .append('\n').append(FtpCommandCode.SIZE.name()).append('\n')</span>
-<span class="fc" id="L133">           .append(FtpCommandCode.XCUP.name()).append('\n')</span>
-<span class="fc" id="L134">           .append(FtpCommandCode.XCWD.name()).append('\n')</span>
-<span class="fc" id="L135">           .append(FtpCommandCode.XMKD.name()).append('\n')</span>
-<span class="fc" id="L136">           .append(FtpCommandCode.XPWD.name()).append('\n')</span>
-<span class="fc" id="L137">           .append(FtpCommandCode.XRMD.name()).append('\n')</span>
-<span class="fc" id="L138">           .append(FtpCommandCode.PASV.name()).append('\n')</span>
-<span class="fc" id="L139">           .append(FtpCommandCode.ALLO.name()).append('\n')</span>
-<span class="fc" id="L140">           .append(FtpCommandCode.EPRT.name()).append('\n')</span>
-<span class="fc" id="L141">           .append(FtpCommandCode.EPSV.name()).append('\n')</span>
-<span class="fc" id="L142">           .append(FtpCommandCode.XCRC.name()).append(' ').append(FILENAME)</span>
-<span class="fc" id="L143">           .append('\n').append(FtpCommandCode.XMD5.name()).append(' ')</span>
-<span class="fc" id="L144">           .append(FILENAME).append('\n').append(FtpCommandCode.XSHA1.name())</span>
-<span class="fc" id="L145">           .append(' ').append(FILENAME).append('\n')</span>
-<span class="fc" id="L146">           .append(FtpCommandCode.XDIGEST.name()).append(' ').append(</span>
-        &quot;Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)&quot;)
-<span class="fc" id="L148">           .append(' ').append(FILENAME).append('\n')</span>
-<span class="fc" id="L149">           .append(FtpCommandCode.SITE.name()).append(' ')</span>
-<span class="fc" id="L150">           .append(FtpCommandCode.XCRC.name())</span>
+  protected final String getDefaultFeatMessage() {
+<span class="nc" id="L126">    final StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L127">    builder.append(FtpCommandCode.MODE.name()).append(&quot; Z\n&quot;)</span>
+<span class="nc" id="L128">           .append(FtpCommandCode.MDTM.name()).append('\n')</span>
+<span class="nc" id="L129">           .append(FtpCommandCode.MLSD.name())</span>
+<span class="nc" id="L130">           .append(getFtpSession().getDir().getOptsMLSx().getFeat())</span>
+<span class="nc" id="L131">           .append('\n').append(FtpCommandCode.MLST.name())</span>
+<span class="nc" id="L132">           .append(getFtpSession().getDir().getOptsMLSx().getFeat())</span>
+<span class="nc" id="L133">           .append('\n').append(FtpCommandCode.SIZE.name()).append('\n')</span>
+<span class="nc" id="L134">           .append(FtpCommandCode.XCUP.name()).append('\n')</span>
+<span class="nc" id="L135">           .append(FtpCommandCode.XCWD.name()).append('\n')</span>
+<span class="nc" id="L136">           .append(FtpCommandCode.XMKD.name()).append('\n')</span>
+<span class="nc" id="L137">           .append(FtpCommandCode.XPWD.name()).append('\n')</span>
+<span class="nc" id="L138">           .append(FtpCommandCode.XRMD.name()).append('\n')</span>
+<span class="nc" id="L139">           .append(FtpCommandCode.PASV.name()).append('\n')</span>
+<span class="nc" id="L140">           .append(FtpCommandCode.ALLO.name()).append('\n')</span>
+<span class="nc" id="L141">           .append(FtpCommandCode.EPRT.name()).append('\n')</span>
+<span class="nc" id="L142">           .append(FtpCommandCode.EPSV.name()).append('\n')</span>
+<span class="nc" id="L143">           .append(FtpCommandCode.XCRC.name()).append(' ').append(FILENAME)</span>
+<span class="nc" id="L144">           .append('\n').append(FtpCommandCode.XMD5.name()).append(' ')</span>
+<span class="nc" id="L145">           .append(FILENAME).append('\n').append(FtpCommandCode.XSHA1.name())</span>
+<span class="nc" id="L146">           .append(' ').append(FILENAME).append('\n')</span>
+<span class="nc" id="L147">           .append(FtpCommandCode.XDIGEST.name()).append(' ').append(</span>
+               &quot;Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)&quot;)
+<span class="nc" id="L149">           .append(' ').append(FILENAME).append('\n')</span>
+<span class="nc" id="L150">           .append(FtpCommandCode.SITE.name()).append(' ')</span>
+<span class="nc" id="L151">           .append(FtpCommandCode.XCRC.name())</span>
            // .append(&quot; \&quot;filename\&quot;&quot;)
-<span class="fc" id="L152">           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
-<span class="fc" id="L153">           .append(FtpCommandCode.XMD5.name())</span>
+<span class="nc" id="L153">           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
+<span class="nc" id="L154">           .append(FtpCommandCode.XMD5.name())</span>
            // .append(&quot; \&quot;filename\&quot;&quot;)
-<span class="fc" id="L155">           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
-<span class="fc" id="L156">           .append(FtpCommandCode.XSHA1.name())</span>
+<span class="nc" id="L156">           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
+<span class="nc" id="L157">           .append(FtpCommandCode.XSHA1.name())</span>
            // .append(&quot; \&quot;filename\&quot;&quot;)
-<span class="fc" id="L158">           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
-<span class="fc" id="L159">           .append(FtpCommandCode.XDIGEST.name()).append(' ').append(</span>
-        &quot;Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)&quot;)
+<span class="nc" id="L159">           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
+<span class="nc" id="L160">           .append(FtpCommandCode.XDIGEST.name()).append(' ').append(</span>
+               &quot;Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)&quot;)
            // .append(&quot; \&quot;filename\&quot;&quot;)
-<span class="fc" id="L162">           .append('\n').append(&quot;LAN EN*&quot;).append('\n')</span>
-<span class="fc" id="L163">           .append(FtpCommandCode.REST.name()).append(&quot; STREAM\n&quot;);</span>
-<span class="fc" id="L164">    return builder.toString();</span>
+<span class="nc" id="L163">           .append('\n').append(&quot;LAN EN*&quot;).append('\n')</span>
+<span class="nc" id="L164">           .append(FtpCommandCode.REST.name()).append(&quot; STREAM\n&quot;);</span>
+<span class="nc" id="L165">    return builder.toString();</span>
   }
 
   /**
@@ -193,30 +194,30 @@ public abstract class BusinessHandler {
    * @return the string to return to the client for the FEAT command for the
    *     MLSx argument
    */
-  protected String getMLSxOptsMessage(final String[] args) {
-<span class="fc" id="L197">    String[] properties = PROPERTIES_0_LENGTH;</span>
-<span class="pc bpc" id="L198" title="1 of 2 branches missed.">    if (args.length &gt;= 2) {</span>
-<span class="nc" id="L199">      properties = args[1].split(&quot;;&quot;);</span>
+  protected final String getMLSxOptsMessage(final String[] args) {
+<span class="nc" id="L198">    String[] properties = PROPERTIES_0_LENGTH;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">    if (args.length &gt;= 2) {</span>
+<span class="nc" id="L200">      properties = args[1].split(&quot;;&quot;);</span>
     }
 
-<span class="fc" id="L202">    final FilesystemBasedOptsMLSxImpl optsMLSx =</span>
-<span class="fc" id="L203">        (FilesystemBasedOptsMLSxImpl) getFtpSession().getDir().getOptsMLSx();</span>
-<span class="fc" id="L204">    optsMLSx.setOptsModify((byte) 0);</span>
-<span class="fc" id="L205">    optsMLSx.setOptsPerm((byte) 0);</span>
-<span class="fc" id="L206">    optsMLSx.setOptsSize((byte) 0);</span>
-<span class="fc" id="L207">    optsMLSx.setOptsType((byte) 0);</span>
-<span class="pc bpc" id="L208" title="1 of 2 branches missed.">    for (final String propertie : properties) {</span>
-<span class="nc bnc" id="L209" title="All 2 branches missed.">      if (&quot;modify&quot;.equalsIgnoreCase(propertie)) {</span>
-<span class="nc" id="L210">        optsMLSx.setOptsModify((byte) 1);</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">      } else if (&quot;perm&quot;.equalsIgnoreCase(propertie)) {</span>
-<span class="nc" id="L212">        optsMLSx.setOptsPerm((byte) 1);</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">      } else if (&quot;size&quot;.equalsIgnoreCase(propertie)) {</span>
-<span class="nc" id="L214">        optsMLSx.setOptsSize((byte) 1);</span>
-<span class="nc bnc" id="L215" title="All 2 branches missed.">      } else if (&quot;type&quot;.equalsIgnoreCase(propertie)) {</span>
-<span class="nc" id="L216">        optsMLSx.setOptsType((byte) 1);</span>
+<span class="nc" id="L203">    final FilesystemBasedOptsMLSxImpl optsMLSx =</span>
+<span class="nc" id="L204">        (FilesystemBasedOptsMLSxImpl) getFtpSession().getDir().getOptsMLSx();</span>
+<span class="nc" id="L205">    optsMLSx.setOptsModify((byte) 0);</span>
+<span class="nc" id="L206">    optsMLSx.setOptsPerm((byte) 0);</span>
+<span class="nc" id="L207">    optsMLSx.setOptsSize((byte) 0);</span>
+<span class="nc" id="L208">    optsMLSx.setOptsType((byte) 0);</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">    for (final String propertie : properties) {</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">      if (&quot;modify&quot;.equalsIgnoreCase(propertie)) {</span>
+<span class="nc" id="L211">        optsMLSx.setOptsModify((byte) 1);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">      } else if (&quot;perm&quot;.equalsIgnoreCase(propertie)) {</span>
+<span class="nc" id="L213">        optsMLSx.setOptsPerm((byte) 1);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">      } else if (&quot;size&quot;.equalsIgnoreCase(propertie)) {</span>
+<span class="nc" id="L215">        optsMLSx.setOptsSize((byte) 1);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">      } else if (&quot;type&quot;.equalsIgnoreCase(propertie)) {</span>
+<span class="nc" id="L217">        optsMLSx.setOptsType((byte) 1);</span>
       }
     }
-<span class="fc" id="L219">    return args[0] + ' ' + FtpCommandCode.OPTS.name() + optsMLSx.getFeat();</span>
+<span class="nc" id="L220">    return args[0] + ' ' + FtpCommandCode.OPTS.name() + optsMLSx.getFeat();</span>
   }
 
   /**
@@ -238,9 +239,9 @@ public abstract class BusinessHandler {
   /**
    * Clean the BusinessHandler.
    */
-  public void clear() {
-<span class="fc" id="L242">    cleanSession();</span>
-<span class="fc" id="L243">  }</span>
+  public final void clear() {
+<span class="nc" id="L243">    cleanSession();</span>
+<span class="nc" id="L244">  }</span>
 
   /**
    * Is executed when the channel is connected after the handler is on, before
@@ -306,4 +307,4 @@ public abstract class BusinessHandler {
   public abstract void afterTransferDoneBeforeAnswer(FtpTransfer transfer)
       throws CommandAbstractException;
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

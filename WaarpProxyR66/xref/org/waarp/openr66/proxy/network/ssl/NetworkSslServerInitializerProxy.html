@@ -60,17 +60,17 @@
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>      <strong class="jxr_keyword">final</strong> SslHandler sslHandler;
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>      <strong class="jxr_keyword">if</strong> (isClient) {
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>        <em class="jxr_comment">// Not server: no clientAuthent, no renegotiation</em>
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>        sslHandler = getWaarpSslContextFactory().initInitializer(false, false);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>        sslHandler = getWaarpSslContextFactory().createHandlerClient(ch);
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>      } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>        <em class="jxr_comment">// Server: no renegotiation still, but possible clientAuthent</em>
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>        sslHandler = getWaarpSslContextFactory().initInitializer(<strong class="jxr_keyword">true</strong>,
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>                                                                 getWaarpSslContextFactory()
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>                                                                     .needClientAuthentication());
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>      }
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>      pipeline.addLast(SSL_HANDLER, sslHandler);
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>  
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>      pipeline.addLast(TIMEOUT, <strong class="jxr_keyword">new</strong> IdleStateHandler(<strong class="jxr_keyword">true</strong>, 0, 0, configuration
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>          .getTimeoutCon(), TimeUnit.MILLISECONDS));
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>        sslHandler = getWaarpSslContextFactory().createHandlerServer(
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>            getWaarpSslContextFactory().needClientAuthentication(), ch);
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>      }
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>      pipeline.addLast(SSL_HANDLER, sslHandler);
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>      pipeline.addLast(TIMEOUT, <strong class="jxr_keyword">new</strong> IdleStateHandler(<strong class="jxr_keyword">true</strong>, 0, 0,
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>                                                     configuration.getTimeoutCon(),
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>                                                     TimeUnit.MILLISECONDS));
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>      <strong class="jxr_keyword">final</strong> GlobalTrafficShapingHandler handler =
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>          configuration.getGlobalTrafficShapingHandler();
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>      <strong class="jxr_keyword">if</strong> (handler != <strong class="jxr_keyword">null</strong>) {

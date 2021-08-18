@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AUTH.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.command.rfc4217</a> &gt; <span class="el_source">AUTH.java</span></div><h1>AUTH.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.command.rfc4217;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply501Exception;
+import org.waarp.common.command.exception.Reply503Exception;
+import org.waarp.common.command.exception.Reply504Exception;
+import org.waarp.common.command.exception.Reply534Exception;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.core.command.AbstractCommand;
+
+/**
+ * AUTH command with 2 options TLS or SSL&lt;br&gt;
+ * &lt;br&gt;
+ * Security Association Setup AUTH TLS (Control) or AUTH SSL (Control and
+ * Data)&lt;br&gt;
+ * 234*&lt;br&gt;
+ * 502, 504, 534*, 431* 500, 501, 421&lt;br&gt;
+ * &lt;br&gt;
+ * AUTH TLS -&gt; 234 -&gt; USER or ([PBSZ 0] PROT P then USER) -&gt; 2xy
+ */
+<span class="nc" id="L42">public class AUTH extends AbstractCommand {</span>
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(AUTH.class);</span>
+
+  @Override
+  public final void exec() throws CommandAbstractException {
+<span class="nc" id="L51">    if (!getSession().getConfiguration().getFtpInternalConfiguration()</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">                     .isAcceptAuthProt()) {</span>
+<span class="nc" id="L53">      throw new Reply534Exception(&quot;AUTH SSL / TLS not supported&quot;);</span>
+    }
+<span class="nc bnc" id="L55" title="All 2 branches missed.">    if (getSession().isSsl()) {</span>
+      // Already SSL
+<span class="nc" id="L57">      throw new Reply503Exception(&quot;Session already using SSL / TLS&quot;);</span>
+    }
+    // First Check if any argument
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (!hasArg()) {</span>
+      // Error since argument is needed
+<span class="nc" id="L62">      throw new Reply501Exception(&quot;Missing Parameter: TLS or SSL&quot;);</span>
+    }
+<span class="nc" id="L64">    final String[] types = getArgs();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (&quot;TLS&quot;.equalsIgnoreCase(types[0])) {</span>
+      // Only Command will have SSL
+<span class="nc" id="L67">      logger.debug(&quot;Start TLS&quot;);</span>
+<span class="nc" id="L68">      getSession().rein();</span>
+<span class="nc" id="L69">      getSession().setNextCommand(this);</span>
+<span class="nc" id="L70">      getSession().setReplyCode(</span>
+          ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE, null);
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    } else if (&quot;SSL&quot;.equalsIgnoreCase(types[0])) {</span>
+      // Both Command and Data will have SSL
+<span class="nc" id="L74">      logger.debug(&quot;Start SSL&quot;);</span>
+<span class="nc" id="L75">      getSession().rein();</span>
+<span class="nc" id="L76">      getSession().setNextCommand(this);</span>
+<span class="nc" id="L77">      getSession().setReplyCode(</span>
+          ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE, null);
+<span class="nc" id="L79">      getSession().setDataSsl(true);</span>
+    } else {
+<span class="nc" id="L81">      throw new Reply504Exception(&quot;Unknown Parameter: &quot; + types[0]);</span>
+    }
+<span class="nc" id="L83">    logger.debug(&quot;End of AUTH {}&quot;, types[0]);</span>
+<span class="nc" id="L84">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

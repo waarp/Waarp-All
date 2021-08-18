@@ -20,7 +20,13 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+
+import java.sql.Types;
+
+import static org.waarp.common.database.data.AbstractDbData.*;
 
 /**
  * Limit data object
@@ -45,94 +51,102 @@ public class Limit {
   @JsonProperty(&quot;DELAYLIMIT&quot;)
   private long delayLimit;
 
-<span class="fc" id="L48">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
+<span class="nc" id="L54">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
    * Empty constructor
    */
-<span class="fc" id="L54">  public Limit() {</span>
+<span class="nc" id="L60">  public Limit() {</span>
     // Nothing
-<span class="fc" id="L56">  }</span>
+<span class="nc" id="L62">  }</span>
 
   public Limit(final String hostid, final long delayLimit,
                final long readGlobalLimit, final long writeGlobalLimit,
                final long readSessionLimit, final long writeSessionLimit,
-               final UpdatedInfo updatedInfo) {
-<span class="fc" id="L62">    this(hostid, delayLimit, readGlobalLimit, writeGlobalLimit,</span>
+               final UpdatedInfo updatedInfo) throws WaarpDatabaseSqlException {
+<span class="nc" id="L68">    this(hostid, delayLimit, readGlobalLimit, writeGlobalLimit,</span>
          readSessionLimit, writeSessionLimit);
-<span class="fc" id="L64">    this.updatedInfo = updatedInfo;</span>
-<span class="fc" id="L65">  }</span>
+<span class="nc" id="L70">    this.updatedInfo = updatedInfo;</span>
+<span class="nc" id="L71">  }</span>
 
   public Limit(final String hostid, final long delayLimit,
                final long readGlobalLimit, final long writeGlobalLimit,
-<span class="fc" id="L69">               final long readSessionLimit, final long writeSessionLimit) {</span>
-<span class="fc" id="L70">    this.hostid = hostid;</span>
-<span class="fc" id="L71">    this.delayLimit = delayLimit;</span>
-<span class="fc" id="L72">    this.readGlobalLimit = readGlobalLimit;</span>
-<span class="fc" id="L73">    this.writeGlobalLimit = writeGlobalLimit;</span>
-<span class="fc" id="L74">    this.readSessionLimit = readSessionLimit;</span>
-<span class="fc" id="L75">    this.writeSessionLimit = writeSessionLimit;</span>
-<span class="fc" id="L76">  }</span>
+               final long readSessionLimit, final long writeSessionLimit)
+<span class="nc" id="L76">      throws WaarpDatabaseSqlException {</span>
+<span class="nc" id="L77">    this.hostid = hostid;</span>
+<span class="nc" id="L78">    this.delayLimit = delayLimit;</span>
+<span class="nc" id="L79">    this.readGlobalLimit = readGlobalLimit;</span>
+<span class="nc" id="L80">    this.writeGlobalLimit = writeGlobalLimit;</span>
+<span class="nc" id="L81">    this.readSessionLimit = readSessionLimit;</span>
+<span class="nc" id="L82">    this.writeSessionLimit = writeSessionLimit;</span>
+<span class="nc" id="L83">    checkValues();</span>
+<span class="nc" id="L84">  }</span>
 
-  public Limit(final String hostid, final long delayLimit) {
-<span class="fc" id="L79">    this(hostid, delayLimit, 0, 0, 0, 0);</span>
-<span class="fc" id="L80">  }</span>
+  public Limit(final String hostid, final long delayLimit)
+      throws WaarpDatabaseSqlException {
+<span class="nc" id="L88">    this(hostid, delayLimit, 0, 0, 0, 0);</span>
+<span class="nc" id="L89">  }</span>
 
-  public String getHostid() {
-<span class="fc" id="L83">    return hostid;</span>
+  @JsonIgnore
+  public final void checkValues() throws WaarpDatabaseSqlException {
+<span class="nc" id="L93">    validateLength(Types.NVARCHAR, hostid);</span>
+<span class="nc" id="L94">  }</span>
+
+  public final String getHostid() {
+<span class="nc" id="L97">    return hostid;</span>
   }
 
-  public void setHostid(final String hostid) {
-<span class="fc" id="L87">    this.hostid = hostid;</span>
-<span class="fc" id="L88">  }</span>
+  public final void setHostid(final String hostid) {
+<span class="nc" id="L101">    this.hostid = hostid;</span>
+<span class="nc" id="L102">  }</span>
 
-  public long getReadGlobalLimit() {
-<span class="fc" id="L91">    return readGlobalLimit;</span>
+  public final long getReadGlobalLimit() {
+<span class="nc" id="L105">    return readGlobalLimit;</span>
   }
 
-  public void setReadGlobalLimit(final long readGlobalLimit) {
-<span class="fc" id="L95">    this.readGlobalLimit = readGlobalLimit;</span>
-<span class="fc" id="L96">  }</span>
+  public final void setReadGlobalLimit(final long readGlobalLimit) {
+<span class="nc" id="L109">    this.readGlobalLimit = readGlobalLimit;</span>
+<span class="nc" id="L110">  }</span>
 
-  public long getWriteGlobalLimit() {
-<span class="fc" id="L99">    return writeGlobalLimit;</span>
+  public final long getWriteGlobalLimit() {
+<span class="nc" id="L113">    return writeGlobalLimit;</span>
   }
 
-  public void setWriteGlobalLimit(final long writeGlobalLimit) {
-<span class="fc" id="L103">    this.writeGlobalLimit = writeGlobalLimit;</span>
-<span class="fc" id="L104">  }</span>
+  public final void setWriteGlobalLimit(final long writeGlobalLimit) {
+<span class="nc" id="L117">    this.writeGlobalLimit = writeGlobalLimit;</span>
+<span class="nc" id="L118">  }</span>
 
-  public long getReadSessionLimit() {
-<span class="fc" id="L107">    return readSessionLimit;</span>
+  public final long getReadSessionLimit() {
+<span class="nc" id="L121">    return readSessionLimit;</span>
   }
 
-  public void setReadSessionLimit(final long readSessionLimit) {
-<span class="fc" id="L111">    this.readSessionLimit = readSessionLimit;</span>
-<span class="fc" id="L112">  }</span>
+  public final void setReadSessionLimit(final long readSessionLimit) {
+<span class="nc" id="L125">    this.readSessionLimit = readSessionLimit;</span>
+<span class="nc" id="L126">  }</span>
 
-  public long getWriteSessionLimit() {
-<span class="fc" id="L115">    return writeSessionLimit;</span>
+  public final long getWriteSessionLimit() {
+<span class="nc" id="L129">    return writeSessionLimit;</span>
   }
 
-  public void setWriteSessionLimit(final long writeSessionLimit) {
-<span class="fc" id="L119">    this.writeSessionLimit = writeSessionLimit;</span>
-<span class="fc" id="L120">  }</span>
+  public final void setWriteSessionLimit(final long writeSessionLimit) {
+<span class="nc" id="L133">    this.writeSessionLimit = writeSessionLimit;</span>
+<span class="nc" id="L134">  }</span>
 
-  public long getDelayLimit() {
-<span class="fc" id="L123">    return delayLimit;</span>
+  public final long getDelayLimit() {
+<span class="nc" id="L137">    return delayLimit;</span>
   }
 
-  public void setDelayLimit(final long delayLimit) {
-<span class="fc" id="L127">    this.delayLimit = delayLimit;</span>
-<span class="fc" id="L128">  }</span>
+  public final void setDelayLimit(final long delayLimit) {
+<span class="nc" id="L141">    this.delayLimit = delayLimit;</span>
+<span class="nc" id="L142">  }</span>
 
-  public UpdatedInfo getUpdatedInfo() {
-<span class="fc" id="L131">    return updatedInfo;</span>
+  public final UpdatedInfo getUpdatedInfo() {
+<span class="nc" id="L145">    return updatedInfo;</span>
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
-<span class="fc" id="L135">    updatedInfo = info;</span>
-<span class="fc" id="L136">  }</span>
+  public final void setUpdatedInfo(final UpdatedInfo info) {
+<span class="nc" id="L149">    updatedInfo = info;</span>
+<span class="nc" id="L150">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

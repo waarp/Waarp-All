@@ -49,7 +49,7 @@ public class DbModelH2Kernel extends DbModelH2 {
 <span class="nc" id="L49">  }</span>
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L54">    createTableMonitoring(session);</span>
 <span class="nc" id="L55">  }</span>
@@ -57,70 +57,70 @@ public class DbModelH2Kernel extends DbModelH2 {
   public static void createTableMonitoring(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: logs
-<span class="fc" id="L60">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
-<span class="fc" id="L61">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
-<span class="fc" id="L62">    final String notNull = &quot; NOT NULL &quot;;</span>
+<span class="nc" id="L60">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+<span class="nc" id="L61">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="nc" id="L62">    final String notNull = &quot; NOT NULL &quot;;</span>
 
     // log
-<span class="fc" id="L65">    StringBuilder action =</span>
+<span class="nc" id="L65">    StringBuilder action =</span>
         new StringBuilder(createTableH2 + DbTransferLog.table + '(');
-<span class="fc" id="L67">    final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();</span>
-<span class="fc bfc" id="L68" title="All 2 branches covered.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
-<span class="fc" id="L69">      action.append(acolumns[i].name())</span>
-<span class="fc" id="L70">            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)</span>
-<span class="fc" id="L71">            .append(&quot;, &quot;);</span>
+<span class="nc" id="L67">    final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
+<span class="nc" id="L69">      action.append(acolumns[i].name())</span>
+<span class="nc" id="L70">            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)</span>
+<span class="nc" id="L71">            .append(&quot;, &quot;);</span>
     }
     // Several columns for primary key
-<span class="fc" id="L74">    action.append(&quot; CONSTRAINT TRANSLOG_PK &quot; + primaryKey + '(');</span>
-<span class="fc bfc" id="L75" title="All 2 branches covered.">    for (int i = DbTransferLog.NBPRKEY; i &gt; 1; i--) {</span>
-<span class="fc" id="L76">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
+<span class="nc" id="L74">    action.append(&quot; CONSTRAINT TRANSLOG_PK &quot; + primaryKey + '(');</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    for (int i = DbTransferLog.NBPRKEY; i &gt; 1; i--) {</span>
+<span class="nc" id="L76">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
     }
-<span class="fc" id="L78">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
-<span class="fc" id="L79">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
-<span class="fc" id="L80">    final DbRequest request = new DbRequest(session);</span>
+<span class="nc" id="L78">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L79">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L80">    final DbRequest request = new DbRequest(session);</span>
     try {
-<span class="fc" id="L82">      request.query(action.toString());</span>
+<span class="nc" id="L82">      request.query(action.toString());</span>
 <span class="nc" id="L83">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L84">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L84">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L85">      return;</span>
 <span class="nc" id="L86">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L87">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L87">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
-<span class="fc" id="L90">      request.close();</span>
+<span class="nc" id="L90">      request.close();</span>
     }
     // Index Runner
-<span class="fc" id="L93">    action = new StringBuilder(</span>
+<span class="nc" id="L93">    action = new StringBuilder(</span>
         &quot;CREATE INDEX IF NOT EXISTS IDX_TRANSLOG ON &quot; + DbTransferLog.table +
         &quot;(&quot;);
-<span class="fc" id="L96">    final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
-<span class="fc" id="L98">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
+<span class="nc" id="L96">    final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
+<span class="nc" id="L98">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
     }
-<span class="fc" id="L100">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
-<span class="fc" id="L101">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L100">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
+<span class="nc" id="L101">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="fc" id="L103">      request.query(action.toString());</span>
+<span class="nc" id="L103">      request.query(action.toString());</span>
 <span class="nc" id="L104">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L105">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L105">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L106">      return;</span>
 <span class="nc" id="L107">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L108">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L108">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
-<span class="fc" id="L111">      request.close();</span>
+<span class="nc" id="L111">      request.close();</span>
     }
 
     // cptrunner
-<span class="fc" id="L115">    action = new StringBuilder(</span>
+<span class="nc" id="L115">    action = new StringBuilder(</span>
         &quot;CREATE SEQUENCE IF NOT EXISTS &quot; + DbTransferLog.fieldseq +
         &quot; START WITH &quot; + (DbConstantGateway.ILLEGALVALUE + 1) + &quot; MINVALUE &quot; +
         (DbConstantGateway.ILLEGALVALUE + 1));
-<span class="fc" id="L119">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L119">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="fc" id="L121">      request.query(action.toString());</span>
+<span class="nc" id="L121">      request.query(action.toString());</span>
 <span class="nc" id="L122">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L123">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L123">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L124">    } catch (final WaarpDatabaseSqlException e) {</span>
       // version &lt;= 1.2.173
 <span class="nc" id="L126">      action = new StringBuilder(</span>
@@ -130,40 +130,42 @@ public class DbModelH2Kernel extends DbModelH2 {
       try {
 <span class="nc" id="L131">        request.query(action.toString());</span>
 <span class="nc" id="L132">      } catch (final WaarpDatabaseNoConnectionException e2) {</span>
-<span class="nc" id="L133">        SysErrLogger.FAKE_LOGGER.syserr(e2);</span>
+<span class="nc" id="L133">        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);</span>
 <span class="nc" id="L134">      } catch (final WaarpDatabaseSqlException e2) {</span>
-<span class="nc" id="L135">        SysErrLogger.FAKE_LOGGER.syserr(e2);</span>
+<span class="nc" id="L135">        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);</span>
       } finally {
 <span class="nc" id="L137">        request.close();</span>
       }
     } finally {
-<span class="fc" id="L140">      request.close();</span>
+<span class="nc" id="L140">      request.close();</span>
     }
-<span class="fc" id="L142">  }</span>
+<span class="nc" id="L142">  }</span>
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L147">    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);</span>
 <span class="nc" id="L148">  }</span>
 
   @Override
-  public long nextSequence(final DbSession dbSession)
+  public final long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
 <span class="nc" id="L154">    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);</span>
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version) {
-<span class="nc" id="L159">    return false;</span>
+  public final boolean upgradeDb(final DbSession session,
+                                 final String version) {
+<span class="nc" id="L160">    return false;</span>
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix) {
-<span class="nc" id="L165">    return false;</span>
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version,
+                                     final boolean tryFix) {
+<span class="nc" id="L167">    return false;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

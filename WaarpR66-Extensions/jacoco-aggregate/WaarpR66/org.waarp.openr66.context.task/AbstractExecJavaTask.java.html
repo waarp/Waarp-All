@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractExecJavaTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">AbstractExecJavaTask.java</span></div><h1>AbstractExecJavaTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import java.util.regex.Pattern;
+
+/**
+ * Dummy Runnable Task that only logs
+ */
+<span class="nc" id="L41">public abstract class AbstractExecJavaTask implements R66Runnable {</span>
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L46">      WaarpLoggerFactory.getLogger(AbstractExecJavaTask.class);</span>
+<span class="nc" id="L47">  protected static final Pattern BLANK = WaarpStringUtils.BLANK;</span>
+
+  protected int delay;
+<span class="nc" id="L50">  protected int status = -1;</span>
+  protected R66Session session;
+  protected boolean waitForValidation;
+  protected boolean useLocalExec;
+
+  protected String classname;
+  protected String fullarg;
+  protected boolean isToValidate;
+  protected boolean callFromBusiness;
+
+  protected String finalInformation;
+
+  /**
+   * Server side method to validate the request
+   *
+   * @param packet
+   *
+   * @return True if feedback is done
+   */
+  public final boolean validate(final BusinessRequestPacket packet) {
+<span class="nc" id="L70">    status = 0;</span>
+<span class="nc" id="L71">    packet.validate();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc" id="L73">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L74">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L76">        final R66Result result =</span>
+            new R66Result(session, true, ErrorCode.CompleteOk, null);
+<span class="nc" id="L78">        localChannelReference.validateRequest(result);</span>
+        try {
+<span class="nc" id="L80">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+                                                true);
+<span class="nc" id="L82">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L84">        }</span>
+<span class="nc" id="L85">        return true;</span>
+      } else {
+<span class="nc" id="L87">        finalInformation = packet.toString();</span>
+      }
+    }
+<span class="nc" id="L90">    return false;</span>
+  }
+
+  /**
+   * To be called by the requester when finished
+   *
+   * @param object special object to get back
+   */
+  public final void finalValidate(final Object object) {
+<span class="nc" id="L99">    status = 0;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc" id="L101">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L102">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L104">        final R66Result result =</span>
+            new R66Result(session, true, ErrorCode.CompleteOk, null);
+<span class="nc" id="L106">        result.setOther(object);</span>
+<span class="nc" id="L107">        localChannelReference.validateRequest(result);</span>
+<span class="nc" id="L108">        localChannelReference.close();</span>
+<span class="nc" id="L109">      } else {</span>
+<span class="nc" id="L110">        finalInformation = JsonHandler.writeAsString(object);</span>
+      }
+    }
+<span class="nc" id="L113">  }</span>
+
+  /**
+   * To be used if abnormal usage is made of one Java Method
+   */
+  public final void invalid() {
+<span class="nc" id="L119">    status = 2;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (!callFromBusiness) {</span>
+<span class="nc" id="L121">      return;</span>
+    }
+<span class="nc" id="L123">    final R66Result result =</span>
+        new R66Result(null, session, true, ErrorCode.Unimplemented,
+<span class="nc" id="L125">                      session.getRunner());</span>
+<span class="nc" id="L126">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L127">        session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (localChannelReference != null) {</span>
+<span class="nc" id="L129">      localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L130">      final ErrorPacket error = new ErrorPacket(&quot;Command Incompatible&quot;,</span>
+<span class="nc" id="L131">                                                ErrorCode.ExternalOp.getCode(),</span>
+                                                ErrorPacket.FORWARDCLOSECODE);
+      try {
+<span class="nc" id="L134">        ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                              false);
+<span class="nc" id="L136">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // nothing
+<span class="nc" id="L138">      }</span>
+<span class="nc" id="L139">      localChannelReference.invalidateRequest(result);</span>
+<span class="nc" id="L140">      localChannelReference.close();</span>
+    }
+<span class="nc" id="L142">  }</span>
+
+  @Override
+  public void run() {
+<span class="nc bnc" id="L146" title="All 4 branches missed.">    if (callFromBusiness &amp;&amp; isToValidate) {</span>
+      // Business Request to validate?
+<span class="nc" id="L148">      final BusinessRequestPacket packet =</span>
+          new BusinessRequestPacket(classname + ' ' + fullarg, 0);
+<span class="nc" id="L150">      validate(packet);</span>
+    }
+<span class="nc" id="L152">    final String builder =</span>
+<span class="nc" id="L153">        getClass().getSimpleName() + ':' + &quot;args(&quot; + fullarg + ')';</span>
+<span class="nc" id="L154">    logger.warn(builder);</span>
+<span class="nc" id="L155">    status = 0;</span>
+<span class="nc" id="L156">  }</span>
+
+  @Override
+  public final void setArgs(final R66Session session,
+                            final boolean waitForValidation,
+                            final boolean useLocalExec, final int delay,
+                            final String classname, final String arg,
+                            final boolean callFromBusiness,
+                            final boolean isToValidate) {
+<span class="nc" id="L165">    this.session = session;</span>
+<span class="nc" id="L166">    this.waitForValidation = waitForValidation;</span>
+<span class="nc" id="L167">    this.useLocalExec = useLocalExec;</span>
+<span class="nc" id="L168">    this.delay = delay;</span>
+<span class="nc" id="L169">    this.classname = classname;</span>
+<span class="nc" id="L170">    this.callFromBusiness = callFromBusiness;</span>
+<span class="nc" id="L171">    fullarg = arg;</span>
+<span class="nc" id="L172">    this.isToValidate = isToValidate;</span>
+<span class="nc" id="L173">  }</span>
+
+  @Override
+  public final int getFinalStatus() {
+<span class="nc" id="L177">    return status;</span>
+  }
+
+  @Override
+  public final String toString() {
+<span class="nc bnc" id="L182" title="All 4 branches missed.">    if (status == -1 || finalInformation == null) {</span>
+<span class="nc" id="L183">      return getClass().getSimpleName() + &quot;: [&quot; + fullarg + ']';</span>
+    } else {
+<span class="nc" id="L185">      return finalInformation;</span>
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

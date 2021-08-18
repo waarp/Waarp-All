@@ -28,11 +28,44 @@
 <a class="jxr_linenumber" name="L20" href="#L20">20</a>  
 <a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">package</strong> org.waarp.openr66.protocol.it;
 <a class="jxr_linenumber" name="L22" href="#L22">22</a>  
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="SpooledNoDbIT" href="../../../../../org/waarp/openr66/protocol/it/SpooledNoDbIT.html#SpooledNoDbIT">SpooledNoDbIT</a> <strong class="jxr_keyword">extends</strong> <a name="SpooledIT" href="../../../../../org/waarp/openr66/protocol/it/SpooledIT.html#SpooledIT">SpooledIT</a> {
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>    <strong class="jxr_keyword">static</strong> {
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>      noDb = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>    }
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  }
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> io.netty.util.ResourceLeakDetector;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> io.netty.util.ResourceLeakDetector.Level;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.junit.BeforeClass;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.utility.Processes;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.utility.SystemPropertyUtil;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.io.File;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.waarp.openr66.protocol.it.ScenarioBase.*;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="SpooledNoDbIT" href="../../../../../org/waarp/openr66/protocol/it/SpooledNoDbIT.html#SpooledNoDbIT">SpooledNoDbIT</a> <strong class="jxr_keyword">extends</strong> <a name="SpooledITAbstract" href="../../../../../org/waarp/openr66/protocol/it/SpooledITAbstract.html#SpooledITAbstract">SpooledITAbstract</a> {
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>    <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <em class="jxr_javadoccomment">   * @throws Exception</em>
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>    @BeforeClass
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClass() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>      noDb = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>      <strong class="jxr_keyword">if</strong> (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>        ResourceLeakDetector.setLevel(Level.PARANOID);
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>      } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>        ResourceLeakDetector.setLevel(Level.SIMPLE);
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>      }
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>      <strong class="jxr_keyword">final</strong> ClassLoader classLoader = SpooledIT.<strong class="jxr_keyword">class</strong>.getClassLoader();
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">final</strong> File file =
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>          <strong class="jxr_keyword">new</strong> File(classLoader.getResource(<span class="jxr_string">"logback-test.xml"</span>).getFile());
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>      setUpBeforeClassMinimal(LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML);
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>      setUpDbBeforeClass();
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML);
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>      Processes.setMemoryAccordingToFreeMemory(2);
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>      File configFile = <strong class="jxr_keyword">new</strong> File(dir, CONFIG_SERVER_A_MINIMAL_XML);
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>      r66Pid1 = startServer(configFile.getAbsolutePath());
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>      Processes.setJvmArgsDefault(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>      Thread.sleep(2000);
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>      logger.warn(<span class="jxr_string">"Is No DB ? {}"</span>, noDb);
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>      setUpBeforeClassClient(
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>          noDb? CONFIG_CLIENT_A_NODB_XML : CONFIG_CLIENT_A_XML);
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>    }
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

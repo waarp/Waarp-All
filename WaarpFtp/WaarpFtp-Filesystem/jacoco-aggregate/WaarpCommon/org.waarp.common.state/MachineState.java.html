@@ -40,8 +40,8 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
   /**
    * Internal Logger
    */
-<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(MachineState.class);</span>
+<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(MachineState.class);</span>
 
   private ConcurrentMap&lt;E, EnumSet&lt;E&gt;&gt; statemap;
   private E currentState;
@@ -55,10 +55,10 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *     states
    */
   public MachineState(final E initialState,
-<span class="fc" id="L58">                      final ConcurrentMap&lt;E, EnumSet&lt;E&gt;&gt; map) {</span>
-<span class="fc" id="L59">    statemap = map;</span>
-<span class="fc" id="L60">    currentState = initialState;</span>
-<span class="fc" id="L61">  }</span>
+<span class="nc" id="L58">                      final ConcurrentMap&lt;E, EnumSet&lt;E&gt;&gt; map) {</span>
+<span class="nc" id="L59">    statemap = map;</span>
+<span class="nc" id="L60">    currentState = initialState;</span>
+<span class="nc" id="L61">  }</span>
 
   /**
    * Initialize with an initialState but no association (Machine State is
@@ -66,10 +66,10 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @param initialState initial MachineState
    */
-<span class="fc" id="L69">  public MachineState(final E initialState) {</span>
-<span class="fc" id="L70">    statemap = new ConcurrentHashMap&lt;E, EnumSet&lt;E&gt;&gt;();</span>
-<span class="fc" id="L71">    currentState = initialState;</span>
-<span class="fc" id="L72">  }</span>
+<span class="nc" id="L69">  public MachineState(final E initialState) {</span>
+<span class="nc" id="L70">    statemap = new ConcurrentHashMap&lt;E, EnumSet&lt;E&gt;&gt;();</span>
+<span class="nc" id="L71">    currentState = initialState;</span>
+<span class="nc" id="L72">  }</span>
 
   /**
    * Add a new association from one state to a set of acceptable following
@@ -81,8 +81,9 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @return the previous association if any
    */
-  public EnumSet&lt;E&gt; addNewAssociation(final E state, final EnumSet&lt;E&gt; set) {
-<span class="nc" id="L85">    return statemap.put(state, set);</span>
+  public final EnumSet&lt;E&gt; addNewAssociation(final E state,
+                                            final EnumSet&lt;E&gt; set) {
+<span class="nc" id="L86">    return statemap.put(state, set);</span>
   }
 
   /**
@@ -94,8 +95,8 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @return the previous association if any
    */
-  public EnumSet&lt;E&gt; addNewAssociation(final Transition&lt;E&gt; elt) {
-<span class="fc" id="L98">    return statemap.put(elt.getState(), elt.getSet());</span>
+  public final EnumSet&lt;E&gt; addNewAssociation(final Transition&lt;E&gt; elt) {
+<span class="nc" id="L99">    return statemap.put(elt.getState(), elt.getSet());</span>
   }
 
   /**
@@ -105,8 +106,8 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @return the previous association if any
    */
-  public EnumSet&lt;E&gt; removeAssociation(final E state) {
-<span class="nc" id="L109">    return statemap.remove(state);</span>
+  public final EnumSet&lt;E&gt; removeAssociation(final E state) {
+<span class="nc" id="L110">    return statemap.remove(state);</span>
   }
 
   /**
@@ -114,8 +115,8 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @return the current State
    */
-  public E getCurrent() {
-<span class="fc" id="L118">    return currentState;</span>
+  public final E getCurrent() {
+<span class="nc" id="L119">    return currentState;</span>
   }
 
   /**
@@ -127,14 +128,15 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @throws IllegalFiniteStateException if the state is not allowed
    */
-  public E setCurrent(final E desiredState) throws IllegalFiniteStateException {
-<span class="fc bfc" id="L131" title="All 2 branches covered.">    if (!isReachable(desiredState)) {</span>
-<span class="fc" id="L132">      logger</span>
-<span class="fc" id="L133">          .debug(&quot;State {} not reachable from: {}&quot;, desiredState, currentState);</span>
-<span class="fc" id="L134">      throw new IllegalFiniteStateException(</span>
+  public final E setCurrent(final E desiredState)
+      throws IllegalFiniteStateException {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (!isReachable(desiredState)) {</span>
+<span class="nc" id="L134">      logger.debug(&quot;State {} not reachable from: {}&quot;, desiredState,</span>
+                   currentState);
+<span class="nc" id="L136">      throw new IllegalFiniteStateException(</span>
           desiredState + &quot; not allowed from &quot; + currentState);
     }
-<span class="fc" id="L137">    return setAsFinal(desiredState);</span>
+<span class="nc" id="L139">    return setAsFinal(desiredState);</span>
   }
 
   /**
@@ -144,8 +146,8 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    *
    * @return the requested state, even if it was not reachable
    */
-  public E setDryCurrent(final E desiredState) {
-<span class="nc" id="L148">    return setAsFinal(desiredState);</span>
+  public final E setDryCurrent(final E desiredState) {
+<span class="nc" id="L150">    return setAsFinal(desiredState);</span>
   }
 
   /**
@@ -156,14 +158,14 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    * @return True if the desiredState is valid from currentState
    */
   private boolean isReachable(final E desiredState) {
-<span class="pc bpc" id="L159" title="2 of 4 branches missed.">    if (currentState == null || statemap == null) {</span>
-<span class="nc" id="L160">      return false;</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">    if (currentState == null || statemap == null) {</span>
+<span class="nc" id="L162">      return false;</span>
     }
-<span class="fc" id="L162">    final EnumSet&lt;?&gt; set = statemap.get(currentState);</span>
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (set != null) {</span>
-<span class="fc" id="L164">      return set.contains(desiredState);</span>
+<span class="nc" id="L164">    final EnumSet&lt;?&gt; set = statemap.get(currentState);</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (set != null) {</span>
+<span class="nc" id="L166">      return set.contains(desiredState);</span>
     }
-<span class="nc" id="L166">    return false;</span>
+<span class="nc" id="L168">    return false;</span>
   }
 
   /**
@@ -174,17 +176,17 @@ public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
    * @return the requested state
    */
   private E setAsFinal(final E desiredState) {
-<span class="fc" id="L177">    logger.debug(&quot;New State: {} from {}&quot;, desiredState, currentState);</span>
-<span class="fc" id="L178">    currentState = desiredState;</span>
-<span class="fc" id="L179">    return currentState;</span>
+<span class="nc" id="L179">    logger.debug(&quot;New State: {} from {}&quot;, desiredState, currentState);</span>
+<span class="nc" id="L180">    currentState = desiredState;</span>
+<span class="nc" id="L181">    return currentState;</span>
   }
 
   /**
    * Release the Machine State
    */
-  public void release() {
-<span class="nc" id="L186">    currentState = null;</span>
-<span class="nc" id="L187">    statemap = null;</span>
-<span class="nc" id="L188">  }</span>
+  public final void release() {
+<span class="nc" id="L188">    currentState = null;</span>
+<span class="nc" id="L189">    statemap = null;</span>
+<span class="nc" id="L190">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

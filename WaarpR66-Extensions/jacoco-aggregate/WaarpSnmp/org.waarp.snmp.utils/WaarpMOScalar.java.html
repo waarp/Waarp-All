@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpMOScalar.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpSnmp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.snmp.utils</a> &gt; <span class="el_source">WaarpMOScalar.java</span></div><h1>WaarpMOScalar.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.snmp.utils;
+
+import org.snmp4j.agent.MOAccess;
+import org.snmp4j.agent.MOScope;
+import org.snmp4j.agent.mo.MOScalar;
+import org.snmp4j.agent.request.SubRequest;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.Variable;
+
+/**
+ * GoldenGate MOScalar implementation
+ */
+public class WaarpMOScalar extends MOScalar&lt;Variable&gt; {
+  final WaarpMORow row;
+
+  /**
+   * @param id
+   * @param access
+   * @param value
+   */
+  public WaarpMOScalar(final OID id, final MOAccess access,
+                       final Variable value, final WaarpMORow row) {
+<span class="nc" id="L42">    super(id, access, value);</span>
+<span class="nc" id="L43">    this.row = row;</span>
+<span class="nc" id="L44">    setVolatile(true);</span>
+<span class="nc" id="L45">  }</span>
+
+  /**
+   * Called when a direct external access is done to this scalar. Therefore
+   * this
+   * function can be override to
+   * host update check.
+   *
+   * @see MOScalar#get(SubRequest)
+   */
+  @Override
+  public final void get(final SubRequest request) {
+<span class="nc" id="L57">    row.mib.updateServices(this);</span>
+<span class="nc" id="L58">    super.get(request);</span>
+<span class="nc" id="L59">  }</span>
+
+  /**
+   * Called when a multiple external access is done to this scalar and the
+   * following. Therefore this function
+   * can be override to host update check.
+   *
+   * @see MOScalar#find(MOScope)
+   */
+  @Override
+  public final OID find(final MOScope range) {
+<span class="nc" id="L70">    row.mib.updateServices(range);</span>
+<span class="nc" id="L71">    return super.find(range);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

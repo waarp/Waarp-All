@@ -43,13 +43,13 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
   /**
    * Internal Logger
    */
-<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(FilesystemBasedFtpFile.class);</span>
+<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(FilesystemBasedFtpFile.class);</span>
 
   /**
    * Retrieve lock to ensure only one call at a time for one file
    */
-<span class="fc" id="L52">  private final ReentrantLock retrieveLock = new ReentrantLock();</span>
+<span class="nc" id="L52">  private final ReentrantLock retrieveLock = new ReentrantLock();</span>
 
   /**
    * @param session
@@ -63,19 +63,19 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
                                    final FilesystemBasedFtpDir dir,
                                    final String path, final boolean append)
       throws CommandAbstractException {
-<span class="fc" id="L66">    super(session, dir, path, append);</span>
-<span class="fc" id="L67">  }</span>
+<span class="nc" id="L66">    super(session, dir, path, append);</span>
+<span class="nc" id="L67">  }</span>
 
   @Override
-  public long length() throws CommandAbstractException {
-<span class="fc" id="L71">    long length = super.length();</span>
-<span class="fc" id="L72">    if (((FtpSession) getSession()).getDataConn()</span>
-<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                                   .isFileStreamBlockAsciiImage()) {</span>
-<span class="fc" id="L74">      final long block = (long) Math</span>
-<span class="fc" id="L75">          .ceil((double) length / (double) getSession().getBlockSize());</span>
-<span class="fc" id="L76">      length += (block + 3) * 3;</span>
+  public final long length() throws CommandAbstractException {
+<span class="nc" id="L71">    long length = super.length();</span>
+<span class="nc" id="L72">    if (((FtpSession) getSession()).getDataConn()</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                                   .isFileStreamBlockAsciiImage()) {</span>
+<span class="nc" id="L74">      final long block = (long) Math.ceil(</span>
+<span class="nc" id="L75">          (double) length / (double) getSession().getBlockSize());</span>
+<span class="nc" id="L76">      length += (block + 3) * 3;</span>
     }
-<span class="fc" id="L78">    return length;</span>
+<span class="nc" id="L78">    return length;</span>
   }
 
   /**
@@ -83,109 +83,122 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
    * directly)
    */
   @Override
-  public void trueRetrieve() {
-<span class="fc" id="L87">    retrieveLock.lock();</span>
+  public final void trueRetrieve() {
+<span class="nc" id="L87">    retrieveLock.lock();</span>
     try {
-<span class="pc bpc" id="L89" title="1 of 2 branches missed.">      if (!isReady) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (!isReady) {</span>
 <span class="nc" id="L90">        return;</span>
       }
       // First check if ready to run from Control
       try {
-<span class="fc" id="L94">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="fc" id="L95">                              .waitForDataNetworkHandlerReady();</span>
+<span class="nc" id="L94">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L95">                              .waitForDataNetworkHandlerReady();</span>
 <span class="nc" id="L96">      } catch (final InterruptedException e) {//NOSONAR</span>
         // bad thing
 <span class="nc" id="L98">        logger.warn(&quot;DataNetworkHandler was not ready&quot;, e);</span>
-<span class="nc" id="L99">        return;</span>
-<span class="fc" id="L100">      }</span>
-      final Channel channel;
-      try {
-<span class="fc" id="L103">        channel = ((FtpSession) session).getDataConn().getCurrentDataChannel();</span>
-<span class="nc" id="L104">      } catch (final FtpNoConnectionException e) {</span>
-<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (isInReading()) {</span>
-<span class="nc" id="L106">          logger.error(&quot;Should not be&quot;, e);</span>
-<span class="nc" id="L107">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L108">                                .setTransferAbortedFromInternal(true);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (isInReading()) {</span>
+<span class="nc" id="L100">          logger.error(&quot;Should not be&quot;, e);</span>
+<span class="nc" id="L101">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L102">                                .setTransferAbortedFromInternal(true);</span>
         }
-<span class="nc" id="L110">        logger.debug(</span>
+<span class="nc" id="L104">        logger.debug(</span>
             &quot;Possible call while channel was on going to be closed once transfer was done&quot;,
             e);
-<span class="nc" id="L113">        closeFile();</span>
-<span class="nc" id="L114">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L115">                              .setPreEndOfTransfer();</span>
-<span class="nc" id="L116">        return;</span>
-<span class="fc" id="L117">      }</span>
+<span class="nc" id="L107">        closeFile();</span>
+<span class="nc" id="L108">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L109">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L110">        return;</span>
+<span class="nc" id="L111">      }</span>
+      final Channel channel;
+      try {
+<span class="nc" id="L114">        channel = ((FtpSession) session).getDataConn().getCurrentDataChannel();</span>
+<span class="nc" id="L115">      } catch (final FtpNoConnectionException e) {</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (isInReading()) {</span>
+<span class="nc" id="L117">          logger.error(&quot;Should not be&quot;, e);</span>
+<span class="nc" id="L118">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L119">                                .setTransferAbortedFromInternal(true);</span>
+        }
+<span class="nc" id="L121">        logger.debug(</span>
+            &quot;Possible call while channel was on going to be closed once transfer was done&quot;,
+            e);
+<span class="nc" id="L124">        closeFile();</span>
+<span class="nc" id="L125">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L126">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L127">        return;</span>
+<span class="nc" id="L128">      }</span>
       DataBlock block;
       try {
-<span class="fc" id="L120">        block = readDataBlock();</span>
-<span class="nc" id="L121">      } catch (final FileEndOfTransferException e) {</span>
+<span class="nc" id="L131">        block = readDataBlock();</span>
+<span class="nc" id="L132">      } catch (final FileEndOfTransferException e) {</span>
         // Last block (in fact, previous block was the last one,
         // but it could be aligned with the block size so not
         // detected)
-<span class="nc" id="L125">        closeFile();</span>
-<span class="nc" id="L126">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L127">                              .setPreEndOfTransfer();</span>
-<span class="nc" id="L128">        return;</span>
-<span class="fc" id="L129">      }</span>
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      if (block == null) {</span>
+<span class="nc" id="L136">        closeFile();</span>
+<span class="nc" id="L137">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L138">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L139">        return;</span>
+<span class="nc" id="L140">      }</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">      if (block == null) {</span>
         // Last block (in fact, previous block was the last one,
         // but it could be aligned with the block size so not
         // detected)
-<span class="nc" id="L134">        closeFile();</span>
-<span class="nc" id="L135">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L136">                              .setPreEndOfTransfer();</span>
-<span class="nc" id="L137">        return;</span>
+<span class="nc" id="L145">        closeFile();</span>
+<span class="nc" id="L146">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L147">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L148">        return;</span>
       }
       // While not last block
-<span class="fc" id="L140">      ChannelFuture future = null;</span>
-<span class="pc bpc" id="L141" title="1 of 4 branches missed.">      while (block != null &amp;&amp; !block.isEOF()) {</span>
-<span class="fc" id="L142">        future = channel.writeAndFlush(block);</span>
-<span class="fc" id="L143">        WaarpNettyUtil.awaitOrInterrupted(future);</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (!future.isSuccess()) {</span>
-<span class="nc" id="L145">          closeFile();</span>
-<span class="nc" id="L146">          throw new FileTransferException(&quot;File transfer in error&quot;);</span>
+<span class="nc" id="L151">      ChannelFuture future = null;</span>
+<span class="nc bnc" id="L152" title="All 4 branches missed.">      while (block != null &amp;&amp; !block.isEOF()) {</span>
+<span class="nc" id="L153">        future = channel.writeAndFlush(block);</span>
+<span class="nc" id="L154">        WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (!future.isSuccess()) {</span>
+<span class="nc" id="L156">          closeFile();</span>
+<span class="nc" id="L157">          throw new FileTransferException(&quot;File transfer in error&quot;);</span>
         }
         try {
-<span class="fc" id="L149">          block = readDataBlock();</span>
-<span class="nc" id="L150">        } catch (final FileEndOfTransferException e) {</span>
-<span class="nc" id="L151">          closeFile();</span>
+<span class="nc" id="L160">          block = readDataBlock();</span>
+<span class="nc" id="L161">        } catch (final FileEndOfTransferException e) {</span>
+<span class="nc" id="L162">          closeFile();</span>
           // Wait for last write
-<span class="nc bnc" id="L153" title="All 2 branches missed.">          if (future.isSuccess()) {</span>
-<span class="nc" id="L154">            ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L155">                                  .setPreEndOfTransfer();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">          if (future.isSuccess()) {</span>
+<span class="nc" id="L165">            ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L166">                                  .setPreEndOfTransfer();</span>
           } else {
-<span class="nc" id="L157">            throw new FileTransferException(&quot;File transfer in error&quot;);</span>
+<span class="nc" id="L168">            throw new FileTransferException(&quot;File transfer in error&quot;);</span>
           }
-<span class="nc" id="L159">          return;</span>
-<span class="fc" id="L160">        }</span>
+<span class="nc" id="L170">          return;</span>
+<span class="nc" id="L171">        }</span>
       }
       // Last block
-<span class="fc" id="L163">      closeFile();</span>
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">      if (block != null) {</span>
-<span class="fc" id="L165">        logger.debug(&quot;Write {}&quot;, block.getByteCount());</span>
-<span class="fc" id="L166">        future = channel.writeAndFlush(block);</span>
+<span class="nc" id="L174">      closeFile();</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">      if (block != null) {</span>
+<span class="nc" id="L176">        logger.debug(&quot;Write {}&quot;, block.getByteCount());</span>
+<span class="nc" id="L177">        future = channel.writeAndFlush(block);</span>
       }
       // Wait for last write
-<span class="pc bpc" id="L169" title="1 of 2 branches missed.">      if (future != null) {</span>
-<span class="fc" id="L170">        WaarpNettyUtil.awaitOrInterrupted(future);</span>
-<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
-<span class="fc" id="L172">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="fc" id="L173">                                .setPreEndOfTransfer();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">      if (future != null) {</span>
+<span class="nc" id="L181">        WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (future.isSuccess()) {</span>
+<span class="nc" id="L183">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L184">                                .setPreEndOfTransfer();</span>
         } else {
-<span class="nc" id="L175">          throw new FileTransferException(&quot;Write is not successful&quot;);</span>
+<span class="nc" id="L186">          throw new FileTransferException(&quot;LAST Write is not successful&quot;,</span>
+<span class="nc" id="L187">                                          future.cause());</span>
         }
       }
-<span class="nc" id="L178">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L190">    } catch (final FileTransferException e) {</span>
       // An error occurs!
-<span class="nc" id="L180">      ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L181">                            .setTransferAbortedFromInternal(true);</span>
-<span class="nc" id="L182">    } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L183">      logger.error(&quot;Should not be&quot;, e);</span>
-<span class="nc" id="L184">      ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L185">                            .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L192">      logger.error(&quot;File Transfer Exception: {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L193">      ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L194">                            .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L195">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L196">      logger.error(&quot;Should not be&quot;, e);</span>
+<span class="nc" id="L197">      ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L198">                            .setTransferAbortedFromInternal(true);</span>
     } finally {
-<span class="fc" id="L187">      retrieveLock.unlock();</span>
+<span class="nc" id="L200">      retrieveLock.unlock();</span>
     }
-<span class="fc" id="L189">  }</span>
+<span class="nc" id="L202">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

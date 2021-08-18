@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbDataModel.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Compression</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.data</a> &gt; <span class="el_source">DbDataModel.java</span></div><h1>DbDataModel.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.data;
+
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+
+import java.sql.Types;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Example of Table object
+ */
+public class DbDataModel extends AbstractDbData {
+  private static final String NO_ROW_FOUND = &quot;No row found&quot;;
+
+  private static final String WHERE = &quot; WHERE &quot;;
+
+  private static final String SELECT = &quot;SELECT &quot;;
+
+  private static final String FROM = &quot; FROM &quot;;
+
+<span class="nc" id="L44">  public enum Columns {</span>
+<span class="nc" id="L45">    READGLOBALLIMIT, WRITEGLOBALLIMIT, READSESSIONLIMIT, WRITESESSIONLIMIT,</span>
+<span class="nc" id="L46">    DELAYLIMIT, UPDATEDINFO, HOSTID</span>
+  }
+
+<span class="nc" id="L49">  public static final int[] dbTypes = {</span>
+      Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+      Types.INTEGER, Types.NVARCHAR
+  };
+
+  public static final String table = &quot; CONFIGURATION &quot;;
+  public static final String fieldseq = &quot;RUNSEQ&quot;;
+<span class="nc" id="L56">  public static final Columns[] indexes = {</span>
+      Columns.READGLOBALLIMIT, Columns.READSESSIONLIMIT,
+      Columns.WRITEGLOBALLIMIT, Columns.WRITESESSIONLIMIT, Columns.HOSTID
+  };
+
+  /**
+   * HashTable in case of lack of database
+   */
+  private static final ConcurrentHashMap&lt;String, DbDataModel&gt;
+<span class="nc" id="L65">      dbR66ConfigurationHashMap = new ConcurrentHashMap&lt;String, DbDataModel&gt;();</span>
+
+  private String hostid;
+
+  private long readgloballimit;
+
+  private long writegloballimit;
+
+  private long readsessionlimit;
+
+  private long writesessionlimit;
+
+  private long delayllimit;
+
+<span class="nc" id="L79">  private int updatedInfo = UpdatedInfo.UNKNOWN.ordinal();</span>
+
+  // ALL TABLE SHOULD IMPLEMENT THIS
+  public static final int NBPRKEY = 1;
+
+<span class="nc" id="L84">  protected static final String selectAllFields =</span>
+<span class="nc" id="L85">      Columns.READGLOBALLIMIT.name() + ',' + Columns.WRITEGLOBALLIMIT.name() +</span>
+<span class="nc" id="L86">      ',' + Columns.READSESSIONLIMIT.name() + ',' +</span>
+<span class="nc" id="L87">      Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +</span>
+<span class="nc" id="L88">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
+
+<span class="nc" id="L90">  protected static final String updateAllFields =</span>
+<span class="nc" id="L91">      Columns.READGLOBALLIMIT.name() + &quot;=?,&quot; + Columns.WRITEGLOBALLIMIT.name() +</span>
+<span class="nc" id="L92">      &quot;=?,&quot; + Columns.READSESSIONLIMIT.name() + &quot;=?,&quot; +</span>
+<span class="nc" id="L93">      Columns.WRITESESSIONLIMIT.name() + &quot;=?,&quot; + Columns.DELAYLIMIT.name() +</span>
+<span class="nc" id="L94">      &quot;=?,&quot; + Columns.UPDATEDINFO.name() + &quot;=?&quot;;</span>
+
+  protected static final String insertAllValues = &quot; (?,?,?,?,?,?,?) &quot;;
+
+  @Override
+  protected void initObject() {
+<span class="nc" id="L100">    primaryKey = new DbValue[] { new DbValue(hostid, Columns.HOSTID.name()) };</span>
+<span class="nc" id="L101">    otherFields = new DbValue[] {</span>
+<span class="nc" id="L102">        new DbValue(readgloballimit, Columns.READGLOBALLIMIT.name()),</span>
+<span class="nc" id="L103">        new DbValue(writegloballimit, Columns.WRITEGLOBALLIMIT.name()),</span>
+<span class="nc" id="L104">        new DbValue(readsessionlimit, Columns.READSESSIONLIMIT.name()),</span>
+<span class="nc" id="L105">        new DbValue(writesessionlimit, Columns.WRITESESSIONLIMIT.name()),</span>
+<span class="nc" id="L106">        new DbValue(delayllimit, Columns.DELAYLIMIT.name()),</span>
+<span class="nc" id="L107">        new DbValue(updatedInfo, Columns.UPDATEDINFO.name())</span>
+    };
+<span class="nc" id="L109">    allFields = new DbValue[] {</span>
+        otherFields[0], otherFields[1], otherFields[2], otherFields[3],
+        otherFields[4], otherFields[5], primaryKey[0]
+    };
+<span class="nc" id="L113">  }</span>
+
+  @Override
+  protected void setToArray() throws WaarpDatabaseSqlException {
+<span class="nc" id="L117">    validateLength(Types.NVARCHAR, hostid);</span>
+<span class="nc" id="L118">    allFields[Columns.HOSTID.ordinal()].setValue(hostid);</span>
+<span class="nc" id="L119">    allFields[Columns.READGLOBALLIMIT.ordinal()].setValue(readgloballimit);</span>
+<span class="nc" id="L120">    allFields[Columns.WRITEGLOBALLIMIT.ordinal()].setValue(writegloballimit);</span>
+<span class="nc" id="L121">    allFields[Columns.READSESSIONLIMIT.ordinal()].setValue(readsessionlimit);</span>
+<span class="nc" id="L122">    allFields[Columns.WRITESESSIONLIMIT.ordinal()].setValue(writesessionlimit);</span>
+<span class="nc" id="L123">    allFields[Columns.DELAYLIMIT.ordinal()].setValue(delayllimit);</span>
+<span class="nc" id="L124">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="nc" id="L125">  }</span>
+
+  @Override
+  protected void setFromArray() {
+<span class="nc" id="L129">    hostid = (String) allFields[Columns.HOSTID.ordinal()].getValue();</span>
+<span class="nc" id="L130">    readgloballimit =</span>
+<span class="nc" id="L131">        (Long) allFields[Columns.READGLOBALLIMIT.ordinal()].getValue();</span>
+<span class="nc" id="L132">    writegloballimit =</span>
+<span class="nc" id="L133">        (Long) allFields[Columns.WRITEGLOBALLIMIT.ordinal()].getValue();</span>
+<span class="nc" id="L134">    readsessionlimit =</span>
+<span class="nc" id="L135">        (Long) allFields[Columns.READSESSIONLIMIT.ordinal()].getValue();</span>
+<span class="nc" id="L136">    writesessionlimit =</span>
+<span class="nc" id="L137">        (Long) allFields[Columns.WRITESESSIONLIMIT.ordinal()].getValue();</span>
+<span class="nc" id="L138">    delayllimit = (Long) allFields[Columns.DELAYLIMIT.ordinal()].getValue();</span>
+<span class="nc" id="L139">    updatedInfo = (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue();</span>
+<span class="nc" id="L140">  }</span>
+
+  @Override
+  protected String getSelectAllFields() {
+<span class="nc" id="L144">    return selectAllFields;</span>
+  }
+
+  @Override
+  protected String getTable() {
+<span class="nc" id="L149">    return table;</span>
+  }
+
+  @Override
+  protected String getInsertAllValues() {
+<span class="nc" id="L154">    return insertAllValues;</span>
+  }
+
+  @Override
+  protected String getUpdateAllFields() {
+<span class="nc" id="L159">    return updateAllFields;</span>
+  }
+
+  @Override
+  protected String getWherePrimaryKey() {
+<span class="nc" id="L164">    return primaryKey[0].getColumn() + &quot; = ? &quot;;</span>
+  }
+
+  /**
+   * Set the primary Key as current value
+   */
+  @Override
+  protected void setPrimaryKey() {
+<span class="nc" id="L172">    primaryKey[0].setValue(hostid);</span>
+<span class="nc" id="L173">  }</span>
+
+  /**
+   * @param dbSession
+   * @param hostid
+   * @param rg Read Global Limit
+   * @param wg Write Global Limit
+   * @param rs Read Session Limit
+   * @param ws Write Session Limit
+   * @param del Delay Limit
+   */
+  public DbDataModel(final DbSession dbSession, final String hostid,
+                     final long rg, final long wg, final long rs, final long ws,
+                     final long del) throws WaarpDatabaseSqlException {
+<span class="nc" id="L187">    super(dbSession);</span>
+<span class="nc" id="L188">    this.hostid = hostid;</span>
+<span class="nc" id="L189">    readgloballimit = rg;</span>
+<span class="nc" id="L190">    writegloballimit = wg;</span>
+<span class="nc" id="L191">    readsessionlimit = rs;</span>
+<span class="nc" id="L192">    writesessionlimit = ws;</span>
+<span class="nc" id="L193">    delayllimit = del;</span>
+<span class="nc" id="L194">    setToArray();</span>
+<span class="nc" id="L195">    isSaved = false;</span>
+<span class="nc" id="L196">  }</span>
+
+  /**
+   * @param dbSession
+   * @param hostid
+   *
+   * @throws WaarpDatabaseException
+   */
+  public DbDataModel(final DbSession dbSession, final String hostid)
+      throws WaarpDatabaseException {
+<span class="nc" id="L206">    super(dbSession);</span>
+<span class="nc" id="L207">    this.hostid = hostid;</span>
+    // load from DB
+<span class="nc" id="L209">    select();</span>
+<span class="nc" id="L210">  }</span>
+
+  @Override
+  public void delete() throws WaarpDatabaseException {
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L215">      dbR66ConfigurationHashMap.remove(hostid);</span>
+<span class="nc" id="L216">      isSaved = false;</span>
+<span class="nc" id="L217">      return;</span>
+    }
+<span class="nc" id="L219">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L222">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L223">          &quot;DELETE FROM &quot; + table + WHERE + getWherePrimaryKey());</span>
+<span class="nc" id="L224">      setPrimaryKey();</span>
+<span class="nc" id="L225">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L226">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L228">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L230">      isSaved = false;</span>
+    } finally {
+<span class="nc" id="L232">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L234">  }</span>
+
+  @Override
+  public void insert() throws WaarpDatabaseException {
+<span class="nc bnc" id="L238" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L239">      return;</span>
+    }
+<span class="nc bnc" id="L241" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L242">      dbR66ConfigurationHashMap.put(hostid, this);</span>
+<span class="nc" id="L243">      isSaved = true;</span>
+<span class="nc" id="L244">      return;</span>
+    }
+<span class="nc" id="L246">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L249">      preparedStatement.createPrepareStatement(</span>
+          &quot;INSERT INTO &quot; + table + &quot; (&quot; + selectAllFields + &quot;) VALUES &quot; +
+          insertAllValues);
+<span class="nc" id="L252">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L253">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L255">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L257">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L259">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L261">  }</span>
+
+  @Override
+  public final boolean exist() throws WaarpDatabaseException {
+<span class="nc bnc" id="L265" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L266">      return dbR66ConfigurationHashMap.containsKey(hostid);</span>
+    }
+<span class="nc" id="L268">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L271">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L272">          SELECT + primaryKey[0].getColumn() + FROM + table + WHERE +</span>
+<span class="nc" id="L273">          getWherePrimaryKey());</span>
+<span class="nc" id="L274">      setPrimaryKey();</span>
+<span class="nc" id="L275">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L276">      preparedStatement.executeQuery();</span>
+<span class="nc" id="L277">      return preparedStatement.getNext();</span>
+    } finally {
+<span class="nc" id="L279">      preparedStatement.realClose();</span>
+    }
+  }
+
+  @Override
+  public final void select() throws WaarpDatabaseException {
+<span class="nc bnc" id="L285" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L286">      final DbDataModel conf = dbR66ConfigurationHashMap.get(hostid);</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">      if (conf == null) {</span>
+<span class="nc" id="L288">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      } else {
+        // copy info
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        for (int i = 0; i &lt; allFields.length; i++) {</span>
+<span class="nc" id="L292">          allFields[i].setValue(conf.allFields[i].getValue());</span>
+        }
+<span class="nc" id="L294">        setFromArray();</span>
+<span class="nc" id="L295">        isSaved = true;</span>
+<span class="nc" id="L296">        return;</span>
+      }
+    }
+<span class="nc" id="L299">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L302">      preparedStatement.createPrepareStatement(</span>
+          SELECT + selectAllFields + FROM + table + WHERE +
+<span class="nc" id="L304">          getWherePrimaryKey());</span>
+<span class="nc" id="L305">      setPrimaryKey();</span>
+<span class="nc" id="L306">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L307">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+<span class="nc" id="L309">        getValues(preparedStatement, allFields);</span>
+<span class="nc" id="L310">        setFromArray();</span>
+<span class="nc" id="L311">        isSaved = true;</span>
+      } else {
+<span class="nc" id="L313">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+    } finally {
+<span class="nc" id="L316">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L318">  }</span>
+
+  @Override
+  public final void update() throws WaarpDatabaseException {
+<span class="nc bnc" id="L322" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L323">      return;</span>
+    }
+<span class="nc bnc" id="L325" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L326">      dbR66ConfigurationHashMap.put(hostid, this);</span>
+<span class="nc" id="L327">      isSaved = true;</span>
+<span class="nc" id="L328">      return;</span>
+    }
+<span class="nc" id="L330">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L333">      preparedStatement.createPrepareStatement(</span>
+          &quot;UPDATE &quot; + table + &quot; SET &quot; + updateAllFields + WHERE +
+<span class="nc" id="L335">          getWherePrimaryKey());</span>
+<span class="nc" id="L336">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L337">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L339">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L341">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L343">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L345">  }</span>
+
+  /**
+   * @return the DbPreparedStatement for getting Updated Object
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbPreparedStatement getUpdatedPrepareStament(
+      final DbSession session)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L356">    String request = SELECT + selectAllFields;</span>
+<span class="nc" id="L357">    request += FROM + table + WHERE + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
+<span class="nc" id="L358">               AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal();</span>
+<span class="nc" id="L359">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L360">    session.addLongTermPreparedStatement(prep);</span>
+<span class="nc" id="L361">    return prep;</span>
+  }
+
+  @Override
+  public void changeUpdatedInfo(final UpdatedInfo info) {
+<span class="nc bnc" id="L366" title="All 2 branches missed.">    if (updatedInfo != info.ordinal()) {</span>
+<span class="nc" id="L367">      updatedInfo = info.ordinal();</span>
+<span class="nc" id="L368">      allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="nc" id="L369">      isSaved = false;</span>
+    }
+<span class="nc" id="L371">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

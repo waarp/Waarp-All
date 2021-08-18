@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DetectionUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">DetectionUtils.java</span></div><h1>DetectionUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+import io.netty.util.internal.SystemPropertyUtil;
+
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+
+/**
+ * Utility that detects various properties specific to the current runtime
+ * environment, such as Java version.
+ */
+public final class DetectionUtils {
+<span class="nc" id="L32">  private static final int JAVA_VERSION = javaVersion0();</span>
+  private static final boolean IS_WINDOWS;
+  private static final boolean IS_UNIX_IBM;
+  private static final int NUMBERTHREAD;
+
+  static {
+<span class="nc" id="L38">    final String os = SystemPropertyUtil.get(&quot;os.name&quot;).toLowerCase();</span>
+    // windows
+<span class="nc" id="L40">    IS_WINDOWS = os.contains(&quot;win&quot;);</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">    if (!IS_WINDOWS) {</span>
+<span class="nc" id="L42">      String vendor = SystemPropertyUtil.get(&quot;java.vm.vendor&quot;);</span>
+<span class="nc" id="L43">      vendor = vendor.toLowerCase();</span>
+<span class="nc" id="L44">      IS_UNIX_IBM = vendor.contains(&quot;ibm&quot;);</span>
+<span class="nc" id="L45">    } else {</span>
+<span class="nc" id="L46">      IS_UNIX_IBM = false;</span>
+    }
+<span class="nc" id="L48">    NUMBERTHREAD = Math.max(1, SystemPropertyUtil.getInt(&quot;org.waarp.numThreads&quot;,</span>
+<span class="nc" id="L49">                                                         Runtime.getRuntime()</span>
+<span class="nc" id="L50">                                                                .availableProcessors() *</span>
+                                                         2));
+<span class="nc" id="L52">  }</span>
+
+  private DetectionUtils() {
+  }
+
+  /**
+   * @return the default number of threads (core * 2)
+   */
+  public static int numberThreads() {
+<span class="nc" id="L61">    return NUMBERTHREAD;</span>
+  }
+
+  /**
+   * Return {@code true} if the JVM is running on Windows
+   */
+  public static boolean isWindows() {
+<span class="nc" id="L68">    return IS_WINDOWS;</span>
+  }
+
+  /**
+   * Return {@code true} if the JVM is running on IBM UNIX JVM
+   */
+  public static boolean isUnixIBM() {
+<span class="nc" id="L75">    return IS_UNIX_IBM;</span>
+  }
+
+  public static int javaVersion() {
+<span class="nc" id="L79">    return JAVA_VERSION;</span>
+  }
+
+  private static int javaVersion0() {
+    try {
+      // Check if its android, if so handle it the same way as java6.
+      //
+      // See https://github.com/netty/netty/issues/282
+<span class="nc" id="L87">      Class.forName(&quot;android.app.Application&quot;);</span>
+<span class="nc" id="L88">      return 6;</span>
+<span class="nc" id="L89">    } catch (final ClassNotFoundException e) {</span>
+      // Ignore
+    }
+
+    try {
+<span class="nc" id="L94">      Class.forName(&quot;java.time.Clock&quot;, false, Object.class.getClassLoader());</span>
+<span class="nc" id="L95">      return 8;</span>
+<span class="nc" id="L96">    } catch (final Exception e) {</span>
+      // Ignore
+    }
+
+    try {
+<span class="nc" id="L101">      Class.forName(&quot;java.util.concurrent.LinkedTransferQueue&quot;, false,</span>
+<span class="nc" id="L102">                    BlockingQueue.class.getClassLoader());</span>
+<span class="nc" id="L103">      return 7;</span>
+<span class="nc" id="L104">    } catch (final Exception e) {</span>
+      // Ignore
+    }
+
+    try {
+<span class="nc" id="L109">      Class.forName(&quot;java.util.ArrayDeque&quot;, false,</span>
+<span class="nc" id="L110">                    Queue.class.getClassLoader());</span>
+<span class="nc" id="L111">      return 6;</span>
+<span class="nc" id="L112">    } catch (final Exception e) {</span>
+      // Ignore
+    }
+
+<span class="nc" id="L116">    return 5;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

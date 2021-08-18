@@ -45,6 +45,7 @@ import org.waarp.ftp.core.file.FtpDir;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Main class that stores any information that must be accessible from anywhere
@@ -55,8 +56,8 @@ public class FtpSession implements SessionInterface {
   /**
    * Internal Logger
    */
-<span class="fc" id="L58">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L59">      WaarpLoggerFactory.getLogger(FtpSession.class);</span>
+<span class="nc" id="L59">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L60">      WaarpLoggerFactory.getLogger(FtpSession.class);</span>
   /**
    * Business Handler
    */
@@ -70,7 +71,7 @@ public class FtpSession implements SessionInterface {
   /**
    * Associated Binary connection
    */
-  private volatile FtpDataAsyncConn dataConn;
+  private FtpDataAsyncConn dataConn;
 
   /**
    * Ftp Authentication
@@ -94,7 +95,8 @@ public class FtpSession implements SessionInterface {
   /**
    * Is the current command finished
    */
-<span class="fc" id="L97">  private volatile boolean isCurrentCommandFinished = true;</span>
+<span class="nc" id="L98">  private final AtomicBoolean isCurrentCommandFinished =</span>
+      new AtomicBoolean(true);
 
   /**
    * Associated Reply Code
@@ -114,20 +116,20 @@ public class FtpSession implements SessionInterface {
   /**
    * Is the control ready to accept command
    */
-<span class="fc" id="L117">  private final WaarpFuture isReady = new WaarpFuture(true);</span>
+<span class="nc" id="L119">  private final WaarpFuture isReady = new WaarpFuture(true);</span>
 
   /**
    * Is the current session using SSL on Control
    */
-  private volatile boolean isSsl;
+<span class="nc" id="L124">  private final AtomicBoolean isSsl = new AtomicBoolean(false);</span>
   /**
    * Is the current session will using SSL on Control
    */
-  private volatile WaarpFuture waitForSsl;
+  private WaarpFuture waitForSsl;
   /**
    * WIll all data be using SSL
    */
-  private volatile boolean isDataSsl;
+<span class="nc" id="L132">  private final AtomicBoolean isDataSsl = new AtomicBoolean(false);</span>
 
   /**
    * Constructor
@@ -136,16 +138,16 @@ public class FtpSession implements SessionInterface {
    * @param handler
    */
   public FtpSession(final FtpConfiguration configuration,
-<span class="fc" id="L139">                    final BusinessHandler handler) {</span>
-<span class="fc" id="L140">    this.configuration = configuration;</span>
-<span class="fc" id="L141">    businessHandler = handler;</span>
-<span class="fc" id="L142">  }</span>
+<span class="nc" id="L141">                    final BusinessHandler handler) {</span>
+<span class="nc" id="L142">    this.configuration = configuration;</span>
+<span class="nc" id="L143">    businessHandler = handler;</span>
+<span class="nc" id="L144">  }</span>
 
   /**
    * @return the businessHandler
    */
-  public BusinessHandler getBusinessHandler() {
-<span class="fc" id="L148">    return businessHandler;</span>
+  public final BusinessHandler getBusinessHandler() {
+<span class="nc" id="L150">    return businessHandler;</span>
   }
 
   /**
@@ -153,43 +155,43 @@ public class FtpSession implements SessionInterface {
    *
    * @return the configuration
    */
-  public FtpConfiguration getConfiguration() {
-<span class="fc" id="L157">    return configuration;</span>
+  public final FtpConfiguration getConfiguration() {
+<span class="nc" id="L159">    return configuration;</span>
   }
 
   @Override
-  public FtpDir getDir() {
-<span class="fc" id="L162">    return ftpDir;</span>
+  public final FtpDir getDir() {
+<span class="nc" id="L164">    return ftpDir;</span>
   }
 
   /**
    * @return the Data Connection
    */
-  public FtpDataAsyncConn getDataConn() {
-<span class="fc" id="L169">    return dataConn;</span>
+  public final FtpDataAsyncConn getDataConn() {
+<span class="nc" id="L171">    return dataConn;</span>
   }
 
   @Override
-  public FtpAuth getAuth() {
-<span class="fc" id="L174">    return ftpAuth;</span>
+  public final FtpAuth getAuth() {
+<span class="nc" id="L176">    return ftpAuth;</span>
   }
 
   @Override
-  public Restart getRestart() {
-<span class="fc" id="L179">    return restart;</span>
+  public final Restart getRestart() {
+<span class="nc" id="L181">    return restart;</span>
   }
 
   /**
    * This function is called when the Command Channel is connected (from
    * channelConnected of the NetworkHandler)
    */
-  public void setControlConnected() {
-<span class="fc" id="L187">    dataConn = new FtpDataAsyncConn(this);</span>
+  public final synchronized void setControlConnected() {
+<span class="nc" id="L189">    dataConn = new FtpDataAsyncConn(this);</span>
     // AuthInterface must be done before FtpFile
-<span class="fc" id="L189">    ftpAuth = businessHandler.getBusinessNewAuth();</span>
-<span class="fc" id="L190">    ftpDir = businessHandler.getBusinessNewDir();</span>
-<span class="fc" id="L191">    restart = businessHandler.getBusinessNewRestart();</span>
-<span class="fc" id="L192">  }</span>
+<span class="nc" id="L191">    ftpAuth = businessHandler.getBusinessNewAuth();</span>
+<span class="nc" id="L192">    ftpDir = businessHandler.getBusinessNewDir();</span>
+<span class="nc" id="L193">    restart = businessHandler.getBusinessNewRestart();</span>
+<span class="nc" id="L194">  }</span>
 
   /**
    * Special initialization (FtpExec with Https session)
@@ -198,28 +200,32 @@ public class FtpSession implements SessionInterface {
    * @param dir
    * @param restart
    */
-  public void setSpecialInit(final FtpAuth auth, final FtpDir dir,
-                             final Restart restart) {
-<span class="nc" id="L203">    ftpAuth = auth;</span>
-<span class="nc" id="L204">    ftpDir = dir;</span>
-<span class="nc" id="L205">    this.restart = restart;</span>
-<span class="nc" id="L206">  }</span>
+  public final void setSpecialInit(final FtpAuth auth, final FtpDir dir,
+                                   final Restart restart) {
+<span class="nc" id="L205">    ftpAuth = auth;</span>
+<span class="nc" id="L206">    ftpDir = dir;</span>
+<span class="nc" id="L207">    this.restart = restart;</span>
+<span class="nc" id="L208">  }</span>
 
   /**
    * @return the Control channel
    */
-  public Channel getControlChannel() {
-<span class="fc" id="L212">    return getNetworkHandler().getControlChannel();</span>
+  public final Channel getControlChannel() {
+<span class="nc" id="L214">    final NetworkHandler networkHandler = getNetworkHandler();</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (networkHandler != null) {</span>
+<span class="nc" id="L216">      return networkHandler.getControlChannel();</span>
+    }
+<span class="nc" id="L218">    return null;</span>
   }
 
   /**
    * @return The network handler associated with control
    */
-  public NetworkHandler getNetworkHandler() {
-<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (businessHandler != null) {</span>
-<span class="fc" id="L220">      return businessHandler.getNetworkHandler();</span>
+  public final NetworkHandler getNetworkHandler() {
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    if (businessHandler != null) {</span>
+<span class="nc" id="L226">      return businessHandler.getNetworkHandler();</span>
     }
-<span class="nc" id="L222">    return null;</span>
+<span class="nc" id="L228">    return null;</span>
   }
 
   /**
@@ -227,24 +233,24 @@ public class FtpSession implements SessionInterface {
    *
    * @param command
    */
-  public void setNextCommand(final CommandInterface command) {
-<span class="fc" id="L231">    previousCommand = currentCommand;</span>
-<span class="fc" id="L232">    currentCommand = (AbstractCommand) command;</span>
-<span class="fc" id="L233">    isCurrentCommandFinished = false;</span>
-<span class="fc" id="L234">  }</span>
+  public final void setNextCommand(final CommandInterface command) {
+<span class="nc" id="L237">    previousCommand = currentCommand;</span>
+<span class="nc" id="L238">    currentCommand = (AbstractCommand) command;</span>
+<span class="nc" id="L239">    isCurrentCommandFinished.set(false);</span>
+<span class="nc" id="L240">  }</span>
 
   /**
    * @return the currentCommand
    */
-  public AbstractCommand getCurrentCommand() {
-<span class="fc" id="L240">    return currentCommand;</span>
+  public final AbstractCommand getCurrentCommand() {
+<span class="nc" id="L246">    return currentCommand;</span>
   }
 
   /**
    * @return the previousCommand
    */
-  public AbstractCommand getPreviousCommand() {
-<span class="nc" id="L247">    return previousCommand;</span>
+  public final AbstractCommand getPreviousCommand() {
+<span class="nc" id="L253">    return previousCommand;</span>
   }
 
   /**
@@ -253,172 +259,175 @@ public class FtpSession implements SessionInterface {
    * sequence of commands or unknown
    * command)
    */
-  public void setPreviousAsCurrentCommand() {
-<span class="fc" id="L257">    currentCommand = previousCommand;</span>
-<span class="fc" id="L258">    isCurrentCommandFinished = true;</span>
-<span class="fc" id="L259">  }</span>
+  public final void setPreviousAsCurrentCommand() {
+<span class="nc" id="L263">    currentCommand = previousCommand;</span>
+<span class="nc" id="L264">    isCurrentCommandFinished.set(true);</span>
+<span class="nc" id="L265">  }</span>
 
   /**
    * @return True if the Current Command is already Finished (ready to accept
    *     a
    *     new one)
    */
-  public boolean isCurrentCommandFinished() {
-<span class="nc" id="L267">    return isCurrentCommandFinished;</span>
+  public final boolean isCurrentCommandFinished() {
+<span class="nc" id="L273">    return isCurrentCommandFinished.get();</span>
   }
 
   /**
    * Set the Current Command as finished
    */
-  public void setCurrentCommandFinished() {
-<span class="fc" id="L274">    isCurrentCommandFinished = true;</span>
-<span class="fc" id="L275">  }</span>
+  public final void setCurrentCommandFinished() {
+<span class="nc" id="L280">    isCurrentCommandFinished.set(true);</span>
+<span class="nc" id="L281">  }</span>
 
   /**
    * @return the answer
    */
-  public String getAnswer() {
-<span class="pc bpc" id="L281" title="1 of 2 branches missed.">    if (answer == null) {</span>
-<span class="nc bnc" id="L282" title="All 2 branches missed.">      if (replyCode == null) {</span>
-<span class="nc" id="L283">        answer = ReplyCode.REPLY_000_SPECIAL_NOSTATUS.getMesg();</span>
+  public final String getAnswer() {
+<span class="nc bnc" id="L287" title="All 2 branches missed.">    if (answer == null) {</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">      if (replyCode == null) {</span>
+<span class="nc" id="L289">        answer = ReplyCode.REPLY_000_SPECIAL_NOSTATUS.getMesg();</span>
       } else {
-<span class="nc" id="L285">        answer = replyCode.getMesg();</span>
+<span class="nc" id="L291">        answer = replyCode.getMesg();</span>
       }
     }
-<span class="fc" id="L288">    return answer;</span>
+<span class="nc" id="L294">    return answer;</span>
   }
 
   /**
    * @param replyCode the replyCode to set
    * @param answer
    */
-  public void setReplyCode(final ReplyCode replyCode, final String answer) {
-<span class="fc" id="L296">    this.replyCode = replyCode;</span>
-<span class="fc bfc" id="L297" title="All 2 branches covered.">    if (answer != null) {</span>
-<span class="fc" id="L298">      this.answer = ReplyCode.getFinalMsg(replyCode.getCode(), answer);</span>
+  public final void setReplyCode(final ReplyCode replyCode,
+                                 final String answer) {
+<span class="nc" id="L303">    this.replyCode = replyCode;</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">    if (answer != null) {</span>
+<span class="nc" id="L305">      this.answer = ReplyCode.getFinalMsg(replyCode.getCode(), answer);</span>
     } else {
-<span class="fc" id="L300">      this.answer = replyCode.getMesg();</span>
+<span class="nc" id="L307">      this.answer = replyCode.getMesg();</span>
     }
-<span class="fc" id="L302">  }</span>
+<span class="nc" id="L309">  }</span>
 
   /**
    * @param exception
    */
-  public void setReplyCode(final CommandAbstractException exception) {
-<span class="fc" id="L308">    setReplyCode(exception.code, exception.message);</span>
-<span class="fc" id="L309">  }</span>
+  public final void setReplyCode(final CommandAbstractException exception) {
+<span class="nc" id="L315">    setReplyCode(exception.code, exception.message);</span>
+<span class="nc" id="L316">  }</span>
 
   /**
    * Set Exit code after an error
    *
    * @param answer
    */
-  public void setExitErrorCode(final String answer) {
-<span class="nc" id="L317">    setReplyCode(</span>
+  public final void setExitErrorCode(final String answer) {
+<span class="nc" id="L324">    setReplyCode(</span>
         ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION,
         answer);
-<span class="nc" id="L320">  }</span>
+<span class="nc" id="L327">  }</span>
 
   /**
    * Set Exit normal code
    *
    * @param answer
    */
-  public void setExitNormalCode(final String answer) {
-<span class="nc" id="L328">    setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION, answer);</span>
-<span class="nc" id="L329">  }</span>
+  public final void setExitNormalCode(final String answer) {
+<span class="nc" id="L335">    setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION, answer);</span>
+<span class="nc" id="L336">  }</span>
 
   /**
    * @return the replyCode
    */
-  public ReplyCode getReplyCode() {
-<span class="fc" id="L335">    return replyCode;</span>
+  public final ReplyCode getReplyCode() {
+<span class="nc" id="L342">    return replyCode;</span>
   }
 
   @Override
-  public void clear() {
-<span class="pc bpc" id="L340" title="1 of 2 branches missed.">    if (dataConn != null) {</span>
-<span class="fc" id="L341">      dataConn.clear();</span>
+  public final void clear() {
+<span class="nc bnc" id="L347" title="All 2 branches missed.">    if (dataConn != null) {</span>
+<span class="nc" id="L348">      dataConn.clear();</span>
     }
-<span class="pc bpc" id="L343" title="1 of 2 branches missed.">    if (ftpDir != null) {</span>
-<span class="fc" id="L344">      ftpDir.clear();</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">    if (ftpDir != null) {</span>
+<span class="nc" id="L351">      ftpDir.clear();</span>
     }
-<span class="pc bpc" id="L346" title="1 of 2 branches missed.">    if (ftpAuth != null) {</span>
-<span class="fc" id="L347">      ftpAuth.clear();</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    if (ftpAuth != null) {</span>
+<span class="nc" id="L354">      ftpAuth.clear();</span>
     }
-<span class="fc" id="L349">    previousCommand = null;</span>
-<span class="fc" id="L350">    replyCode = null;</span>
-<span class="fc" id="L351">    answer = null;</span>
-<span class="fc" id="L352">    isReady.cancel();</span>
-<span class="fc" id="L353">  }</span>
+<span class="nc" id="L356">    previousCommand = null;</span>
+<span class="nc" id="L357">    replyCode = null;</span>
+<span class="nc" id="L358">    answer = null;</span>
+<span class="nc" id="L359">    isReady.cancel();</span>
+<span class="nc" id="L360">  }</span>
 
   /**
    * @return True if the Control is ready to accept command
    */
-  public boolean isReady() {
-<span class="fc" id="L359">    isReady.awaitOrInterruptible();</span>
-<span class="fc" id="L360">    return isReady.isSuccess();</span>
+  public final boolean isReady() {
+<span class="nc" id="L366">    isReady.awaitOrInterruptible();</span>
+<span class="nc" id="L367">    return isReady.isSuccess();</span>
   }
 
   /**
    * @param isReady the isReady to set
    */
-  public void setReady(final boolean isReady) {
-<span class="pc bpc" id="L367" title="1 of 2 branches missed.">    if (isReady) {</span>
-<span class="fc" id="L368">      this.isReady.setSuccess();</span>
+  public final void setReady(final boolean isReady) {
+<span class="nc bnc" id="L374" title="All 2 branches missed.">    if (isReady) {</span>
+<span class="nc" id="L375">      this.isReady.setSuccess();</span>
     } else {
-<span class="nc" id="L370">      this.isReady.cancel();</span>
+<span class="nc" id="L377">      this.isReady.cancel();</span>
     }
-<span class="fc" id="L372">  }</span>
+<span class="nc" id="L379">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L376">    String mesg = &quot;FtpSession: &quot;;</span>
-<span class="pc bpc" id="L377" title="1 of 2 branches missed.">    if (ftpAuth != null) {</span>
-<span class="fc" id="L378">      mesg += &quot;User: &quot; + ftpAuth.getUser() + '/' + ftpAuth.getAccount() + ' ';</span>
+<span class="nc" id="L383">    final StringBuilder builder = new StringBuilder(&quot;FtpSession: &quot;);</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">    if (ftpAuth != null) {</span>
+<span class="nc" id="L385">      builder.append(&quot;User: &quot;).append(ftpAuth.getUser()).append('/')</span>
+<span class="nc" id="L386">             .append(ftpAuth.getAccount()).append(' ');</span>
     }
-<span class="pc bpc" id="L380" title="1 of 2 branches missed.">    if (previousCommand != null) {</span>
-<span class="fc" id="L381">      mesg += &quot;PRVCMD: &quot; + previousCommand.getCommand() + ' ' +</span>
-<span class="fc" id="L382">              previousCommand.getArg() + ' ';</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">    if (previousCommand != null) {</span>
+<span class="nc" id="L389">      builder.append(&quot;PRVCMD: &quot;).append(previousCommand.getCommand())</span>
+<span class="nc" id="L390">             .append(' ').append(previousCommand.getArg()).append(' ');</span>
     }
-<span class="pc bpc" id="L384" title="1 of 2 branches missed.">    if (currentCommand != null) {</span>
-<span class="fc" id="L385">      mesg += &quot;CMD: &quot; + currentCommand.getCommand() + ' ' +</span>
-<span class="fc" id="L386">              currentCommand.getArg() + ' ';</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">    if (currentCommand != null) {</span>
+<span class="nc" id="L393">      builder.append(&quot;CMD: &quot;).append(currentCommand.getCommand()).append(' ')</span>
+<span class="nc" id="L394">             .append(currentCommand.getArg()).append(' ');</span>
     }
-<span class="pc bpc" id="L388" title="1 of 2 branches missed.">    if (replyCode != null) {</span>
-<span class="pc bpc" id="L389" title="1 of 2 branches missed.">      mesg += &quot;Reply: &quot; + (answer != null? answer : replyCode.getMesg()) + ' ';</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">    if (replyCode != null) {</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">      builder.append(&quot;Reply: &quot;)</span>
+<span class="nc" id="L398">             .append(answer != null? answer : replyCode.getMesg()).append(' ');</span>
     }
-<span class="pc bpc" id="L391" title="1 of 2 branches missed.">    if (dataConn != null) {</span>
-<span class="fc" id="L392">      mesg += dataConn.toString();</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">    if (dataConn != null) {</span>
+<span class="nc" id="L401">      builder.append(dataConn);</span>
     }
-<span class="pc bpc" id="L394" title="1 of 2 branches missed.">    if (ftpDir != null) {</span>
+<span class="nc bnc" id="L403" title="All 2 branches missed.">    if (ftpDir != null) {</span>
       try {
-<span class="fc" id="L396">        mesg += &quot; PWD: &quot; + ftpDir.getPwd();</span>
-<span class="nc" id="L397">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L405">        builder.append(&quot; PWD: &quot;).append(ftpDir.getPwd());</span>
+<span class="nc" id="L406">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="fc" id="L399">      }</span>
+<span class="nc" id="L408">      }</span>
     }
-<span class="pc bpc" id="L401" title="1 of 2 branches missed.">    if (getControlChannel() != null) {</span>
-<span class="fc" id="L402">      mesg += &quot; Control: &quot; + getControlChannel();</span>
+<span class="nc bnc" id="L410" title="All 2 branches missed.">    if (getControlChannel() != null) {</span>
+<span class="nc" id="L411">      builder.append(&quot; Control: &quot;).append(getControlChannel());</span>
     }
     try {
-<span class="nc bnc" id="L405" title="All 2 branches missed.">      if (getDataConn().getCurrentDataChannel() != null) {</span>
-<span class="nc" id="L406">        mesg += &quot; Data: &quot; + getDataConn().getCurrentDataChannel();</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">      if (getDataConn().getCurrentDataChannel() != null) {</span>
+<span class="nc" id="L415">        builder.append(&quot; Data: &quot;).append(getDataConn().getCurrentDataChannel());</span>
       }
-<span class="fc" id="L408">    } catch (final FtpNoConnectionException ignored) {</span>
+<span class="nc" id="L417">    } catch (final FtpNoConnectionException ignored) {</span>
       // nothing
-<span class="nc" id="L410">    }</span>
-<span class="fc" id="L411">    return mesg + '\n';</span>
+<span class="nc" id="L419">    }</span>
+<span class="nc" id="L420">    return builder.append('\n').toString();</span>
   }
 
   @Override
-  public int getBlockSize() {
-<span class="fc" id="L416">    return restart.getMaxSize(configuration.getBlocksize());</span>
+  public final int getBlockSize() {
+<span class="nc" id="L425">    return restart.getMaxSize(configuration.getBlocksize());</span>
   }
 
   @Override
-  public FileParameterInterface getFileParameter() {
-<span class="nc" id="L421">    return configuration.getFileParameter();</span>
+  public final FileParameterInterface getFileParameter() {
+<span class="nc" id="L430">    return configuration.getFileParameter();</span>
   }
 
   /**
@@ -427,38 +436,37 @@ public class FtpSession implements SessionInterface {
    * @return the basename from the given path
    */
   public static String getBasename(final String path) {
-<span class="fc" id="L430">    final File file = new File(path);</span>
-<span class="fc" id="L431">    return file.getName();</span>
+<span class="nc" id="L439">    final File file = new File(path);</span>
+<span class="nc" id="L440">    return file.getName();</span>
   }
 
   /**
    * Reinitialize the authentication to the connection step
    */
-  public void reinitFtpAuth() {
-<span class="fc" id="L438">    final AbstractCommand connectioncommand = new ConnectionCommand(this);</span>
-<span class="fc" id="L439">    setNextCommand(connectioncommand);</span>
-<span class="fc" id="L440">    getAuth().clear();</span>
-<span class="fc" id="L441">    getDataConn().clear();</span>
-<span class="fc" id="L442">    getDataConn().getFtpTransferControl().resetWaitForOpenedDataChannel();</span>
-<span class="fc" id="L443">  }</span>
+  public final void reinitFtpAuth() {
+<span class="nc" id="L447">    final AbstractCommand connectioncommand = new ConnectionCommand(this);</span>
+<span class="nc" id="L448">    setNextCommand(connectioncommand);</span>
+<span class="nc" id="L449">    getAuth().clear();</span>
+<span class="nc" id="L450">    getDataConn().clear();</span>
+<span class="nc" id="L451">    getDataConn().getFtpTransferControl().resetWaitForOpenedDataChannel();</span>
+<span class="nc" id="L452">  }</span>
 
   /**
    * Reinitialize all connection parameters, including authentification
    */
-  public void rein() {
+  public final void rein() {
     // reset to default
-<span class="pc bpc" id="L450" title="1 of 2 branches missed.">    if (getDataConn().isPassiveMode()) {</span>
-      // Previous mode was Passive so remove the current configuration
-<span class="nc" id="L452">      final InetSocketAddress local = getDataConn().getLocalAddress();</span>
-<span class="nc" id="L453">      final InetAddress remote = getDataConn().getRemoteAddress().getAddress();</span>
-<span class="nc" id="L454">      getConfiguration().delFtpSession(remote, local);</span>
-    }
-<span class="fc" id="L456">    getDataConn().setMode(FtpArgumentCode.TransferMode.STREAM);</span>
-<span class="fc" id="L457">    getDataConn().setStructure(FtpArgumentCode.TransferStructure.FILE);</span>
-<span class="fc" id="L458">    getDataConn().setType(FtpArgumentCode.TransferType.ASCII);</span>
-<span class="fc" id="L459">    getDataConn().setSubType(TransferSubType.NONPRINT);</span>
-<span class="fc" id="L460">    reinitFtpAuth();</span>
-<span class="fc" id="L461">  }</span>
+    // Previous mode could be Passive so remove the current configuration
+<span class="nc" id="L460">    final InetSocketAddress local = getDataConn().getLocalAddress();</span>
+<span class="nc" id="L461">    final InetAddress remote = getDataConn().getRemoteAddress().getAddress();</span>
+<span class="nc" id="L462">    getConfiguration().delFtpSession(remote, local);</span>
+<span class="nc" id="L463">    getDataConn().unbindData();</span>
+<span class="nc" id="L464">    getDataConn().setMode(FtpArgumentCode.TransferMode.STREAM);</span>
+<span class="nc" id="L465">    getDataConn().setStructure(FtpArgumentCode.TransferStructure.FILE);</span>
+<span class="nc" id="L466">    getDataConn().setType(FtpArgumentCode.TransferType.ASCII);</span>
+<span class="nc" id="L467">    getDataConn().setSubType(TransferSubType.NONPRINT);</span>
+<span class="nc" id="L468">    reinitFtpAuth();</span>
+<span class="nc" id="L469">  }</span>
 
   /**
    * Try to open a connection. Do the intermediate reply if any (150) and the
@@ -466,57 +474,59 @@ public class FtpSession implements SessionInterface {
    *
    * @throws Reply425Exception if the connection cannot be opened
    */
-  public void openDataConnection() throws Reply425Exception {
-<span class="fc" id="L470">    getDataConn().getFtpTransferControl().openDataConnection();</span>
-<span class="fc" id="L471">    getNetworkHandler().writeIntermediateAnswer();</span>
-<span class="fc" id="L472">  }</span>
+  public final void openDataConnection() throws Reply425Exception {
+<span class="nc" id="L478">    getDataConn().getFtpTransferControl().openDataConnection();</span>
+<span class="nc" id="L479">    final NetworkHandler networkHandler = getNetworkHandler();</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">    if (networkHandler != null) {</span>
+<span class="nc" id="L481">      networkHandler.writeIntermediateAnswer();</span>
+    }
+<span class="nc" id="L483">  }</span>
 
   @Override
-  public String getUniqueExtension() {
-<span class="nc" id="L476">    return configuration.getUniqueExtension();</span>
+  public final String getUniqueExtension() {
+<span class="nc" id="L487">    return configuration.getUniqueExtension();</span>
   }
 
-  public boolean isSsl() {
-<span class="fc" id="L480">    return isSsl;</span>
+  public final boolean isSsl() {
+<span class="nc" id="L491">    return isSsl.get();</span>
   }
 
-  public void setSsl(final boolean isSsl) {
-<span class="fc" id="L484">    this.isSsl = isSsl;</span>
-<span class="pc bpc" id="L485" title="1 of 2 branches missed.">    if (waitForSsl != null) {</span>
-<span class="pc bpc" id="L486" title="1 of 2 branches missed.">      if (isSsl) {</span>
-<span class="fc" id="L487">        waitForSsl.setSuccess();</span>
+  public final void setSsl(final boolean isSsl) {
+<span class="nc" id="L495">    this.isSsl.set(isSsl);</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">    if (waitForSsl != null) {</span>
+<span class="nc bnc" id="L497" title="All 2 branches missed.">      if (isSsl) {</span>
+<span class="nc" id="L498">        waitForSsl.setSuccess();</span>
       } else {
-<span class="nc" id="L489">        waitForSsl.cancel();</span>
+<span class="nc" id="L500">        waitForSsl.cancel();</span>
       }
     }
-<span class="fc" id="L492">  }</span>
+<span class="nc" id="L503">  }</span>
 
-  public void prepareSsl() {
-<span class="fc" id="L495">    waitForSsl = new WaarpFuture(true);</span>
-<span class="fc" id="L496">  }</span>
+  public synchronized void prepareSsl() {
+<span class="nc" id="L506">    waitForSsl = new WaarpFuture(true);</span>
+<span class="nc" id="L507">  }</span>
 
-  public boolean isSslReady() {
-<span class="pc bpc" id="L499" title="1 of 2 branches missed.">    if (waitForSsl != null) {</span>
-<span class="pc bpc" id="L500" title="1 of 2 branches missed.">      for (int i = 0; i &lt; 10; i++) {</span>
-<span class="pc bpc" id="L501" title="1 of 2 branches missed.">        if (waitForSsl.awaitOrInterruptible(100)) {</span>
-<span class="fc" id="L502">          break;</span>
+  public final boolean isSslReady() {
+<span class="nc bnc" id="L510" title="All 2 branches missed.">    if (waitForSsl != null) {</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">      for (int i = 0; i &lt; 20; i++) {</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">        if (waitForSsl.awaitOrInterruptible(100)) {</span>
+<span class="nc" id="L513">          break;</span>
         }
-<span class="nc" id="L504">        Thread.yield();</span>
+<span class="nc" id="L515">        Thread.yield();</span>
       }
-<span class="pc bpc" id="L506" title="1 of 2 branches missed.">      logger.debug(&quot;DEBUG : {}:{}:{}&quot;,</span>
-<span class="pc" id="L507">                   waitForSsl != null? waitForSsl.isDone() : &quot;not Finished&quot;,</span>
-<span class="fc" id="L508">                   isSsl, getControlChannel());</span>
+<span class="nc" id="L517">      logger.debug(&quot;DEBUG : {}:{}:{}&quot;, waitForSsl.isDone(), isSsl.get(),</span>
+<span class="nc" id="L518">                   getControlChannel());</span>
     }
-<span class="fc" id="L510">    return isSsl;</span>
+<span class="nc" id="L520">    return isSsl.get();</span>
   }
 
-  public boolean isDataSsl() {
-<span class="fc" id="L514">    return isDataSsl;</span>
+  public final boolean isDataSsl() {
+<span class="nc" id="L524">    return isDataSsl.get();</span>
   }
 
-  public void setDataSsl(final boolean isDataSsl) {
-<span class="fc" id="L518">    this.isDataSsl = isDataSsl;</span>
-<span class="fc" id="L519">  }</span>
+  public final void setDataSsl(final boolean isDataSsl) {
+<span class="nc" id="L528">    this.isDataSsl.set(isDataSsl);</span>
+<span class="nc" id="L529">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

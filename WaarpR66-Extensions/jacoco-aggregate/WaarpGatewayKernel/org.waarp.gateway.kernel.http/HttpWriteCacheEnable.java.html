@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpWriteCacheEnable.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.http</a> &gt; <span class="el_source">HttpWriteCacheEnable.java</span></div><h1>HttpWriteCacheEnable.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.http;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpNettyUtil;
+
+import javax.activation.MimetypesFileTypeMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TimeZone;
+
+import static io.netty.handler.codec.http.HttpVersion.*;
+
+/**
+ * Utility class to write external file with cache enable properties
+ */
+public final class HttpWriteCacheEnable {
+  /**
+   * US locale - all HTTP dates are in english
+   */
+<span class="nc" id="L66">  public static final Locale LOCALE_US = Locale.US;</span>
+
+  /**
+   * GMT timezone - all HTTP dates are on GMT
+   */
+<span class="nc" id="L71">  public static final TimeZone GMT_ZONE = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+
+  /**
+   * format for RFC 1123 date string -- &quot;Sun, 06 Nov 1994 08:49:37 GMT&quot;
+   */
+  public static final String RFC1123_PATTERN = &quot;EEE, dd MMM yyyyy HH:mm:ss z&quot;;
+
+  private static final ArrayList&lt;String&gt; cache_control;
+
+  private static final int MAX_AGE_SECOND = 604800;
+
+  static {
+<span class="nc" id="L83">    cache_control = new ArrayList&lt;String&gt;(2);</span>
+<span class="nc" id="L84">    cache_control.add(HttpHeaderValues.PUBLIC.toString());</span>
+<span class="nc" id="L85">    cache_control.add(HttpHeaderValues.MAX_AGE + &quot;=&quot; + MAX_AGE_SECOND);// 1 week</span>
+<span class="nc" id="L86">    cache_control.add(HttpHeaderValues.MUST_REVALIDATE.toString());</span>
+  }
+
+  /**
+   * set MIME TYPE if possible
+   */
+<span class="nc" id="L92">  public static final MimetypesFileTypeMap mimetypesFileTypeMap =</span>
+      new MimetypesFileTypeMap();
+
+  static {
+<span class="nc" id="L96">    mimetypesFileTypeMap.addMimeTypes(&quot;text/css css CSS&quot;);</span>
+<span class="nc" id="L97">    mimetypesFileTypeMap.addMimeTypes(&quot;text/javascript js JS&quot;);</span>
+    // Official but not supported mimetypesFileTypeMap.addMimeTypes(&quot;application/javascript js JS&quot;)
+<span class="nc" id="L99">    mimetypesFileTypeMap.addMimeTypes(&quot;application/json json JSON map MAP&quot;);</span>
+<span class="nc" id="L100">    mimetypesFileTypeMap.addMimeTypes(&quot;text/plain txt text TXT&quot;);</span>
+<span class="nc" id="L101">    mimetypesFileTypeMap.addMimeTypes(&quot;text/html htm html HTM HTML htmls htx&quot;);</span>
+<span class="nc" id="L102">    mimetypesFileTypeMap.addMimeTypes(&quot;image/jpeg jpe jpeg jpg JPG&quot;);</span>
+<span class="nc" id="L103">    mimetypesFileTypeMap.addMimeTypes(&quot;image/png png PNG&quot;);</span>
+<span class="nc" id="L104">    mimetypesFileTypeMap.addMimeTypes(&quot;image/gif gif GIF&quot;);</span>
+<span class="nc" id="L105">    mimetypesFileTypeMap.addMimeTypes(&quot;image/x-icon ico ICO&quot;);</span>
+<span class="nc" id="L106">  }</span>
+
+  private HttpWriteCacheEnable() {
+  }
+
+  /**
+   * Write a file, taking into account cache enabled and removing session
+   * cookie
+   *
+   * @param request
+   * @param ctx
+   * @param filename
+   * @param cookieNameToRemove
+   */
+  public static void writeFile(final HttpRequest request,
+                               final ChannelHandlerContext ctx,
+                               final String filename,
+                               final String cookieNameToRemove) {
+    // Convert the response content to a ByteBuf.
+    HttpResponse response;
+<span class="nc" id="L126">    final boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
+<span class="nc" id="L127">    final File file = new File(filename);</span>
+<span class="nc bnc" id="L128" title="All 4 branches missed.">    if (!file.isFile() || !file.canRead()) {</span>
+<span class="nc" id="L129">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Cannot read &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L130">      sendError(request, ctx, cookieNameToRemove, keepAlive);</span>
+<span class="nc" id="L131">      return;</span>
+    }
+<span class="nc" id="L133">    final DateFormat rfc1123Format =</span>
+        new SimpleDateFormat(RFC1123_PATTERN, LOCALE_US);
+<span class="nc" id="L135">    rfc1123Format.setTimeZone(GMT_ZONE);</span>
+<span class="nc" id="L136">    final Date lastModifDate = new Date(file.lastModified());</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">    if (request.headers().contains(HttpHeaderNames.IF_MODIFIED_SINCE)) {</span>
+<span class="nc" id="L138">      final String sdate =</span>
+<span class="nc" id="L139">          request.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);</span>
+      try {
+<span class="nc" id="L141">        final Date ifmodif = rfc1123Format.parse(sdate);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (ifmodif.after(lastModifDate)) {</span>
+<span class="nc" id="L143">          response = new DefaultHttpResponse(HTTP_1_1,</span>
+                                             HttpResponseStatus.NOT_MODIFIED);
+<span class="nc" id="L145">          handleCookies(request, response, cookieNameToRemove);</span>
+<span class="nc" id="L146">          ctx.writeAndFlush(response);</span>
+<span class="nc" id="L147">          return;</span>
+        }
+<span class="nc" id="L149">      } catch (final ParseException ignored) {</span>
+        // nothing
+<span class="nc" id="L151">      }</span>
+    }
+<span class="nc" id="L153">    final int fileLength = (int) file.length();</span>
+<span class="nc" id="L154">    final ByteBuf byteBuf =</span>
+<span class="nc" id="L155">        ByteBufAllocator.DEFAULT.buffer(fileLength, fileLength);</span>
+<span class="nc" id="L156">    FileInputStream inputStream = null;</span>
+    try {
+<span class="nc" id="L158">      inputStream = new FileInputStream(file);</span>
+<span class="nc" id="L159">      byteBuf.writeBytes(inputStream, fileLength);</span>
+<span class="nc" id="L160">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L161">      WaarpNettyUtil.release(byteBuf);</span>
+<span class="nc" id="L162">      sendError(request, ctx, cookieNameToRemove, keepAlive);</span>
+<span class="nc" id="L163">      return;</span>
+<span class="nc" id="L164">    } catch (final IOException e) {</span>
+<span class="nc" id="L165">      WaarpNettyUtil.release(byteBuf);</span>
+<span class="nc" id="L166">      sendError(request, ctx, cookieNameToRemove, keepAlive);</span>
+<span class="nc" id="L167">      return;</span>
+<span class="nc" id="L168">    }</span>
+
+<span class="nc" id="L170">    response =</span>
+        new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, byteBuf);
+<span class="nc" id="L172">    response.headers().set(HttpHeaderNames.CONTENT_LENGTH, fileLength);</span>
+<span class="nc" id="L173">    setContentTypeHeader(response, file);</span>
+<span class="nc" id="L174">    setDateAndCacheHeaders(response, rfc1123Format, lastModifDate);</span>
+
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (!keepAlive) {</span>
+<span class="nc" id="L177">      response.headers()</span>
+<span class="nc" id="L178">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
+<span class="nc" id="L180">      response.headers()</span>
+<span class="nc" id="L181">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+    }
+
+    // Write the initial line and the header.
+<span class="nc" id="L185">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
+
+    // Decide whether to close the connection or not.
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (!keepAlive) {</span>
+      // Close the connection when the whole content is written out.
+<span class="nc" id="L190">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
+    }
+<span class="nc" id="L192">  }</span>
+
+  /**
+   * Sets the content type header for the HTTP Response
+   *
+   * @param response HTTP response
+   * @param file file to extract content type
+   */
+  private static void setContentTypeHeader(final HttpResponse response,
+                                           final File file) {
+<span class="nc" id="L202">    response.headers().set(HttpHeaderNames.CONTENT_TYPE,</span>
+<span class="nc" id="L203">                           mimetypesFileTypeMap.getContentType(file.getPath()));</span>
+<span class="nc" id="L204">  }</span>
+
+  /**
+   * Sets the Date and Cache headers for the HTTP Response
+   *
+   * @param response HTTP response
+   * @param rfc1123Format
+   * @param lastModifDate
+   */
+  private static void setDateAndCacheHeaders(final HttpResponse response,
+                                             final DateFormat rfc1123Format,
+                                             final Date lastModifDate) {
+    // Date header
+<span class="nc" id="L217">    final Calendar time = new GregorianCalendar();</span>
+<span class="nc" id="L218">    response.headers()</span>
+<span class="nc" id="L219">            .set(HttpHeaderNames.DATE, rfc1123Format.format(time.getTime()));</span>
+
+    // Add cache headers
+<span class="nc" id="L222">    time.add(Calendar.SECOND, MAX_AGE_SECOND);</span>
+<span class="nc" id="L223">    response.headers()</span>
+<span class="nc" id="L224">            .set(HttpHeaderNames.EXPIRES, rfc1123Format.format(time.getTime()));</span>
+<span class="nc" id="L225">    response.headers().set(HttpHeaderNames.CACHE_CONTROL, cache_control);</span>
+<span class="nc" id="L226">    response.headers().set(HttpHeaderNames.LAST_MODIFIED,</span>
+<span class="nc" id="L227">                           rfc1123Format.format(lastModifDate));</span>
+<span class="nc" id="L228">  }</span>
+
+  private static void sendError(final HttpRequest request,
+                                final ChannelHandlerContext ctx,
+                                final String cookieNameToRemove,
+                                final boolean keepAlive) {
+    final HttpResponse response;
+<span class="nc" id="L235">    response =</span>
+        new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_FOUND);
+<span class="nc" id="L237">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">    if (!keepAlive) {</span>
+<span class="nc" id="L239">      response.headers()</span>
+<span class="nc" id="L240">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
+<span class="nc" id="L242">      response.headers()</span>
+<span class="nc" id="L243">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+    }
+<span class="nc" id="L245">    handleCookies(request, response, cookieNameToRemove);</span>
+<span class="nc" id="L246">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
+    // Decide whether to close the connection or not.
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    if (!keepAlive) {</span>
+      // Close the connection when the whole content is written out.
+<span class="nc" id="L250">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
+    }
+<span class="nc" id="L252">  }</span>
+
+  /**
+   * Remove the given named cookie
+   *
+   * @param request
+   * @param response
+   * @param cookieNameToRemove
+   */
+  public static void handleCookies(final HttpRequest request,
+                                   final HttpResponse response,
+                                   final String cookieNameToRemove) {
+<span class="nc" id="L264">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">    if (cookieString != null) {</span>
+<span class="nc" id="L266">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+        // Reset the sessions if necessary.
+        // Remove all Session for images
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        for (final Cookie cookie : cookies) {</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">          if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {</span>
+            // nothing
+          } else {
+<span class="nc" id="L274">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L275">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+          }
+<span class="nc" id="L277">        }</span>
+      }
+    }
+<span class="nc" id="L280">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

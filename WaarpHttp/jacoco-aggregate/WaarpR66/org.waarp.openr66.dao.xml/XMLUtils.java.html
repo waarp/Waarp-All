@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.xml;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -33,35 +34,47 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 public final class XMLUtils {
 
-<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(XMLUtils.class);</span>
+<span class="nc" id="L42">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L43">      WaarpLoggerFactory.getLogger(XMLUtils.class);</span>
 
   private XMLUtils() {
   }
 
   public static Node createNode(final Document document, final String tag,
                                 final String text) {
-<span class="fc" id="L47">    final Node res = document.createElement(tag);</span>
-<span class="fc" id="L48">    res.setTextContent(text);</span>
-<span class="fc" id="L49">    return res;</span>
+<span class="nc" id="L50">    final Node res = document.createElement(tag);</span>
+<span class="nc" id="L51">    res.setTextContent(text);</span>
+<span class="nc" id="L52">    return res;</span>
   }
 
   public static void writeToFile(final File file, final Document document) {
     final TransformerFactory factory =//NOSONAR
-<span class="fc" id="L54">        TransformerFactory.newInstance();//NOSONAR</span>
+<span class="nc" id="L57">        TransformerFactory.newInstance();//NOSONAR</span>
+<span class="nc" id="L58">    FileOutputStream outputStream = null;</span>
     try {
-<span class="fc" id="L56">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
-<span class="fc" id="L57">      final Transformer transformer = factory.newTransformer();</span>
-<span class="fc" id="L58">      transformer.setOutputProperty(OutputKeys.INDENT, &quot;yes&quot;);</span>
-<span class="fc" id="L59">      final DOMSource domSource = new DOMSource(document);</span>
-<span class="fc" id="L60">      final StreamResult streamResult = new StreamResult(file);</span>
-<span class="nc" id="L61">      transformer.transform(domSource, streamResult);</span>
-<span class="fc" id="L62">    } catch (final TransformerException e) {</span>
-<span class="fc" id="L63">      logger.error(&quot;Error while writing document to file: {}&quot;, e.getMessage());</span>
-<span class="nc" id="L64">    }</span>
-<span class="fc" id="L65">  }</span>
+<span class="nc" id="L60">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+<span class="nc" id="L61">      final Transformer transformer = factory.newTransformer();</span>
+<span class="nc" id="L62">      transformer.setOutputProperty(OutputKeys.INDENT, &quot;yes&quot;);</span>
+<span class="nc" id="L63">      final DOMSource domSource = new DOMSource(document);</span>
+<span class="nc" id="L64">      outputStream = new FileOutputStream(file);</span>
+<span class="nc" id="L65">      final StreamResult streamResult = new StreamResult(outputStream);</span>
+<span class="nc" id="L66">      transformer.transform(domSource, streamResult);</span>
+<span class="nc" id="L67">    } catch (final TransformerException e) {</span>
+<span class="nc" id="L68">      logger.error(&quot;Error while writing document to file: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L69">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L70">      logger.error(&quot;Error while writing document to file: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L71">    } catch (final Exception e) {</span>
+<span class="nc" id="L72">      logger.error(&quot;Error while writing document to file&quot;, e);</span>
+    } finally {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">      if (outputStream != null) {</span>
+<span class="nc" id="L75">        FileUtils.close(outputStream);</span>
+      }
+    }
+<span class="nc" id="L78">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

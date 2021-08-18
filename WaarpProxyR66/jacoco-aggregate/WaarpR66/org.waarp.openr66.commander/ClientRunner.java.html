@@ -73,11 +73,13 @@ public class ClientRunner extends Thread {
   /**
    * Internal Logger
    */
-<span class="fc" id="L76">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L77">      WaarpLoggerFactory.getLogger(ClientRunner.class);</span>
+<span class="nc" id="L76">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L77">      WaarpLoggerFactory.getLogger(ClientRunner.class);</span>
 
   private static final ConcurrentHashMap&lt;String, Integer&gt;
-<span class="fc" id="L80">      taskRunnerRetryHashMap = new ConcurrentHashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L80">      taskRunnerRetryHashMap = new ConcurrentHashMap&lt;String, Integer&gt;();</span>
+
+<span class="nc" id="L82">  private static RecvThroughHandler staticRecvHandlerJunit = null;</span>
 
   public static ConcurrentLinkedQueue&lt;ClientRunner&gt; activeRunners;
 
@@ -87,7 +89,7 @@ public class ClientRunner extends Thread {
 
   private final R66Future futureRequest;
 
-  private RecvThroughHandler handler;
+<span class="nc" id="L92">  private RecvThroughHandler handler = null;</span>
 
   private boolean isSendThroughMode;
 
@@ -95,175 +97,217 @@ public class ClientRunner extends Thread {
 
   private final String nameTask;
 
-<span class="fc" id="L98">  private boolean limitRetryConnection = true;</span>
+<span class="nc" id="L100">  private boolean limitRetryConnection = true;</span>
+
+  public static void setRecvHandlerJunit(final RecvThroughHandler handler) {
+<span class="nc" id="L103">    staticRecvHandlerJunit = handler;</span>
+<span class="nc" id="L104">  }</span>
+
+  public static boolean isRecvHandlerJunit() {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    return staticRecvHandlerJunit != null;</span>
+  }
 
   public ClientRunner(final NetworkTransaction networkTransaction,
                       final DbTaskRunner taskRunner,
-<span class="fc" id="L102">                      final R66Future futureRequest) {</span>
-<span class="fc" id="L103">    this.networkTransaction = networkTransaction;</span>
-<span class="fc" id="L104">    this.taskRunner = taskRunner;</span>
-<span class="fc" id="L105">    this.futureRequest = futureRequest;</span>
-<span class="fc" id="L106">    setDaemon(true);</span>
-<span class="fc" id="L107">    nameTask = &quot;Client_Runner_&quot; + taskRunner.getKey();</span>
-<span class="fc" id="L108">    setName(nameTask);</span>
-<span class="fc" id="L109">  }</span>
+<span class="nc" id="L112">                      final R66Future futureRequest) {</span>
+<span class="nc" id="L113">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L114">    this.taskRunner = taskRunner;</span>
+<span class="nc" id="L115">    this.futureRequest = futureRequest;</span>
+<span class="nc" id="L116">    setDaemon(true);</span>
+<span class="nc" id="L117">    nameTask = &quot;Client_Runner_&quot; + taskRunner.getKey();</span>
+<span class="nc" id="L118">    setName(nameTask);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (staticRecvHandlerJunit != null) {</span>
+<span class="nc" id="L120">      this.handler = staticRecvHandlerJunit;</span>
+    }
+<span class="nc" id="L122">  }</span>
 
   public static String hashStatus() {
-<span class="nc" id="L112">    return &quot;ClientRunner: [taskRunnerRetryHashMap: &quot; +</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">           taskRunnerRetryHashMap.size() + &quot; activeRunners: &quot; +</span>
-<span class="nc" id="L114">           (activeRunners != null? activeRunners.size() :</span>
-<span class="nc" id="L115">               Configuration.configuration.getInternalRunner()</span>
-<span class="nc" id="L116">                                          .nbInternalRunner()) + &quot;] &quot;;</span>
+<span class="nc" id="L125">    return &quot;ClientRunner: [taskRunnerRetryHashMap: &quot; +</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">           taskRunnerRetryHashMap.size() + &quot; activeRunners: &quot; +</span>
+<span class="nc" id="L127">           (activeRunners != null? activeRunners.size() :</span>
+<span class="nc" id="L128">               Configuration.configuration.getInternalRunner()</span>
+<span class="nc" id="L129">                                          .nbInternalRunner()) + &quot;] &quot;;</span>
   }
 
   /**
    * @return the networkTransaction
    */
-  public NetworkTransaction getNetworkTransaction() {
-<span class="nc" id="L123">    return networkTransaction;</span>
+  public final NetworkTransaction getNetworkTransaction() {
+<span class="nc" id="L136">    return networkTransaction;</span>
   }
 
   /**
    * @return the taskRunner
    */
-  public DbTaskRunner getTaskRunner() {
-<span class="nc" id="L130">    return taskRunner;</span>
+  public final DbTaskRunner getTaskRunner() {
+<span class="nc" id="L143">    return taskRunner;</span>
   }
 
   /**
    * @return the localChannelReference
    */
-  public LocalChannelReference getLocalChannelReference() {
-<span class="fc" id="L137">    return localChannelReference;</span>
+  public final LocalChannelReference getLocalChannelReference() {
+<span class="nc" id="L150">    return localChannelReference;</span>
   }
 
   @Override
   public void run() {
-<span class="pc bpc" id="L142" title="2 of 4 branches missed.">    if (Configuration.configuration.isShutdown() || Thread.interrupted()) {</span>
-<span class="nc" id="L143">      taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
-<span class="nc" id="L144">      taskRunner.forceSaveStatus();</span>
-<span class="nc" id="L145">      return;</span>
+<span class="nc bnc" id="L155" title="All 4 branches missed.">    if (Configuration.configuration.isShutdown() || Thread.interrupted()) {</span>
+<span class="nc" id="L156">      taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="nc" id="L157">      taskRunner.forceSaveStatus();</span>
+<span class="nc" id="L158">      return;</span>
     }
+<span class="nc" id="L160">    boolean status = false;</span>
     try {
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">      if (activeRunners != null) {</span>
-<span class="nc" id="L149">        activeRunners.add(this);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      if (activeRunners != null) {</span>
+<span class="nc" id="L163">        activeRunners.add(this);</span>
       }
       // fix for SelfRequest
-<span class="fc bfc" id="L152" title="All 2 branches covered.">      if (taskRunner.isSelfRequest()) {</span>
-<span class="fc" id="L153">        taskRunner.setSenderByRequestToValidate(false);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      if (taskRunner.isSelfRequest()) {</span>
+<span class="nc" id="L167">        taskRunner.setSenderByRequestToValidate(false);</span>
       }
       // Try to check if file still exists in send not self not through mode
-<span class="fc bfc" id="L156" title="All 4 branches covered.">      if (taskRunner.isSender() &amp;&amp; !taskRunner.isSelfRequest() &amp;&amp;</span>
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">          !taskRunner.isSendThrough()) {</span>
+<span class="nc bnc" id="L170" title="All 4 branches missed.">      if (taskRunner.isSender() &amp;&amp; !taskRunner.isSelfRequest() &amp;&amp;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">          !taskRunner.isSendThrough()) {</span>
         try {
-<span class="fc" id="L159">          final R66Session session = new R66Session();</span>
-<span class="fc" id="L160">          session.setReady(true);</span>
-<span class="fc" id="L161">          final boolean ssl = Configuration.configuration.isUseSSL();</span>
-<span class="fc" id="L162">          session.getAuth().specialNoSessionAuth(ssl,</span>
-                                                 Configuration.configuration
-<span class="fc" id="L164">                                                     .getHostId(ssl));</span>
-<span class="fc" id="L165">          final DbTaskRunner reloaded =</span>
-<span class="fc" id="L166">              new DbTaskRunner(session, taskRunner.getRule(),</span>
-<span class="fc" id="L167">                               taskRunner.getSpecialId(),</span>
-<span class="fc" id="L168">                               taskRunner.getRequester(),</span>
-<span class="fc" id="L169">                               taskRunner.getRequested());</span>
-<span class="fc" id="L170">          reloaded.setSender(taskRunner.isSender());</span>
-<span class="fc" id="L171">          session.setRunner(reloaded);</span>
-<span class="fc" id="L172">          final File file = new File(reloaded.getFullFilePath());</span>
-<span class="fc bfc" id="L173" title="All 2 branches covered.">          if (!file.isFile()) {</span>
-<span class="fc" id="L174">            logger.warn(&quot;File not found: {}&quot;, file.getAbsolutePath());</span>
+<span class="nc" id="L173">          final R66Session session = new R66Session(false);</span>
+<span class="nc" id="L174">          session.setReady(true);</span>
+<span class="nc" id="L175">          final boolean ssl = Configuration.configuration.isUseSSL();</span>
+<span class="nc" id="L176">          session.getAuth().specialNoSessionAuth(ssl,</span>
+<span class="nc" id="L177">                                                 Configuration.configuration.getHostId(</span>
+                                                     ssl));
+<span class="nc" id="L179">          final DbTaskRunner reloaded =</span>
+<span class="nc" id="L180">              new DbTaskRunner(session, taskRunner.getRule(),</span>
+<span class="nc" id="L181">                               taskRunner.getSpecialId(),</span>
+<span class="nc" id="L182">                               taskRunner.getRequester(),</span>
+<span class="nc" id="L183">                               taskRunner.getRequested());</span>
+<span class="nc" id="L184">          reloaded.setSender(taskRunner.isSender());</span>
+<span class="nc" id="L185">          session.setRunner(reloaded);</span>
+<span class="nc" id="L186">          session.setBlockSize(reloaded.getBlocksize());</span>
+<span class="nc" id="L187">          final File file = new File(reloaded.getFullFilePath());</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">          if (!file.isFile()) {</span>
+<span class="nc" id="L189">            logger.warn(&quot;File not found: {}&quot;, file.getAbsolutePath());</span>
             // File does no more exist =&gt; error
-<span class="fc" id="L176">            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
-<span class="fc" id="L177">            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
-<span class="fc" id="L178">            logger</span>
-<span class="fc" id="L179">                .error(&quot;Runner Error: {} {}&quot;, ErrorCode.FileNotFound.getMesg(),</span>
-<span class="fc" id="L180">                       taskRunner.toShortString());</span>
-<span class="fc" id="L181">            reloaded.setErrorTask();</span>
-<span class="fc" id="L182">            reloaded.update();</span>
-<span class="fc" id="L183">            return;</span>
+<span class="nc" id="L191">            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
+<span class="nc" id="L192">            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
+<span class="nc" id="L193">            logger.error(&quot;Runner Error: {} {}&quot;,</span>
+<span class="nc" id="L194">                         ErrorCode.FileNotFound.getMesg(),</span>
+<span class="nc" id="L195">                         taskRunner.toShortString());</span>
+<span class="nc" id="L196">            reloaded.setErrorTask();</span>
+<span class="nc" id="L197">            reloaded.update();</span>
+<span class="nc" id="L198">            return;</span>
           }
-<span class="nc" id="L185">        } catch (final CommandAbstractException e) {</span>
-          // Wrong path? Ignore
-<span class="nc" id="L187">          logger.warn(e);</span>
-<span class="nc" id="L188">        } catch (final OpenR66RunnerErrorException e) {</span>
-          // Wrong run error? Ignore
-<span class="nc" id="L190">          logger.warn(e);</span>
-<span class="nc" id="L191">        } catch (final WaarpDatabaseException e) {</span>
-          // Wrong dbtask? Ignore
-<span class="nc" id="L193">          logger.warn(e);</span>
-<span class="nc" id="L194">        } catch (final OpenR66ProtocolNoSslException e) {</span>
-          // Wrong ssl? Ignore
-<span class="nc" id="L196">          logger.warn(e);</span>
-<span class="pc" id="L197">        }</span>
+<span class="nc" id="L200">          status = true;</span>
+<span class="nc" id="L201">        } catch (final CommandAbstractException e) {</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">          if (Configuration.configuration.isShutdown()) {</span>
+            // ignore since shutdown
+<span class="nc" id="L204">            logger.warn(e.getMessage());</span>
+          } else {
+            // Wrong path? Ignore
+<span class="nc" id="L207">            logger.warn(e);</span>
+          }
+<span class="nc" id="L209">        } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">          if (Configuration.configuration.isShutdown()) {</span>
+            // ignore since shutdown
+<span class="nc" id="L212">            logger.warn(e.getMessage());</span>
+          } else {
+            // Wrong run error? Ignore
+<span class="nc" id="L215">            logger.warn(e);</span>
+          }
+<span class="nc" id="L217">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">          if (Configuration.configuration.isShutdown()) {</span>
+            // ignore since shutdown
+<span class="nc" id="L220">            logger.warn(e.getMessage());</span>
+          } else {
+            // Wrong dbtask? Ignore
+<span class="nc" id="L223">            logger.warn(e);</span>
+          }
+<span class="nc" id="L225">        } catch (final OpenR66ProtocolNoSslException e) {</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">          if (Configuration.configuration.isShutdown()) {</span>
+            // ignore since shutdown
+<span class="nc" id="L228">            logger.warn(e.getMessage());</span>
+          } else {
+            // Wrong ssl? Ignore
+<span class="nc" id="L231">            logger.warn(e);</span>
+          }
+<span class="nc" id="L233">        }</span>
+      } else {
+<span class="nc" id="L235">        status = true;</span>
+      }
+<span class="nc bnc" id="L237" title="All 6 branches missed.">      if (Configuration.configuration.isShutdown() || Thread.interrupted() ||</span>
+          !status) {
+<span class="nc" id="L239">        taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="nc" id="L240">        taskRunner.forceSaveStatus();</span>
+<span class="nc" id="L241">        return;</span>
       }
       final R66Future transfer;
       try {
-<span class="fc" id="L201">        transfer = runTransfer();</span>
-<span class="nc" id="L202">      } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L203">        logger.error(&quot;Runner Error: {} {}&quot;, e.getMessage(),</span>
-<span class="nc" id="L204">                     taskRunner.toShortString());</span>
-<span class="nc" id="L205">        return;</span>
-<span class="fc" id="L206">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
-<span class="fc" id="L207">        logger.error(&quot;No connection Error {}&quot;, e.getMessage());</span>
-<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        if (localChannelReference != null) {</span>
-<span class="nc" id="L209">          localChannelReference</span>
-<span class="nc" id="L210">              .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),</span>
-                               ErrorCode.ConnectionImpossible);
+<span class="nc" id="L245">        transfer = runTransfer();</span>
+<span class="nc" id="L246">      } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L247">        logger.error(&quot;Runner Error: {} {}&quot;, e.getMessage(),</span>
+<span class="nc" id="L248">                     taskRunner.toShortString());</span>
+<span class="nc" id="L249">        return;</span>
+<span class="nc" id="L250">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="nc" id="L251">        logger.error(&quot;No connection Error {}&quot;, e.getMessage());</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (localChannelReference != null) {</span>
+<span class="nc" id="L253">          localChannelReference.setErrorMessage(</span>
+<span class="nc" id="L254">              ErrorCode.ConnectionImpossible.getMesg(),</span>
+              ErrorCode.ConnectionImpossible);
         }
-<span class="fc" id="L213">        taskRunner.setErrorTask();</span>
+<span class="nc" id="L257">        taskRunner.setErrorTask();</span>
         try {
-<span class="fc" id="L215">          taskRunner.forceSaveStatus();</span>
-<span class="fc" id="L216">          taskRunner.run();</span>
-<span class="nc" id="L217">        } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L218">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
+<span class="nc" id="L259">          taskRunner.forceSaveStatus();</span>
+<span class="nc" id="L260">          taskRunner.run();</span>
+<span class="nc" id="L261">        } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L262">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                             true);
-<span class="fc" id="L220">        }</span>
-<span class="fc" id="L221">        return;</span>
-<span class="nc" id="L222">      } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L223">        logger.error(&quot;Protocol Error&quot;, e);</span>
-<span class="nc" id="L224">        return;</span>
-<span class="fc" id="L225">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
-<span class="fc" id="L226">        logger.warn(&quot;No connection warning {}&quot;, e.getMessage());</span>
-<span class="fc" id="L227">        return;</span>
-<span class="fc" id="L228">      }</span>
-<span class="fc" id="L229">      final R66Result result = transfer.getResult();</span>
-<span class="pc bpc" id="L230" title="1 of 2 branches missed.">      if (result != null) {</span>
-<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (result.getCode() == ErrorCode.QueryAlreadyFinished) {</span>
-<span class="nc" id="L232">          logger.warn(Messages.getString(TRANSFER_STATUS) +</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">                      (transfer.isSuccess()?</span>
-<span class="nc" id="L234">                          Messages.getString(REQUEST_INFORMATION_SUCCESS) :</span>
-<span class="nc" id="L235">                          Messages.getString(REQUEST_INFORMATION_FAILURE)) +</span>
-<span class="nc" id="L236">                      &quot;     &quot; + ErrorCode.QueryAlreadyFinished.getMesg() + ':' +</span>
-<span class="nc" id="L237">                      result.toString());</span>
+<span class="nc" id="L264">        }</span>
+<span class="nc" id="L265">        return;</span>
+<span class="nc" id="L266">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L267">        logger.error(&quot;Protocol Error&quot;, e);</span>
+<span class="nc" id="L268">        return;</span>
+<span class="nc" id="L269">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
+<span class="nc" id="L270">        logger.warn(&quot;No connection warning {}&quot;, e.getMessage());</span>
+<span class="nc" id="L271">        return;</span>
+<span class="nc" id="L272">      }</span>
+<span class="nc" id="L273">      final R66Result result = transfer.getResult();</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">      if (result != null) {</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.QueryAlreadyFinished) {</span>
+<span class="nc" id="L276">          logger.warn(Messages.getString(TRANSFER_STATUS) +</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                      (transfer.isSuccess()?</span>
+<span class="nc" id="L278">                          Messages.getString(REQUEST_INFORMATION_SUCCESS) :</span>
+<span class="nc" id="L279">                          Messages.getString(REQUEST_INFORMATION_FAILURE)) +</span>
+<span class="nc" id="L280">                      &quot;     &quot; + ErrorCode.QueryAlreadyFinished.getMesg() + ':' +</span>
+<span class="nc" id="L281">                      result.toString());</span>
         } else {
-<span class="fc bfc" id="L239" title="All 2 branches covered.">          if (transfer.isSuccess()) {</span>
-<span class="fc" id="L240">            logger.info(&quot;{}{}     {}&quot;, Messages.getString(TRANSFER_STATUS),</span>
-<span class="fc" id="L241">                        Messages.getString(REQUEST_INFORMATION_SUCCESS),</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">          if (transfer.isSuccess()) {</span>
+<span class="nc" id="L284">            logger.info(&quot;{}{}     {}&quot;, Messages.getString(TRANSFER_STATUS),</span>
+<span class="nc" id="L285">                        Messages.getString(REQUEST_INFORMATION_SUCCESS),</span>
                         result);
           } else {
-<span class="fc" id="L244">            logger.error(Messages.getString(TRANSFER_STATUS) +</span>
-<span class="fc" id="L245">                         Messages.getString(REQUEST_INFORMATION_FAILURE) +</span>
-<span class="fc" id="L246">                         &quot;     &quot; + result.toString());</span>
+<span class="nc" id="L288">            logger.error(Messages.getString(TRANSFER_STATUS) +</span>
+<span class="nc" id="L289">                         Messages.getString(REQUEST_INFORMATION_FAILURE) +</span>
+<span class="nc" id="L290">                         &quot;     &quot; + result.toString());</span>
           }
         }
       } else {
-<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (transfer.isSuccess()) {</span>
-<span class="nc" id="L251">          logger.warn(Messages.getString(TRANSFER_STATUS) +</span>
-<span class="nc" id="L252">                      Messages.getString(REQUEST_INFORMATION_SUCCESS) +</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        if (transfer.isSuccess()) {</span>
+<span class="nc" id="L295">          logger.warn(Messages.getString(TRANSFER_STATUS) +</span>
+<span class="nc" id="L296">                      Messages.getString(REQUEST_INFORMATION_SUCCESS) +</span>
                       &quot;     no result&quot;);
         } else {
-<span class="nc" id="L255">          logger.error(Messages.getString(TRANSFER_STATUS) +</span>
-<span class="nc" id="L256">                       Messages.getString(REQUEST_INFORMATION_FAILURE) +</span>
+<span class="nc" id="L299">          logger.error(Messages.getString(TRANSFER_STATUS) +</span>
+<span class="nc" id="L300">                       Messages.getString(REQUEST_INFORMATION_FAILURE) +</span>
                        &quot;     no result&quot;);
         }
       }
     } finally {
-<span class="pc bpc" id="L261" title="1 of 2 branches missed.">      if (activeRunners != null) {</span>
-<span class="nc" id="L262">        activeRunners.remove(this);</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">      if (activeRunners != null) {</span>
+<span class="nc" id="L306">        activeRunners.remove(this);</span>
       }
-<span class="fc" id="L264">      setName(&quot;Finished_&quot; + nameTask);</span>
+<span class="nc" id="L308">      setName(&quot;Finished_&quot; + nameTask);</span>
     }
-<span class="fc" id="L266">  }</span>
+<span class="nc" id="L310">  }</span>
 
   /**
    * @param runner
@@ -271,26 +315,26 @@ public class ClientRunner extends Thread {
    *
    * @return True if the task was run less than limit, else False
    */
-  public boolean incrementTaskRunnerTry(final DbTaskRunner runner,
-                                        final int limit) {
-<span class="pc bpc" id="L276" title="1 of 2 branches missed.">    if (!isLimitRetryConnection()) {</span>
-<span class="nc" id="L277">      return true;</span>
+  public final boolean incrementTaskRunnerTry(final DbTaskRunner runner,
+                                              final int limit) {
+<span class="nc bnc" id="L320" title="All 2 branches missed.">    if (!isLimitRetryConnection()) {</span>
+<span class="nc" id="L321">      return true;</span>
     }
-<span class="fc" id="L279">    final String key = runner.getKey();</span>
-<span class="fc" id="L280">    Integer tries = taskRunnerRetryHashMap.get(key);</span>
-<span class="fc" id="L281">    logger.debug(&quot;try to find integer: {}&quot;, tries);</span>
-<span class="fc bfc" id="L282" title="All 2 branches covered.">    if (tries == null) {</span>
-<span class="fc" id="L283">      tries = 1;</span>
+<span class="nc" id="L323">    final String key = runner.getKey();</span>
+<span class="nc" id="L324">    Integer tries = taskRunnerRetryHashMap.get(key);</span>
+<span class="nc" id="L325">    logger.debug(&quot;try to find integer: {}&quot;, tries);</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">    if (tries == null) {</span>
+<span class="nc" id="L327">      tries = 1;</span>
     } else {
-<span class="fc" id="L285">      tries += 1;</span>
+<span class="nc" id="L329">      tries += 1;</span>
     }
-<span class="fc bfc" id="L287" title="All 2 branches covered.">    logger.debug(&quot;Check: {} vs {}: {}&quot;, tries, limit, limit &lt;= tries);</span>
-<span class="pc bpc" id="L288" title="1 of 4 branches missed.">    if (limit &lt;= tries || Thread.interrupted()) {</span>
-<span class="fc" id="L289">      taskRunnerRetryHashMap.remove(key);</span>
-<span class="fc" id="L290">      return false;</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">    logger.debug(&quot;Check: {} vs {}: {}&quot;, tries, limit, limit &lt;= tries);</span>
+<span class="nc bnc" id="L332" title="All 4 branches missed.">    if (limit &lt;= tries || Thread.interrupted()) {</span>
+<span class="nc" id="L333">      taskRunnerRetryHashMap.remove(key);</span>
+<span class="nc" id="L334">      return false;</span>
     } else {
-<span class="fc" id="L292">      taskRunnerRetryHashMap.put(key, tries);</span>
-<span class="fc" id="L293">      return true;</span>
+<span class="nc" id="L336">      taskRunnerRetryHashMap.put(key, tries);</span>
+<span class="nc" id="L337">      return true;</span>
     }
   }
 
@@ -305,23 +349,23 @@ public class ClientRunner extends Thread {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
-  public R66Future runTransfer()
+  public final R66Future runTransfer()
       throws OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
-<span class="fc" id="L312">    logger.debug(&quot;Start attempt Transfer&quot;);</span>
-<span class="fc" id="L313">    localChannelReference = initRequest();</span>
-<span class="fc" id="L314">    localChannelReference.getFutureValidRequest().awaitOrInterruptible(</span>
-<span class="fc" id="L315">        Configuration.configuration.getTimeoutCon());</span>
-<span class="fc bfc" id="L316" title="All 2 branches covered.">    if (localChannelReference.getFutureValidRequest().isSuccess()) {</span>
-<span class="fc" id="L317">      return finishTransfer(localChannelReference);</span>
-<span class="fc" id="L318">    } else if (</span>
-<span class="fc bfc" id="L319" title="All 2 branches covered.">        localChannelReference.getFutureValidRequest().getResult() != null &amp;&amp;</span>
-<span class="pc bpc" id="L320" title="1 of 2 branches missed.">        localChannelReference.getFutureValidRequest().getResult().getCode() ==</span>
+<span class="nc" id="L356">    logger.debug(&quot;Start attempt Transfer&quot;);</span>
+<span class="nc" id="L357">    localChannelReference = initRequest();</span>
+<span class="nc" id="L358">    localChannelReference.getFutureValidRequest().awaitOrInterruptible(</span>
+<span class="nc" id="L359">        Configuration.configuration.getTimeoutCon());</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">    if (localChannelReference.getFutureValidRequest().isSuccess()) {</span>
+<span class="nc" id="L361">      return finishTransfer(localChannelReference);</span>
+<span class="nc" id="L362">    } else if (</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">        localChannelReference.getFutureValidRequest().getResult() != null &amp;&amp;</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        localChannelReference.getFutureValidRequest().getResult().getCode() ==</span>
         ErrorCode.ServerOverloaded) {
-<span class="nc" id="L322">      return tryAgainTransferOnOverloaded(true, localChannelReference);</span>
+<span class="nc" id="L366">      return tryAgainTransferOnOverloaded(true, localChannelReference);</span>
     } else {
-<span class="fc" id="L324">      return finishTransfer(localChannelReference);</span>
+<span class="nc" id="L368">      return finishTransfer(localChannelReference);</span>
     }
   }
 
@@ -339,45 +383,54 @@ public class ClientRunner extends Thread {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
-  public R66Future tryAgainTransferOnOverloaded(final boolean retry,
-                                                final LocalChannelReference localChannelReference)
+  public final R66Future tryAgainTransferOnOverloaded(final boolean retry,
+                                                      final LocalChannelReference localChannelReference)
       throws OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
-<span class="nc bnc" id="L347" title="All 2 branches missed.">    if (this.localChannelReference == null) {</span>
-<span class="nc" id="L348">      this.localChannelReference = localChannelReference;</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">    if (this.localChannelReference == null) {</span>
+<span class="nc" id="L392">      this.localChannelReference = localChannelReference;</span>
     }
-<span class="nc" id="L350">    final boolean incRetry =</span>
-<span class="nc" id="L351">        incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB);</span>
-<span class="nc" id="L352">    logger.debug(&quot;tryAgainTransferOnOverloaded: {}:{}&quot;, retry, incRetry);</span>
-<span class="nc bnc" id="L353" title="All 2 branches missed.">    switch (taskRunner.getUpdatedInfo()) {</span>
+<span class="nc" id="L394">    final boolean incRetry =</span>
+<span class="nc" id="L395">        incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB);</span>
+<span class="nc" id="L396">    logger.debug(&quot;tryAgainTransferOnOverloaded: {}:{}&quot;, retry, incRetry);</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">    switch (taskRunner.getUpdatedInfo()) {</span>
       case DONE:
       case INERROR:
       case INTERRUPTED:
-<span class="nc" id="L357">        break;</span>
+<span class="nc" id="L401">        break;</span>
       default:
-<span class="nc" id="L359">        changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ServerOverloaded,</span>
+<span class="nc" id="L403">        changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ServerOverloaded,</span>
                           true);
     }
     // redo if possible
-<span class="nc bnc" id="L363" title="All 4 branches missed.">    if (retry &amp;&amp; incRetry) {</span>
+<span class="nc bnc" id="L407" title="All 4 branches missed.">    if (retry &amp;&amp; incRetry) {</span>
       try {
-<span class="nc" id="L365">        Thread.sleep(Configuration.configuration.getConstraintLimitHandler()</span>
-<span class="nc" id="L366">                                                .getSleepTime());</span>
-<span class="nc" id="L367">      } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L368">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L369">      }</span>
-<span class="nc" id="L370">      return runTransfer();</span>
+<span class="nc" id="L409">        Thread.sleep(Configuration.configuration.getConstraintLimitHandler()</span>
+<span class="nc" id="L410">                                                .getSleepTime());</span>
+<span class="nc" id="L411">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">        if (localChannelReference == null) {</span>
+<span class="nc" id="L413">          taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+        }
+<span class="nc" id="L415">        taskRunner.getLocalChannelReference()</span>
+<span class="nc" id="L416">                  .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),</span>
+                                   ErrorCode.ConnectionImpossible);
+<span class="nc" id="L418">        taskRunner.setErrorTask();</span>
+<span class="nc" id="L419">        taskRunner.run();</span>
+<span class="nc" id="L420">        throw new OpenR66ProtocolNoConnectionException(</span>
+            &quot;End of retry on ServerOverloaded due to interruption&quot;);
+<span class="nc" id="L422">      }</span>
+<span class="nc" id="L423">      return runTransfer();</span>
     } else {
-<span class="nc bnc" id="L372" title="All 2 branches missed.">      if (localChannelReference == null) {</span>
-<span class="nc" id="L373">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">      if (localChannelReference == null) {</span>
+<span class="nc" id="L426">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
       }
-<span class="nc" id="L375">      taskRunner.getLocalChannelReference()</span>
-<span class="nc" id="L376">                .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),</span>
+<span class="nc" id="L428">      taskRunner.getLocalChannelReference()</span>
+<span class="nc" id="L429">                .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),</span>
                                  ErrorCode.ConnectionImpossible);
-<span class="nc" id="L378">      taskRunner.setErrorTask();</span>
-<span class="nc" id="L379">      taskRunner.run();</span>
-<span class="nc" id="L380">      throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L431">      taskRunner.setErrorTask();</span>
+<span class="nc" id="L432">      taskRunner.run();</span>
+<span class="nc" id="L433">      throw new OpenR66ProtocolNoConnectionException(</span>
           &quot;End of retry on ServerOverloaded&quot;);
     }
   }
@@ -389,82 +442,82 @@ public class ClientRunner extends Thread {
    *
    * @return The R66Future of the transfer operation
    */
-  public R66Future finishTransfer(
+  public final R66Future finishTransfer(
       final LocalChannelReference localChannelReference) {
-<span class="fc bfc" id="L394" title="All 2 branches covered.">    if (this.localChannelReference == null) {</span>
-<span class="fc" id="L395">      this.localChannelReference = localChannelReference;</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">    if (this.localChannelReference == null) {</span>
+<span class="nc" id="L448">      this.localChannelReference = localChannelReference;</span>
     }
-<span class="fc" id="L397">    final R66Future transfer = localChannelReference.getFutureRequest();</span>
-<span class="fc" id="L398">    transfer.awaitOrInterruptible();</span>
-<span class="fc" id="L399">    taskRunnerRetryHashMap.remove(taskRunner.getKey());</span>
-<span class="fc" id="L400">    logger.info(&quot;Request done with {}&quot;,</span>
-<span class="fc bfc" id="L401" title="All 2 branches covered.">                transfer.isSuccess()? &quot;success&quot; : &quot;error&quot;);</span>
-<span class="fc" id="L402">    localChannelReference.close();</span>
+<span class="nc" id="L450">    final R66Future transfer = localChannelReference.getFutureRequest();</span>
+<span class="nc" id="L451">    transfer.awaitOrInterruptible();</span>
+<span class="nc" id="L452">    taskRunnerRetryHashMap.remove(taskRunner.getKey());</span>
+<span class="nc" id="L453">    logger.info(&quot;Request done with {}&quot;,</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                transfer.isSuccess()? &quot;success&quot; : &quot;error&quot;);</span>
+<span class="nc" id="L455">    localChannelReference.close();</span>
     // now reload TaskRunner if it still exists (light client can forget it)
-<span class="fc" id="L404">    final boolean isSender = taskRunner.isSender();</span>
-<span class="fc bfc" id="L405" title="All 2 branches covered.">    if (transfer.isSuccess()) {</span>
+<span class="nc" id="L457">    final boolean isSender = taskRunner.isSender();</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">    if (transfer.isSuccess()) {</span>
       try {
-<span class="fc" id="L407">        taskRunner.select();</span>
-<span class="nc" id="L408">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L409">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;, e);</span>
-<span class="nc" id="L410">        taskRunner.setFrom(transfer.getRunner());</span>
-<span class="fc" id="L411">      }</span>
-<span class="fc" id="L412">      taskRunner.setSender(isSender);</span>
-<span class="fc" id="L413">      changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);</span>
+<span class="nc" id="L460">        taskRunner.select();</span>
+<span class="nc" id="L461">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L462">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;, e);</span>
+<span class="nc" id="L463">        taskRunner.setFrom(transfer.getRunner());</span>
+<span class="nc" id="L464">      }</span>
+<span class="nc" id="L465">      taskRunner.setSender(isSender);</span>
+<span class="nc" id="L466">      changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);</span>
     } else {
       try {
-<span class="fc" id="L416">        taskRunner.select();</span>
-<span class="nc" id="L417">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L418">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;);</span>
-<span class="nc" id="L419">        taskRunner.setFrom(transfer.getRunner());</span>
-<span class="fc" id="L420">      }</span>
-<span class="fc" id="L421">      taskRunner.setSender(isSender);</span>
+<span class="nc" id="L469">        taskRunner.select();</span>
+<span class="nc" id="L470">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L471">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;);</span>
+<span class="nc" id="L472">        taskRunner.setFrom(transfer.getRunner());</span>
+<span class="nc" id="L473">      }</span>
+<span class="nc" id="L474">      taskRunner.setSender(isSender);</span>
       // Case when we were interrupted
-<span class="pc bpc" id="L423" title="1 of 2 branches missed.">      if (transfer.getResult() == null) {</span>
-<span class="nc bnc" id="L424" title="All 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
+<span class="nc bnc" id="L476" title="All 2 branches missed.">      if (transfer.getResult() == null) {</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
           case DONE:
-<span class="nc" id="L426">            final R66Result ok =</span>
+<span class="nc" id="L479">            final R66Result ok =</span>
                 new R66Result(null, true, ErrorCode.CompleteOk, taskRunner);
-<span class="nc" id="L428">            transfer.setResult(ok);</span>
-<span class="nc" id="L429">            transfer.setSuccess();</span>
-<span class="nc" id="L430">            changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);</span>
-<span class="nc" id="L431">            break;</span>
+<span class="nc" id="L481">            transfer.setResult(ok);</span>
+<span class="nc" id="L482">            transfer.setSuccess();</span>
+<span class="nc" id="L483">            changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);</span>
+<span class="nc" id="L484">            break;</span>
           case INERROR:
           case INTERRUPTED:
           default:
-<span class="nc" id="L435">            final R66Result error =</span>
+<span class="nc" id="L488">            final R66Result error =</span>
                 new R66Result(null, true, ErrorCode.Internal, taskRunner);
-<span class="nc" id="L437">            transfer.setResult(error);</span>
-<span class="nc" id="L438">            transfer.cancel();</span>
-<span class="nc" id="L439">            changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);</span>
+<span class="nc" id="L490">            transfer.setResult(error);</span>
+<span class="nc" id="L491">            transfer.cancel();</span>
+<span class="nc" id="L492">            changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);</span>
         }
-<span class="nc" id="L441">        return transfer;</span>
+<span class="nc" id="L494">        return transfer;</span>
       }
-<span class="pc bpc" id="L443" title="1 of 2 branches missed.">      if (transfer.getResult().getCode() == ErrorCode.QueryAlreadyFinished) {</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">      if (transfer.getResult().getCode() == ErrorCode.QueryAlreadyFinished) {</span>
         // check if post task to execute
-<span class="nc" id="L445">        logger.warn(&quot;WARN QueryAlreadyFinished:     &quot; + transfer + &quot;     &quot; +</span>
-<span class="nc" id="L446">                    taskRunner.toShortString());</span>
+<span class="nc" id="L498">        logger.warn(&quot;WARN QueryAlreadyFinished:     &quot; + transfer + &quot;     &quot; +</span>
+<span class="nc" id="L499">                    taskRunner.toShortString());</span>
         try {
-<span class="nc" id="L448">          TransferUtils</span>
-<span class="nc" id="L449">              .finalizeTaskWithNoSession(taskRunner, localChannelReference);</span>
-<span class="nc" id="L450">        } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L451">          taskRunner.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
-<span class="nc" id="L452">          taskRunner.forceSaveStatus();</span>
-<span class="nc" id="L453">        }</span>
+<span class="nc" id="L501">          TransferUtils.finalizeTaskWithNoSession(taskRunner,</span>
+                                                  localChannelReference);
+<span class="nc" id="L503">        } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L504">          taskRunner.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
+<span class="nc" id="L505">          taskRunner.forceSaveStatus();</span>
+<span class="nc" id="L506">        }</span>
       } else {
-<span class="fc bfc" id="L455" title="All 2 branches covered.">        switch (taskRunner.getUpdatedInfo()) {</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
           case DONE:
           case INERROR:
           case INTERRUPTED:
           case TOSUBMIT:
-<span class="fc" id="L460">            break;</span>
+<span class="nc" id="L513">            break;</span>
           default:
-<span class="fc" id="L462">            changeUpdatedInfo(UpdatedInfo.INERROR,</span>
-<span class="fc" id="L463">                              transfer.getResult().getCode(), false);</span>
+<span class="nc" id="L515">            changeUpdatedInfo(UpdatedInfo.INERROR,</span>
+<span class="nc" id="L516">                              transfer.getResult().getCode(), false);</span>
         }
       }
     }
-<span class="fc" id="L467">    return transfer;</span>
+<span class="nc" id="L520">    return transfer;</span>
   }
 
   /**
@@ -476,164 +529,162 @@ public class ClientRunner extends Thread {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
-  public LocalChannelReference initRequest()
+  public final LocalChannelReference initRequest()
       throws OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
-<span class="fc" id="L483">    changeUpdatedInfo(UpdatedInfo.RUNNING, ErrorCode.Running, true);</span>
-<span class="fc" id="L484">    final long id = taskRunner.getSpecialId();</span>
+<span class="nc" id="L536">    changeUpdatedInfo(UpdatedInfo.RUNNING, ErrorCode.Running, true);</span>
+<span class="nc" id="L537">    final long id = taskRunner.getSpecialId();</span>
     final String tid;
-<span class="pc bpc" id="L486" title="1 of 2 branches missed.">    if (id == DbConstantR66.ILLEGALVALUE) {</span>
-<span class="nc" id="L487">      tid = &quot;Runner_&quot; + taskRunner.getRuleId() + '_' + taskRunner.getMode() +</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">    if (id == DbConstantR66.ILLEGALVALUE) {</span>
+<span class="nc" id="L540">      tid = &quot;Runner_&quot; + taskRunner.getRuleId() + '_' + taskRunner.getMode() +</span>
             &quot;_NEWTRANSFER&quot;;
     } else {
-<span class="fc" id="L490">      tid = &quot;Runner_&quot; + taskRunner.getRuleId() + '_' + taskRunner.getMode() +</span>
+<span class="nc" id="L543">      tid = &quot;Runner_&quot; + taskRunner.getRuleId() + '_' + taskRunner.getMode() +</span>
             '_' + id;
     }
-<span class="fc" id="L493">    setName(tid);</span>
-<span class="fc" id="L494">    logger.debug(&quot;Will run {}&quot;, taskRunner);</span>
-<span class="fc" id="L495">    boolean restartPost = false;</span>
-<span class="pc bpc" id="L496" title="1 of 2 branches missed.">    if (taskRunner.getGloballaststep() == TASKSTEP.POSTTASK.ordinal()) {</span>
+<span class="nc" id="L546">    setName(tid);</span>
+<span class="nc" id="L547">    logger.debug(&quot;Will run {}&quot;, taskRunner);</span>
+<span class="nc" id="L548">    boolean restartPost = false;</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">    if (taskRunner.getGloballaststep() == TASKSTEP.POSTTASK.ordinal()) {</span>
       // Send a validation to requested
-<span class="nc bnc" id="L498" title="All 2 branches missed.">      if (!taskRunner.isSelfRequested()) {</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">      if (!taskRunner.isRequestOnRequested()) {</span>
         // restart
-<span class="nc" id="L500">        restartPost = true;</span>
+<span class="nc" id="L553">        restartPost = true;</span>
       }
     }
-<span class="pc bpc" id="L503" title="1 of 2 branches missed.">    if (taskRunner.isSelfRequested()) {</span>
+<span class="nc bnc" id="L556" title="All 2 branches missed.">    if (taskRunner.isRequestOnRequested()) {</span>
       // Don't have to restart a task for itself (or should use requester)
-<span class="nc" id="L505">      logger.warn(&quot;Requested host cannot initiate itself the request&quot;);</span>
-<span class="nc" id="L506">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.LoopSelfRequestedHost,</span>
+<span class="nc" id="L558">      logger.warn(&quot;Requested host cannot initiate itself the request&quot;);</span>
+<span class="nc" id="L559">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.LoopSelfRequestedHost,</span>
                         true);
-<span class="nc" id="L508">      throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L561">      throw new OpenR66ProtocolNoConnectionException(</span>
           &quot;Requested host cannot initiate itself the request&quot;);
     }
     final DbHostAuth host;
     try {
-<span class="fc" id="L513">      host = new DbHostAuth(taskRunner.getRequested());</span>
-<span class="nc" id="L514">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L515">      logger.error(</span>
-<span class="nc" id="L516">          &quot;Requested host cannot be found: &quot; + taskRunner.getRequested());</span>
-<span class="nc" id="L517">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.NotKnownHost, true);</span>
-<span class="nc" id="L518">      throw new OpenR66ProtocolNoConnectionException(</span>
-<span class="nc" id="L519">          &quot;Requested host cannot be found &quot; + taskRunner.getRequested());</span>
-<span class="fc" id="L520">    }</span>
-<span class="pc bpc" id="L521" title="1 of 2 branches missed.">    if (host.isClient()) {</span>
-<span class="nc" id="L522">      logger.warn(&quot;Cannot initiate a connection with a client: {}&quot;, host);</span>
-<span class="nc" id="L523">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
+<span class="nc" id="L566">      host = new DbHostAuth(taskRunner.getRequested());</span>
+<span class="nc" id="L567">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L568">      logger.error(</span>
+<span class="nc" id="L569">          &quot;Requested host cannot be found: &quot; + taskRunner.getRequested());</span>
+<span class="nc" id="L570">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.NotKnownHost, true);</span>
+<span class="nc" id="L571">      throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L572">          &quot;Requested host cannot be found &quot; + taskRunner.getRequested());</span>
+<span class="nc" id="L573">    }</span>
+<span class="nc bnc" id="L574" title="All 2 branches missed.">    if (host.isClient()) {</span>
+<span class="nc" id="L575">      logger.warn(&quot;Cannot initiate a connection with a client: {}&quot;, host);</span>
+<span class="nc" id="L576">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                         true);
-<span class="nc" id="L525">      throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L578">      throw new OpenR66ProtocolNoConnectionException(</span>
           &quot;Cannot connect to client &quot; + host);
     }
-<span class="fc" id="L528">    final SocketAddress socketAddress = host.getSocketAddress();</span>
-<span class="fc" id="L529">    final boolean isSSL = host.isSsl();</span>
+<span class="nc" id="L581">    final SocketAddress socketAddress = host.getSocketAddress();</span>
+<span class="nc" id="L582">    final boolean isSSL = host.isSsl();</span>
 
     final LocalChannelReference localChannelReferenceTemp;
     try {
-<span class="fc" id="L533">      localChannelReferenceTemp = networkTransaction</span>
-<span class="fc" id="L534">          .createConnectionWithRetryWithAuthenticationException(socketAddress,</span>
-                                                                isSSL,
-                                                                futureRequest);
-<span class="fc" id="L537">    } catch (final OpenR66ProtocolNotAuthenticatedException e1) {</span>
-<span class="fc" id="L538">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, true);</span>
-<span class="fc" id="L539">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="fc" id="L540">      throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L586">      localChannelReferenceTemp =</span>
+<span class="nc" id="L587">          networkTransaction.createConnectionWithRetryWithAuthenticationException(</span>
+              socketAddress, isSSL, futureRequest);
+<span class="nc" id="L589">    } catch (final OpenR66ProtocolNotAuthenticatedException e1) {</span>
+<span class="nc" id="L590">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, true);</span>
+<span class="nc" id="L591">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L592">      throw new OpenR66ProtocolNoConnectionException(</span>
           CANNOT_CONNECT_TO_SERVER + host +
           &quot; cannot be authenticated so stop retry here&quot;, e1);
-<span class="fc" id="L543">    }</span>
-<span class="fc" id="L544">    taskRunner.setLocalChannelReference(localChannelReferenceTemp);</span>
-<span class="fc bfc" id="L545" title="All 2 branches covered.">    if (localChannelReferenceTemp == null) {</span>
+<span class="nc" id="L595">    }</span>
+<span class="nc" id="L596">    taskRunner.setLocalChannelReference(localChannelReferenceTemp);</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">    if (localChannelReferenceTemp == null) {</span>
       // propose to redo
       String retry;
-<span class="fc bfc" id="L548" title="All 2 branches covered.">      if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">      if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {</span>
 
-<span class="fc" id="L550">        logger.debug(&quot;Will retry since Cannot connect to {}&quot;, host);</span>
-<span class="fc" id="L551">        retry = &quot; but will retry&quot;;</span>
+<span class="nc" id="L602">        logger.debug(&quot;Will retry since Cannot connect to {}&quot;, host);</span>
+<span class="nc" id="L603">        retry = &quot; but will retry&quot;;</span>
         // now wait
         try {
-<span class="fc" id="L554">          Thread.sleep(Configuration.configuration.getDelayRetry());</span>
-<span class="nc" id="L555">        } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L556">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L557">          logger.info(</span>
+<span class="nc" id="L606">          Thread.sleep(Configuration.configuration.getDelayRetry());</span>
+<span class="nc" id="L607">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L608">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L609">          logger.info(</span>
               &quot;Will not retry since an interruption occurs while connection to {}&quot;,
               host);
-<span class="nc" id="L560">          retry = &quot; and retries gets an interruption so stop here&quot;;</span>
-<span class="nc" id="L561">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
+<span class="nc" id="L612">          retry = &quot; and retries gets an interruption so stop here&quot;;</span>
+<span class="nc" id="L613">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                             true);
-<span class="nc" id="L563">          taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="nc" id="L564">          throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L615">          taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L616">          throw new OpenR66ProtocolNoConnectionException(</span>
               CANNOT_CONNECT_TO_SERVER + host + retry);
-<span class="fc" id="L566">        }</span>
-<span class="fc" id="L567">        changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,</span>
+<span class="nc" id="L618">        }</span>
+<span class="nc" id="L619">        changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,</span>
                           true);
-<span class="fc" id="L569">        throw new OpenR66ProtocolNotYetConnectionException(</span>
+<span class="nc" id="L621">        throw new OpenR66ProtocolNotYetConnectionException(</span>
             CANNOT_CONNECT_TO_SERVER + host + retry);
       } else {
-<span class="fc" id="L572">        logger.info(</span>
+<span class="nc" id="L624">        logger.info(</span>
             &quot;Will not retry since limit of connection attemtps is reached for {}&quot;,
             host);
-<span class="fc" id="L575">        retry = &quot; and retries reach step limit so stop here&quot;;</span>
-<span class="fc" id="L576">        changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
+<span class="nc" id="L627">        retry = &quot; and retries reach step limit so stop here&quot;;</span>
+<span class="nc" id="L628">        changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                           true);
-<span class="fc" id="L578">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="fc" id="L579">        throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L630">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L631">        throw new OpenR66ProtocolNoConnectionException(</span>
             CANNOT_CONNECT_TO_SERVER + host + retry);
       }
     }
-<span class="fc bfc" id="L583" title="All 2 branches covered.">    if (handler != null) {</span>
-<span class="fc" id="L584">      localChannelReferenceTemp.setRecvThroughHandler(handler);</span>
+<span class="nc bnc" id="L635" title="All 2 branches missed.">    if (handler != null) {</span>
+<span class="nc" id="L636">      localChannelReferenceTemp.setRecvThroughHandler(handler);</span>
     }
-<span class="fc" id="L586">    localChannelReferenceTemp.setSendThroughMode(isSendThroughMode);</span>
-<span class="pc bpc" id="L587" title="1 of 2 branches missed.">    if (restartPost) {</span>
-<span class="nc" id="L588">      final RequestPacket request = taskRunner.getRequest();</span>
-<span class="nc" id="L589">      logger.debug(&quot;Will send request {} &quot;, request);</span>
-<span class="nc" id="L590">      localChannelReferenceTemp.setClientRunner(this);</span>
-<span class="nc" id="L591">      localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);</span>
+<span class="nc" id="L638">    localChannelReferenceTemp.setSendThroughMode(isSendThroughMode);</span>
+<span class="nc bnc" id="L639" title="All 2 branches missed.">    if (restartPost) {</span>
+<span class="nc" id="L640">      final RequestPacket request = taskRunner.getRequest();</span>
+<span class="nc" id="L641">      logger.debug(&quot;Will send request {} &quot;, request);</span>
+<span class="nc" id="L642">      localChannelReferenceTemp.setClientRunner(this);</span>
+<span class="nc" id="L643">      localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);</span>
       try {
-<span class="nc" id="L593">        ChannelUtils</span>
-<span class="nc" id="L594">            .writeAbstractLocalPacket(localChannelReferenceTemp, request, true);</span>
-<span class="nc" id="L595">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L645">        ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp,</span>
+                                              request, false);
+<span class="nc" id="L647">      } catch (final OpenR66ProtocolPacketException e) {</span>
         // propose to redo
-<span class="nc" id="L597">        logger.warn(&quot;Cannot transfer request to &quot; + host);</span>
-<span class="nc" id="L598">        changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, true);</span>
-<span class="nc" id="L599">        localChannelReferenceTemp.close();</span>
-<span class="nc" id="L600">        throw e;</span>
-<span class="nc" id="L601">      }</span>
-<span class="nc" id="L602">      logger.debug(&quot;Wait for request to {}&quot;, host);</span>
-<span class="nc" id="L603">      return localChannelReferenceTemp;</span>
+<span class="nc" id="L649">        logger.warn(&quot;Cannot transfer request to &quot; + host);</span>
+<span class="nc" id="L650">        changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, true);</span>
+<span class="nc" id="L651">        localChannelReferenceTemp.close();</span>
+<span class="nc" id="L652">        throw e;</span>
+<span class="nc" id="L653">      }</span>
+<span class="nc" id="L654">      logger.debug(&quot;Wait for request to {}&quot;, host);</span>
+<span class="nc" id="L655">      return localChannelReferenceTemp;</span>
     }
     // If Requester is NOT Sender, and if TransferTask then decrease now if
     // possible the rank
-<span class="fc bfc" id="L607" title="All 2 branches covered.">    if (!taskRunner.isSender() &amp;&amp;</span>
-<span class="pc bpc" id="L608" title="1 of 2 branches missed.">        taskRunner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {</span>
-<span class="nc" id="L609">      logger</span>
-<span class="nc" id="L610">          .debug(&quot;Requester is not Sender so decrease if possible the rank {}&quot;,</span>
-                 taskRunner);
-<span class="nc" id="L612">      taskRunner.restartRank();</span>
-<span class="nc" id="L613">      taskRunner.forceSaveStatus();</span>
-<span class="nc" id="L614">      logger.info(&quot;Requester is not Sender so new rank is {} {}&quot;,</span>
-<span class="nc" id="L615">                  taskRunner.getRank(), taskRunner);</span>
+<span class="nc bnc" id="L659" title="All 2 branches missed.">    if (!taskRunner.isSender() &amp;&amp;</span>
+<span class="nc bnc" id="L660" title="All 2 branches missed.">        taskRunner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {</span>
+<span class="nc" id="L661">      logger.debug(</span>
+          &quot;Requester is not Sender so decrease if possible the rank {}&quot;,
+          taskRunner);
+<span class="nc" id="L664">      taskRunner.restartRank();</span>
+<span class="nc" id="L665">      taskRunner.forceSaveStatus();</span>
+<span class="nc" id="L666">      logger.info(&quot;Requester is not Sender so new rank is {} {}&quot;,</span>
+<span class="nc" id="L667">                  taskRunner.getRank(), taskRunner);</span>
     }
-<span class="fc" id="L617">    final RequestPacket request = taskRunner.getRequest();</span>
-<span class="fc" id="L618">    request.setLimit(</span>
-<span class="fc" id="L619">        localChannelReferenceTemp.getChannelLimit(taskRunner.isSender()));</span>
-<span class="fc" id="L620">    localChannelReferenceTemp.setClientRunner(this);</span>
-<span class="fc" id="L621">    logger.debug(&quot;Will send request {} {}&quot;, request, localChannelReferenceTemp);</span>
-<span class="fc" id="L622">    localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);</span>
+<span class="nc" id="L669">    final RequestPacket request = taskRunner.getRequest();</span>
+<span class="nc" id="L670">    request.setLimit(</span>
+<span class="nc" id="L671">        localChannelReferenceTemp.getChannelLimit(taskRunner.isSender()));</span>
+<span class="nc" id="L672">    localChannelReferenceTemp.setClientRunner(this);</span>
+<span class="nc" id="L673">    logger.debug(&quot;Will send request {} {}&quot;, request, localChannelReferenceTemp);</span>
+<span class="nc" id="L674">    localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);</span>
     try {
-<span class="fc" id="L624">      ChannelUtils</span>
-<span class="fc" id="L625">          .writeAbstractLocalPacket(localChannelReferenceTemp, request, true);</span>
-<span class="nc" id="L626">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L676">      ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp, request,</span>
+                                            false);
+<span class="nc" id="L678">    } catch (final OpenR66ProtocolPacketException e) {</span>
       // propose to redo
-<span class="nc" id="L628">      logger.warn(&quot;Cannot transfer request to &quot; + host);</span>
-<span class="nc" id="L629">      changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, true);</span>
-<span class="nc" id="L630">      localChannelReferenceTemp.close();</span>
-<span class="nc" id="L631">      throw e;</span>
-<span class="fc" id="L632">    }</span>
-<span class="fc" id="L633">    logger</span>
-<span class="fc" id="L634">        .debug(&quot;Wait for request to {} {} {}&quot;, host, localChannelReferenceTemp,</span>
-               request);
-<span class="fc" id="L636">    return localChannelReferenceTemp;</span>
+<span class="nc" id="L680">      logger.warn(&quot;Cannot transfer request to &quot; + host);</span>
+<span class="nc" id="L681">      changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, true);</span>
+<span class="nc" id="L682">      localChannelReferenceTemp.close();</span>
+<span class="nc" id="L683">      throw e;</span>
+<span class="nc" id="L684">    }</span>
+<span class="nc" id="L685">    logger.debug(&quot;Wait for request to {} {} {}&quot;, host,</span>
+                 localChannelReferenceTemp, request);
+<span class="nc" id="L687">    return localChannelReferenceTemp;</span>
   }
 
   /**
@@ -641,42 +692,44 @@ public class ClientRunner extends Thread {
    *
    * @param info
    */
-  public void changeUpdatedInfo(final AbstractDbData.UpdatedInfo info,
-                                final ErrorCode code, final boolean force) {
-<span class="fc" id="L646">    taskRunner.changeUpdatedInfo(info);</span>
-<span class="fc" id="L647">    taskRunner.setErrorExecutionStatus(code);</span>
-<span class="fc bfc" id="L648" title="All 2 branches covered.">    if (force) {</span>
-<span class="fc" id="L649">      taskRunner.forceSaveStatus();</span>
+  public final void changeUpdatedInfo(final AbstractDbData.UpdatedInfo info,
+                                      final ErrorCode code,
+                                      final boolean force) {
+<span class="nc" id="L698">    taskRunner.changeUpdatedInfo(info);</span>
+<span class="nc" id="L699">    taskRunner.setErrorExecutionStatus(code);</span>
+<span class="nc bnc" id="L700" title="All 2 branches missed.">    if (force) {</span>
+<span class="nc" id="L701">      taskRunner.forceSaveStatus();</span>
     } else {
       try {
-<span class="fc" id="L652">        taskRunner.saveStatus();</span>
-<span class="nc" id="L653">      } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="nc" id="L704">        taskRunner.saveStatus();</span>
+<span class="nc" id="L705">      } catch (final OpenR66RunnerErrorException ignored) {</span>
         // nothing
-<span class="fc" id="L655">      }</span>
+<span class="nc" id="L707">      }</span>
     }
-<span class="fc" id="L657">  }</span>
+<span class="nc" id="L709">  }</span>
 
   /**
    * @param handler the handler to set
    */
-  public void setRecvThroughHandler(final RecvThroughHandler handler) {
-<span class="fc" id="L663">    this.handler = handler;</span>
-<span class="fc" id="L664">  }</span>
+  public final void setRecvThroughHandler(final RecvThroughHandler handler) {
+<span class="nc" id="L715">    this.handler = handler;</span>
+<span class="nc" id="L716">  }</span>
 
-  public void setSendThroughMode() {
-<span class="fc" id="L667">    isSendThroughMode = true;</span>
-<span class="fc" id="L668">  }</span>
+  public final void setSendThroughMode() {
+<span class="nc" id="L719">    isSendThroughMode = true;</span>
+<span class="nc" id="L720">  }</span>
 
-  public boolean getSendThroughMode() {
-<span class="nc" id="L671">    return isSendThroughMode;</span>
+  public final boolean getSendThroughMode() {
+<span class="nc" id="L723">    return isSendThroughMode;</span>
   }
 
-  public boolean isLimitRetryConnection() {
-<span class="fc" id="L675">    return limitRetryConnection;</span>
+  public final boolean isLimitRetryConnection() {
+<span class="nc" id="L727">    return limitRetryConnection;</span>
   }
 
-  public void setLimitRetryConnection(final boolean limitRetryConnection) {
-<span class="fc" id="L679">    this.limitRetryConnection = limitRetryConnection;</span>
-<span class="fc" id="L680">  }</span>
+  public final void setLimitRetryConnection(
+      final boolean limitRetryConnection) {
+<span class="nc" id="L732">    this.limitRetryConnection = limitRetryConnection;</span>
+<span class="nc" id="L733">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

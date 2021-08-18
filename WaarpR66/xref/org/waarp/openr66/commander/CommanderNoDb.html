@@ -88,8 +88,8 @@
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>        <strong class="jxr_keyword">final</strong> File directory = <strong class="jxr_keyword">new</strong> File(
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>            Configuration.configuration.getBaseDirectory() +
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>            Configuration.configuration.getArchivePath());
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>        <strong class="jxr_keyword">final</strong> File[] files = FileUtils
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>            .getFiles(directory, <strong class="jxr_keyword">new</strong> <a name="ExtensionFilter" href="../../../../org/waarp/openr66/configuration/ExtensionFilter.html#ExtensionFilter">ExtensionFilter</a>(DbTaskRunner.XMLEXTENSION));
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>        <strong class="jxr_keyword">final</strong> File[] files = FileUtils.getFiles(directory, <strong class="jxr_keyword">new</strong> <a name="ExtensionFilter" href="../../../../org/waarp/openr66/configuration/ExtensionFilter.html#ExtensionFilter">ExtensionFilter</a>(
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>            DbTaskRunner.XMLEXTENSION));
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>        <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">final</strong> File file : files) {
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>          <strong class="jxr_keyword">final</strong> String shortname = file.getName();
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>          <strong class="jxr_keyword">final</strong> String[] info = COMPILE_.split(shortname);
@@ -128,7 +128,7 @@
 <a class="jxr_linenumber" name="L120" href="#L120">120</a> <em class="jxr_javadoccomment">   * Finalize internal data</em>
 <a class="jxr_linenumber" name="L121" href="#L121">121</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L122" href="#L122">122</a>   @Override
-<a class="jxr_linenumber" name="L123" href="#L123">123</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> finalizeCommander() {
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> finalizeCommander() {
 <a class="jxr_linenumber" name="L124" href="#L124">124</a>     <em class="jxr_comment">// no since it will be reloaded</em>
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>     <em class="jxr_comment">// todoList.clear()</em>
 <a class="jxr_linenumber" name="L126" href="#L126">126</a>   }
@@ -176,32 +176,38 @@
 <a class="jxr_linenumber" name="L168" href="#L168">168</a>             <em class="jxr_comment">// already running</em>
 <a class="jxr_linenumber" name="L169" href="#L169">169</a>             <strong class="jxr_keyword">continue</strong>;
 <a class="jxr_linenumber" name="L170" href="#L170">170</a>           }
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>           <strong class="jxr_keyword">if</strong> (taskRunner.isSelfRequested()) {
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>           <strong class="jxr_keyword">if</strong> (taskRunner.isRequestOnRequested()) {
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>             <em class="jxr_comment">// cannot schedule a request where the host is the requested host</em>
 <a class="jxr_linenumber" name="L173" href="#L173">173</a>             taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
 <a class="jxr_linenumber" name="L174" href="#L174">174</a>             taskRunner.update();
 <a class="jxr_linenumber" name="L175" href="#L175">175</a>             <strong class="jxr_keyword">continue</strong>;
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>           }
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>           taskRunner.changeUpdatedInfo(UpdatedInfo.RUNNING);
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>           taskRunner.update();
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>           internalRunner.submitTaskRunner(taskRunner);
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>           <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>             Thread.sleep(Configuration.RETRYINMS);
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>           } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>           }
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>         }
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>         <strong class="jxr_keyword">if</strong> (WaarpShutdownHook.isShutdownStarting()) {
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>           <em class="jxr_comment">// no more task to submit</em>
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>           <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>         }
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> WaarpDatabaseException e) {
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>         logger.error(<span class="jxr_string">"Error in Commander"</span>, e);
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>       }
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>     }
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>   }
-<a class="jxr_linenumber" name="L195" href="#L195">195</a> 
-<a class="jxr_linenumber" name="L196" href="#L196">196</a> }
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>           <em class="jxr_comment">// last check: number can have raised up since Commander checks</em>
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>           <strong class="jxr_keyword">if</strong> (internalRunner.nbInternalRunner() &gt;=
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>               Configuration.configuration.getRunnerThread()) {
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>           }
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>           <strong class="jxr_keyword">if</strong> (internalRunner.submitTaskRunner(taskRunner)) {
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>             <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>               Thread.sleep(Configuration.RETRYINMS);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>             } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>               SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>             }
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>           } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>           }
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>         }
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>         <strong class="jxr_keyword">if</strong> (WaarpShutdownHook.isShutdownStarting()) {
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>           <em class="jxr_comment">// no more task to submit</em>
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>           <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>         }
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> WaarpDatabaseException e) {
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>         logger.error(<span class="jxr_string">"Error in Commander: {}"</span>, e.getMessage());
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>       }
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>     }
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>   }
+<a class="jxr_linenumber" name="L201" href="#L201">201</a> 
+<a class="jxr_linenumber" name="L202" href="#L202">202</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>BitInputStream.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Filesystem</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdunsafe</a> &gt; <span class="el_source">BitInputStream.java</span></div><h1>BitInputStream.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdunsafe;
+
+/**
+ * Bit streams are encoded as a byte-aligned little-endian stream. Thus, bits are laid out
+ * in the following manner, and the stream is read from right to left.
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * ... [16 17 18 19 20 21 22 23] [8 9 10 11 12 13 14 15] [0 1 2 3 4 5 6 7]
+ */
+class BitInputStream {
+  private BitInputStream() {
+  }
+
+  public static boolean isEndOfStream(final long startAddress,
+                                      final long currentAddress,
+                                      final int bitsConsumed) {
+<span class="nc bnc" id="L50" title="All 4 branches missed.">    return startAddress == currentAddress &amp;&amp; bitsConsumed == Long.SIZE;</span>
+  }
+
+  static long readTail(final Object inputBase, final long inputAddress,
+                       final int inputSize) {
+<span class="nc" id="L55">    long bits = UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress) &amp; 0xFF;</span>
+
+<span class="nc bnc" id="L57" title="All 7 branches missed.">    switch (inputSize) {</span>
+      case 7:
+<span class="nc" id="L59">        bits |=</span>
+<span class="nc" id="L60">            (UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress + 6) &amp; 0xFFL) &lt;&lt;</span>
+            48;
+      case 6:
+<span class="nc" id="L63">        bits |=</span>
+<span class="nc" id="L64">            (UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress + 5) &amp; 0xFFL) &lt;&lt;</span>
+            40;
+      case 5:
+<span class="nc" id="L67">        bits |=</span>
+<span class="nc" id="L68">            (UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress + 4) &amp; 0xFFL) &lt;&lt;</span>
+            32;
+      case 4:
+<span class="nc" id="L71">        bits |=</span>
+<span class="nc" id="L72">            (UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress + 3) &amp; 0xFFL) &lt;&lt;</span>
+            24;
+      case 3:
+<span class="nc" id="L75">        bits |=</span>
+<span class="nc" id="L76">            (UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress + 2) &amp; 0xFFL) &lt;&lt;</span>
+            16;
+      case 2:
+<span class="nc" id="L79">        bits |=</span>
+<span class="nc" id="L80">            (UnsafeUtil.UNSAFE.getByte(inputBase, inputAddress + 1) &amp; 0xFFL) &lt;&lt;</span>
+            8;
+    }
+
+<span class="nc" id="L84">    return bits;</span>
+  }
+
+  /**
+   * @return numberOfBits in the low order bits of a long
+   */
+  public static long peekBits(final int bitsConsumed, final long bitContainer,
+                              final int numberOfBits) {
+<span class="nc" id="L92">    return (((bitContainer &lt;&lt; bitsConsumed) &gt;&gt;&gt; 1) &gt;&gt;&gt; (63 - numberOfBits));</span>
+  }
+
+  /**
+   * numberOfBits must be &gt; 0
+   *
+   * @return numberOfBits in the low order bits of a long
+   */
+  public static long peekBitsFast(final int bitsConsumed,
+                                  final long bitContainer,
+                                  final int numberOfBits) {
+<span class="nc" id="L103">    return ((bitContainer &lt;&lt; bitsConsumed) &gt;&gt;&gt; (64 - numberOfBits));</span>
+  }
+
+  static class Initializer {
+    private final Object inputBase;
+    private final long startAddress;
+    private final long endAddress;
+    private long bits;
+    private long currentAddress;
+    private int bitsConsumed;
+
+    public Initializer(final Object inputBase, final long startAddress,
+<span class="nc" id="L115">                       final long endAddress) {</span>
+<span class="nc" id="L116">      this.inputBase = inputBase;</span>
+<span class="nc" id="L117">      this.startAddress = startAddress;</span>
+<span class="nc" id="L118">      this.endAddress = endAddress;</span>
+<span class="nc" id="L119">    }</span>
+
+    public long getBits() {
+<span class="nc" id="L122">      return bits;</span>
+    }
+
+    public long getCurrentAddress() {
+<span class="nc" id="L126">      return currentAddress;</span>
+    }
+
+    public int getBitsConsumed() {
+<span class="nc" id="L130">      return bitsConsumed;</span>
+    }
+
+    public void initialize() {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      Util.verify(endAddress - startAddress &gt;= 1, startAddress,</span>
+                  &quot;Bitstream is empty&quot;);
+
+<span class="nc" id="L137">      final int lastByte =</span>
+<span class="nc" id="L138">          UnsafeUtil.UNSAFE.getByte(inputBase, endAddress - 1) &amp; 0xFF;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">      Util.verify(lastByte != 0, endAddress, &quot;Bitstream end mark not present&quot;);</span>
+
+<span class="nc" id="L141">      bitsConsumed = Constants.SIZE_OF_LONG - Util.highestBit(lastByte);</span>
+
+<span class="nc" id="L143">      final int inputSize = (int) (endAddress - startAddress);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">      if (inputSize &gt;= Constants.SIZE_OF_LONG) {  /* normal case */</span>
+<span class="nc" id="L145">        currentAddress = endAddress - Constants.SIZE_OF_LONG;</span>
+<span class="nc" id="L146">        bits = UnsafeUtil.UNSAFE.getLong(inputBase, currentAddress);</span>
+      } else {
+<span class="nc" id="L148">        currentAddress = startAddress;</span>
+<span class="nc" id="L149">        bits = readTail(inputBase, startAddress, inputSize);</span>
+
+<span class="nc" id="L151">        bitsConsumed += (Constants.SIZE_OF_LONG - inputSize) * 8;</span>
+      }
+<span class="nc" id="L153">    }</span>
+  }
+
+  static final class Loader {
+    private final Object inputBase;
+    private final long startAddress;
+    private long bits;
+    private long currentAddress;
+    private int bitsConsumed;
+    private boolean overflow;
+
+    public Loader(final Object inputBase, final long startAddress,
+                  final long currentAddress, final long bits,
+<span class="nc" id="L166">                  final int bitsConsumed) {</span>
+<span class="nc" id="L167">      this.inputBase = inputBase;</span>
+<span class="nc" id="L168">      this.startAddress = startAddress;</span>
+<span class="nc" id="L169">      this.bits = bits;</span>
+<span class="nc" id="L170">      this.currentAddress = currentAddress;</span>
+<span class="nc" id="L171">      this.bitsConsumed = bitsConsumed;</span>
+<span class="nc" id="L172">    }</span>
+
+    public long getBits() {
+<span class="nc" id="L175">      return bits;</span>
+    }
+
+    public long getCurrentAddress() {
+<span class="nc" id="L179">      return currentAddress;</span>
+    }
+
+    public int getBitsConsumed() {
+<span class="nc" id="L183">      return bitsConsumed;</span>
+    }
+
+    public boolean isOverflow() {
+<span class="nc" id="L187">      return overflow;</span>
+    }
+
+    public boolean load() {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">      if (bitsConsumed &gt; 64) {</span>
+<span class="nc" id="L192">        overflow = true;</span>
+<span class="nc" id="L193">        return true;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">      } else if (currentAddress == startAddress) {</span>
+<span class="nc" id="L195">        return true;</span>
+      }
+
+<span class="nc" id="L198">      int bytes = bitsConsumed &gt;&gt;&gt; 3; // divide by 8</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">      if (currentAddress &gt;= startAddress + Constants.SIZE_OF_LONG) {</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (bytes &gt; 0) {</span>
+<span class="nc" id="L201">          currentAddress -= bytes;</span>
+<span class="nc" id="L202">          bits = UnsafeUtil.UNSAFE.getLong(inputBase, currentAddress);</span>
+        }
+<span class="nc" id="L204">        bitsConsumed &amp;= 0x7;</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">      } else if (currentAddress - bytes &lt; startAddress) {</span>
+<span class="nc" id="L206">        bytes = (int) (currentAddress - startAddress);</span>
+<span class="nc" id="L207">        currentAddress = startAddress;</span>
+<span class="nc" id="L208">        bitsConsumed -= bytes * Constants.SIZE_OF_LONG;</span>
+<span class="nc" id="L209">        bits = UnsafeUtil.UNSAFE.getLong(inputBase, startAddress);</span>
+<span class="nc" id="L210">        return true;</span>
+      } else {
+<span class="nc" id="L212">        currentAddress -= bytes;</span>
+<span class="nc" id="L213">        bitsConsumed -= bytes * Constants.SIZE_OF_LONG;</span>
+<span class="nc" id="L214">        bits = UnsafeUtil.UNSAFE.getLong(inputBase, currentAddress);</span>
+      }
+
+<span class="nc" id="L217">      return false;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

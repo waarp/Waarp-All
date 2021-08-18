@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>CpuManagementSysmon.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Compression</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.cpu</a> &gt; <span class="el_source">CpuManagementSysmon.java</span></div><h1>CpuManagementSysmon.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.cpu;
+
+import com.jezhumble.javasysmon.CpuTimes;
+import com.jezhumble.javasysmon.JavaSysMon;
+
+/**
+ *
+ */
+class CpuManagementSysmon implements CpuManagementInterface {
+  public static final long DELAY = 1000;
+
+  final JavaSysMon sysMon;
+
+  CpuTimes cpuTimesOld;
+  CpuTimes cpuTimesOldNext;
+  long time;
+
+  /**
+   * @throws UnsupportedOperationException if System Load Average is
+   *     not
+   *     supported
+   */
+<span class="nc" id="L42">  public CpuManagementSysmon() throws UnsupportedOperationException {</span>
+<span class="nc" id="L43">    sysMon = new JavaSysMon();</span>
+<span class="nc" id="L44">    cpuTimesOld = sysMon.cpuTimes();</span>
+<span class="nc" id="L45">    cpuTimesOldNext = cpuTimesOld;</span>
+<span class="nc" id="L46">    time = System.currentTimeMillis();</span>
+<span class="nc" id="L47">  }</span>
+
+  /**
+   * @return the load average
+   */
+  @Override
+  public final double getLoadAverage() {
+<span class="nc" id="L54">    final long newTime = System.currentTimeMillis();</span>
+<span class="nc" id="L55">    final CpuTimes cpuTimes = sysMon.cpuTimes();</span>
+<span class="nc" id="L56">    final double rate = cpuTimes.getCpuUsage(cpuTimesOld);</span>
+<span class="nc" id="L57">    final long delta = newTime - time;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (delta &gt; DELAY) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">      if (delta &gt; 10 * DELAY) {</span>
+<span class="nc" id="L60">        time = newTime;</span>
+<span class="nc" id="L61">        cpuTimesOldNext = cpuTimes;</span>
+<span class="nc" id="L62">        cpuTimesOld = cpuTimes;</span>
+      } else {
+<span class="nc" id="L64">        time = newTime;</span>
+<span class="nc" id="L65">        cpuTimesOldNext = cpuTimes;</span>
+<span class="nc" id="L66">        cpuTimesOld = cpuTimesOldNext;</span>
+      }
+    }
+<span class="nc" id="L69">    return rate;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

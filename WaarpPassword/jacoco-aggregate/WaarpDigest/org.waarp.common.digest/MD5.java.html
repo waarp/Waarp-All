@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MD5.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Password Management GUI and Console</a> &gt; <a href="../index.html" class="el_bundle">WaarpDigest</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.digest</a> &gt; <span class="el_source">MD5.java</span></div><h1>MD5.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/**
+ * Copyright Santeri Paavolainen &lt;sjpaavol@cc.helsinki.fi&gt; and Timothy W Macinta
+ * (twm@alum.mit.edu)
+ * (optimizations and bug fixes) and individual contributors by the @author
+ * tags. See the
+ * COPYRIGHT.txt in the distribution for a full listing of individual
+ * contributors.
+ * &lt;p&gt;
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser
+ * General Public License as published by the Free Software Foundation; either
+ * version 2.1 of the
+ * License, or (at your option) any later version.
+ * &lt;p&gt;
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ * &lt;p&gt;
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this
+ * software; if not, write to the Free Software Foundation, Inc., 51 Franklin
+ * St, Fifth Floor,
+ * Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.waarp.common.digest;
+
+import io.netty.buffer.ByteBuf;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+
+import static org.waarp.common.digest.FilesystemBasedDigest.*;
+
+/**
+ * Fast implementation of RSA's MD5 hash generator in Java JDK Beta-2 or
+ * higher.
+ * &lt;p&gt;
+ * Originally written by Santeri Paavolainen, Helsinki Finland 1996.&lt;br&gt;
+ * (c) Santeri Paavolainen, Helsinki Finland 1996&lt;br&gt;
+ * Many changes Copyright (c) 2002 - 2005 Timothy W Macinta&lt;br&gt;
+ * &lt;p&gt;
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Library
+ * General Public License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or
+ * (at your option) any later version.
+ * &lt;p&gt;
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ * the GNU Library General Public
+ * License for more details.
+ * &lt;p&gt;
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not,
+ * write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+ * 02139, USA.
+ * &lt;p&gt;
+ * See http://www.twmacinta.com/myjava/fast_md5.php for more information on this
+ * file and the related files.
+ * &lt;p&gt;
+ * This was originally a rather straight re-implementation of the reference
+ * implementation given in RFC1321 by
+ * RSA. It passes the MD5 test suite as defined in RFC1321.
+ * &lt;p&gt;
+ * Many optimizations made by Timothy W Macinta. Reduced time to checksum a test
+ * file in Java alone to roughly
+ * half the time taken compared with java.security.MessageDigest (within an
+ * intepretter). Also added an
+ * optional native method to reduce the time even further. See
+ * http://www.twmacinta.com/myjava/fast_md5.php
+ * for further information on the time improvements achieved.
+ * &lt;p&gt;
+ * Some bug fixes also made by Timothy W Macinta.
+ * &lt;p&gt;
+ * Please note: I (Timothy Macinta) have put this code in the com.twmacinta.util
+ * package only because it came
+ * without a package. I was not the the original author of the code, although I
+ * did optimize it
+ * (substantially) and fix some bugs.
+ * &lt;p&gt;
+ * This Java class has been derived from the RSA Data Security, Inc. MD5
+ * Message-Digest Algorithm and its
+ * reference implementation.
+ * &lt;p&gt;
+ * This class will not use the native C version.
+ *
+ * @author Santeri Paavolainen &lt;sjpaavol@cc.helsinki.fi&gt;
+ * @author Timothy W Macinta (twm@alum.mit.edu) (optimizations and bug fixes)
+ * @author Frederic Bregier (add NIO support and dynamic library path
+ *     loading)
+ */
+
+class MD5 {
+  /**
+   * MD5 state
+   */
+  private MD5State state;
+
+  /**
+   * If Final() has been called, finals is set to the current finals state.
+   * Any
+   * Update() causes this to be set
+   * to null.
+   */
+  private MD5State finals;
+
+  /**
+   * Padding for Final()
+   */
+<span class="nc" id="L141">  private static final byte[] padding = {</span>
+      (byte) 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  };
+
+  /**
+   * Initialize MD5 internal state (object can be reused just by calling
+   * Init()
+   * after every Final()
+   */
+  synchronized void init() {
+<span class="nc" id="L153">    state = new MD5State();</span>
+<span class="nc" id="L154">    finals = null;</span>
+<span class="nc" id="L155">  }</span>
+
+  /**
+   * Class constructor
+   */
+<span class="nc" id="L160">  MD5() {</span>
+<span class="nc" id="L161">    init();</span>
+<span class="nc" id="L162">  }</span>
+
+  /**
+   * Initialize class, and update hash with ob.toString()
+   *
+   * @param ob Object, ob.toString() is used to update hash after
+   *     initialization
+   */
+  MD5(final Object ob) {
+<span class="nc" id="L171">    this();</span>
+<span class="nc" id="L172">    Update(ob.toString());</span>
+<span class="nc" id="L173">  }</span>
+
+  private void decode(final byte[] buffer, final int shift, final int[] out) {
+    // unrolled loop (original loop shown above)
+<span class="nc" id="L177">    out[0] = buffer[shift] &amp; 0xff | (buffer[shift + 1] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 2] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 3] &lt;&lt; 24;
+<span class="nc" id="L179">    out[1] = buffer[shift + 4] &amp; 0xff | (buffer[shift + 5] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 6] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 7] &lt;&lt; 24;
+<span class="nc" id="L181">    out[2] = buffer[shift + 8] &amp; 0xff | (buffer[shift + 9] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 10] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 11] &lt;&lt; 24;
+<span class="nc" id="L183">    out[3] = buffer[shift + 12] &amp; 0xff | (buffer[shift + 13] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 14] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 15] &lt;&lt; 24;
+<span class="nc" id="L185">    out[4] = buffer[shift + 16] &amp; 0xff | (buffer[shift + 17] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 18] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 19] &lt;&lt; 24;
+<span class="nc" id="L187">    out[5] = buffer[shift + 20] &amp; 0xff | (buffer[shift + 21] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 22] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 23] &lt;&lt; 24;
+<span class="nc" id="L189">    out[6] = buffer[shift + 24] &amp; 0xff | (buffer[shift + 25] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 26] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 27] &lt;&lt; 24;
+<span class="nc" id="L191">    out[7] = buffer[shift + 28] &amp; 0xff | (buffer[shift + 29] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 30] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 31] &lt;&lt; 24;
+<span class="nc" id="L193">    out[8] = buffer[shift + 32] &amp; 0xff | (buffer[shift + 33] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 34] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 35] &lt;&lt; 24;
+<span class="nc" id="L195">    out[9] = buffer[shift + 36] &amp; 0xff | (buffer[shift + 37] &amp; 0xff) &lt;&lt; 8 |</span>
+             (buffer[shift + 38] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 39] &lt;&lt; 24;
+<span class="nc" id="L197">    out[10] = buffer[shift + 40] &amp; 0xff | (buffer[shift + 41] &amp; 0xff) &lt;&lt; 8 |</span>
+              (buffer[shift + 42] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 43] &lt;&lt; 24;
+<span class="nc" id="L199">    out[11] = buffer[shift + 44] &amp; 0xff | (buffer[shift + 45] &amp; 0xff) &lt;&lt; 8 |</span>
+              (buffer[shift + 46] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 47] &lt;&lt; 24;
+<span class="nc" id="L201">    out[12] = buffer[shift + 48] &amp; 0xff | (buffer[shift + 49] &amp; 0xff) &lt;&lt; 8 |</span>
+              (buffer[shift + 50] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 51] &lt;&lt; 24;
+<span class="nc" id="L203">    out[13] = buffer[shift + 52] &amp; 0xff | (buffer[shift + 53] &amp; 0xff) &lt;&lt; 8 |</span>
+              (buffer[shift + 54] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 55] &lt;&lt; 24;
+<span class="nc" id="L205">    out[14] = buffer[shift + 56] &amp; 0xff | (buffer[shift + 57] &amp; 0xff) &lt;&lt; 8 |</span>
+              (buffer[shift + 58] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 59] &lt;&lt; 24;
+<span class="nc" id="L207">    out[15] = buffer[shift + 60] &amp; 0xff | (buffer[shift + 61] &amp; 0xff) &lt;&lt; 8 |</span>
+              (buffer[shift + 62] &amp; 0xff) &lt;&lt; 16 | buffer[shift + 63] &lt;&lt; 24;
+<span class="nc" id="L209">  }</span>
+
+  private void transform(final MD5State stat, final byte[] buffer,
+                         final int shift, final int[] decodeBuf) {
+<span class="nc" id="L213">    int a = stat.state[0];</span>
+<span class="nc" id="L214">    int b = stat.state[1];</span>
+<span class="nc" id="L215">    int c = stat.state[2];</span>
+<span class="nc" id="L216">    int d = stat.state[3];</span>
+
+<span class="nc" id="L218">    decode(buffer, shift, decodeBuf);</span>
+
+    /* Round 1 */
+<span class="nc" id="L221">    a += (b &amp; c | ~b &amp; d) + decodeBuf[0] + 0xd76aa478; /* 1 */</span>
+<span class="nc" id="L222">    a = (a &lt;&lt; 7 | a &gt;&gt;&gt; 25) + b;</span>
+<span class="nc" id="L223">    d += (a &amp; b | ~a &amp; c) + decodeBuf[1] + 0xe8c7b756; /* 2 */</span>
+<span class="nc" id="L224">    d = (d &lt;&lt; 12 | d &gt;&gt;&gt; 20) + a;</span>
+<span class="nc" id="L225">    c += (d &amp; a | ~d &amp; b) + decodeBuf[2] + 0x242070db; /* 3 */</span>
+<span class="nc" id="L226">    c = (c &lt;&lt; 17 | c &gt;&gt;&gt; 15) + d;</span>
+<span class="nc" id="L227">    b += (c &amp; d | ~c &amp; a) + decodeBuf[3] + 0xc1bdceee; /* 4 */</span>
+<span class="nc" id="L228">    b = (b &lt;&lt; 22 | b &gt;&gt;&gt; 10) + c;</span>
+
+<span class="nc" id="L230">    a += (b &amp; c | ~b &amp; d) + decodeBuf[4] + 0xf57c0faf; /* 5 */</span>
+<span class="nc" id="L231">    a = (a &lt;&lt; 7 | a &gt;&gt;&gt; 25) + b;</span>
+<span class="nc" id="L232">    d += (a &amp; b | ~a &amp; c) + decodeBuf[5] + 0x4787c62a; /* 6 */</span>
+<span class="nc" id="L233">    d = (d &lt;&lt; 12 | d &gt;&gt;&gt; 20) + a;</span>
+<span class="nc" id="L234">    c += (d &amp; a | ~d &amp; b) + decodeBuf[6] + 0xa8304613; /* 7 */</span>
+<span class="nc" id="L235">    c = (c &lt;&lt; 17 | c &gt;&gt;&gt; 15) + d;</span>
+<span class="nc" id="L236">    b += (c &amp; d | ~c &amp; a) + decodeBuf[7] + 0xfd469501; /* 8 */</span>
+<span class="nc" id="L237">    b = (b &lt;&lt; 22 | b &gt;&gt;&gt; 10) + c;</span>
+
+<span class="nc" id="L239">    a += (b &amp; c | ~b &amp; d) + decodeBuf[8] + 0x698098d8; /* 9 */</span>
+<span class="nc" id="L240">    a = (a &lt;&lt; 7 | a &gt;&gt;&gt; 25) + b;</span>
+<span class="nc" id="L241">    d += (a &amp; b | ~a &amp; c) + decodeBuf[9] + 0x8b44f7af; /* 10 */</span>
+<span class="nc" id="L242">    d = (d &lt;&lt; 12 | d &gt;&gt;&gt; 20) + a;</span>
+<span class="nc" id="L243">    c += (d &amp; a | ~d &amp; b) + decodeBuf[10] + 0xffff5bb1; /* 11 */</span>
+<span class="nc" id="L244">    c = (c &lt;&lt; 17 | c &gt;&gt;&gt; 15) + d;</span>
+<span class="nc" id="L245">    b += (c &amp; d | ~c &amp; a) + decodeBuf[11] + 0x895cd7be; /* 12 */</span>
+<span class="nc" id="L246">    b = (b &lt;&lt; 22 | b &gt;&gt;&gt; 10) + c;</span>
+
+<span class="nc" id="L248">    a += (b &amp; c | ~b &amp; d) + decodeBuf[12] + 0x6b901122; /* 13 */</span>
+<span class="nc" id="L249">    a = (a &lt;&lt; 7 | a &gt;&gt;&gt; 25) + b;</span>
+<span class="nc" id="L250">    d += (a &amp; b | ~a &amp; c) + decodeBuf[13] + 0xfd987193; /* 14 */</span>
+<span class="nc" id="L251">    d = (d &lt;&lt; 12 | d &gt;&gt;&gt; 20) + a;</span>
+<span class="nc" id="L252">    c += (d &amp; a | ~d &amp; b) + decodeBuf[14] + 0xa679438e; /* 15 */</span>
+<span class="nc" id="L253">    c = (c &lt;&lt; 17 | c &gt;&gt;&gt; 15) + d;</span>
+<span class="nc" id="L254">    b += (c &amp; d | ~c &amp; a) + decodeBuf[15] + 0x49b40821; /* 16 */</span>
+<span class="nc" id="L255">    b = (b &lt;&lt; 22 | b &gt;&gt;&gt; 10) + c;</span>
+
+    /* Round 2 */
+<span class="nc" id="L258">    a += (b &amp; d | c &amp; ~d) + decodeBuf[1] + 0xf61e2562; /* 17 */</span>
+<span class="nc" id="L259">    a = (a &lt;&lt; 5 | a &gt;&gt;&gt; 27) + b;</span>
+<span class="nc" id="L260">    d += (a &amp; c | b &amp; ~c) + decodeBuf[6] + 0xc040b340; /* 18 */</span>
+<span class="nc" id="L261">    d = (d &lt;&lt; 9 | d &gt;&gt;&gt; 23) + a;</span>
+<span class="nc" id="L262">    c += (d &amp; b | a &amp; ~b) + decodeBuf[11] + 0x265e5a51; /* 19 */</span>
+<span class="nc" id="L263">    c = (c &lt;&lt; 14 | c &gt;&gt;&gt; 18) + d;</span>
+<span class="nc" id="L264">    b += (c &amp; a | d &amp; ~a) + decodeBuf[0] + 0xe9b6c7aa; /* 20 */</span>
+<span class="nc" id="L265">    b = (b &lt;&lt; 20 | b &gt;&gt;&gt; 12) + c;</span>
+
+<span class="nc" id="L267">    a += (b &amp; d | c &amp; ~d) + decodeBuf[5] + 0xd62f105d; /* 21 */</span>
+<span class="nc" id="L268">    a = (a &lt;&lt; 5 | a &gt;&gt;&gt; 27) + b;</span>
+<span class="nc" id="L269">    d += (a &amp; c | b &amp; ~c) + decodeBuf[10] + 0x02441453; /* 22 */</span>
+<span class="nc" id="L270">    d = (d &lt;&lt; 9 | d &gt;&gt;&gt; 23) + a;</span>
+<span class="nc" id="L271">    c += (d &amp; b | a &amp; ~b) + decodeBuf[15] + 0xd8a1e681; /* 23 */</span>
+<span class="nc" id="L272">    c = (c &lt;&lt; 14 | c &gt;&gt;&gt; 18) + d;</span>
+<span class="nc" id="L273">    b += (c &amp; a | d &amp; ~a) + decodeBuf[4] + 0xe7d3fbc8; /* 24 */</span>
+<span class="nc" id="L274">    b = (b &lt;&lt; 20 | b &gt;&gt;&gt; 12) + c;</span>
+
+<span class="nc" id="L276">    a += (b &amp; d | c &amp; ~d) + decodeBuf[9] + 0x21e1cde6; /* 25 */</span>
+<span class="nc" id="L277">    a = (a &lt;&lt; 5 | a &gt;&gt;&gt; 27) + b;</span>
+<span class="nc" id="L278">    d += (a &amp; c | b &amp; ~c) + decodeBuf[14] + 0xc33707d6; /* 26 */</span>
+<span class="nc" id="L279">    d = (d &lt;&lt; 9 | d &gt;&gt;&gt; 23) + a;</span>
+<span class="nc" id="L280">    c += (d &amp; b | a &amp; ~b) + decodeBuf[3] + 0xf4d50d87; /* 27 */</span>
+<span class="nc" id="L281">    c = (c &lt;&lt; 14 | c &gt;&gt;&gt; 18) + d;</span>
+<span class="nc" id="L282">    b += (c &amp; a | d &amp; ~a) + decodeBuf[8] + 0x455a14ed; /* 28 */</span>
+<span class="nc" id="L283">    b = (b &lt;&lt; 20 | b &gt;&gt;&gt; 12) + c;</span>
+
+<span class="nc" id="L285">    a += (b &amp; d | c &amp; ~d) + decodeBuf[13] + 0xa9e3e905; /* 29 */</span>
+<span class="nc" id="L286">    a = (a &lt;&lt; 5 | a &gt;&gt;&gt; 27) + b;</span>
+<span class="nc" id="L287">    d += (a &amp; c | b &amp; ~c) + decodeBuf[2] + 0xfcefa3f8; /* 30 */</span>
+<span class="nc" id="L288">    d = (d &lt;&lt; 9 | d &gt;&gt;&gt; 23) + a;</span>
+<span class="nc" id="L289">    c += (d &amp; b | a &amp; ~b) + decodeBuf[7] + 0x676f02d9; /* 31 */</span>
+<span class="nc" id="L290">    c = (c &lt;&lt; 14 | c &gt;&gt;&gt; 18) + d;</span>
+<span class="nc" id="L291">    b += (c &amp; a | d &amp; ~a) + decodeBuf[12] + 0x8d2a4c8a; /* 32 */</span>
+<span class="nc" id="L292">    b = (b &lt;&lt; 20 | b &gt;&gt;&gt; 12) + c;</span>
+
+    /* Round 3 */
+<span class="nc" id="L295">    a += (b ^ c ^ d) + decodeBuf[5] + 0xfffa3942; /* 33 */</span>
+<span class="nc" id="L296">    a = (a &lt;&lt; 4 | a &gt;&gt;&gt; 28) + b;</span>
+<span class="nc" id="L297">    d += (a ^ b ^ c) + decodeBuf[8] + 0x8771f681; /* 34 */</span>
+<span class="nc" id="L298">    d = (d &lt;&lt; 11 | d &gt;&gt;&gt; 21) + a;</span>
+<span class="nc" id="L299">    c += (d ^ a ^ b) + decodeBuf[11] + 0x6d9d6122; /* 35 */</span>
+<span class="nc" id="L300">    c = (c &lt;&lt; 16 | c &gt;&gt;&gt; 16) + d;</span>
+<span class="nc" id="L301">    b += (c ^ d ^ a) + decodeBuf[14] + 0xfde5380c; /* 36 */</span>
+<span class="nc" id="L302">    b = (b &lt;&lt; 23 | b &gt;&gt;&gt; 9) + c;</span>
+
+<span class="nc" id="L304">    a += (b ^ c ^ d) + decodeBuf[1] + 0xa4beea44; /* 37 */</span>
+<span class="nc" id="L305">    a = (a &lt;&lt; 4 | a &gt;&gt;&gt; 28) + b;</span>
+<span class="nc" id="L306">    d += (a ^ b ^ c) + decodeBuf[4] + 0x4bdecfa9; /* 38 */</span>
+<span class="nc" id="L307">    d = (d &lt;&lt; 11 | d &gt;&gt;&gt; 21) + a;</span>
+<span class="nc" id="L308">    c += (d ^ a ^ b) + decodeBuf[7] + 0xf6bb4b60; /* 39 */</span>
+<span class="nc" id="L309">    c = (c &lt;&lt; 16 | c &gt;&gt;&gt; 16) + d;</span>
+<span class="nc" id="L310">    b += (c ^ d ^ a) + decodeBuf[10] + 0xbebfbc70; /* 40 */</span>
+<span class="nc" id="L311">    b = (b &lt;&lt; 23 | b &gt;&gt;&gt; 9) + c;</span>
+
+<span class="nc" id="L313">    a += (b ^ c ^ d) + decodeBuf[13] + 0x289b7ec6; /* 41 */</span>
+<span class="nc" id="L314">    a = (a &lt;&lt; 4 | a &gt;&gt;&gt; 28) + b;</span>
+<span class="nc" id="L315">    d += (a ^ b ^ c) + decodeBuf[0] + 0xeaa127fa; /* 42 */</span>
+<span class="nc" id="L316">    d = (d &lt;&lt; 11 | d &gt;&gt;&gt; 21) + a;</span>
+<span class="nc" id="L317">    c += (d ^ a ^ b) + decodeBuf[3] + 0xd4ef3085; /* 43 */</span>
+<span class="nc" id="L318">    c = (c &lt;&lt; 16 | c &gt;&gt;&gt; 16) + d;</span>
+<span class="nc" id="L319">    b += (c ^ d ^ a) + decodeBuf[6] + 0x04881d05; /* 44 */</span>
+<span class="nc" id="L320">    b = (b &lt;&lt; 23 | b &gt;&gt;&gt; 9) + c;</span>
+
+<span class="nc" id="L322">    a += (b ^ c ^ d) + decodeBuf[9] + 0xd9d4d039; /* 33 */</span>
+<span class="nc" id="L323">    a = (a &lt;&lt; 4 | a &gt;&gt;&gt; 28) + b;</span>
+<span class="nc" id="L324">    d += (a ^ b ^ c) + decodeBuf[12] + 0xe6db99e5; /* 34 */</span>
+<span class="nc" id="L325">    d = (d &lt;&lt; 11 | d &gt;&gt;&gt; 21) + a;</span>
+<span class="nc" id="L326">    c += (d ^ a ^ b) + decodeBuf[15] + 0x1fa27cf8; /* 35 */</span>
+<span class="nc" id="L327">    c = (c &lt;&lt; 16 | c &gt;&gt;&gt; 16) + d;</span>
+<span class="nc" id="L328">    b += (c ^ d ^ a) + decodeBuf[2] + 0xc4ac5665; /* 36 */</span>
+<span class="nc" id="L329">    b = (b &lt;&lt; 23 | b &gt;&gt;&gt; 9) + c;</span>
+
+    /* Round 4 */
+<span class="nc" id="L332">    a += (c ^ (b | ~d)) + decodeBuf[0] + 0xf4292244; /* 49 */</span>
+<span class="nc" id="L333">    a = (a &lt;&lt; 6 | a &gt;&gt;&gt; 26) + b;</span>
+<span class="nc" id="L334">    d += (b ^ (a | ~c)) + decodeBuf[7] + 0x432aff97; /* 50 */</span>
+<span class="nc" id="L335">    d = (d &lt;&lt; 10 | d &gt;&gt;&gt; 22) + a;</span>
+<span class="nc" id="L336">    c += (a ^ (d | ~b)) + decodeBuf[14] + 0xab9423a7; /* 51 */</span>
+<span class="nc" id="L337">    c = (c &lt;&lt; 15 | c &gt;&gt;&gt; 17) + d;</span>
+<span class="nc" id="L338">    b += (d ^ (c | ~a)) + decodeBuf[5] + 0xfc93a039; /* 52 */</span>
+<span class="nc" id="L339">    b = (b &lt;&lt; 21 | b &gt;&gt;&gt; 11) + c;</span>
+
+<span class="nc" id="L341">    a += (c ^ (b | ~d)) + decodeBuf[12] + 0x655b59c3; /* 53 */</span>
+<span class="nc" id="L342">    a = (a &lt;&lt; 6 | a &gt;&gt;&gt; 26) + b;</span>
+<span class="nc" id="L343">    d += (b ^ (a | ~c)) + decodeBuf[3] + 0x8f0ccc92; /* 54 */</span>
+<span class="nc" id="L344">    d = (d &lt;&lt; 10 | d &gt;&gt;&gt; 22) + a;</span>
+<span class="nc" id="L345">    c += (a ^ (d | ~b)) + decodeBuf[10] + 0xffeff47d; /* 55 */</span>
+<span class="nc" id="L346">    c = (c &lt;&lt; 15 | c &gt;&gt;&gt; 17) + d;</span>
+<span class="nc" id="L347">    b += (d ^ (c | ~a)) + decodeBuf[1] + 0x85845dd1; /* 56 */</span>
+<span class="nc" id="L348">    b = (b &lt;&lt; 21 | b &gt;&gt;&gt; 11) + c;</span>
+
+<span class="nc" id="L350">    a += (c ^ (b | ~d)) + decodeBuf[8] + 0x6fa87e4f; /* 57 */</span>
+<span class="nc" id="L351">    a = (a &lt;&lt; 6 | a &gt;&gt;&gt; 26) + b;</span>
+<span class="nc" id="L352">    d += (b ^ (a | ~c)) + decodeBuf[15] + 0xfe2ce6e0; /* 58 */</span>
+<span class="nc" id="L353">    d = (d &lt;&lt; 10 | d &gt;&gt;&gt; 22) + a;</span>
+<span class="nc" id="L354">    c += (a ^ (d | ~b)) + decodeBuf[6] + 0xa3014314; /* 59 */</span>
+<span class="nc" id="L355">    c = (c &lt;&lt; 15 | c &gt;&gt;&gt; 17) + d;</span>
+<span class="nc" id="L356">    b += (d ^ (c | ~a)) + decodeBuf[13] + 0x4e0811a1; /* 60 */</span>
+<span class="nc" id="L357">    b = (b &lt;&lt; 21 | b &gt;&gt;&gt; 11) + c;</span>
+
+<span class="nc" id="L359">    a += (c ^ (b | ~d)) + decodeBuf[4] + 0xf7537e82; /* 61 */</span>
+<span class="nc" id="L360">    a = (a &lt;&lt; 6 | a &gt;&gt;&gt; 26) + b;</span>
+<span class="nc" id="L361">    d += (b ^ (a | ~c)) + decodeBuf[11] + 0xbd3af235; /* 62 */</span>
+<span class="nc" id="L362">    d = (d &lt;&lt; 10 | d &gt;&gt;&gt; 22) + a;</span>
+<span class="nc" id="L363">    c += (a ^ (d | ~b)) + decodeBuf[2] + 0x2ad7d2bb; /* 63 */</span>
+<span class="nc" id="L364">    c = (c &lt;&lt; 15 | c &gt;&gt;&gt; 17) + d;</span>
+<span class="nc" id="L365">    b += (d ^ (c | ~a)) + decodeBuf[9] + 0xeb86d391; /* 64 */</span>
+<span class="nc" id="L366">    b = (b &lt;&lt; 21 | b &gt;&gt;&gt; 11) + c;</span>
+
+<span class="nc" id="L368">    stat.state[0] += a;</span>
+<span class="nc" id="L369">    stat.state[1] += b;</span>
+<span class="nc" id="L370">    stat.state[2] += c;</span>
+<span class="nc" id="L371">    stat.state[3] += d;</span>
+<span class="nc" id="L372">  }</span>
+
+  /**
+   * Updates hash with the bytebuffer given (using at maximum length bytes
+   * from
+   * that buffer)
+   *
+   * @param stat Which state is updated
+   * @param buffer Array of bytes to be hashed
+   * @param offset Offset to buffer array
+   * @param length Use at maximum `length' bytes (absolute maximum is
+   *     buffer.length)
+   */
+  void Update(final MD5State stat, final byte[] buffer, final int offset,
+              final int length) {
+    int index;
+    int partlen;
+    int i;
+    final int start;
+<span class="nc" id="L391">    finals = null;</span>
+<span class="nc" id="L392">    int newlength = length;</span>
+    /* Length can be told to be shorter, but not inter */
+<span class="nc bnc" id="L394" title="All 2 branches missed.">    if (newlength + offset &gt; buffer.length) {</span>
+<span class="nc" id="L395">      newlength = buffer.length - offset;</span>
+    }
+
+    /* compute number of bytes mod 64 */
+
+<span class="nc" id="L400">    index = (int) (stat.count &amp; 0x3f);</span>
+<span class="nc" id="L401">    stat.count += newlength;</span>
+
+<span class="nc" id="L403">    partlen = 64 - index;</span>
+
+<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (newlength &gt;= partlen) {</span>
+      // update state (using only Java) to reflect input
+
+<span class="nc" id="L408">      final int[] decodeBuf = new int[16];</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">      if (partlen == 64) {</span>
+<span class="nc" id="L410">        partlen = 0;</span>
+      } else {
+<span class="nc bnc" id="L412" title="All 2 branches missed.">        for (i = 0; i &lt; partlen; i++) {</span>
+<span class="nc" id="L413">          stat.buffer[i + index] = buffer[i + offset];</span>
+        }
+<span class="nc" id="L415">        transform(stat, stat.buffer, 0, decodeBuf);</span>
+      }
+<span class="nc bnc" id="L417" title="All 2 branches missed.">      for (i = partlen; i + 63 &lt; newlength; i += 64) {</span>
+<span class="nc" id="L418">        transform(stat, buffer, i + offset, decodeBuf);</span>
+      }
+<span class="nc" id="L420">      index = 0;</span>
+<span class="nc" id="L421">    } else {</span>
+<span class="nc" id="L422">      i = 0;</span>
+    }
+
+    /* buffer remaining input */
+<span class="nc bnc" id="L426" title="All 2 branches missed.">    if (i &lt; newlength) {</span>
+<span class="nc" id="L427">      start = i;</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">      for (; i &lt; newlength; i++) {</span>
+<span class="nc" id="L429">        stat.buffer[index + i - start] = buffer[i + offset];</span>
+      }
+    }
+<span class="nc" id="L432">  }</span>
+
+  /*
+   * Update()s for other datatypes than byte[] also. Update(byte[], int) is only the main driver.
+   */
+
+  /**
+   * Plain update, updates this object
+   *
+   * @param buffer
+   * @param offset
+   * @param length
+   */
+
+  void Update(final byte[] buffer, final int offset, final int length) {
+<span class="nc" id="L447">    Update(state, buffer, offset, length);</span>
+<span class="nc" id="L448">  }</span>
+
+  /**
+   * Plain update, updates this object
+   *
+   * @param buffer
+   * @param length
+   */
+  void Update(final byte[] buffer, final int length) {
+<span class="nc" id="L457">    Update(state, buffer, 0, length);</span>
+<span class="nc" id="L458">  }</span>
+
+  /**
+   * Updates hash with given array of bytes
+   *
+   * @param buffer Array of bytes to use for updating the hash
+   */
+  void Update(final byte[] buffer) {
+<span class="nc" id="L466">    Update(buffer, 0, buffer.length);</span>
+<span class="nc" id="L467">  }</span>
+
+  /**
+   * Updates hash with a single byte
+   *
+   * @param b Single byte to update the hash
+   */
+  void Update(final byte b) {
+<span class="nc" id="L475">    final byte[] buffer = { b };</span>
+
+<span class="nc" id="L477">    Update(buffer, 1);</span>
+<span class="nc" id="L478">  }</span>
+
+  /**
+   * Update buffer with given string. Note that because the version of the
+   * s.getBytes() method without
+   * parameters is used to convert the string to a byte array, the results of
+   * this method may be different on
+   * different platforms. The s.getBytes() method converts the string into a
+   * byte array using the current
+   * platform's default character set and may therefore have different results
+   * on platforms with different
+   * default character sets. If a version that works consistently across
+   * platforms with different default
+   * character sets is desired, use the overloaded version of the Update()
+   * method which takes a string and a
+   * character encoding.
+   *
+   * @param s String to be update to hash (is used as s.getBytes())
+   */
+  void Update(final String s) {
+<span class="nc" id="L498">    final byte[] chars = s.getBytes(FilesystemBasedDigest.UTF8);</span>
+<span class="nc" id="L499">    Update(chars, chars.length);</span>
+<span class="nc" id="L500">  }</span>
+
+  /**
+   * Update buffer with given string using the given encoding. If the given
+   * encoding is null, the encoding
+   * &quot;UTF8&quot; is used.
+   *
+   * @param s String to be update to hash (is used as
+   *     s.getBytes(charset_name))
+   * @param charsetName The character set to use to convert s to a
+   *     byte
+   *     array, or null if the &quot;ISO8859_1&quot;
+   *     character set is desired.
+   *
+   * @throws UnsupportedEncodingException If the named charset
+   *     is not supported.
+   */
+  void Update(final String s, final String charsetName)
+      throws UnsupportedEncodingException {
+<span class="nc" id="L519">    Charset newcharset = FilesystemBasedDigest.UTF8;</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">    if (charsetName != null) {</span>
+<span class="nc" id="L521">      newcharset = Charset.forName(charsetName);</span>
+    }
+<span class="nc" id="L523">    final byte[] chars = s.getBytes(newcharset);</span>
+<span class="nc" id="L524">    Update(chars, chars.length);</span>
+<span class="nc" id="L525">  }</span>
+
+  /**
+   * Update buffer with a single integer (only &amp; 0xff part is used, as a byte)
+   *
+   * @param i Integer value, which is then converted to byte as i &amp;
+   *     0xff
+   */
+
+  void Update(final int i) {
+<span class="nc" id="L535">    Update((byte) (i &amp; 0xff));</span>
+<span class="nc" id="L536">  }</span>
+
+  private byte[] reusableBytes;
+
+  /**
+   * Updates hash with given {@link ByteBuf} (from Netty)
+   *
+   * @param buffer ByteBuf to use for updating the hash and this
+   *     buffer will
+   *     not be changed
+   */
+  void Update(final ByteBuf buffer) {
+    final byte[] bytes;
+<span class="nc" id="L549">    int start = 0;</span>
+<span class="nc" id="L550">    final int len = buffer.readableBytes();</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">    if (buffer.hasArray()) {</span>
+<span class="nc" id="L552">      start = buffer.arrayOffset();</span>
+<span class="nc" id="L553">      bytes = buffer.array();</span>
+    } else {
+<span class="nc bnc" id="L555" title="All 4 branches missed.">      if (reusableBytes == null || reusableBytes.length != len) {</span>
+<span class="nc" id="L556">        reusableBytes = new byte[len];</span>
+      }
+<span class="nc" id="L558">      bytes = reusableBytes;</span>
+<span class="nc" id="L559">      buffer.getBytes(start, bytes);</span>
+    }
+<span class="nc" id="L561">    Update(state, bytes, start, len);</span>
+<span class="nc" id="L562">  }</span>
+
+  private byte[] encode(final int[] input, final int len) {
+    int i;
+    int j;
+    final byte[] out;
+
+<span class="nc" id="L569">    out = new byte[len];</span>
+
+<span class="nc bnc" id="L571" title="All 2 branches missed.">    for (i = j = 0; j &lt; len; i++, j += 4) {</span>
+<span class="nc" id="L572">      out[j] = (byte) (input[i] &amp; 0xff);</span>
+<span class="nc" id="L573">      out[j + 1] = (byte) (input[i] &gt;&gt;&gt; 8 &amp; 0xff);</span>
+<span class="nc" id="L574">      out[j + 2] = (byte) (input[i] &gt;&gt;&gt; 16 &amp; 0xff);</span>
+<span class="nc" id="L575">      out[j + 3] = (byte) (input[i] &gt;&gt;&gt; 24 &amp; 0xff);</span>
+    }
+
+<span class="nc" id="L578">    return out;</span>
+  }
+
+  /**
+   * Returns array of bytes (16 bytes) representing hash as of the current
+   * state
+   * of this object. Note: getting a
+   * hash does not invalidate the hash object, it only creates a copy of the
+   * real state which is finalized.
+   *
+   * @return Array of 16 bytes, the hash of all updated bytes
+   */
+  synchronized byte[] Final() {
+    final byte[] bits;
+    final int index;
+    final int padlen;
+    final MD5State fin;
+
+<span class="nc bnc" id="L596" title="All 2 branches missed.">    if (finals == null) {</span>
+<span class="nc" id="L597">      fin = new MD5State(state);</span>
+
+<span class="nc" id="L599">      final int[] countInts =</span>
+          { (int) (fin.count &lt;&lt; 3), (int) (fin.count &gt;&gt; 29) };
+<span class="nc" id="L601">      bits = encode(countInts, 8);</span>
+
+<span class="nc" id="L603">      index = (int) (fin.count &amp; 0x3f);</span>
+<span class="nc bnc" id="L604" title="All 2 branches missed.">      padlen = index &lt; 56? 56 - index : 120 - index;</span>
+
+<span class="nc" id="L606">      Update(fin, padding, 0, padlen);</span>
+<span class="nc" id="L607">      Update(fin, bits, 0, 8);</span>
+
+      /* Update() sets finals to null */
+<span class="nc" id="L610">      finals = fin;</span>
+    }
+
+<span class="nc" id="L613">    return encode(finals.state, 16);</span>
+  }
+
+<span class="nc" id="L616">  private static final char[] HEX_CHARS = {</span>
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+      'f',
+  };
+
+  /**
+   * Turns array of bytes into string representing each byte as unsigned hex
+   * number.
+   *
+   * @param hash Array of bytes to convert to hex-string
+   *
+   * @return Generated hex string
+   */
+  static String asHex(final byte[] hash) {
+<span class="nc" id="L630">    final char[] buf = new char[hash.length * 2];</span>
+<span class="nc bnc" id="L631" title="All 2 branches missed.">    for (int i = 0, x = 0; i &lt; hash.length; i++) {</span>
+<span class="nc" id="L632">      buf[x++] = HEX_CHARS[hash[i] &gt;&gt;&gt; 4 &amp; 0xf];</span>
+<span class="nc" id="L633">      buf[x++] = HEX_CHARS[hash[i] &amp; 0xf];</span>
+    }
+<span class="nc" id="L635">    return new String(buf);</span>
+  }
+
+  /**
+   * Turns String into array of bytes representing each couple of unsigned hex
+   * number as one byte.
+   *
+   * @param buf hex string
+   *
+   * @return Array of bytes converted from hex-string
+   */
+  static byte[] asByte(final String buf) {
+<span class="nc" id="L647">    final byte[] from = buf.getBytes(FilesystemBasedDigest.UTF8);</span>
+<span class="nc" id="L648">    final byte[] hash = new byte[from.length / 2];</span>
+<span class="nc bnc" id="L649" title="All 2 branches missed.">    for (int i = 0, x = 0; i &lt; hash.length; i++) {</span>
+<span class="nc" id="L650">      byte code1 = from[x++];</span>
+<span class="nc" id="L651">      byte code2 = from[x++];</span>
+<span class="nc bnc" id="L652" title="All 2 branches missed.">      if (code1 &gt;= HEX_CHARS[10]) {</span>
+<span class="nc" id="L653">        code1 -= HEX_CHARS[10] - 10;</span>
+      } else {
+<span class="nc" id="L655">        code1 -= HEX_CHARS[0];</span>
+      }
+<span class="nc bnc" id="L657" title="All 2 branches missed.">      if (code2 &gt;= HEX_CHARS[10]) {</span>
+<span class="nc" id="L658">        code2 -= HEX_CHARS[10] - 10;</span>
+      } else {
+<span class="nc" id="L660">        code2 -= HEX_CHARS[0];</span>
+      }
+<span class="nc" id="L662">      hash[i] = (byte) ((code1 &lt;&lt; 4) + (code2 &amp; 0xFF));</span>
+    }
+<span class="nc" id="L664">    return hash;</span>
+  }
+
+  /**
+   * Returns 32-character hex representation of this objects hash
+   *
+   * @return String of this object's hash
+   */
+  String asHex() {
+<span class="nc" id="L673">    return asHex(Final());</span>
+  }
+
+  /**
+   * Calculates and returns the hash of the contents of the given file.
+   *
+   * @param f FileInterface to hash
+   *
+   * @return the hash from the given file
+   *
+   * @throws IOException
+   **/
+  static byte[] getHash(final File f) throws IOException {
+<span class="nc" id="L686">    FileInputStream in = null;</span>
+    try {
+<span class="nc" id="L688">      long bufSize = f.length();</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">      if (bufSize == 0) {</span>
+<span class="nc" id="L690">        return EMPTY;</span>
+      }
+<span class="nc bnc" id="L692" title="All 2 branches missed.">      if (bufSize &gt; ZERO_COPY_CHUNK_SIZE) {</span>
+<span class="nc" id="L693">        bufSize = ZERO_COPY_CHUNK_SIZE;</span>
+      }
+<span class="nc" id="L695">      byte[] buf = new byte[(int) bufSize];</span>
+<span class="nc" id="L696">      in = new FileInputStream(f);</span>
+<span class="nc" id="L697">      final MD5 md5 = new MD5();</span>
+      int read;
+<span class="nc bnc" id="L699" title="All 2 branches missed.">      while ((read = in.read(buf)) &gt;= 0) {</span>
+<span class="nc" id="L700">        md5.Update(md5.state, buf, 0, read);</span>
+      }
+<span class="nc" id="L702">      buf = md5.Final();</span>
+<span class="nc" id="L703">      return buf;</span>
+    } finally {
+<span class="nc bnc" id="L705" title="All 2 branches missed.">      if (in != null) {</span>
+        try {
+<span class="nc" id="L707">          in.close();</span>
+<span class="nc" id="L708">        } catch (final Exception ignored) {</span>
+          // ignored
+<span class="nc" id="L710">        }</span>
+      }
+    }
+  }
+
+  /**
+   * Calculates and returns the hash of the contents of the given file using
+   * Nio
+   * file access.
+   *
+   * @param f for the FileInterface
+   *
+   * @return the hash from the FileInterface with NIO access
+   *
+   * @throws IOException
+   **/
+  static byte[] getHashNio(final File f) throws IOException {
+<span class="nc bnc" id="L727" title="All 2 branches missed.">    if (!f.exists()) {</span>
+<span class="nc" id="L728">      throw new FileNotFoundException(f.toString());</span>
+    }
+<span class="nc" id="L730">    FileInputStream in = null;</span>
+<span class="nc" id="L731">    FileChannel fileChannel = null;</span>
+    try {
+<span class="nc" id="L733">      long bufSize = f.length();</span>
+<span class="nc bnc" id="L734" title="All 2 branches missed.">      if (bufSize == 0) {</span>
+<span class="nc" id="L735">        return EMPTY;</span>
+      }
+<span class="nc bnc" id="L737" title="All 2 branches missed.">      if (bufSize &gt; ZERO_COPY_CHUNK_SIZE) {</span>
+<span class="nc" id="L738">        bufSize = ZERO_COPY_CHUNK_SIZE;</span>
+      }
+<span class="nc" id="L740">      final byte[] buf = new byte[(int) bufSize];</span>
+
+<span class="nc" id="L742">      in = new FileInputStream(f);</span>
+<span class="nc" id="L743">      fileChannel = in.getChannel();</span>
+<span class="nc" id="L744">      final ByteBuffer bb = ByteBuffer.wrap(buf);</span>
+      int read;
+<span class="nc" id="L746">      final MD5 md5 = new MD5();</span>
+<span class="nc" id="L747">      read = fileChannel.read(bb);</span>
+<span class="nc bnc" id="L748" title="All 2 branches missed.">      while (read &gt; 0) {</span>
+<span class="nc" id="L749">        md5.Update(md5.state, buf, 0, read);</span>
+<span class="nc" id="L750">        bb.clear();</span>
+<span class="nc" id="L751">        read = fileChannel.read(bb);</span>
+      }
+<span class="nc" id="L753">      return md5.Final();</span>
+    } finally {
+<span class="nc bnc" id="L755" title="All 2 branches missed.">      if (fileChannel != null) {</span>
+        try {
+<span class="nc" id="L757">          fileChannel.close();</span>
+<span class="nc" id="L758">        } catch (final Exception ignored) {</span>
+          // ignored
+<span class="nc" id="L760">        }</span>
+      }
+<span class="nc bnc" id="L762" title="All 2 branches missed.">      if (in != null) {</span>
+        try {
+<span class="nc" id="L764">          in.close();</span>
+<span class="nc" id="L765">        } catch (final Exception ignored) {</span>
+          // ignored
+<span class="nc" id="L767">        }</span>
+      }
+    }
+  }
+
+  /**
+   * Calculates and returns the hash of the contents of the given stream.
+   *
+   * @param stream Stream to hash
+   *
+   * @return the hash from the given stream
+   *
+   * @throws IOException
+   **/
+  static byte[] getHash(final InputStream stream) throws IOException {
+    try {
+<span class="nc" id="L783">      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];</span>
+<span class="nc" id="L784">      final MD5 md5 = new MD5();</span>
+      int read;
+<span class="nc bnc" id="L786" title="All 2 branches missed.">      while ((read = stream.read(buf)) &gt;= 0) {</span>
+<span class="nc" id="L787">        md5.Update(md5.state, buf, 0, read);</span>
+      }
+<span class="nc" id="L789">      return md5.Final();</span>
+    } finally {
+      try {
+<span class="nc" id="L792">        stream.close();</span>
+<span class="nc" id="L793">      } catch (final Exception ignored) {</span>
+        // ignored
+<span class="nc" id="L795">      }</span>
+    }
+  }
+
+  /**
+   * Test if both hashes are equal
+   *
+   * @param hash1
+   * @param hash2
+   *
+   * @return true iff the first 16 bytes of both hash1 and hash2 are equal;
+   *     both
+   *     hash1 and hash2 are null; or
+   *     either hash array is less than 16 bytes in length and their
+   *     lengths and
+   *     all of their bytes are
+   *     equal.
+   **/
+  static boolean hashesEqual(final byte[] hash1, final byte[] hash2) {
+<span class="nc" id="L814">    return Arrays.equals(hash1, hash2);</span>
+  }
+
+<span class="nc" id="L817">  private static final byte[] salt =</span>
+      { 'G', 'o', 'l', 'd', 'e', 'n', 'G', 'a', 't', 'e' };
+
+  /**
+   * Crypt a password
+   *
+   * @param pwd to crypt
+   *
+   * @return the crypted password
+   */
+  static String passwdCrypt(final String pwd) {
+<span class="nc" id="L828">    final MD5 md5 = new MD5();</span>
+<span class="nc" id="L829">    final byte[] bpwd = pwd.getBytes(FilesystemBasedDigest.UTF8);</span>
+<span class="nc bnc" id="L830" title="All 2 branches missed.">    for (int i = 0; i &lt; 16; i++) {</span>
+<span class="nc" id="L831">      md5.Update(md5.state, bpwd, 0, bpwd.length);</span>
+<span class="nc" id="L832">      md5.Update(md5.state, salt, 0, salt.length);</span>
+    }
+<span class="nc" id="L834">    return md5.asHex();</span>
+  }
+
+  /**
+   * Crypt a password
+   *
+   * @param bpwd to crypt
+   *
+   * @return the crypted password
+   */
+  static byte[] passwdCrypt(final byte[] bpwd) {
+<span class="nc" id="L845">    final MD5 md5 = new MD5();</span>
+<span class="nc bnc" id="L846" title="All 2 branches missed.">    for (int i = 0; i &lt; 16; i++) {</span>
+<span class="nc" id="L847">      md5.Update(md5.state, bpwd, 0, bpwd.length);</span>
+<span class="nc" id="L848">      md5.Update(md5.state, salt, 0, salt.length);</span>
+    }
+<span class="nc" id="L850">    return md5.Final();</span>
+  }
+
+  /**
+   * @param pwd
+   * @param cryptPwd
+   *
+   * @return True if the pwd is comparable with the cryptPwd
+   */
+  static boolean equalPasswd(final String pwd, final String cryptPwd) {
+<span class="nc" id="L860">    final String asHex = passwdCrypt(pwd);</span>
+<span class="nc" id="L861">    return cryptPwd.equals(asHex);</span>
+  }
+
+  /**
+   * @param pwd
+   * @param cryptPwd
+   *
+   * @return True if the pwd is comparable with the cryptPwd
+   */
+  static boolean equalPasswd(final byte[] pwd, final byte[] cryptPwd) {
+<span class="nc" id="L871">    final byte[] bytes = passwdCrypt(pwd);</span>
+<span class="nc" id="L872">    return Arrays.equals(cryptPwd, bytes);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RuleConverter.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.converters</a> &gt; <span class="el_source">RuleConverter.java</span></div><h1>RuleConverter.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.converters;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.openr66.context.task.TaskType;
+import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.RuleTask;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.RuleFields.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
+
+/**
+ * A collection of utility methods to convert {@link Rule} objects to their
+ * corresponding {@link ObjectNode}
+ * and vice-versa.
+ */
+public final class RuleConverter {
+
+  /**
+   * Makes the default constructor of this utility class inaccessible.
+   */
+<span class="nc" id="L56">  private RuleConverter() throws InstantiationException {</span>
+<span class="nc" id="L57">    throw new InstantiationException(</span>
+<span class="nc" id="L58">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ########################### INNER CLASSES ################################
+
+  /**
+   * All the possible ways to sort a list of rule objects.
+   */
+<span class="nc" id="L66">  public enum Order {</span>
+    /**
+     * By ruleID, in ascending order.
+     */
+<span class="nc" id="L70">    ascName(new Comparator&lt;Rule&gt;() {</span>
+      @Override
+      public final int compare(final Rule t1, final Rule t2) {
+<span class="nc" id="L73">        return t1.getName().compareTo(t2.getName());</span>
+      }
+    }),
+    /**
+     * By ruleID, in descending order.
+     */
+<span class="nc" id="L79">    descName(new Comparator&lt;Rule&gt;() {</span>
+      @Override
+      public final int compare(final Rule t1, final Rule t2) {
+<span class="nc" id="L82">        return -t1.getName().compareTo(t2.getName());//NOSONAR</span>
+      }
+    });
+
+    /**
+     * The {@link Comparator} used to sort a list of {@link Rule}.
+     */
+    public final Comparator&lt;Rule&gt; comparator;
+
+<span class="nc" id="L91">    Order(final Comparator&lt;Rule&gt; comparator) {</span>
+<span class="nc" id="L92">      this.comparator = comparator;</span>
+<span class="nc" id="L93">    }</span>
+  }
+
+  /**
+   * The different modes of file transfer.
+   */
+<span class="nc" id="L99">  public enum ModeTrans {</span>
+    /**
+     * From requester to requested.
+     */
+<span class="nc" id="L103">    send(1),</span>
+    /**
+     * From requested to requester.
+     */
+<span class="nc" id="L107">    receive(2),</span>
+    /**
+     * From requester to requested, with MD5 checksum verification.
+     */
+<span class="nc" id="L111">    sendMD5(3),</span>
+    /**
+     * From requested to requester, with MD5 checksum verification.
+     */
+<span class="nc" id="L115">    receiveMD5(4),</span>
+    /**
+     * From requester to requested, using Through mode.
+     */
+<span class="nc" id="L119">    SENDTHROUGHMODE(5),</span>
+    /**
+     * From requested to requester, using Through mode.
+     */
+<span class="nc" id="L123">    RECVTHROUGHMODE(6),</span>
+    /**
+     * From requester to requested, with MD5 checksum verification and
+     * Through mode.
+     */
+<span class="nc" id="L128">    SENDMD5THROUGHMODE(7),</span>
+    /**
+     * From requested to requester, with MD5 checksum verification and
+     * Through mode.
+     */
+<span class="nc" id="L133">    RECVMD5THROUGHMODE(8);</span>
+
+    /**
+     * The database code of the transfer mode.
+     */
+    public final int code;
+
+<span class="nc" id="L140">    ModeTrans(final int code) {</span>
+<span class="nc" id="L141">      this.code = code;</span>
+<span class="nc" id="L142">    }</span>
+
+    /**
+     * Returns the ModeTrans value corresponding to the give code.
+     *
+     * @param code the desired code
+     *
+     * @return the corresponding ModeTrans value
+     *
+     * @throws IllegalArgumentException if the code does not
+     *     correspond to a ModeTrans value
+     */
+    public static ModeTrans fromCode(final int code) {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">      for (final ModeTrans mode : values()) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (mode.code == code) {</span>
+<span class="nc" id="L157">          return mode;</span>
+        }
+      }
+<span class="nc" id="L160">      throw new IllegalArgumentException(&quot;Code unknown: &quot; + code);</span>
+    }
+  }
+
+  // ########################### PUBLIC METHODS ###############################
+
+  /**
+   * Converts the given {@link Rule} object into an {@link ObjectNode}.
+   *
+   * @param rule the host to convert
+   *
+   * @return the converted ObjectNode
+   */
+  public static ObjectNode ruleToNode(final Rule rule) {
+<span class="nc" id="L174">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L175">    node.put(RULE_NAME, rule.getName());</span>
+<span class="nc" id="L176">    node.putArray(HOST_IDS).addAll(getHostIdsArray(rule.getHostids()));</span>
+<span class="nc" id="L177">    node.put(MODE_TRANS, ModeTrans.fromCode(rule.getMode()).name());</span>
+<span class="nc" id="L178">    node.put(RECV_PATH, rule.getRecvPath());</span>
+<span class="nc" id="L179">    node.put(SEND_PATH, rule.getSendPath());</span>
+<span class="nc" id="L180">    node.put(ARCHIVE_PATH, rule.getArchivePath());</span>
+<span class="nc" id="L181">    node.put(WORK_PATH, rule.getWorkPath());</span>
+<span class="nc" id="L182">    node.set(R_PRE_TASKS, getTaskArray(rule.getRPreTasks()));</span>
+<span class="nc" id="L183">    node.set(R_POST_TASKS, getTaskArray(rule.getRPostTasks()));</span>
+<span class="nc" id="L184">    node.set(R_ERROR_TASKS, getTaskArray(rule.getRErrorTasks()));</span>
+<span class="nc" id="L185">    node.set(S_PRE_TASKS, getTaskArray(rule.getSPreTasks()));</span>
+<span class="nc" id="L186">    node.set(S_POST_TASKS, getTaskArray(rule.getSPostTasks()));</span>
+<span class="nc" id="L187">    node.set(S_ERROR_TASKS, getTaskArray(rule.getSErrorTasks()));</span>
+
+<span class="nc" id="L189">    return node;</span>
+  }
+
+  /**
+   * Converts the given {@link ObjectNode} into a {@link Rule} object.
+   *
+   * @param object the ObjectNode to convert
+   *
+   * @return the corresponding Rule object
+   *
+   * @throws RestErrorException If the given ObjectNode does not
+   *     represent a Rule object.
+   */
+  public static Rule nodeToNewRule(final ObjectNode object) {
+<span class="nc" id="L203">    Rule emptyRule = null;</span>
+    try {
+<span class="nc" id="L205">      emptyRule = new Rule(null, -1, new ArrayList&lt;String&gt;(), &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;,</span>
+                           new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;(),
+                           new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;(),
+                           new ArrayList&lt;RuleTask&gt;(),
+                           new ArrayList&lt;RuleTask&gt;());
+<span class="nc" id="L210">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L211">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L212">    }</span>
+
+<span class="nc" id="L214">    return nodeToUpdatedRule(object, emptyRule);</span>
+  }
+
+  /**
+   * Returns the given {@link Rule} object updated with the values defined in
+   * the {@link ObjectNode} parameter.
+   * All fields missing in the JSON object will stay unchanged in the updated
+   * host entry.
+   *
+   * @param object the ObjectNode to convert.
+   * @param oldRule the rule entry to update.
+   *
+   * @return the updated host entry
+   *
+   * @throws RestErrorException if the given ObjectNode does not
+   *     represent a Rule object
+   */
+  public static Rule nodeToUpdatedRule(final ObjectNode object,
+                                       final Rule oldRule) {
+<span class="nc" id="L233">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+
+<span class="nc" id="L235">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
+<span class="nc" id="L237">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L238">      final String name = field.getKey();</span>
+<span class="nc" id="L239">      final JsonNode value = field.getValue();</span>
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">      if (name.equalsIgnoreCase(RULE_NAME)) {</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">          if (oldRule.getName() == null) {</span>
+<span class="nc" id="L244">            oldRule.setName(XmlUtil.getExtraTrimed(value.asText()));</span>
+<span class="nc" id="L245">          } else if (!oldRule.getName()</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                             .equals(XmlUtil.getExtraTrimed(value.asText()))) {</span>
+<span class="nc" id="L247">            errors.add(FIELD_NOT_ALLOWED(RULE_NAME));</span>
+          }
+        } else {
+<span class="nc" id="L250">          errors.add(ILLEGAL_FIELD_VALUE(RULE_NAME, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L251">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L253" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(HOST_IDS)) {</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L255">          final List&lt;String&gt; hosts = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L256">          final Iterator&lt;JsonNode&gt; elements = value.elements();</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">          while (elements.hasNext()) {</span>
+<span class="nc" id="L258">            final JsonNode element = elements.next();</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">            if (element.isTextual()) {</span>
+<span class="nc" id="L260">              hosts.add(XmlUtil.getExtraTrimed(element.asText()));</span>
+            } else {
+<span class="nc" id="L262">              errors.add(ILLEGAL_FIELD_VALUE(HOST_IDS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L263">                  value.toString())));</span>
+            }
+<span class="nc" id="L265">          }</span>
+<span class="nc" id="L266">          oldRule.setHostids(hosts);</span>
+<span class="nc" id="L267">        } else {</span>
+<span class="nc" id="L268">          errors.add(ILLEGAL_FIELD_VALUE(HOST_IDS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L269">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L271" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(MODE_TRANS)) {</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+          try {
+<span class="nc" id="L274">            final ModeTrans modeTrans =</span>
+<span class="nc" id="L275">                ModeTrans.valueOf(XmlUtil.getExtraTrimed(value.asText()));</span>
+<span class="nc" id="L276">            oldRule.setMode(modeTrans.code);</span>
+<span class="nc" id="L277">          } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L278">            errors.add(ILLEGAL_FIELD_VALUE(MODE_TRANS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L279">                value.toString())));</span>
+<span class="nc" id="L280">          }</span>
+        } else {
+<span class="nc" id="L282">          errors.add(ILLEGAL_FIELD_VALUE(MODE_TRANS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L283">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L285" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(RECV_PATH)) {</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L287">          oldRule.setRecvPath(XmlUtil.getExtraTrimed(value.asText()));</span>
+        } else {
+<span class="nc" id="L289">          errors.add(ILLEGAL_FIELD_VALUE(RECV_PATH, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L290">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L292" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(SEND_PATH)) {</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L294">          oldRule.setSendPath(XmlUtil.getExtraTrimed(value.asText()));</span>
+        } else {
+<span class="nc" id="L296">          errors.add(ILLEGAL_FIELD_VALUE(SEND_PATH, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L297">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L299" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ARCHIVE_PATH)) {</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L301">          oldRule.setArchivePath(XmlUtil.getExtraTrimed(value.asText()));</span>
+        } else {
+<span class="nc" id="L303">          errors.add(ILLEGAL_FIELD_VALUE(ARCHIVE_PATH, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L304">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L306" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(WORK_PATH)) {</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L308">          oldRule.setWorkPath(XmlUtil.getExtraTrimed(value.asText()));</span>
+        } else {
+<span class="nc" id="L310">          errors.add(ILLEGAL_FIELD_VALUE(WORK_PATH, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L311">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L313" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(R_PRE_TASKS)) {</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L315">          oldRule.setRPreTasks(parseTasks((ArrayNode) value, R_PRE_TASKS));</span>
+        } else {
+<span class="nc" id="L317">          errors.add(ILLEGAL_FIELD_VALUE(R_PRE_TASKS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L318">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L320" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(R_POST_TASKS)) {</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L322">          oldRule.setRPostTasks(parseTasks((ArrayNode) value, R_POST_TASKS));</span>
+        } else {
+<span class="nc" id="L324">          errors.add(ILLEGAL_FIELD_VALUE(R_POST_TASKS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L325">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L327" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(R_ERROR_TASKS)) {</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L329">          oldRule.setRErrorTasks(parseTasks((ArrayNode) value, R_ERROR_TASKS));</span>
+        } else {
+<span class="nc" id="L331">          errors.add(ILLEGAL_FIELD_VALUE(R_ERROR_TASKS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L332">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L334" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(S_PRE_TASKS)) {</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L336">          oldRule.setSPreTasks(parseTasks((ArrayNode) value, S_PRE_TASKS));</span>
+        } else {
+<span class="nc" id="L338">          errors.add(ILLEGAL_FIELD_VALUE(S_PRE_TASKS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L339">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L341" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(S_POST_TASKS)) {</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L343">          oldRule.setSPostTasks(parseTasks((ArrayNode) value, S_POST_TASKS));</span>
+        } else {
+<span class="nc" id="L345">          errors.add(ILLEGAL_FIELD_VALUE(S_POST_TASKS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L346">              value.toString())));</span>
+        }
+<span class="nc bnc" id="L348" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(S_ERROR_TASKS)) {</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L350">          oldRule.setSErrorTasks(parseTasks((ArrayNode) value, S_ERROR_TASKS));</span>
+        } else {
+<span class="nc" id="L352">          errors.add(ILLEGAL_FIELD_VALUE(S_ERROR_TASKS, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L353">              value.toString())));</span>
+        }
+      } else {
+<span class="nc" id="L356">        errors.add(UNKNOWN_FIELD(name));</span>
+      }
+<span class="nc" id="L358">    }</span>
+
+<span class="nc" id="L360">    errors.addAll(checkRequiredFields(oldRule));</span>
+
+<span class="nc bnc" id="L362" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L363">      return oldRule;</span>
+    } else {
+<span class="nc" id="L365">      throw new RestErrorException(errors);</span>
+    }
+  }
+
+  // ########################## PRIVATE METHODS ###############################
+
+  /**
+   * Converts the given List of host names into an {@link ArrayNode}.
+   *
+   * @param hostIds the list to convert
+   *
+   * @return the corresponding ArrayNode
+   */
+  private static ArrayNode getHostIdsArray(final List&lt;String&gt; hostIds) {
+<span class="nc" id="L379">    final ArrayNode array = JsonHandler.createArrayNode();</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">    for (final String host : hostIds) {</span>
+<span class="nc" id="L381">      array.add(host);</span>
+<span class="nc" id="L382">    }</span>
+<span class="nc" id="L383">    return array;</span>
+  }
+
+  /**
+   * Converts the given List of {@link RuleTask} into an {@link ArrayNode}.
+   *
+   * @param tasks the list to convert
+   *
+   * @return the corresponding ArrayNode
+   */
+  private static ArrayNode getTaskArray(final List&lt;RuleTask&gt; tasks) {
+<span class="nc" id="L394">    final ArrayNode array = JsonHandler.createArrayNode();</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">    for (final RuleTask task : tasks) {</span>
+<span class="nc" id="L396">      final ObjectNode object = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L397">      object.put(TASK_TYPE, task.getType());</span>
+<span class="nc" id="L398">      object.put(TASK_ARGUMENTS, task.getPath());</span>
+<span class="nc" id="L399">      object.put(TASK_DELAY, task.getDelay());</span>
+<span class="nc" id="L400">      array.add(object);</span>
+<span class="nc" id="L401">    }</span>
+<span class="nc" id="L402">    return array;</span>
+  }
+
+  /**
+   * List all missing required fields. This method returns a list of {@link
+   * RestError} representing all the
+   * errors encountered when checking the given host's required fields. If all
+   * required fields have indeed been
+   * initialized, an empty list is returned.
+   *
+   * @param rule the host entry to check
+   *
+   * @return the list of encountered errors
+   */
+  private static List&lt;RestError&gt; checkRequiredFields(final Rule rule) {
+<span class="nc" id="L417">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc bnc" id="L418" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(rule.getName())) {</span>
+<span class="nc" id="L419">      errors.add(MISSING_FIELD(RULE_NAME));</span>
+    }
+<span class="nc bnc" id="L421" title="All 2 branches missed.">    if (rule.getMode() == -1) {</span>
+<span class="nc" id="L422">      errors.add(MISSING_FIELD(MODE_TRANS));</span>
+    }
+<span class="nc" id="L424">    return errors;</span>
+  }
+
+  /**
+   * Converts the given {@link ArrayNode} into a List of {@link RuleTask}.
+   *
+   * @param array the ArrayNode to convert
+   * @param fieldName the name of the field containing the ArrayNode
+   *
+   * @return the extracted list of RuleTask
+   *
+   * @throws RestErrorException ff the ArrayNode does not represent a
+   *     list of RuleTask objects
+   */
+  private static List&lt;RuleTask&gt; parseTasks(final ArrayNode array,
+                                           final String fieldName) {
+<span class="nc" id="L440">    final List&lt;RuleTask&gt; result = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L441">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+
+<span class="nc" id="L443">    final Iterator&lt;JsonNode&gt; elements = array.elements();</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    while (elements.hasNext()) {</span>
+<span class="nc" id="L445">      final JsonNode element = elements.next();</span>
+
+<span class="nc bnc" id="L447" title="All 2 branches missed.">      if (element.isObject()) {</span>
+<span class="nc" id="L448">        final RuleTask task = new RuleTask(&quot;&quot;, &quot;&quot;, 0);</span>
+<span class="nc" id="L449">        final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = element.fields();</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        while (fields.hasNext()) {</span>
+<span class="nc" id="L451">          final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L452">          final String name = field.getKey();</span>
+<span class="nc" id="L453">          final JsonNode value = field.getValue();</span>
+
+<span class="nc bnc" id="L455" title="All 2 branches missed.">          if (name.equalsIgnoreCase(TASK_TYPE)) {</span>
+<span class="nc bnc" id="L456" title="All 2 branches missed.">            if (value.isTextual()) {</span>
+<span class="nc" id="L457">              final String taskType = XmlUtil.getExtraTrimed(value.asText());</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">              if (TaskType.isValidTask(taskType)) {</span>
+<span class="nc" id="L459">                task.setType(taskType);</span>
+              } else {
+<span class="nc" id="L461">                errors.add(ILLEGAL_FIELD_VALUE(TASK_TYPE, taskType));</span>
+              }
+<span class="nc" id="L463">            } else {</span>
+<span class="nc" id="L464">              errors.add(ILLEGAL_FIELD_VALUE(TASK_TYPE, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L465">                  value.toString())));</span>
+            }
+<span class="nc bnc" id="L467" title="All 2 branches missed.">          } else if (name.equalsIgnoreCase(TASK_ARGUMENTS)) {</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">            if (value.isTextual()) {</span>
+<span class="nc" id="L469">              task.setPath(XmlUtil.getExtraTrimed(value.asText()));</span>
+            } else {
+<span class="nc" id="L471">              errors.add(ILLEGAL_FIELD_VALUE(TASK_ARGUMENTS,</span>
+<span class="nc" id="L472">                                             XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L473">                                                 value.toString())));</span>
+            }
+<span class="nc bnc" id="L475" title="All 2 branches missed.">          } else if (name.equalsIgnoreCase(TASK_DELAY)) {</span>
+<span class="nc bnc" id="L476" title="All 4 branches missed.">            if (value.canConvertToInt() &amp;&amp; value.asInt() &gt;= 0) {</span>
+<span class="nc" id="L477">              task.setDelay(value.asInt());</span>
+            } else {
+<span class="nc" id="L479">              errors.add(ILLEGAL_FIELD_VALUE(TASK_DELAY, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L480">                  value.toString())));</span>
+            }
+          } else {
+<span class="nc" id="L483">            errors.add(UNKNOWN_FIELD(name));</span>
+          }
+<span class="nc" id="L485">        }</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">        if (task.getType().isEmpty()) {</span>
+<span class="nc" id="L487">          errors.add(MISSING_FIELD(TASK_TYPE));</span>
+        } else {
+<span class="nc" id="L489">          result.add(task);</span>
+        }
+<span class="nc" id="L491">      } else {</span>
+<span class="nc" id="L492">        errors.add(ILLEGAL_FIELD_VALUE(fieldName, XmlUtil.getExtraTrimed(</span>
+<span class="nc" id="L493">            element.toString())));</span>
+      }
+<span class="nc" id="L495">    }</span>
+
+<span class="nc bnc" id="L497" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L498">      return result;</span>
+    } else {
+<span class="nc" id="L500">      throw new RestErrorException(errors);</span>
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

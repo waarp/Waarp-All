@@ -142,9 +142,9 @@ public class ConfigImport implements Runnable {
    * @param aliasid
    * @param roleid
    */
-  public void setSpecialIds(final long hostid, final long ruleid,
-                            final long businessid, final long aliasid,
-                            final long roleid) {
+  public final void setSpecialIds(final long hostid, final long ruleid,
+                                  final long businessid, final long aliasid,
+                                  final long roleid) {
 <span class="nc" id="L148">    this.hostid = hostid;</span>
 <span class="nc" id="L149">    this.ruleid = ruleid;</span>
 <span class="nc" id="L150">    this.businessid = businessid;</span>
@@ -152,7 +152,7 @@ public class ConfigImport implements Runnable {
 <span class="nc" id="L152">    this.roleid = roleid;</span>
 <span class="nc" id="L153">  }</span>
 
-  public void setHost(final DbHostAuth host) {
+  public final void setHost(final DbHostAuth host) {
 <span class="nc" id="L156">    dbhost = host;</span>
 <span class="nc" id="L157">  }</span>
 
@@ -198,8 +198,8 @@ public class ConfigImport implements Runnable {
                               (rulePurge? &quot;1 &quot; : &quot;0 &quot;) + rule,
                               LocalPacketFactory.CONFIMPORTPACKET);
     }
-<span class="nc" id="L201">    AbstractTransfer</span>
-<span class="nc" id="L202">        .sendValidPacket(dbhost, localChannelReference, valid, future);</span>
+<span class="nc" id="L201">    AbstractTransfer.sendValidPacket(dbhost, localChannelReference, valid,</span>
+                                     future);
 <span class="nc" id="L203">    logger.debug(&quot;Request done with {}&quot;,</span>
 <span class="nc bnc" id="L204" title="All 2 branches missed.">                 (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
 <span class="nc" id="L205">  }</span>
@@ -229,8 +229,8 @@ public class ConfigImport implements Runnable {
 <span class="nc" id="L229">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L230">      return false;</span>
     }
-<span class="nc" id="L232">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
 <span class="nc" id="L234">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L235">      return false;</span>
     }
@@ -334,8 +334,8 @@ public class ConfigImport implements Runnable {
   }
 
   public static void main(final String[] args) {
-<span class="nc" id="L337">    WaarpLoggerFactory</span>
-<span class="nc" id="L338">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L337">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="nc bnc" id="L339" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L340">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
     }
@@ -395,18 +395,22 @@ public class ConfigImport implements Runnable {
         }
 <span class="nc" id="L396">      } else {</span>
 <span class="nc bnc" id="L397" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
-<span class="nc" id="L398">          logger.warn(&quot;ConfigImport is     WARNED&quot;, future.getCause());</span>
+<span class="nc" id="L398">          logger.warn(&quot;ConfigImport is     WARNED&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">                      future.getCause() != null?</span>
+<span class="nc" id="L400">                          future.getCause().getMessage() : &quot;&quot;);</span>
         } else {
-<span class="nc" id="L400">          logger.error(&quot;ConfigImport in     FAILURE&quot;, future.getCause());</span>
+<span class="nc" id="L402">          logger.error(&quot;ConfigImport in     FAILURE&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L403" title="All 2 branches missed.">                       future.getCause() != null?</span>
+<span class="nc" id="L404">                           future.getCause().getMessage() : &quot;&quot;);</span>
         }
-<span class="nc" id="L402">        networkTransaction.closeAll();</span>
-<span class="nc" id="L403">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+<span class="nc" id="L406">        networkTransaction.closeAll();</span>
+<span class="nc" id="L407">        System.exit(result.getCode().ordinal());//NOSONAR</span>
       }
     } finally {
-<span class="nc" id="L406">      networkTransaction.closeAll();</span>
-<span class="nc" id="L407">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L410">      networkTransaction.closeAll();</span>
+<span class="nc" id="L411">      System.exit(0);//NOSONAR</span>
     }
-<span class="nc" id="L409">  }</span>
+<span class="nc" id="L413">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

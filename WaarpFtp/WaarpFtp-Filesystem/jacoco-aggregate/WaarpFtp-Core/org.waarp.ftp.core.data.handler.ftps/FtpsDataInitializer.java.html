@@ -21,10 +21,13 @@ package org.waarp.ftp.core.data.handler.ftps;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
 import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.control.ftps.FtpsInitializer;
 import org.waarp.ftp.core.data.handler.DataBusinessHandler;
 import org.waarp.ftp.core.data.handler.DataNetworkHandler;
 import org.waarp.ftp.core.data.handler.FtpDataInitializer;
@@ -45,41 +48,46 @@ public class FtpsDataInitializer extends FtpDataInitializer {
   public FtpsDataInitializer(
       final Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler,
       final FtpConfiguration configuration, final boolean active) {
-<span class="nc" id="L48">    super(dataBusinessHandler, configuration, active);</span>
-<span class="nc" id="L49">  }</span>
+<span class="nc" id="L51">    super(dataBusinessHandler, configuration, active);</span>
+<span class="nc" id="L52">  }</span>
 
   /**
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
   public void initChannel(final SocketChannel ch) throws Exception {
-<span class="nc" id="L56">    final ChannelPipeline pipeline = ch.pipeline();</span>
-    // SSL will be added in this handler during channelActive
-<span class="nc" id="L58">    pipeline.addLast(new FtpsTemporaryFirstHandler(configuration, isActive));</span>
+<span class="nc" id="L59">    final ChannelPipeline pipeline = ch.pipeline();</span>
+    // Add SSL as first element in the pipeline
+<span class="nc" id="L61">    final SslHandler sslHandler =</span>
+<span class="nc" id="L62">        FtpsInitializer.waarpSslContextFactory.createHandlerServer(</span>
+<span class="nc" id="L63">            FtpsInitializer.waarpSslContextFactory.needClientAuthentication(),</span>
+            ch);
+<span class="nc" id="L65">    WaarpSslUtility.addSslOpenedChannel(ch);</span>
+<span class="nc" id="L66">    pipeline.addLast(&quot;ssl&quot;, sslHandler);</span>
     // Add default codec but they will change during the channelActive
-<span class="nc" id="L60">    pipeline.addLast(FtpDataInitializer.CODEC_MODE,</span>
+<span class="nc" id="L68">    pipeline.addLast(FtpDataInitializer.CODEC_MODE,</span>
                      new FtpDataModeCodec(TransferMode.STREAM,
                                           TransferStructure.FILE));
-<span class="nc" id="L63">    pipeline.addLast(FtpDataInitializer.CODEC_LIMIT,</span>
-<span class="nc" id="L64">                     configuration.getFtpInternalConfiguration()</span>
-<span class="nc" id="L65">                                  .getGlobalTrafficShapingHandler());</span>
-<span class="nc" id="L66">    final ChannelTrafficShapingHandler limitChannel =</span>
-<span class="nc" id="L67">        configuration.getFtpInternalConfiguration()</span>
-<span class="nc" id="L68">                     .newChannelTrafficShapingHandler();</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (limitChannel != null) {</span>
-<span class="nc" id="L70">      pipeline</span>
-<span class="nc" id="L71">          .addLast(FtpDataInitializer.CODEC_LIMIT + &quot;CHANNEL&quot;, limitChannel);</span>
+<span class="nc" id="L71">    pipeline.addLast(FtpDataInitializer.CODEC_LIMIT,</span>
+<span class="nc" id="L72">                     configuration.getFtpInternalConfiguration()</span>
+<span class="nc" id="L73">                                  .getGlobalTrafficShapingHandler());</span>
+<span class="nc" id="L74">    final ChannelTrafficShapingHandler limitChannel =</span>
+<span class="nc" id="L75">        configuration.getFtpInternalConfiguration()</span>
+<span class="nc" id="L76">                     .newChannelTrafficShapingHandler();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (limitChannel != null) {</span>
+<span class="nc" id="L78">      pipeline.addLast(FtpDataInitializer.CODEC_LIMIT + &quot;CHANNEL&quot;,</span>
+                       limitChannel);
     }
-<span class="nc" id="L73">    pipeline.addLast(FtpDataInitializer.CODEC_TYPE, ftpDataTypeCodec);</span>
-<span class="nc" id="L74">    pipeline.addLast(FtpDataInitializer.CODEC_STRUCTURE, ftpDataStructureCodec);</span>
+<span class="nc" id="L81">    pipeline.addLast(FtpDataInitializer.CODEC_TYPE, ftpDataTypeCodec);</span>
+<span class="nc" id="L82">    pipeline.addLast(FtpDataInitializer.CODEC_STRUCTURE, ftpDataStructureCodec);</span>
     // and then business logic. New one on every connection
-<span class="nc" id="L76">    final DataBusinessHandler newbusiness =</span>
-<span class="nc" id="L77">        dataBusinessHandler.getDeclaredConstructor().newInstance();</span>
-<span class="nc" id="L78">    final DataNetworkHandler newNetworkHandler =</span>
+<span class="nc" id="L84">    final DataBusinessHandler newbusiness =</span>
+<span class="nc" id="L85">        dataBusinessHandler.getDeclaredConstructor().newInstance();</span>
+<span class="nc" id="L86">    final DataNetworkHandler newNetworkHandler =</span>
         new DataNetworkHandler(configuration, newbusiness, isActive);
-<span class="nc" id="L80">    pipeline</span>
-<span class="nc" id="L81">        .addLast(configuration.getFtpInternalConfiguration().getDataExecutor(),</span>
-                 FtpDataInitializer.HANDLER, newNetworkHandler);
-<span class="nc" id="L83">  }</span>
+<span class="nc" id="L88">    pipeline.addLast(</span>
+<span class="nc" id="L89">        configuration.getFtpInternalConfiguration().getDataExecutor(),</span>
+        FtpDataInitializer.HANDLER, newNetworkHandler);
+<span class="nc" id="L91">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

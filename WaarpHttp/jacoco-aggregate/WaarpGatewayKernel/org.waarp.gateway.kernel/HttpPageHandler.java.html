@@ -45,18 +45,18 @@ public class HttpPageHandler {
   /**
    * @param hashmap
    */
-<span class="fc" id="L48">  public HttpPageHandler(final Map&lt;String, HttpPage&gt; hashmap) {</span>
-<span class="fc" id="L49">    setHashmap(hashmap);</span>
-<span class="fc" id="L50">  }</span>
+<span class="nc" id="L48">  public HttpPageHandler(final Map&lt;String, HttpPage&gt; hashmap) {</span>
+<span class="nc" id="L49">    setHashmap(hashmap);</span>
+<span class="nc" id="L50">  }</span>
 
   /**
    * @param code
    *
    * @return an HttpPage according to the error code (400, 404, 500, ...)
    */
-  public HttpPage getHttpPage(final int code) {
-<span class="fc" id="L58">    final String scode = Integer.toString(code);</span>
-<span class="fc" id="L59">    return getHashmap().get(scode);</span>
+  public final HttpPage getHttpPage(final int code) {
+<span class="nc" id="L58">    final String scode = Integer.toString(code);</span>
+<span class="nc" id="L59">    return getHashmap().get(scode);</span>
   }
 
   /**
@@ -68,41 +68,41 @@ public class HttpPageHandler {
    *
    * @throws HttpIncorrectRequestException
    */
-  public HttpPage getHttpPage(final String uri, final String method,
-                              final HttpSession session)
+  public final HttpPage getHttpPage(final String uri, final String method,
+                                    final HttpSession session)
       throws HttpIncorrectRequestException {
-<span class="fc" id="L74">    HttpPage page = getHashmap().get(uri);</span>
-<span class="fc bfc" id="L75" title="All 2 branches covered.">    if (page == null) {</span>
-<span class="fc" id="L76">      return null;</span>
+<span class="nc" id="L74">    HttpPage page = getHashmap().get(uri);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    if (page == null) {</span>
+<span class="nc" id="L76">      return null;</span>
     }
-<span class="fc bfc" id="L78" title="All 2 branches covered.">    if (&quot;HEAD&quot;.equalsIgnoreCase(method)) {</span>
-<span class="fc" id="L79">      return page;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">    if (&quot;HEAD&quot;.equalsIgnoreCase(method)) {</span>
+<span class="nc" id="L79">      return page;</span>
     }
-<span class="pc bpc" id="L81" title="2 of 7 branches missed.">    switch (page.getPagerole()) {</span>
+<span class="nc bnc" id="L81" title="All 7 branches missed.">    switch (page.getPagerole()) {</span>
       case DELETE:
-<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (!&quot;DELETE&quot;.equalsIgnoreCase(method)) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (!&quot;DELETE&quot;.equalsIgnoreCase(method)) {</span>
 <span class="nc" id="L84">          page = getHttpPageError(session, page);</span>
         }
         break;
       case HTML:
       case MENU:
         // no check
-<span class="fc" id="L90">        break;</span>
+<span class="nc" id="L90">        break;</span>
       case GETDOWNLOAD:
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (!&quot;GET&quot;.equalsIgnoreCase(method)) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (!&quot;GET&quot;.equalsIgnoreCase(method)) {</span>
           // error
 <span class="nc" id="L94">          page = getHttpPageError(session, page);</span>
         }
         break;
       case POST:
       case POSTUPLOAD:
-<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!&quot;POST&quot;.equalsIgnoreCase(method)) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (!&quot;POST&quot;.equalsIgnoreCase(method)) {</span>
           // error
-<span class="fc" id="L101">          page = getHttpPageError(session, page);</span>
+<span class="nc" id="L101">          page = getHttpPageError(session, page);</span>
         }
         break;
       case PUT:
-<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        if (!&quot;PUT&quot;.equalsIgnoreCase(method)) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (!&quot;PUT&quot;.equalsIgnoreCase(method)) {</span>
           // error
 <span class="nc" id="L107">          page = getHttpPageError(session, page);</span>
         }
@@ -113,41 +113,41 @@ public class HttpPageHandler {
         // error
 <span class="nc" id="L114">        page = getHttpPageError(session, page);</span>
     }
-<span class="fc bfc" id="L116" title="All 2 branches covered.">    if (page == null) {</span>
-<span class="fc" id="L117">      throw new HttpIncorrectRequestException(&quot;No Page found&quot;);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (page == null) {</span>
+<span class="nc" id="L117">      throw new HttpIncorrectRequestException(&quot;No Page found&quot;);</span>
     }
-<span class="fc" id="L119">    return page;</span>
+<span class="nc" id="L119">    return page;</span>
   }
 
   private HttpPage getHttpPageError(final HttpSession session, HttpPage page) {
     // error
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">    final DbSession dbSession =</span>
-<span class="pc" id="L125">        DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    final DbSession dbSession =</span>
+<span class="nc" id="L125">        DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :</span>
             null;
-<span class="fc" id="L127">    WaarpActionLogger.logErrorAction(dbSession, session,</span>
-<span class="fc" id="L128">                                     INCORRECT_PAGE + page.getPagerole() + &quot;:&quot; +</span>
-<span class="fc" id="L129">                                     page.getPagename(),</span>
+<span class="nc" id="L127">    WaarpActionLogger.logErrorAction(dbSession, session,</span>
+<span class="nc" id="L128">                                     INCORRECT_PAGE + page.getPagerole() + &quot;:&quot; +</span>
+<span class="nc" id="L129">                                     page.getPagename(),</span>
                                      HttpResponseStatus.BAD_REQUEST);
-<span class="pc bpc" id="L131" title="3 of 4 branches missed.">    if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
+<span class="nc bnc" id="L131" title="All 4 branches missed.">    if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
 <span class="nc" id="L132">      page = getHashmap().get(page.getErrorpage());</span>
     } else {
-<span class="fc" id="L134">      page = null;</span>
+<span class="nc" id="L134">      page = null;</span>
     }
-<span class="fc" id="L136">    return page;</span>
+<span class="nc" id="L136">    return page;</span>
   }
 
   /**
    * @return the hashmap
    */
-  public Map&lt;String, HttpPage&gt; getHashmap() {
-<span class="fc" id="L143">    return hashmap;</span>
+  public final Map&lt;String, HttpPage&gt; getHashmap() {
+<span class="nc" id="L143">    return hashmap;</span>
   }
 
   /**
    * @param hashmap the hashmap to set
    */
   private void setHashmap(final Map&lt;String, HttpPage&gt; hashmap) {
-<span class="fc" id="L150">    this.hashmap = hashmap;</span>
-<span class="fc" id="L151">  }</span>
+<span class="nc" id="L150">    this.hashmap = hashmap;</span>
+<span class="nc" id="L151">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

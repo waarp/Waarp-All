@@ -34,7 +34,7 @@
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 <a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLogger;
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLoggerFactory;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.utility.DetectionUtils;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.utility.WaarpSystemUtil;
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.http.protocol.servlet.HttpAuthent;
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.context.ErrorCode;
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.context.R66BusinessInterface;
@@ -85,7 +85,7 @@
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>      <strong class="jxr_keyword">this</strong>.rulename = rulename;
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>      <strong class="jxr_keyword">this</strong>.comment = comment;
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>      <strong class="jxr_keyword">this</strong>.identifier = identifier;
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (!DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (!WaarpSystemUtil.isJunit()) {
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        <strong class="jxr_keyword">final</strong> R66BusinessInterface business =
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>            checkAuthentR66Business(<strong class="jxr_keyword">this</strong>, session, authent);
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>        runner =
@@ -116,7 +116,7 @@
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>     <strong class="jxr_keyword">this</strong>.rulename = <span class="jxr_string">"norule"</span>;
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">this</strong>.comment = <span class="jxr_string">"nocomment"</span>;
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>     <strong class="jxr_keyword">this</strong>.identifier = identifier;
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>     <strong class="jxr_keyword">if</strong> (!DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>     <strong class="jxr_keyword">if</strong> (!WaarpSystemUtil.isJunit()) {
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>       <strong class="jxr_keyword">final</strong> R66BusinessInterface business =
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>           checkAuthentR66Business(<strong class="jxr_keyword">this</strong>, session, authent);
 <a class="jxr_linenumber" name="L114" href="#L114">114</a> 
@@ -129,11 +129,11 @@
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>     <strong class="jxr_keyword">this</strong>.filesize = 0;
 <a class="jxr_linenumber" name="L122" href="#L122">122</a>   }
 <a class="jxr_linenumber" name="L123" href="#L123">123</a> 
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isFinished() {
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isFinished() {
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>     <strong class="jxr_keyword">return</strong> runner != <strong class="jxr_keyword">null</strong> &amp;&amp; runner.isFinished();
 <a class="jxr_linenumber" name="L126" href="#L126">126</a>   }
 <a class="jxr_linenumber" name="L127" href="#L127">127</a> 
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isTransmitting() {
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isTransmitting() {
 <a class="jxr_linenumber" name="L129" href="#L129">129</a>     <strong class="jxr_keyword">return</strong> runner != <strong class="jxr_keyword">null</strong> &amp;&amp;
 <a class="jxr_linenumber" name="L130" href="#L130">130</a>            runner.getUpdatedInfo().equals(UpdatedInfo.RUNNING) &amp;&amp;
 <a class="jxr_linenumber" name="L131" href="#L131">131</a>            <strong class="jxr_keyword">this</strong>.filesize == 0;
@@ -201,28 +201,28 @@
 <a class="jxr_linenumber" name="L193" href="#L193">193</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L194" href="#L194">194</a> <em class="jxr_javadoccomment">   * @return the final name for download</em>
 <a class="jxr_linenumber" name="L195" href="#L195">195</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>   <strong class="jxr_keyword">public</strong> String getFinalName() {
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String getFinalName() {
 <a class="jxr_linenumber" name="L197" href="#L197">197</a>     <strong class="jxr_keyword">return</strong> finalFilename;
 <a class="jxr_linenumber" name="L198" href="#L198">198</a>   }
 <a class="jxr_linenumber" name="L199" href="#L199">199</a> 
 <a class="jxr_linenumber" name="L200" href="#L200">200</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L201" href="#L201">201</a> <em class="jxr_javadoccomment">   * @return the original file size</em>
 <a class="jxr_linenumber" name="L202" href="#L202">202</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">long</strong> getFileSize() {
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> getFileSize() {
 <a class="jxr_linenumber" name="L204" href="#L204">204</a>     <strong class="jxr_keyword">return</strong> filesize;
 <a class="jxr_linenumber" name="L205" href="#L205">205</a>   }
 <a class="jxr_linenumber" name="L206" href="#L206">206</a> 
 <a class="jxr_linenumber" name="L207" href="#L207">207</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L208" href="#L208">208</a> <em class="jxr_javadoccomment">   * @return the identifier</em>
 <a class="jxr_linenumber" name="L209" href="#L209">209</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>   <strong class="jxr_keyword">public</strong> String getIdentifier() {
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String getIdentifier() {
 <a class="jxr_linenumber" name="L211" href="#L211">211</a>     <strong class="jxr_keyword">return</strong> identifier;
 <a class="jxr_linenumber" name="L212" href="#L212">212</a>   }
 <a class="jxr_linenumber" name="L213" href="#L213">213</a> 
 <a class="jxr_linenumber" name="L214" href="#L214">214</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L215" href="#L215">215</a> <em class="jxr_javadoccomment">   * @return the corresponding Hash (SHA 256) or null if not possible</em>
 <a class="jxr_linenumber" name="L216" href="#L216">216</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>   <strong class="jxr_keyword">public</strong> String getHash() {
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String getHash() {
 <a class="jxr_linenumber" name="L218" href="#L218">218</a>     <strong class="jxr_keyword">final</strong> File file = session.getFile().getTrueFile();
 <a class="jxr_linenumber" name="L219" href="#L219">219</a>     <strong class="jxr_keyword">final</strong> byte[] bin;
 <a class="jxr_linenumber" name="L220" href="#L220">220</a>     <strong class="jxr_keyword">try</strong> {
@@ -244,98 +244,99 @@
 <a class="jxr_linenumber" name="L236" href="#L236">236</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L237" href="#L237">237</a> <em class="jxr_javadoccomment">   * @return the previously hash if computed, else null</em>
 <a class="jxr_linenumber" name="L238" href="#L238">238</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L239" href="#L239">239</a>   <strong class="jxr_keyword">public</strong> String getComputedHadh() {
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String getComputedHadh() {
 <a class="jxr_linenumber" name="L240" href="#L240">240</a>     <strong class="jxr_keyword">final</strong> String hash = (String) session.getRunner().getFromTransferMap(HASH);
 <a class="jxr_linenumber" name="L241" href="#L241">241</a>     logger.debug(<span class="jxr_string">"Found {}"</span>, hash);
 <a class="jxr_linenumber" name="L242" href="#L242">242</a>     <strong class="jxr_keyword">return</strong> hash;
 <a class="jxr_linenumber" name="L243" href="#L243">243</a>   }
 <a class="jxr_linenumber" name="L244" href="#L244">244</a> 
 <a class="jxr_linenumber" name="L245" href="#L245">245</a>   @Override
-<a class="jxr_linenumber" name="L246" href="#L246">246</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> error(<strong class="jxr_keyword">final</strong> Exception e, <strong class="jxr_keyword">final</strong> R66BusinessInterface business)
-<a class="jxr_linenumber" name="L247" href="#L247">247</a>       <strong class="jxr_keyword">throws</strong> IllegalArgumentException {
-<a class="jxr_linenumber" name="L248" href="#L248">248</a>     logger.error(e);
-<a class="jxr_linenumber" name="L249" href="#L249">249</a>     <strong class="jxr_keyword">if</strong> (business != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L250" href="#L250">250</a>       business.checkAtError(session);
-<a class="jxr_linenumber" name="L251" href="#L251">251</a>     }
-<a class="jxr_linenumber" name="L252" href="#L252">252</a>     session.newState(R66FiniteDualStates.ERROR);
-<a class="jxr_linenumber" name="L253" href="#L253">253</a>     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(e);
-<a class="jxr_linenumber" name="L254" href="#L254">254</a>   }
-<a class="jxr_linenumber" name="L255" href="#L255">255</a> 
-<a class="jxr_linenumber" name="L256" href="#L256">256</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L257" href="#L257">257</a> <em class="jxr_javadoccomment">   * Try to read and return all bytes from file</em>
-<a class="jxr_linenumber" name="L258" href="#L258">258</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L259" href="#L259">259</a> <em class="jxr_javadoccomment">   * @param stream</em>
-<a class="jxr_linenumber" name="L260" href="#L260">260</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L261" href="#L261">261</a> <em class="jxr_javadoccomment">   * @return true if OK</em>
-<a class="jxr_linenumber" name="L262" href="#L262">262</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L263" href="#L263">263</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="L264" href="#L264">264</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L265" href="#L265">265</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> tryWrite(<strong class="jxr_keyword">final</strong> OutputStream stream) <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="L266" href="#L266">266</a>     <strong class="jxr_keyword">if</strong> (!session.isAuthenticated() || !session.isReady()) {
-<a class="jxr_linenumber" name="L267" href="#L267">267</a>       logger.error(<span class="jxr_string">"Not authenticated or not Ready"</span>);
-<a class="jxr_linenumber" name="L268" href="#L268">268</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L269" href="#L269">269</a>     }
-<a class="jxr_linenumber" name="L270" href="#L270">270</a>     write(stream);
-<a class="jxr_linenumber" name="L271" href="#L271">271</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L272" href="#L272">272</a>   }
-<a class="jxr_linenumber" name="L273" href="#L273">273</a> 
-<a class="jxr_linenumber" name="L274" href="#L274">274</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L275" href="#L275">275</a> <em class="jxr_javadoccomment">   * Real write from the final file</em>
-<a class="jxr_linenumber" name="L276" href="#L276">276</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L277" href="#L277">277</a> <em class="jxr_javadoccomment">   * @param stream</em>
-<a class="jxr_linenumber" name="L278" href="#L278">278</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L279" href="#L279">279</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="L280" href="#L280">280</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L281" href="#L281">281</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> write(<strong class="jxr_keyword">final</strong> OutputStream stream) <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="L282" href="#L282">282</a>     startTransfer(runner);
-<a class="jxr_linenumber" name="L283" href="#L283">283</a>     <strong class="jxr_keyword">final</strong> File file = session.getFile().getTrueFile();
-<a class="jxr_linenumber" name="L284" href="#L284">284</a>     <strong class="jxr_keyword">final</strong> FileInputStream inputStream = <strong class="jxr_keyword">new</strong> FileInputStream(file);
-<a class="jxr_linenumber" name="L285" href="#L285">285</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L286" href="#L286">286</a>       <strong class="jxr_keyword">final</strong> byte[] bytes = <strong class="jxr_keyword">new</strong> byte[Configuration.configuration.getBlockSize()];
-<a class="jxr_linenumber" name="L287" href="#L287">287</a>       <strong class="jxr_keyword">while</strong> (<strong class="jxr_keyword">true</strong>) {
-<a class="jxr_linenumber" name="L288" href="#L288">288</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> r = inputStream.read(bytes);
-<a class="jxr_linenumber" name="L289" href="#L289">289</a>         <strong class="jxr_keyword">if</strong> (r &lt; 0) {
-<a class="jxr_linenumber" name="L290" href="#L290">290</a>           <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L291" href="#L291">291</a>         }
-<a class="jxr_linenumber" name="L292" href="#L292">292</a>         stream.write(bytes, 0, r);
-<a class="jxr_linenumber" name="L293" href="#L293">293</a>         session.getRunner().incrementRank();
-<a class="jxr_linenumber" name="L294" href="#L294">294</a>       }
-<a class="jxr_linenumber" name="L295" href="#L295">295</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
-<a class="jxr_linenumber" name="L296" href="#L296">296</a>       session.getRunner().setErrorExecutionStatus(ErrorCode.TransferError);
-<a class="jxr_linenumber" name="L297" href="#L297">297</a>       session.getRunner().setErrorTask();
-<a class="jxr_linenumber" name="L298" href="#L298">298</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L299" href="#L299">299</a>         session.getRunner().run();
-<a class="jxr_linenumber" name="L300" href="#L300">300</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66RunnerErrorException ex) {
-<a class="jxr_linenumber" name="L301" href="#L301">301</a>         logger.info(e);
-<a class="jxr_linenumber" name="L302" href="#L302">302</a>       }
-<a class="jxr_linenumber" name="L303" href="#L303">303</a>       session.newState(R66FiniteDualStates.ERROR);
-<a class="jxr_linenumber" name="L304" href="#L304">304</a>       <strong class="jxr_keyword">throw</strong> e;
-<a class="jxr_linenumber" name="L305" href="#L305">305</a>     } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L306" href="#L306">306</a>       inputStream.close();
-<a class="jxr_linenumber" name="L307" href="#L307">307</a>       stream.flush();
-<a class="jxr_linenumber" name="L308" href="#L308">308</a>       stream.close();
-<a class="jxr_linenumber" name="L309" href="#L309">309</a>     }
-<a class="jxr_linenumber" name="L310" href="#L310">310</a> 
-<a class="jxr_linenumber" name="L311" href="#L311">311</a>   }
-<a class="jxr_linenumber" name="L312" href="#L312">312</a> 
-<a class="jxr_linenumber" name="L313" href="#L313">313</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L314" href="#L314">314</a> <em class="jxr_javadoccomment">   * Finalize the current download</em>
-<a class="jxr_linenumber" name="L315" href="#L315">315</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L316" href="#L316">316</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> downloadFinished() {
-<a class="jxr_linenumber" name="L317" href="#L317">317</a>     <strong class="jxr_keyword">if</strong> (session.getState() == CLOSEDCHANNEL) {
-<a class="jxr_linenumber" name="L318" href="#L318">318</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L319" href="#L319">319</a>     }
-<a class="jxr_linenumber" name="L320" href="#L320">320</a>     logger.debug(<span class="jxr_string">"Final block received! {}"</span>, session);
-<a class="jxr_linenumber" name="L321" href="#L321">321</a>     runPostTask();
-<a class="jxr_linenumber" name="L322" href="#L322">322</a>     authent.finalizeTransfer(<strong class="jxr_keyword">this</strong>, session);
-<a class="jxr_linenumber" name="L323" href="#L323">323</a>   }
-<a class="jxr_linenumber" name="L324" href="#L324">324</a> 
-<a class="jxr_linenumber" name="L325" href="#L325">325</a>   @Override
-<a class="jxr_linenumber" name="L326" href="#L326">326</a>   <strong class="jxr_keyword">public</strong> String toString() {
-<a class="jxr_linenumber" name="L327" href="#L327">327</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"DS: {"</span> + session.toString() + <span class="jxr_string">", "</span> + filename + <span class="jxr_string">", "</span> + rulename +
-<a class="jxr_linenumber" name="L328" href="#L328">328</a>            <span class="jxr_string">", "</span> + identifier + <span class="jxr_string">", "</span> + comment + <span class="jxr_string">", "</span> + finalFilename + <span class="jxr_string">"}"</span>;
-<a class="jxr_linenumber" name="L329" href="#L329">329</a>   }
-<a class="jxr_linenumber" name="L330" href="#L330">330</a> }
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> error(<strong class="jxr_keyword">final</strong> Exception e,
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>                           <strong class="jxr_keyword">final</strong> R66BusinessInterface business)
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>       <strong class="jxr_keyword">throws</strong> IllegalArgumentException {
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>     logger.error(e.getMessage());
+<a class="jxr_linenumber" name="L250" href="#L250">250</a>     <strong class="jxr_keyword">if</strong> (business != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L251" href="#L251">251</a>       business.checkAtError(session);
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>     }
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>     session.newState(R66FiniteDualStates.ERROR);
+<a class="jxr_linenumber" name="L254" href="#L254">254</a>     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(e);
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>   }
+<a class="jxr_linenumber" name="L256" href="#L256">256</a> 
+<a class="jxr_linenumber" name="L257" href="#L257">257</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L258" href="#L258">258</a> <em class="jxr_javadoccomment">   * Try to read and return all bytes from file</em>
+<a class="jxr_linenumber" name="L259" href="#L259">259</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L260" href="#L260">260</a> <em class="jxr_javadoccomment">   * @param stream</em>
+<a class="jxr_linenumber" name="L261" href="#L261">261</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L262" href="#L262">262</a> <em class="jxr_javadoccomment">   * @return true if OK</em>
+<a class="jxr_linenumber" name="L263" href="#L263">263</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L264" href="#L264">264</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="L265" href="#L265">265</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L266" href="#L266">266</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> tryWrite(<strong class="jxr_keyword">final</strong> OutputStream stream) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>     <strong class="jxr_keyword">if</strong> (!session.isAuthenticated() || !session.isReady()) {
+<a class="jxr_linenumber" name="L268" href="#L268">268</a>       logger.error(<span class="jxr_string">"Not authenticated or not Ready"</span>);
+<a class="jxr_linenumber" name="L269" href="#L269">269</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>     }
+<a class="jxr_linenumber" name="L271" href="#L271">271</a>     write(stream);
+<a class="jxr_linenumber" name="L272" href="#L272">272</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>   }
+<a class="jxr_linenumber" name="L274" href="#L274">274</a> 
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L276" href="#L276">276</a> <em class="jxr_javadoccomment">   * Real write from the final file</em>
+<a class="jxr_linenumber" name="L277" href="#L277">277</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L278" href="#L278">278</a> <em class="jxr_javadoccomment">   * @param stream</em>
+<a class="jxr_linenumber" name="L279" href="#L279">279</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L280" href="#L280">280</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="L281" href="#L281">281</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L282" href="#L282">282</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> write(<strong class="jxr_keyword">final</strong> OutputStream stream) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="L283" href="#L283">283</a>     startTransfer(runner);
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>     <strong class="jxr_keyword">final</strong> File file = session.getFile().getTrueFile();
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>     <strong class="jxr_keyword">final</strong> FileInputStream inputStream = <strong class="jxr_keyword">new</strong> FileInputStream(file);
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>       <strong class="jxr_keyword">final</strong> byte[] bytes = <strong class="jxr_keyword">new</strong> byte[Configuration.configuration.getBlockSize()];
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>       <strong class="jxr_keyword">while</strong> (<strong class="jxr_keyword">true</strong>) {
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> r = inputStream.read(bytes);
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>         <strong class="jxr_keyword">if</strong> (r &lt; 0) {
+<a class="jxr_linenumber" name="L291" href="#L291">291</a>           <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>         }
+<a class="jxr_linenumber" name="L293" href="#L293">293</a>         stream.write(bytes, 0, r);
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>         session.getRunner().incrementRank();
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>       }
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>       session.getRunner().setErrorExecutionStatus(ErrorCode.TransferError);
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>       session.getRunner().setErrorTask();
+<a class="jxr_linenumber" name="L299" href="#L299">299</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>         session.getRunner().run();
+<a class="jxr_linenumber" name="L301" href="#L301">301</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66RunnerErrorException ex) {
+<a class="jxr_linenumber" name="L302" href="#L302">302</a>         logger.info(e);
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>       }
+<a class="jxr_linenumber" name="L304" href="#L304">304</a>       session.newState(R66FiniteDualStates.ERROR);
+<a class="jxr_linenumber" name="L305" href="#L305">305</a>       <strong class="jxr_keyword">throw</strong> e;
+<a class="jxr_linenumber" name="L306" href="#L306">306</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L307" href="#L307">307</a>       inputStream.close();
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>       stream.flush();
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>       stream.close();
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>     }
+<a class="jxr_linenumber" name="L311" href="#L311">311</a> 
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>   }
+<a class="jxr_linenumber" name="L313" href="#L313">313</a> 
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L315" href="#L315">315</a> <em class="jxr_javadoccomment">   * Finalize the current download</em>
+<a class="jxr_linenumber" name="L316" href="#L316">316</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L317" href="#L317">317</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> downloadFinished() {
+<a class="jxr_linenumber" name="L318" href="#L318">318</a>     <strong class="jxr_keyword">if</strong> (session.getState() == CLOSEDCHANNEL) {
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>     }
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>     logger.debug(<span class="jxr_string">"Final block received! {}"</span>, session);
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>     runPostTask();
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>     authent.finalizeTransfer(<strong class="jxr_keyword">this</strong>, session);
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>   }
+<a class="jxr_linenumber" name="L325" href="#L325">325</a> 
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>   @Override
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>   <strong class="jxr_keyword">public</strong> String toString() {
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"DS: {"</span> + session.toString() + <span class="jxr_string">", "</span> + filename + <span class="jxr_string">", "</span> + rulename +
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>            <span class="jxr_string">", "</span> + identifier + <span class="jxr_string">", "</span> + comment + <span class="jxr_string">", "</span> + finalFilename + <span class="jxr_string">"}"</span>;
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>   }
+<a class="jxr_linenumber" name="L331" href="#L331">331</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2019&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

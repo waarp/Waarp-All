@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LocalServerHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler</a> &gt; <span class="el_source">LocalServerHandler.java</span></div><h1>LocalServerHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66Exception;
+import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessCancelException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryAlreadyFinishedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryStillRunningException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessRemoteFileNotFoundException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessStopException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolShutdownException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
+import org.waarp.openr66.protocol.localhandler.packet.AuthentPacket;
+import org.waarp.openr66.protocol.localhandler.packet.BlockRequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ConnectionErrorPacket;
+import org.waarp.openr66.protocol.localhandler.packet.DataPacket;
+import org.waarp.openr66.protocol.localhandler.packet.EndRequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.EndTransferPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
+import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
+import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ShutdownPacket;
+import org.waarp.openr66.protocol.localhandler.packet.TestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.RequestJsonPacket;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
+import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import static org.waarp.openr66.context.R66FiniteDualStates.*;
+
+/**
+ * The local server handler handles real end file operations.
+ */
+public final class LocalServerHandler {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L82">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L83">      WaarpLoggerFactory.getLogger(LocalServerHandler.class);</span>
+
+  private LocalServerHandler() {
+  }
+
+  public static void channelInactive(final TransferActions serverHandler) {
+<span class="nc" id="L89">    serverHandler.channelClosed();</span>
+<span class="nc" id="L90">  }</span>
+
+  public static void channelActive(final TransferActions serverHandler) {
+<span class="nc" id="L93">    serverHandler.newSession();</span>
+<span class="nc" id="L94">  }</span>
+
+  /**
+   * Replacement for local channels
+   *
+   * @param localChannelReference
+   * @param networkPacket
+   */
+  public static void channelRead0(
+      final LocalChannelReference localChannelReference,
+      final NetworkPacket networkPacket) {
+    try {
+<span class="nc" id="L106">      final AbstractLocalPacket packet =</span>
+<span class="nc" id="L107">          LocalPacketCodec.decodeNetworkPacket(networkPacket.getBuffer());</span>
+<span class="nc" id="L108">      channelRead1(localChannelReference, packet);</span>
+<span class="nc" id="L109">    } catch (final OpenR66ProtocolShutdownException e) {</span>
+<span class="nc" id="L110">      logger.error(e.getMessage());</span>
+<span class="nc" id="L111">      exceptionCaught(localChannelReference.getServerHandler(), e);</span>
+<span class="nc" id="L112">    } catch (final Exception e) {</span>
+<span class="nc" id="L113">      exceptionCaught(localChannelReference.getServerHandler(), e);</span>
+    } finally {
+<span class="nc" id="L115">      networkPacket.clear();</span>
+    }
+<span class="nc" id="L117">  }</span>
+
+  public static void channelRead0(
+      final LocalChannelReference localChannelReference,
+      final AbstractLocalPacket msg) {
+    try {
+<span class="nc" id="L123">      channelRead1(localChannelReference, msg);</span>
+<span class="nc" id="L124">    } catch (final Exception e) {</span>
+<span class="nc" id="L125">      exceptionCaught(localChannelReference.getServerHandler(), e);</span>
+<span class="nc" id="L126">    }</span>
+<span class="nc" id="L127">  }</span>
+
+  public static void channelRead1(
+      final LocalChannelReference localChannelReference,
+      final AbstractLocalPacket packet) throws Exception {
+    // action as requested and answer if necessary
+<span class="nc" id="L133">    final TransferActions serverHandler =</span>
+<span class="nc" id="L134">        localChannelReference.getServerHandler();</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (packet.getType() == LocalPacketFactory.STARTUPPACKET) {</span>
+<span class="nc" id="L136">      logger.warn(&quot;Error in the protocol: {}&quot;, packet.toString());</span>
+    } else {
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (serverHandler.getLocalChannelReference() == null) {</span>
+<span class="nc" id="L139">        logger.error(</span>
+<span class="nc" id="L140">            &quot;No LocalChannelReference at &quot; + packet.getClass().getName());</span>
+<span class="nc" id="L141">        serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L142">        final ErrorPacket errorPacket = new ErrorPacket(</span>
+<span class="nc" id="L143">            &quot;No LocalChannelReference at &quot; + packet.getClass().getName(),</span>
+<span class="nc" id="L144">            ErrorCode.ConnectionImpossible.getCode(),</span>
+            ErrorPacket.FORWARDCLOSECODE);
+<span class="nc" id="L146">        ChannelUtils.writeAbstractLocalPacket(localChannelReference,</span>
+                                              errorPacket, false);
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (Configuration.configuration.getR66Mib() != null) {</span>
+<span class="nc" id="L149">          Configuration.configuration.getR66Mib()</span>
+<span class="nc" id="L150">                                     .notifyWarning(&quot;No LocalChannelReference&quot;,</span>
+<span class="nc" id="L151">                                                    packet.getClass()</span>
+<span class="nc" id="L152">                                                          .getSimpleName());</span>
+        }
+<span class="nc" id="L154">        packet.clear();</span>
+<span class="nc" id="L155">        return;</span>
+      }
+<span class="nc bnc" id="L157" title="All 16 branches missed.">      switch (packet.getType()) {</span>
+        case LocalPacketFactory.AUTHENTPACKET: {
+<span class="nc" id="L159">          serverHandler.authent((AuthentPacket) packet,</span>
+<span class="nc" id="L160">                                localChannelReference.getNetworkChannelObject()</span>
+<span class="nc" id="L161">                                                     .isSSL());</span>
+<span class="nc" id="L162">          break;</span>
+        }
+        // Already done case LocalPacketFactory.STARTUPPACKET:
+        case LocalPacketFactory.DATAPACKET: {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">          if (((DataPacket) packet).getPacketRank() % 100 == 1 ||</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">              serverHandler.getSession().getState() != DATAR) {</span>
+<span class="nc" id="L168">            serverHandler.getSession().newState(DATAR);</span>
+<span class="nc" id="L169">            logger.debug(&quot;DATA RANK: {} : {}&quot;,</span>
+<span class="nc" id="L170">                         ((DataPacket) packet).getPacketRank(),</span>
+<span class="nc" id="L171">                         serverHandler.getSession().getRunner().getRank());</span>
+          }
+<span class="nc" id="L173">          ((DataPacket) packet).createByteBufFromRecv(</span>
+<span class="nc" id="L174">              serverHandler.getSession());</span>
+<span class="nc" id="L175">          logger.debug(&quot;DATA RANK: {} : {} for {} bytes&quot;,</span>
+<span class="nc" id="L176">                       ((DataPacket) packet).getPacketRank(),</span>
+<span class="nc" id="L177">                       serverHandler.getSession().getRunner().getRank(),</span>
+<span class="nc" id="L178">                       ((DataPacket) packet).getLengthPacket());</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">          if (localChannelReference.getSession().isCompressionEnabled()) {</span>
+<span class="nc" id="L180">            R66Session.getCodec().uncompress(((DataPacket) packet),</span>
+<span class="nc" id="L181">                                             serverHandler.getSession());</span>
+          }
+<span class="nc" id="L183">          serverHandler.data((DataPacket) packet);</span>
+<span class="nc" id="L184">          break;</span>
+        }
+        case LocalPacketFactory.VALIDPACKET: {
+          // SHUTDOWNPACKET does not need authentication
+<span class="nc bnc" id="L188" title="All 2 branches missed.">          if (((ValidPacket) packet).getTypeValid() !=</span>
+              LocalPacketFactory.SHUTDOWNPACKET &amp;&amp;
+<span class="nc bnc" id="L190" title="All 2 branches missed.">              !serverHandler.getSession().isAuthenticated()) {</span>
+<span class="nc" id="L191">            logger.warn(&quot;Valid packet received while not authenticated: {} {}&quot;,</span>
+<span class="nc" id="L192">                        packet, serverHandler.getSession());</span>
+<span class="nc" id="L193">            serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L194">            packet.clear();</span>
+<span class="nc" id="L195">            throw new OpenR66ProtocolNotAuthenticatedException(</span>
+                &quot;Not authenticated while Valid received&quot;);
+          }
+<span class="nc bnc" id="L198" title="All 2 branches missed.">          if (((ValidPacket) packet).getTypeValid() ==</span>
+              LocalPacketFactory.REQUESTPACKET) {
+<span class="nc" id="L200">            final String[] fields = ((ValidPacket) packet).getSmiddle().split(</span>
+                PartnerConfiguration.BAR_SEPARATOR_FIELD);
+<span class="nc" id="L202">            String newfilename = fields[0];</span>
+            // potential file size changed
+<span class="nc" id="L204">            long newSize = -1;</span>
+<span class="nc" id="L205">            String newFileInfo = null;</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (fields.length &gt; 1) {</span>
+              try {
+<span class="nc" id="L208">                newSize = Long.parseLong(fields[1]);</span>
+                // potential fileInfo changed
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                if (fields.length &gt; 2) {</span>
+<span class="nc" id="L211">                  newFileInfo = fields[2];</span>
+                }
+<span class="nc" id="L213">              } catch (final NumberFormatException e2) {</span>
+<span class="nc" id="L214">                newfilename +=</span>
+                    PartnerConfiguration.BAR_SEPARATOR_FIELD + fields[1];
+<span class="nc" id="L216">                newSize = -1;</span>
+<span class="nc" id="L217">              }</span>
+            }
+<span class="nc bnc" id="L219" title="All 4 branches missed.">            if (newFileInfo != null &amp;&amp; !newFileInfo.equals(</span>
+<span class="nc" id="L220">                serverHandler.getSession().getRunner().getFileInformation())) {</span>
+<span class="nc" id="L221">              serverHandler.requestChangeFileInfo(newFileInfo);</span>
+            }
+<span class="nc" id="L223">            serverHandler.requestChangeNameSize(newfilename, newSize);</span>
+<span class="nc" id="L224">            packet.clear();</span>
+<span class="nc" id="L225">          } else {</span>
+<span class="nc" id="L226">            serverHandler.valid((ValidPacket) packet);</span>
+          }
+<span class="nc" id="L228">          break;</span>
+        }
+        case LocalPacketFactory.ERRORPACKET: {
+<span class="nc" id="L231">          serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L232">          serverHandler.errorMesg((ErrorPacket) packet);</span>
+<span class="nc" id="L233">          break;</span>
+        }
+        case LocalPacketFactory.CONNECTERRORPACKET: {
+<span class="nc" id="L236">          serverHandler.connectionError((ConnectionErrorPacket) packet);</span>
+<span class="nc" id="L237">          break;</span>
+        }
+        case LocalPacketFactory.REQUESTPACKET: {
+<span class="nc" id="L240">          serverHandler.request((RequestPacket) packet);</span>
+<span class="nc" id="L241">          break;</span>
+        }
+        case LocalPacketFactory.SHUTDOWNPACKET: {
+<span class="nc" id="L244">          serverHandler.getSession().newState(SHUTDOWN);</span>
+<span class="nc" id="L245">          serverHandler.shutdown((ShutdownPacket) packet);</span>
+<span class="nc" id="L246">          break;</span>
+        }
+        case LocalPacketFactory.STOPPACKET:
+        case LocalPacketFactory.CANCELPACKET:
+        case LocalPacketFactory.CONFIMPORTPACKET:
+        case LocalPacketFactory.CONFEXPORTPACKET:
+        case LocalPacketFactory.BANDWIDTHPACKET: {
+<span class="nc" id="L253">          logger.error(&quot;Unimplemented Mesg: &quot; + packet.getClass().getName());</span>
+<span class="nc" id="L254">          serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L255">          serverHandler.getLocalChannelReference().invalidateRequest(</span>
+              new R66Result(
+                  new OpenR66ProtocolSystemException(&quot;Not implemented&quot;),
+<span class="nc" id="L258">                  serverHandler.getSession(), true, ErrorCode.Unimplemented,</span>
+                  null));
+<span class="nc" id="L260">          final ErrorPacket errorPacket = new ErrorPacket(</span>
+<span class="nc" id="L261">              &quot;Unimplemented Mesg: &quot; + packet.getClass().getName(),</span>
+<span class="nc" id="L262">              ErrorCode.Unimplemented.getCode(), ErrorPacket.FORWARDCLOSECODE);</span>
+<span class="nc" id="L263">          ChannelUtils.writeAbstractLocalPacket(</span>
+<span class="nc" id="L264">              serverHandler.getLocalChannelReference(), errorPacket, false);</span>
+<span class="nc" id="L265">          packet.clear();</span>
+<span class="nc" id="L266">          break;</span>
+        }
+        case LocalPacketFactory.TESTPACKET: {
+<span class="nc" id="L269">          serverHandler.getSession().newState(TEST);</span>
+<span class="nc" id="L270">          serverHandler.test((TestPacket) packet);</span>
+<span class="nc" id="L271">          break;</span>
+        }
+        case LocalPacketFactory.ENDTRANSFERPACKET: {
+<span class="nc" id="L274">          serverHandler.endTransfer((EndTransferPacket) packet);</span>
+<span class="nc" id="L275">          break;</span>
+        }
+        case LocalPacketFactory.INFORMATIONPACKET: {
+<span class="nc" id="L278">          serverHandler.getSession().newState(INFORMATION);</span>
+<span class="nc" id="L279">          serverHandler.information((InformationPacket) packet);</span>
+<span class="nc" id="L280">          break;</span>
+        }
+        case LocalPacketFactory.ENDREQUESTPACKET: {
+<span class="nc" id="L283">          serverHandler.endRequest((EndRequestPacket) packet);</span>
+<span class="nc" id="L284">          break;</span>
+        }
+        case LocalPacketFactory.BUSINESSREQUESTPACKET: {
+<span class="nc" id="L287">          serverHandler.businessRequest((BusinessRequestPacket) packet);</span>
+<span class="nc" id="L288">          break;</span>
+        }
+        case LocalPacketFactory.BLOCKREQUESTPACKET: {
+<span class="nc" id="L291">          serverHandler.blockRequest((BlockRequestPacket) packet);</span>
+<span class="nc" id="L292">          break;</span>
+        }
+        case LocalPacketFactory.JSONREQUESTPACKET: {
+<span class="nc bnc" id="L295" title="All 2 branches missed.">          if (!serverHandler.getSession().isAuthenticated()) {</span>
+<span class="nc" id="L296">            logger.warn(</span>
+                &quot;JsonCommand packet received while not authenticated: {} {}&quot;,
+<span class="nc" id="L298">                packet, serverHandler.getSession());</span>
+<span class="nc" id="L299">            serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L300">            throw new OpenR66ProtocolNotAuthenticatedException(</span>
+                &quot;Not authenticated while Valid received&quot;);
+          }
+<span class="nc" id="L303">          JsonPacket json = ((JsonCommandPacket) packet).getJsonRequest();</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">          if (json == null) {</span>
+<span class="nc" id="L305">            final ErrorCode code = ErrorCode.CommandNotFound;</span>
+<span class="nc" id="L306">            final R66Result resulttest =</span>
+<span class="nc" id="L307">                new R66Result(serverHandler.getSession(), true, code,</span>
+<span class="nc" id="L308">                              serverHandler.getSession().getRunner());</span>
+<span class="nc" id="L309">            json = new JsonPacket();</span>
+<span class="nc" id="L310">            json.setComment(&quot;Invalid command&quot;);</span>
+<span class="nc" id="L311">            json.setRequestUserPacket(</span>
+<span class="nc" id="L312">                ((JsonCommandPacket) packet).getTypeValid());</span>
+<span class="nc" id="L313">            final JsonCommandPacket valid =</span>
+<span class="nc" id="L314">                new JsonCommandPacket(json, resulttest.getCode().getCode(),</span>
+                                      LocalPacketFactory.REQUESTUSERPACKET);
+<span class="nc" id="L316">            resulttest.setOther(packet);</span>
+<span class="nc" id="L317">            serverHandler.getLocalChannelReference()</span>
+<span class="nc" id="L318">                         .validateRequest(resulttest);</span>
+            try {
+<span class="nc" id="L320">              ChannelUtils.writeAbstractLocalPacket(</span>
+<span class="nc" id="L321">                  serverHandler.getLocalChannelReference(), valid, false);</span>
+<span class="nc" id="L322">            } catch (final OpenR66ProtocolPacketException ignored) {</span>
+              // ignore
+<span class="nc" id="L324">            }</span>
+<span class="nc" id="L325">            serverHandler.getSession().setStatus(99);</span>
+<span class="nc" id="L326">            localChannelReference.close();</span>
+<span class="nc" id="L327">            return;</span>
+          }
+<span class="nc" id="L329">          json.setRequestUserPacket(</span>
+<span class="nc" id="L330">              ((JsonCommandPacket) packet).getTypeValid());</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">          if (((JsonCommandPacket) packet).getTypeValid() ==</span>
+              LocalPacketFactory.REQUESTPACKET) {
+<span class="nc" id="L333">            final RequestJsonPacket node = (RequestJsonPacket) json;</span>
+<span class="nc" id="L334">            final String newfilename = node.getFilename();</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">            if (newfilename == null) {</span>
+              // error so ignore
+<span class="nc" id="L337">              return;</span>
+            }
+<span class="nc" id="L339">            final long newSize = node.getFilesize();</span>
+<span class="nc" id="L340">            final String newFileInfo = node.getFileInfo();</span>
+<span class="nc" id="L341">            logger.debug(&quot;NewSize {} NewName {}&quot;, newSize, newfilename);</span>
+            // potential fileInfo changed
+<span class="nc bnc" id="L343" title="All 4 branches missed.">            if (newFileInfo != null &amp;&amp; !newFileInfo.equals(</span>
+<span class="nc" id="L344">                serverHandler.getSession().getRunner().getFileInformation())) {</span>
+<span class="nc" id="L345">              logger.debug(&quot;NewSize {} NewName {} newFileInfo {}&quot;, newSize,</span>
+                           newfilename, newFileInfo);
+<span class="nc" id="L347">              serverHandler.requestChangeFileInfo(newFileInfo);</span>
+            }
+            // potential file size changed
+<span class="nc" id="L350">            serverHandler.requestChangeNameSize(newfilename, newSize);</span>
+<span class="nc" id="L351">          } else {</span>
+<span class="nc" id="L352">            serverHandler.jsonCommand((JsonCommandPacket) packet, json);</span>
+          }
+<span class="nc" id="L354">          break;</span>
+        }
+        default: {
+<span class="nc" id="L357">          logger.error(&quot;Unknown Mesg: &quot; + packet.getClass().getName());</span>
+<span class="nc" id="L358">          serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L359">          serverHandler.getLocalChannelReference().invalidateRequest(</span>
+              new R66Result(
+                  new OpenR66ProtocolSystemException(&quot;Unknown Message&quot;),
+<span class="nc" id="L362">                  serverHandler.getSession(), true, ErrorCode.Unimplemented,</span>
+                  null));
+<span class="nc" id="L364">          final ErrorPacket errorPacket =</span>
+<span class="nc" id="L365">              new ErrorPacket(&quot;Unkown Mesg: &quot; + packet.getClass().getName(),</span>
+<span class="nc" id="L366">                              ErrorCode.Unimplemented.getCode(),</span>
+                              ErrorPacket.FORWARDCLOSECODE);
+<span class="nc" id="L368">          ChannelUtils.writeAbstractLocalPacket(</span>
+<span class="nc" id="L369">              serverHandler.getLocalChannelReference(), errorPacket, false);</span>
+<span class="nc" id="L370">          packet.clear();</span>
+        }
+      }
+    }
+<span class="nc" id="L374">  }</span>
+
+  public static void exceptionCaught(final TransferActions serverHandler,
+                                     final Throwable cause) {
+    // inform clients
+<span class="nc" id="L379">    logger.debug(&quot;Exception and isFinished: {}&quot;,</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">                 (serverHandler.getLocalChannelReference() != null &amp;&amp;</span>
+<span class="nc" id="L381">                  serverHandler.getLocalChannelReference().getFutureRequest()</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">                               .isDone()), cause);</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">    if (serverHandler.getLocalChannelReference() != null &amp;&amp;</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">        serverHandler.getLocalChannelReference().getFutureRequest().isDone()) {</span>
+<span class="nc" id="L385">      ChannelCloseTimer.closeFutureTransaction(serverHandler);</span>
+<span class="nc" id="L386">      return;</span>
+    }
+<span class="nc" id="L388">    final OpenR66Exception exception =</span>
+<span class="nc" id="L389">        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">            serverHandler.getLocalChannelReference() != null?</span>
+<span class="nc" id="L391">                serverHandler.getLocalChannelReference().getNetworkChannel() :</span>
+                null, cause);
+    ErrorCode code;
+<span class="nc bnc" id="L394" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc" id="L395">      serverHandler.getSession().newState(ERROR);</span>
+<span class="nc" id="L396">      boolean isAnswered = false;</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolShutdownException) {</span>
+<span class="nc" id="L398">        shutdownFromException(serverHandler, exception);</span>
+<span class="nc" id="L399">        return;</span>
+      } else {
+<span class="nc bnc" id="L401" title="All 2 branches missed.">        if (serverHandler.getLocalChannelReference() != null &amp;&amp;</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">            serverHandler.getLocalChannelReference().getFutureRequest() !=</span>
+            null) {
+<span class="nc" id="L404">          if (serverHandler.getLocalChannelReference().getFutureRequest()</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">                           .isDone()) {</span>
+<span class="nc" id="L406">            final R66Result result =</span>
+<span class="nc" id="L407">                serverHandler.getLocalChannelReference().getFutureRequest()</span>
+<span class="nc" id="L408">                             .getResult();</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">            if (result != null) {</span>
+<span class="nc" id="L410">              isAnswered = result.isAnswered();</span>
+            }
+          }
+        }
+<span class="nc" id="L414">        final DbTaskRunner runner = serverHandler.getSession().getRunner();</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
+<span class="nc" id="L416">          code = ErrorCode.ConnectionImpossible;</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">          if (runner != null) {</span>
+<span class="nc" id="L418">            runner.stopOrCancelRunner(code);</span>
+          }
+<span class="nc bnc" id="L420" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolBusinessCancelException) {</span>
+<span class="nc" id="L421">          code = ErrorCode.CanceledTransfer;</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">          if (runner != null) {</span>
+<span class="nc" id="L423">            runner.stopOrCancelRunner(code);</span>
+          }
+<span class="nc bnc" id="L425" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolBusinessStopException) {</span>
+<span class="nc" id="L426">          code = ErrorCode.StoppedTransfer;</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">          if (runner != null) {</span>
+<span class="nc" id="L428">            runner.stopOrCancelRunner(code);</span>
+          }
+<span class="nc bnc" id="L430" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolBusinessQueryAlreadyFinishedException) {</span>
+<span class="nc" id="L431">          code = ErrorCode.QueryAlreadyFinished;</span>
+          try {
+<span class="nc" id="L433">            serverHandler.tryFinalizeRequest(</span>
+<span class="nc" id="L434">                new R66Result(serverHandler.getSession(), true, code, runner));</span>
+<span class="nc" id="L435">            ChannelCloseTimer.closeFutureTransaction(serverHandler);</span>
+<span class="nc" id="L436">            return;</span>
+<span class="nc" id="L437">          } catch (final OpenR66RunnerErrorException ignored) {</span>
+            // nothing
+<span class="nc" id="L439">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
+            // nothing
+<span class="nc" id="L441">          }</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolBusinessQueryStillRunningException) {</span>
+<span class="nc" id="L443">          code = ErrorCode.QueryStillRunning;</span>
+          // nothing is to be done
+<span class="nc" id="L445">          logger.error(&quot;Will close channel since &quot;, exception);</span>
+<span class="nc" id="L446">          serverHandler.getLocalChannelReference().close();</span>
+<span class="nc" id="L447">          serverHandler.getSession().setStatus(56);</span>
+<span class="nc" id="L448">          return;</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolBusinessRemoteFileNotFoundException) {</span>
+<span class="nc" id="L450">          code = ErrorCode.FileNotFound;</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">        } else if (exception instanceof OpenR66RunnerException) {</span>
+<span class="nc" id="L452">          code = ErrorCode.ExternalOp;</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">        } else if (exception instanceof OpenR66RunnerErrorException) {</span>
+<span class="nc" id="L454">          code = ErrorCode.ExternalOp;</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolNotAuthenticatedException) {</span>
+<span class="nc" id="L456">          code = ErrorCode.BadAuthent;</span>
+<span class="nc" id="L457">          isAnswered = true;</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolNetworkException) {</span>
+<span class="nc" id="L459">          code = ErrorCode.Disconnection;</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">          if (runner != null) {</span>
+<span class="nc" id="L461">            final R66Result finalValue = new R66Result(</span>
+                new OpenR66ProtocolSystemException(
+<span class="nc" id="L463">                    Messages.getString(&quot;LocalServerHandler.2&quot;)),</span>
+                //$NON-NLS-1$
+<span class="nc" id="L465">                serverHandler.getSession(), true, code, runner);</span>
+            try {
+<span class="nc" id="L467">              serverHandler.tryFinalizeRequest(finalValue);</span>
+<span class="nc" id="L468">            } catch (final OpenR66Exception ignored) {</span>
+              // nothing
+<span class="nc" id="L470">            }</span>
+<span class="nc" id="L471">          }</span>
+<span class="nc bnc" id="L472" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolRemoteShutdownException) {</span>
+<span class="nc" id="L473">          code = ErrorCode.RemoteShutdown;</span>
+<span class="nc bnc" id="L474" title="All 2 branches missed.">          if (runner != null) {</span>
+<span class="nc" id="L475">            runner.stopOrCancelRunner(code);</span>
+          }
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        } else if (exception instanceof OpenR66ProtocolNoDataException) {</span>
+<span class="nc" id="L478">          code = ErrorCode.FileNotFound;</span>
+        } else {
+<span class="nc bnc" id="L480" title="All 2 branches missed.">          if (runner != null) {</span>
+<span class="nc bnc" id="L481" title="All 2 branches missed.">            switch (runner.getErrorInfo()) {</span>
+              case InitOk:
+              case PostProcessingOk:
+              case PreProcessingOk:
+              case Running:
+              case TransferOk:
+<span class="nc" id="L487">                code = ErrorCode.Internal;</span>
+<span class="nc" id="L488">                break;</span>
+              default:
+<span class="nc" id="L490">                code = runner.getErrorInfo();</span>
+            }
+          } else {
+<span class="nc" id="L493">            code = ErrorCode.Internal;</span>
+          }
+        }
+<span class="nc bnc" id="L496" title="All 6 branches missed.">        if (!isAnswered &amp;&amp;</span>
+            !(exception instanceof OpenR66ProtocolBusinessNoWriteBackException) &amp;&amp;
+            !(exception instanceof OpenR66ProtocolNoConnectionException)) {
+<span class="nc bnc" id="L499" title="All 4 branches missed.">          if (code == null || code == ErrorCode.Internal) {</span>
+<span class="nc" id="L500">            code = ErrorCode.RemoteError;</span>
+          }
+<span class="nc" id="L502">          final ErrorPacket errorPacket =</span>
+<span class="nc" id="L503">              new ErrorPacket(exception.getMessage(), code.getCode(),</span>
+                              ErrorPacket.FORWARDCLOSECODE);
+          try {
+<span class="nc bnc" id="L506" title="All 2 branches missed.">            if (serverHandler.getLocalChannelReference() != null) {</span>
+<span class="nc" id="L507">              ChannelUtils.writeAbstractLocalPacket(</span>
+<span class="nc" id="L508">                  serverHandler.getLocalChannelReference(), errorPacket, false);</span>
+            }
+<span class="nc" id="L510">          } catch (final OpenR66ProtocolPacketException e1) {</span>
+            // should not be
+<span class="nc" id="L512">          }</span>
+        }
+<span class="nc" id="L514">        final R66Result finalValue =</span>
+<span class="nc" id="L515">            new R66Result(exception, serverHandler.getSession(), true, code,</span>
+                          runner);
+        try {
+<span class="nc" id="L518">          serverHandler.getSession().setFinalizeTransfer(false, finalValue);</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">          if (serverHandler.getLocalChannelReference() != null) {</span>
+<span class="nc" id="L520">            serverHandler.getLocalChannelReference()</span>
+<span class="nc" id="L521">                         .invalidateRequest(finalValue);</span>
+          }
+<span class="nc" id="L523">        } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc bnc" id="L524" title="All 2 branches missed.">          if (serverHandler.getLocalChannelReference() != null) {</span>
+<span class="nc" id="L525">            serverHandler.getLocalChannelReference()</span>
+<span class="nc" id="L526">                         .invalidateRequest(finalValue);</span>
+          }
+<span class="nc" id="L528">        } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">          if (serverHandler.getLocalChannelReference() != null) {</span>
+<span class="nc" id="L530">            serverHandler.getLocalChannelReference()</span>
+<span class="nc" id="L531">                         .invalidateRequest(finalValue);</span>
+          }
+<span class="nc" id="L533">        }</span>
+      }
+<span class="nc bnc" id="L535" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
+<span class="nc" id="L536">        logger.error(&quot;Will close channel {}&quot;, exception.getMessage());</span>
+<span class="nc" id="L537">        ChannelCloseTimer.closeFutureTransaction(serverHandler);</span>
+<span class="nc" id="L538">        serverHandler.getSession().setStatus(56);</span>
+<span class="nc" id="L539">        return;</span>
+<span class="nc bnc" id="L540" title="All 2 branches missed.">      } else if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
+<span class="nc" id="L541">        logger.error(&quot;Will close channel {}&quot;, exception.getMessage());</span>
+<span class="nc" id="L542">        ChannelCloseTimer.closeFutureTransaction(serverHandler);</span>
+<span class="nc" id="L543">        serverHandler.getSession().setStatus(57);</span>
+<span class="nc" id="L544">        return;</span>
+      }
+<span class="nc" id="L546">      serverHandler.getSession().setStatus(58);</span>
+<span class="nc" id="L547">      ChannelCloseTimer.closeFutureTransaction(serverHandler);</span>
+<span class="nc" id="L548">    } else {</span>
+      // Nothing to do
+<span class="nc" id="L550">      serverHandler.getSession().setStatus(59);</span>
+    }
+<span class="nc" id="L552">  }</span>
+
+  private static void shutdownFromException(final TransferActions serverHandler,
+                                            final OpenR66Exception exception) {
+<span class="nc" id="L556">    WaarpShutdownHook.shutdownWillStart();</span>
+<span class="nc" id="L557">    logger.warn(Messages.getString(&quot;LocalServerHandler.0&quot;) +</span>
+                //$NON-NLS-1$
+<span class="nc" id="L559">                serverHandler.getSession().getAuth().getUser());</span>
+<span class="nc bnc" id="L560" title="All 2 branches missed.">    if (serverHandler.getLocalChannelReference() != null) {</span>
+<span class="nc" id="L561">      final R66Result finalValue =</span>
+<span class="nc" id="L562">          new R66Result(exception, serverHandler.getSession(), true,</span>
+                        ErrorCode.Shutdown,
+<span class="nc" id="L564">                        serverHandler.getSession().getRunner());</span>
+      try {
+<span class="nc" id="L566">        serverHandler.tryFinalizeRequest(finalValue);</span>
+<span class="nc" id="L567">      } catch (final OpenR66RunnerErrorException ignored) {</span>
+        // ignore
+<span class="nc" id="L569">      } catch (final OpenR66ProtocolSystemException ignored) {</span>
+        // ignore
+<span class="nc" id="L571">      }</span>
+<span class="nc" id="L572">      if (!serverHandler.getLocalChannelReference().getFutureRequest()</span>
+<span class="nc bnc" id="L573" title="All 2 branches missed.">                        .isDone()) {</span>
+        try {
+<span class="nc" id="L575">          serverHandler.getSession().setFinalizeTransfer(false, finalValue);</span>
+<span class="nc" id="L576">        } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L577">          serverHandler.getLocalChannelReference()</span>
+<span class="nc" id="L578">                       .invalidateRequest(finalValue);</span>
+<span class="nc" id="L579">        } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L580">          serverHandler.getLocalChannelReference()</span>
+<span class="nc" id="L581">                       .invalidateRequest(finalValue);</span>
+<span class="nc" id="L582">        }</span>
+      }
+    }
+    // dont'close, thread will do
+<span class="nc" id="L586">    ChannelUtils.startShutdown();</span>
+    // set global shutdown info and before close, send a valid
+    // shutdown to all
+<span class="nc" id="L589">    serverHandler.getSession().setStatus(54);</span>
+<span class="nc" id="L590">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

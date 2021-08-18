@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DBRuleDAO.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.dao.database</a> &gt; <span class="el_source">DBRuleDAO.java</span></div><h1>DBRuleDAO.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.dao.database;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.lru.SynchronizedLruCache;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.RuleTask;
+import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.waarp.openr66.dao.DAOFactory.*;
+
+/**
+ * Implementation of RuleDAO for standard SQL databases
+ */
+public class DBRuleDAO extends StatementExecutor&lt;Rule&gt; implements RuleDAO {
+  public static final String ID_FIELD = &quot;idrule&quot;;
+  public static final String HOSTIDS_FIELD = &quot;hostids&quot;;
+  public static final String MODE_TRANS_FIELD = &quot;modetrans&quot;;
+  public static final String RECV_PATH_FIELD = &quot;recvpath&quot;;
+  public static final String SEND_PATH_FIELD = &quot;sendpath&quot;;
+  public static final String ARCHIVE_PATH_FIELD = &quot;archivepath&quot;;
+  public static final String WORK_PATH_FIELD = &quot;workpath&quot;;
+  public static final String R_PRE_TASKS_FIELD = &quot;rpretasks&quot;;
+  public static final String R_POST_TASKS_FIELD = &quot;rposttasks&quot;;
+  public static final String R_ERROR_TASKS_FIELD = &quot;rerrortasks&quot;;
+  public static final String S_PRE_TASKS_FIELD = &quot;spretasks&quot;;
+  public static final String S_POST_TASKS_FIELD = &quot;sposttasks&quot;;
+  public static final String S_ERROR_TASKS_FIELD = &quot;serrortasks&quot;;
+  public static final String UPDATED_INFO_FIELD = &quot;updatedinfo&quot;;
+
+  public static final String TABLE = &quot;rules&quot;;
+  public static final String TASK_NODE = &quot;task&quot;;
+  public static final String TYPE_FIELD = &quot;type&quot;;
+  public static final String PATH_FIELD = &quot;path&quot;;
+  public static final String DELAY_FIELD = &quot;delay&quot;;
+
+  protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
+  protected static final String SQL_DELETE =
+      &quot;DELETE FROM &quot; + TABLE + WHERE + ID_FIELD + PARAMETER;
+  protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
+  protected static final String SQL_EXIST =
+      &quot;SELECT 1 FROM &quot; + TABLE + WHERE + ID_FIELD + PARAMETER;
+  protected static final String SQL_SELECT =
+      &quot;SELECT * FROM &quot; + TABLE + WHERE + ID_FIELD + PARAMETER;
+  protected static final String SQL_INSERT =
+      &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + ID_FIELD + &quot;, &quot; + HOSTIDS_FIELD + &quot;, &quot; +
+      MODE_TRANS_FIELD + &quot;, &quot; + RECV_PATH_FIELD + &quot;, &quot; + SEND_PATH_FIELD +
+      &quot;, &quot; + ARCHIVE_PATH_FIELD + &quot;, &quot; + WORK_PATH_FIELD + &quot;, &quot; +
+      R_PRE_TASKS_FIELD + &quot;, &quot; + R_POST_TASKS_FIELD + &quot;, &quot; +
+      R_ERROR_TASKS_FIELD + &quot;, &quot; + S_PRE_TASKS_FIELD + &quot;, &quot; +
+      S_POST_TASKS_FIELD + &quot;, &quot; + S_ERROR_TASKS_FIELD + &quot;, &quot; +
+      UPDATED_INFO_FIELD + &quot;) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)&quot;;
+
+  protected static final String SQL_UPDATE =
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + ID_FIELD + PARAMETER_COMMA + HOSTIDS_FIELD +
+      PARAMETER_COMMA + MODE_TRANS_FIELD + PARAMETER_COMMA + RECV_PATH_FIELD +
+      PARAMETER_COMMA + SEND_PATH_FIELD + PARAMETER_COMMA + ARCHIVE_PATH_FIELD +
+      PARAMETER_COMMA + WORK_PATH_FIELD + PARAMETER_COMMA + R_PRE_TASKS_FIELD +
+      PARAMETER_COMMA + R_POST_TASKS_FIELD + PARAMETER_COMMA +
+      R_ERROR_TASKS_FIELD + PARAMETER_COMMA + S_PRE_TASKS_FIELD +
+      PARAMETER_COMMA + S_POST_TASKS_FIELD + PARAMETER_COMMA +
+      S_ERROR_TASKS_FIELD + PARAMETER_COMMA + UPDATED_INFO_FIELD +
+      &quot; = ? WHERE &quot; + ID_FIELD + PARAMETER;
+
+  /**
+   * Hashmap for Rule
+   */
+  private static final SynchronizedLruCache&lt;String, Rule&gt;
+<span class="nc" id="L107">      reentrantConcurrentHashMap =</span>
+      new SynchronizedLruCache&lt;String, Rule&gt;(500, 180000);
+  protected static final String HOSTID = &quot;hostid&quot;;
+
+  public DBRuleDAO(final Connection con) {
+<span class="nc" id="L112">    super(con);</span>
+<span class="nc" id="L113">  }</span>
+
+  @Override
+  protected final boolean isCachedEnable() {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
+  }
+
+  @Override
+  protected final SynchronizedLruCache&lt;String, Rule&gt; getCache() {
+<span class="nc" id="L122">    return reentrantConcurrentHashMap;</span>
+  }
+
+  @Override
+  protected final String getId(final Rule e1) {
+<span class="nc" id="L127">    return e1.getName();</span>
+  }
+
+  @Override
+  protected final String getSelectRequest() {
+<span class="nc" id="L132">    return SQL_SELECT;</span>
+  }
+
+  @Override
+  protected final String getGetAllRequest() {
+<span class="nc" id="L137">    return SQL_GET_ALL;</span>
+  }
+
+  @Override
+  protected final String getCountRequest() {
+<span class="nc" id="L142">    return SQL_COUNT_ALL;</span>
+  }
+
+  @Override
+  protected final String getExistRequest() {
+<span class="nc" id="L147">    return SQL_EXIST;</span>
+  }
+
+  @Override
+  protected final Object[] getInsertValues(final Rule rule) {
+<span class="nc" id="L152">    return new Object[] {</span>
+<span class="nc" id="L153">        rule.getName(), rule.getXMLHostids(), rule.getMode(),</span>
+<span class="nc" id="L154">        rule.getRecvPath(), rule.getSendPath(), rule.getArchivePath(),</span>
+<span class="nc" id="L155">        rule.getWorkPath(), rule.getXMLRPreTasks(), rule.getXMLRPostTasks(),</span>
+<span class="nc" id="L156">        rule.getXMLRErrorTasks(), rule.getXMLSPreTasks(),</span>
+<span class="nc" id="L157">        rule.getXMLSPostTasks(), rule.getXMLSErrorTasks(),</span>
+<span class="nc" id="L158">        rule.getUpdatedInfo().ordinal()</span>
+    };
+  }
+
+  @Override
+  protected final String getInsertRequest() {
+<span class="nc" id="L164">    return SQL_INSERT;</span>
+  }
+
+  @Override
+  protected final Object[] getUpdateValues(final Rule rule) {
+<span class="nc" id="L169">    return new Object[] {</span>
+<span class="nc" id="L170">        rule.getName(), rule.getXMLHostids(), rule.getMode(),</span>
+<span class="nc" id="L171">        rule.getRecvPath(), rule.getSendPath(), rule.getArchivePath(),</span>
+<span class="nc" id="L172">        rule.getWorkPath(), rule.getXMLRPreTasks(), rule.getXMLRPostTasks(),</span>
+<span class="nc" id="L173">        rule.getXMLRErrorTasks(), rule.getXMLSPreTasks(),</span>
+<span class="nc" id="L174">        rule.getXMLSPostTasks(), rule.getXMLSErrorTasks(),</span>
+<span class="nc" id="L175">        rule.getUpdatedInfo().ordinal(), rule.getName()</span>
+    };
+  }
+
+  @Override
+  protected final String getUpdateRequest() {
+<span class="nc" id="L181">    return SQL_UPDATE;</span>
+  }
+
+  @Override
+  protected final String getDeleteRequest() {
+<span class="nc" id="L186">    return SQL_DELETE;</span>
+  }
+
+  @Override
+  protected final String getDeleteAllRequest() {
+<span class="nc" id="L191">    return SQL_DELETE_ALL;</span>
+  }
+
+  @Override
+  public final Rule getFromResultSet(final ResultSet set)
+      throws SQLException, DAOConnectionException {
+    try {
+<span class="nc" id="L198">      return new Rule(set.getString(ID_FIELD), set.getInt(MODE_TRANS_FIELD),</span>
+<span class="nc" id="L199">                      retrieveHostids(set.getString(HOSTIDS_FIELD)),</span>
+<span class="nc" id="L200">                      set.getString(RECV_PATH_FIELD),</span>
+<span class="nc" id="L201">                      set.getString(SEND_PATH_FIELD),</span>
+<span class="nc" id="L202">                      set.getString(ARCHIVE_PATH_FIELD),</span>
+<span class="nc" id="L203">                      set.getString(WORK_PATH_FIELD),</span>
+<span class="nc" id="L204">                      retrieveTasks(set.getString(R_PRE_TASKS_FIELD)),</span>
+<span class="nc" id="L205">                      retrieveTasks(set.getString(R_POST_TASKS_FIELD)),</span>
+<span class="nc" id="L206">                      retrieveTasks(set.getString(R_ERROR_TASKS_FIELD)),</span>
+<span class="nc" id="L207">                      retrieveTasks(set.getString(S_PRE_TASKS_FIELD)),</span>
+<span class="nc" id="L208">                      retrieveTasks(set.getString(S_POST_TASKS_FIELD)),</span>
+<span class="nc" id="L209">                      retrieveTasks(set.getString(S_ERROR_TASKS_FIELD)),</span>
+<span class="nc" id="L210">                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="nc" id="L211">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L212">      throw new SQLException(e);</span>
+    }
+  }
+
+  private List&lt;String&gt; retrieveHostids(final String xml)
+      throws DAOConnectionException {
+<span class="nc" id="L218">    final ArrayList&lt;String&gt; res = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(xml)) {</span>
+<span class="nc" id="L220">      return res;</span>
+    }
+    final Document document;
+    try {
+<span class="nc" id="L224">      final InputStream stream =</span>
+<span class="nc" id="L225">          new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L226">      final DocumentBuilderFactory factory = getDocumentBuilderFactory();</span>
+<span class="nc" id="L227">      document = factory.newDocumentBuilder().parse(stream);</span>
+<span class="nc" id="L228">    } catch (final Exception e) {</span>
+<span class="nc" id="L229">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L230">    }</span>
+<span class="nc" id="L231">    document.getDocumentElement().normalize();</span>
+
+<span class="nc" id="L233">    final NodeList hostsList = document.getElementsByTagName(HOSTID);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">    for (int i = 0; i &lt; hostsList.getLength(); i++) {</span>
+<span class="nc" id="L235">      res.add(hostsList.item(i).getTextContent());</span>
+    }
+<span class="nc" id="L237">    return res;</span>
+  }
+
+  private List&lt;RuleTask&gt; retrieveTasks(final String xml)
+      throws DAOConnectionException {
+<span class="nc" id="L242">    final ArrayList&lt;RuleTask&gt; res = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(xml)) {</span>
+<span class="nc" id="L244">      return res;</span>
+    }
+    final Document document;
+    try {
+<span class="nc" id="L248">      final InputStream stream =</span>
+<span class="nc" id="L249">          new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L250">      final DocumentBuilderFactory factory = getDocumentBuilderFactory();</span>
+<span class="nc" id="L251">      document = factory.newDocumentBuilder().parse(stream);</span>
+<span class="nc" id="L252">    } catch (final Exception e) {</span>
+<span class="nc" id="L253">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L254">    }</span>
+<span class="nc" id="L255">    document.getDocumentElement().normalize();</span>
+
+<span class="nc" id="L257">    final NodeList tasksList = document.getElementsByTagName(TASK_NODE);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    for (int i = 0; i &lt; tasksList.getLength(); i++) {</span>
+<span class="nc" id="L259">      final Node node = tasksList.item(i);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      if (node.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="nc" id="L261">        final Element e = (Element) node;</span>
+<span class="nc" id="L262">        final String type =</span>
+<span class="nc" id="L263">            e.getElementsByTagName(TYPE_FIELD).item(0).getTextContent();</span>
+<span class="nc" id="L264">        final String path =</span>
+<span class="nc" id="L265">            e.getElementsByTagName(PATH_FIELD).item(0).getTextContent();</span>
+<span class="nc" id="L266">        final int delay = Integer.parseInt(</span>
+<span class="nc" id="L267">            e.getElementsByTagName(DELAY_FIELD).item(0).getTextContent());</span>
+<span class="nc" id="L268">        res.add(new RuleTask(type, path, delay));</span>
+      }
+    }
+<span class="nc" id="L271">    return res;</span>
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+<span class="nc" id="L276">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

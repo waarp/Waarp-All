@@ -23,6 +23,8 @@ package org.waarp.openr66.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Rules.Tasks;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,9 +34,11 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.waarp.common.database.data.AbstractDbData.*;
 import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
 
 /**
@@ -102,62 +106,62 @@ public class Rule {
   @JsonIgnore
   private List&lt;RuleTask&gt; sErrorTasks;
 
-<span class="fc" id="L105">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
+<span class="nc" id="L109">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
    * Empty constructor
    */
-<span class="fc" id="L111">  public Rule() {</span>
-<span class="fc" id="L112">    hostids = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L113">    rPreTasks = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="fc" id="L114">    rPostTasks = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="fc" id="L115">    rErrorTasks = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="fc" id="L116">    sPreTasks = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="fc" id="L117">    sPostTasks = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="fc" id="L118">    sErrorTasks = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="fc" id="L119">  }</span>
+<span class="nc" id="L115">  public Rule() {</span>
+<span class="nc" id="L116">    hostids = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L117">    rPreTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L118">    rPostTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L119">    rErrorTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L120">    sPreTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L121">    sPostTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L122">    sErrorTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="nc" id="L123">  }</span>
 
   @XmlElementDecl(name = XRPRETASKS)
   @XmlElement(name = XRPRETASKS)
   @JsonIgnore
-  public Tasks get_rPreTasks() {
-<span class="nc" id="L125">    return new Tasks(rPreTasks);</span>
+  public final Tasks get_rPreTasks() {
+<span class="nc" id="L129">    return new Tasks(rPreTasks);</span>
   }
 
   @XmlElementDecl(name = XRPOSTTASKS)
   @XmlElement(name = XRPOSTTASKS)
   @JsonIgnore
-  public Tasks get_rPostTasks() {
-<span class="nc" id="L132">    return new Tasks(rPostTasks);</span>
+  public final Tasks get_rPostTasks() {
+<span class="nc" id="L136">    return new Tasks(rPostTasks);</span>
   }
 
   @XmlElementDecl(name = XRERRORTASKS)
   @XmlElement(name = XRERRORTASKS)
   @JsonIgnore
-  public Tasks get_rErrorTasks() {
-<span class="nc" id="L139">    return new Tasks(rErrorTasks);</span>
+  public final Tasks get_rErrorTasks() {
+<span class="nc" id="L143">    return new Tasks(rErrorTasks);</span>
   }
 
   @XmlElementDecl(name = XSPRETASKS)
   @XmlElement(name = XSPRETASKS)
   @JsonIgnore
-  public Tasks get_sPreTasks() {
-<span class="nc" id="L146">    return new Tasks(sPreTasks);</span>
+  public final Tasks get_sPreTasks() {
+<span class="nc" id="L150">    return new Tasks(sPreTasks);</span>
   }
 
   @XmlElementDecl(name = XSPOSTTASKS)
   @XmlElement(name = XSPOSTTASKS)
   @JsonIgnore
-  public Tasks get_sPostTasks() {
-<span class="nc" id="L153">    return new Tasks(sPostTasks);</span>
+  public final Tasks get_sPostTasks() {
+<span class="nc" id="L157">    return new Tasks(sPostTasks);</span>
   }
 
   @XmlElementDecl(name = XSERRORTASKS)
   @XmlElement(name = XSERRORTASKS)
   @JsonIgnore
-  public Tasks get_sErrorTasks() {
-<span class="nc" id="L160">    return new Tasks(sErrorTasks);</span>
+  public final Tasks get_sErrorTasks() {
+<span class="nc" id="L164">    return new Tasks(sErrorTasks);</span>
   }
 
   public Rule(final String name, final int mode, final List&lt;String&gt; hostids,
@@ -166,224 +170,239 @@ public class Rule {
               final List&lt;RuleTask&gt; rPre, final List&lt;RuleTask&gt; rPost,
               final List&lt;RuleTask&gt; rError, final List&lt;RuleTask&gt; sPre,
               final List&lt;RuleTask&gt; sPost, final List&lt;RuleTask&gt; sError,
-              final UpdatedInfo updatedInfo) {
-<span class="fc" id="L170">    this(name, mode, hostids, recvPath, sendPath, archivePath, workPath, rPre,</span>
+              final UpdatedInfo updatedInfo) throws WaarpDatabaseSqlException {
+<span class="nc" id="L174">    this(name, mode, hostids, recvPath, sendPath, archivePath, workPath, rPre,</span>
          rPost, rError, sPre, sPost, sError);
-<span class="fc" id="L172">    this.updatedInfo = updatedInfo;</span>
-<span class="fc" id="L173">  }</span>
+<span class="nc" id="L176">    this.updatedInfo = updatedInfo;</span>
+<span class="nc" id="L177">    checkValues();</span>
+<span class="nc" id="L178">  }</span>
 
   public Rule(final String name, final int mode, final List&lt;String&gt; hostids,
               final String recvPath, final String sendPath,
               final String archivePath, final String workPath,
               final List&lt;RuleTask&gt; rPre, final List&lt;RuleTask&gt; rPost,
               final List&lt;RuleTask&gt; rError, final List&lt;RuleTask&gt; sPre,
-<span class="fc" id="L180">              final List&lt;RuleTask&gt; sPost, final List&lt;RuleTask&gt; sError) {</span>
-<span class="fc" id="L181">    this.name = name;</span>
-<span class="fc" id="L182">    this.mode = mode;</span>
-<span class="fc" id="L183">    this.hostids = hostids;</span>
-<span class="fc" id="L184">    this.recvPath = checkPath(recvPath);</span>
-<span class="fc" id="L185">    this.sendPath = checkPath(sendPath);</span>
-<span class="fc" id="L186">    this.archivePath = checkPath(archivePath);</span>
-<span class="fc" id="L187">    this.workPath = checkPath(workPath);</span>
-<span class="fc" id="L188">    rPreTasks = rPre;</span>
-<span class="fc" id="L189">    rPostTasks = rPost;</span>
-<span class="fc" id="L190">    rErrorTasks = rError;</span>
-<span class="fc" id="L191">    sPreTasks = sPre;</span>
-<span class="fc" id="L192">    sPostTasks = sPost;</span>
-<span class="fc" id="L193">    sErrorTasks = sError;</span>
-<span class="fc" id="L194">  }</span>
+              final List&lt;RuleTask&gt; sPost, final List&lt;RuleTask&gt; sError)
+<span class="nc" id="L186">      throws WaarpDatabaseSqlException {</span>
+<span class="nc" id="L187">    this.name = name;</span>
+<span class="nc" id="L188">    this.mode = mode;</span>
+<span class="nc" id="L189">    this.hostids = hostids;</span>
+<span class="nc" id="L190">    this.recvPath = checkPath(recvPath);</span>
+<span class="nc" id="L191">    this.sendPath = checkPath(sendPath);</span>
+<span class="nc" id="L192">    this.archivePath = checkPath(archivePath);</span>
+<span class="nc" id="L193">    this.workPath = checkPath(workPath);</span>
+<span class="nc" id="L194">    rPreTasks = rPre;</span>
+<span class="nc" id="L195">    rPostTasks = rPost;</span>
+<span class="nc" id="L196">    rErrorTasks = rError;</span>
+<span class="nc" id="L197">    sPreTasks = sPre;</span>
+<span class="nc" id="L198">    sPostTasks = sPost;</span>
+<span class="nc" id="L199">    sErrorTasks = sError;</span>
+<span class="nc" id="L200">    checkValues();</span>
+<span class="nc" id="L201">  }</span>
 
   public Rule(final String name, final int mode, final List&lt;String&gt; hostids,
               final String recvPath, final String sendPath,
-              final String archivePath, final String workPath) {
-<span class="fc" id="L199">    this(name, mode, hostids, recvPath, sendPath, archivePath, workPath,</span>
+              final String archivePath, final String workPath)
+      throws WaarpDatabaseSqlException {
+<span class="nc" id="L207">    this(name, mode, hostids, recvPath, sendPath, archivePath, workPath,</span>
          new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;(),
          new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;(),
          new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;());
-<span class="fc" id="L203">  }</span>
+<span class="nc" id="L211">  }</span>
 
-  public Rule(final String name, final int mode, final List&lt;String&gt; hostids) {
-<span class="fc" id="L206">    this(name, mode, hostids, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;);</span>
-<span class="fc" id="L207">  }</span>
+  public Rule(final String name, final int mode, final List&lt;String&gt; hostids)
+      throws WaarpDatabaseSqlException {
+<span class="nc" id="L215">    this(name, mode, hostids, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;);</span>
+<span class="nc" id="L216">  }</span>
 
-  public Rule(final String name, final int mode) {
-<span class="fc" id="L210">    this(name, mode, new ArrayList&lt;String&gt;());</span>
-<span class="fc" id="L211">  }</span>
+  public Rule(final String name, final int mode)
+      throws WaarpDatabaseSqlException {
+<span class="nc" id="L220">    this(name, mode, new ArrayList&lt;String&gt;());</span>
+<span class="nc" id="L221">  }</span>
 
-  public boolean isAuthorized(final String hostid) {
-<span class="nc" id="L214">    return hostids.contains(hostid);</span>
+  @JsonIgnore
+  public final void checkValues() throws WaarpDatabaseSqlException {
+<span class="nc" id="L225">    validateLength(Types.NVARCHAR, name);</span>
+<span class="nc" id="L226">    validateLength(Types.VARCHAR, recvPath, sendPath, archivePath, workPath);</span>
+<span class="nc" id="L227">    validateLength(Types.LONGVARCHAR, getXMLHostids(), getXMLRErrorTasks(),</span>
+<span class="nc" id="L228">                   getXMLRPreTasks(), getXMLRPostTasks(), getXMLSErrorTasks(),</span>
+<span class="nc" id="L229">                   getXMLSPreTasks(), getXMLSPostTasks());</span>
+<span class="nc" id="L230">  }</span>
+
+  public final boolean isAuthorized(final String hostid) {
+<span class="nc" id="L233">    return hostids.contains(hostid);</span>
   }
 
   @JsonProperty(&quot;HOSTIDS&quot;)
-  public String getXMLHostids() {
-<span class="fc" id="L219">    final StringBuilder res = new StringBuilder(&quot;&lt;hostids&gt;&quot;);</span>
-<span class="fc bfc" id="L220" title="All 2 branches covered.">    for (final String hostid : hostids) {</span>
-<span class="fc" id="L221">      res.append(&quot;&lt;hostid&gt;&quot;).append(hostid).append(&quot;&lt;/hostid&gt;&quot;);</span>
-<span class="fc" id="L222">    }</span>
-<span class="fc" id="L223">    return res.append(&quot;&lt;/hostids&gt;&quot;).toString();</span>
+  public final String getXMLHostids() {
+<span class="nc" id="L238">    final StringBuilder res = new StringBuilder(&quot;&lt;hostids&gt;&quot;);</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    for (final String hostid : hostids) {</span>
+<span class="nc" id="L240">      res.append(&quot;&lt;hostid&gt;&quot;).append(hostid).append(&quot;&lt;/hostid&gt;&quot;);</span>
+<span class="nc" id="L241">    }</span>
+<span class="nc" id="L242">    return res.append(&quot;&lt;/hostids&gt;&quot;).toString();</span>
   }
 
   @JsonProperty(&quot;RPRETASKS&quot;)
-  public String getXMLRPreTasks() {
-<span class="fc" id="L228">    return getXMLTasks(rPreTasks);</span>
+  public final String getXMLRPreTasks() {
+<span class="nc" id="L247">    return getXMLTasks(rPreTasks);</span>
   }
 
   @JsonProperty(&quot;RPOSTTASKS&quot;)
-  public String getXMLRPostTasks() {
-<span class="fc" id="L233">    return getXMLTasks(rPostTasks);</span>
+  public final String getXMLRPostTasks() {
+<span class="nc" id="L252">    return getXMLTasks(rPostTasks);</span>
   }
 
   @JsonProperty(&quot;RERRORTASKS&quot;)
-  public String getXMLRErrorTasks() {
-<span class="fc" id="L238">    return getXMLTasks(rErrorTasks);</span>
+  public final String getXMLRErrorTasks() {
+<span class="nc" id="L257">    return getXMLTasks(rErrorTasks);</span>
   }
 
   @JsonProperty(&quot;SPRETASKS&quot;)
-  public String getXMLSPreTasks() {
-<span class="fc" id="L243">    return getXMLTasks(sPreTasks);</span>
+  public final String getXMLSPreTasks() {
+<span class="nc" id="L262">    return getXMLTasks(sPreTasks);</span>
   }
 
   @JsonProperty(&quot;SPOSTTASKS&quot;)
-  public String getXMLSPostTasks() {
-<span class="fc" id="L248">    return getXMLTasks(sPostTasks);</span>
+  public final String getXMLSPostTasks() {
+<span class="nc" id="L267">    return getXMLTasks(sPostTasks);</span>
   }
 
   @JsonProperty(&quot;SERRORTASKS&quot;)
-  public String getXMLSErrorTasks() {
-<span class="fc" id="L253">    return getXMLTasks(sErrorTasks);</span>
+  public final String getXMLSErrorTasks() {
+<span class="nc" id="L272">    return getXMLTasks(sErrorTasks);</span>
   }
 
   private String getXMLTasks(final List&lt;RuleTask&gt; tasks) {
-<span class="fc" id="L257">    final StringBuilder res = new StringBuilder(&quot;&lt;tasks&gt;&quot;);</span>
-<span class="fc bfc" id="L258" title="All 2 branches covered.">    for (final RuleTask task : tasks) {</span>
-<span class="fc" id="L259">      res.append(task.getXML());</span>
-<span class="fc" id="L260">    }</span>
-<span class="fc" id="L261">    return res.append(&quot;&lt;/tasks&gt;&quot;).toString();</span>
+<span class="nc" id="L276">    final StringBuilder res = new StringBuilder(&quot;&lt;tasks&gt;&quot;);</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">    for (final RuleTask task : tasks) {</span>
+<span class="nc" id="L278">      res.append(task.getXML());</span>
+<span class="nc" id="L279">    }</span>
+<span class="nc" id="L280">    return res.append(&quot;&lt;/tasks&gt;&quot;).toString();</span>
   }
 
-  public String getName() {
-<span class="fc" id="L265">    return name;</span>
+  public final String getName() {
+<span class="nc" id="L284">    return name;</span>
   }
 
-  public void setName(final String name) {
-<span class="fc" id="L269">    this.name = name;</span>
-<span class="fc" id="L270">  }</span>
+  public final void setName(final String name) {
+<span class="nc" id="L288">    this.name = name;</span>
+<span class="nc" id="L289">  }</span>
 
-  public int getMode() {
-<span class="fc" id="L273">    return mode;</span>
+  public final int getMode() {
+<span class="nc" id="L292">    return mode;</span>
   }
 
-  public void setMode(final int mode) {
-<span class="fc" id="L277">    this.mode = mode;</span>
-<span class="fc" id="L278">  }</span>
+  public final void setMode(final int mode) {
+<span class="nc" id="L296">    this.mode = mode;</span>
+<span class="nc" id="L297">  }</span>
 
-  public List&lt;String&gt; getHostids() {
-<span class="fc" id="L281">    return hostids;</span>
+  public final List&lt;String&gt; getHostids() {
+<span class="nc" id="L300">    return hostids;</span>
   }
 
-  public void setHostids(final List&lt;String&gt; hostids) {
-<span class="fc" id="L285">    this.hostids = hostids;</span>
-<span class="fc" id="L286">  }</span>
+  public final void setHostids(final List&lt;String&gt; hostids) {
+<span class="nc" id="L304">    this.hostids = hostids;</span>
+<span class="nc" id="L305">  }</span>
 
   private String checkPath(final String path) {
-<span class="fc bfc" id="L289" title="All 4 branches covered.">    if (path == null || path.trim().isEmpty()) {</span>
-<span class="fc" id="L290">      return &quot;&quot;;</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(path)) {</span>
+<span class="nc" id="L309">      return &quot;&quot;;</span>
     }
-<span class="fc" id="L292">    return path.replace(&quot;//&quot;, &quot;/&quot;).replaceAll(&quot;[\\\\]+&quot;, &quot;\\\\&quot;);</span>
+<span class="nc" id="L311">    return path.replace(&quot;//&quot;, &quot;/&quot;).replaceAll(&quot;[\\\\]+&quot;, &quot;\\\\&quot;);</span>
   }
 
-  public String getRecvPath() {
-<span class="fc" id="L296">    return recvPath;</span>
+  public final String getRecvPath() {
+<span class="nc" id="L315">    return recvPath;</span>
   }
 
-  public void setRecvPath(final String recvPath) {
-<span class="fc" id="L300">    this.recvPath = checkPath(recvPath);</span>
-<span class="fc" id="L301">  }</span>
+  public final void setRecvPath(final String recvPath) {
+<span class="nc" id="L319">    this.recvPath = checkPath(recvPath);</span>
+<span class="nc" id="L320">  }</span>
 
-  public String getSendPath() {
-<span class="fc" id="L304">    return sendPath;</span>
+  public final String getSendPath() {
+<span class="nc" id="L323">    return sendPath;</span>
   }
 
-  public void setSendPath(final String sendPath) {
-<span class="fc" id="L308">    this.sendPath = checkPath(sendPath);</span>
-<span class="fc" id="L309">  }</span>
+  public final void setSendPath(final String sendPath) {
+<span class="nc" id="L327">    this.sendPath = checkPath(sendPath);</span>
+<span class="nc" id="L328">  }</span>
 
-  public String getArchivePath() {
-<span class="fc" id="L312">    return archivePath;</span>
+  public final String getArchivePath() {
+<span class="nc" id="L331">    return archivePath;</span>
   }
 
-  public void setArchivePath(final String archivePath) {
-<span class="fc" id="L316">    this.archivePath = checkPath(archivePath);</span>
-<span class="fc" id="L317">  }</span>
+  public final void setArchivePath(final String archivePath) {
+<span class="nc" id="L335">    this.archivePath = checkPath(archivePath);</span>
+<span class="nc" id="L336">  }</span>
 
-  public String getWorkPath() {
-<span class="fc" id="L320">    return workPath;</span>
+  public final String getWorkPath() {
+<span class="nc" id="L339">    return workPath;</span>
   }
 
-  public void setWorkPath(final String workPath) {
-<span class="fc" id="L324">    this.workPath = checkPath(workPath);</span>
-<span class="fc" id="L325">  }</span>
+  public final void setWorkPath(final String workPath) {
+<span class="nc" id="L343">    this.workPath = checkPath(workPath);</span>
+<span class="nc" id="L344">  }</span>
 
   @JsonIgnore
-  public List&lt;RuleTask&gt; getRPreTasks() {
-<span class="fc" id="L329">    return rPreTasks;</span>
+  public final List&lt;RuleTask&gt; getRPreTasks() {
+<span class="nc" id="L348">    return rPreTasks;</span>
   }
 
-  public void setRPreTasks(final List&lt;RuleTask&gt; rPreTasks) {
-<span class="fc" id="L333">    this.rPreTasks = rPreTasks;</span>
-<span class="fc" id="L334">  }</span>
+  public final void setRPreTasks(final List&lt;RuleTask&gt; rPreTasks) {
+<span class="nc" id="L352">    this.rPreTasks = rPreTasks;</span>
+<span class="nc" id="L353">  }</span>
 
   @JsonIgnore
-  public List&lt;RuleTask&gt; getRPostTasks() {
-<span class="fc" id="L338">    return rPostTasks;</span>
+  public final List&lt;RuleTask&gt; getRPostTasks() {
+<span class="nc" id="L357">    return rPostTasks;</span>
   }
 
-  public void setRPostTasks(final List&lt;RuleTask&gt; rPostTasks) {
-<span class="fc" id="L342">    this.rPostTasks = rPostTasks;</span>
-<span class="fc" id="L343">  }</span>
+  public final void setRPostTasks(final List&lt;RuleTask&gt; rPostTasks) {
+<span class="nc" id="L361">    this.rPostTasks = rPostTasks;</span>
+<span class="nc" id="L362">  }</span>
 
   @JsonIgnore
-  public List&lt;RuleTask&gt; getRErrorTasks() {
-<span class="fc" id="L347">    return rErrorTasks;</span>
+  public final List&lt;RuleTask&gt; getRErrorTasks() {
+<span class="nc" id="L366">    return rErrorTasks;</span>
   }
 
-  public void setRErrorTasks(final List&lt;RuleTask&gt; rErrorTasks) {
-<span class="fc" id="L351">    this.rErrorTasks = rErrorTasks;</span>
-<span class="fc" id="L352">  }</span>
+  public final void setRErrorTasks(final List&lt;RuleTask&gt; rErrorTasks) {
+<span class="nc" id="L370">    this.rErrorTasks = rErrorTasks;</span>
+<span class="nc" id="L371">  }</span>
 
   @JsonIgnore
-  public List&lt;RuleTask&gt; getSPreTasks() {
-<span class="fc" id="L356">    return sPreTasks;</span>
+  public final List&lt;RuleTask&gt; getSPreTasks() {
+<span class="nc" id="L375">    return sPreTasks;</span>
   }
 
-  public void setSPreTasks(final List&lt;RuleTask&gt; sPreTasks) {
-<span class="fc" id="L360">    this.sPreTasks = sPreTasks;</span>
-<span class="fc" id="L361">  }</span>
+  public final void setSPreTasks(final List&lt;RuleTask&gt; sPreTasks) {
+<span class="nc" id="L379">    this.sPreTasks = sPreTasks;</span>
+<span class="nc" id="L380">  }</span>
 
   @JsonIgnore
-  public List&lt;RuleTask&gt; getSPostTasks() {
-<span class="fc" id="L365">    return sPostTasks;</span>
+  public final List&lt;RuleTask&gt; getSPostTasks() {
+<span class="nc" id="L384">    return sPostTasks;</span>
   }
 
-  public void setSPostTasks(final List&lt;RuleTask&gt; sPostTasks) {
-<span class="fc" id="L369">    this.sPostTasks = sPostTasks;</span>
-<span class="fc" id="L370">  }</span>
+  public final void setSPostTasks(final List&lt;RuleTask&gt; sPostTasks) {
+<span class="nc" id="L388">    this.sPostTasks = sPostTasks;</span>
+<span class="nc" id="L389">  }</span>
 
   @JsonIgnore
-  public List&lt;RuleTask&gt; getSErrorTasks() {
-<span class="fc" id="L374">    return sErrorTasks;</span>
+  public final List&lt;RuleTask&gt; getSErrorTasks() {
+<span class="nc" id="L393">    return sErrorTasks;</span>
   }
 
-  public void setSErrorTasks(final List&lt;RuleTask&gt; sErrorTasks) {
-<span class="fc" id="L378">    this.sErrorTasks = sErrorTasks;</span>
-<span class="fc" id="L379">  }</span>
+  public final void setSErrorTasks(final List&lt;RuleTask&gt; sErrorTasks) {
+<span class="nc" id="L397">    this.sErrorTasks = sErrorTasks;</span>
+<span class="nc" id="L398">  }</span>
 
-  public UpdatedInfo getUpdatedInfo() {
-<span class="fc" id="L382">    return updatedInfo;</span>
+  public final UpdatedInfo getUpdatedInfo() {
+<span class="nc" id="L401">    return updatedInfo;</span>
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
-<span class="fc" id="L386">    updatedInfo = info;</span>
-<span class="fc" id="L387">  }</span>
+  public final void setUpdatedInfo(final UpdatedInfo info) {
+<span class="nc" id="L405">    updatedInfo = info;</span>
+<span class="nc" id="L406">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

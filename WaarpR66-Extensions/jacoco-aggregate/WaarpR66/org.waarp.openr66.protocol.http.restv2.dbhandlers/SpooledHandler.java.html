@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SpooledHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.dbhandlers</a> &gt; <span class="el_source">SpooledHandler.java</span></div><h1>SpooledHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.dbhandlers;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.cdap.http.AbstractHttpHandler;
+import io.cdap.http.HttpResponder;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.context.task.SpooledInformTask;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+import static javax.ws.rs.core.MediaType.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetTransfersParams.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
+
+/**
+ * This is the {@link AbstractHttpHandler} handling all requests made on the
+ * FileMonitor collection REST entry point.
+ */
+@Path(FILE_MONITOR_HANDLER_URI)
+public class SpooledHandler extends AbstractRestDbHandler {
+
+  /**
+   * The content of the 'Allow' header sent when an 'OPTIONS' request is made
+   * on the handler.
+   */
+  private static final io.netty.handler.codec.http.HttpHeaders OPTIONS_HEADERS;
+
+  static {
+<span class="nc" id="L70">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="nc" id="L71">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L72">    allow.add(HttpMethod.GET);</span>
+<span class="nc" id="L73">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L74">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="nc" id="L75">  }</span>
+
+  /**
+   * Initializes the handler with the given CRUD mask.
+   *
+   * @param crud the CRUD mask for this handler
+   */
+  public SpooledHandler(final byte crud) {
+<span class="nc" id="L83">    super(crud);</span>
+<span class="nc" id="L84">  }</span>
+
+  /**
+   * Method called to obtain a list of FileMonitors entry matching the different
+   * filters given as parameters of the
+   * query. The response is sent as a JSON array containing all the requested
+   * entries, unless an unexpected
+   * error prevents it or if the request is invalid.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the request
+   * @param nameStr the name of the FileMonitor or empty for all
+   * @param statusStr 0 or empty for all, 1 for active ones, -1 for inactive
+   *     ones
+   * @param countOrder if true is specified, it turns out to be a &quot;count&quot;
+   *     request only of current files
+   */
+  @GET
+  @Consumes(APPLICATION_FORM_URLENCODED)
+  @RequiredRole(ROLE.READONLY)
+  public final void filterTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @QueryParam(&quot;name&quot;) @DefaultValue(&quot;&quot;)
+                                   final String nameStr,
+                                   @QueryParam(STATUS) @DefaultValue(&quot;&quot;)
+                                   final String statusStr,
+                                   @QueryParam(COUNT_ORDER) @DefaultValue(&quot;&quot;)
+                                   final String countOrder) {
+<span class="nc" id="L112">    checkSanity(nameStr, statusStr, countOrder);</span>
+<span class="nc" id="L113">    boolean count = false;</span>
+    try {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (ParametersChecker.isNotEmpty(countOrder) &amp;&amp;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">          RestUtils.stringToBoolean(countOrder)) {</span>
+<span class="nc" id="L117">        count = true;</span>
+      }
+<span class="nc" id="L119">    } catch (final Exception ignore) {</span>
+      // Ignore
+<span class="nc" id="L121">    }</span>
+<span class="nc" id="L122">    final ArrayList&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+    final String argName;
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (nameStr.trim().isEmpty()) {</span>
+<span class="nc" id="L125">      argName = null;</span>
+    } else {
+<span class="nc" id="L127">      argName = nameStr.trim();</span>
+    }
+    int argStatus;
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (statusStr.trim().isEmpty()) {</span>
+<span class="nc" id="L131">      argStatus = 0;</span>
+    } else {
+      try {
+<span class="nc" id="L134">        argStatus = Integer.parseInt(statusStr.trim());</span>
+<span class="nc" id="L135">      } catch (final NumberFormatException ignored) {</span>
+<span class="nc" id="L136">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L137">        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));</span>
+<span class="nc" id="L138">        argStatus = 0;</span>
+<span class="nc" id="L139">      }</span>
+    }
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L142">      throw new RestErrorException(errors);</span>
+    }
+
+<span class="nc" id="L145">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (count) {</span>
+<span class="nc" id="L147">      final int nbFiles =</span>
+<span class="nc" id="L148">          SpooledInformTask.buildSpooledJson(null, argStatus, argName);</span>
+<span class="nc" id="L149">      final int nbEntries =</span>
+<span class="nc" id="L150">          SpooledInformTask.getSpooledJsonEntriesNumber(argStatus, argName);</span>
+<span class="nc" id="L151">      responseObject.put(&quot;totalResults&quot;, nbEntries);</span>
+<span class="nc" id="L152">      responseObject.put(&quot;totalSubResults&quot;, nbFiles);</span>
+<span class="nc" id="L153">    } else {</span>
+<span class="nc" id="L154">      final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L155">      final int nbFiles =</span>
+<span class="nc" id="L156">          SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);</span>
+<span class="nc" id="L157">      final ArrayNode resultList = responseObject.putArray(&quot;results&quot;);</span>
+<span class="nc" id="L158">      resultList.addAll(arrayNode);</span>
+<span class="nc" id="L159">      responseObject.put(&quot;totalResults&quot;, arrayNode.size());</span>
+<span class="nc" id="L160">      responseObject.put(&quot;totalSubResults&quot;, nbFiles);</span>
+    }
+<span class="nc" id="L162">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L163">    responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L164">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on this entry
+   * point. The HTTP methods are sent as
+   * an array in the reply's headers.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   */
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(ROLE.NOACCESS)
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L180">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L181">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

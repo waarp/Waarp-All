@@ -50,8 +50,8 @@ public class HttpJsonDefinition {
   /**
    * Internal Logger
    */
-<span class="fc" id="L53">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L54">      WaarpLoggerFactory.getLogger(HttpJsonDefinition.class);</span>
+<span class="nc" id="L53">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L54">      WaarpLoggerFactory.getLogger(HttpJsonDefinition.class);</span>
 
   private HttpJsonDefinition() {
   }
@@ -164,85 +164,88 @@ public class HttpJsonDefinition {
     try {
 <span class="nc" id="L165">      cpages = JsonHandler.mapper.readValue(file, ConfigHttpPages.class);</span>
 <span class="nc" id="L166">    } catch (final JsonParseException e) {</span>
-<span class="nc" id="L167">      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);</span>
-<span class="nc" id="L168">      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,</span>
+<span class="nc" id="L167">      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L168">                   e.getMessage());</span>
+<span class="nc" id="L169">      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,</span>
                                          e);
-<span class="nc" id="L170">    } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L171">      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);</span>
-<span class="nc" id="L172">      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,</span>
+<span class="nc" id="L171">    } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L172">      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L173">                   e.getMessage());</span>
+<span class="nc" id="L174">      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,</span>
                                          e);
-<span class="nc" id="L174">    } catch (final IOException e) {</span>
-<span class="nc" id="L175">      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);</span>
-<span class="nc" id="L176">      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,</span>
+<span class="nc" id="L176">    } catch (final IOException e) {</span>
+<span class="nc" id="L177">      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L178">                   e.getMessage());</span>
+<span class="nc" id="L179">      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,</span>
                                          e);
-<span class="nc" id="L178">    }</span>
-<span class="nc" id="L179">    final HashMap&lt;String, HttpPage&gt; pages =</span>
-<span class="nc" id="L180">        new HashMap&lt;String, HttpPage&gt;(cpages.PAGE.size());</span>
+<span class="nc" id="L181">    }</span>
+<span class="nc" id="L182">    final HashMap&lt;String, HttpPage&gt; pages =</span>
+<span class="nc" id="L183">        new HashMap&lt;String, HttpPage&gt;(cpages.PAGE.size());</span>
     // Now read the configuration
-<span class="nc bnc" id="L182" title="All 2 branches missed.">    for (final ConfigHttpPage cpage : cpages.PAGE) {</span>
-<span class="nc" id="L183">      final HttpPage page = loadHttpConfiguration(cpage);</span>
-<span class="nc" id="L184">      pages.put(page.getUri(), page);</span>
-<span class="nc" id="L185">    }</span>
-<span class="nc" id="L186">    cpages.PAGE.clear();</span>
-<span class="nc" id="L187">    return new HttpPageHandler(pages);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    for (final ConfigHttpPage cpage : cpages.PAGE) {</span>
+<span class="nc" id="L186">      final HttpPage page = loadHttpConfiguration(cpage);</span>
+<span class="nc" id="L187">      pages.put(page.getUri(), page);</span>
+<span class="nc" id="L188">    }</span>
+<span class="nc" id="L189">    cpages.PAGE.clear();</span>
+<span class="nc" id="L190">    return new HttpPageHandler(pages);</span>
   }
 
   protected static void addToField(final List&lt;ConfigHttpField&gt; fields,
                                    final AbstractHttpField field) {
-<span class="fc" id="L192">    final ConfigHttpField cfield = new ConfigHttpField();</span>
-<span class="fc" id="L193">    cfield.FIELDNAME = field.getFieldname();</span>
-<span class="fc" id="L194">    cfield.FIELDTYPE = field.getFieldtype();</span>
-<span class="fc" id="L195">    cfield.FIELDINFO = field.getFieldinfo();</span>
-<span class="fc" id="L196">    cfield.FIELDVALUE = field.fieldvalue;</span>
-<span class="fc" id="L197">    cfield.FIELDVISIBILITY = field.isFieldvisibility();</span>
-<span class="fc" id="L198">    cfield.FIELDMANDATORY = field.isFieldmandatory();</span>
-<span class="fc" id="L199">    cfield.FIELDCOOKIESET = field.isFieldcookieset();</span>
-<span class="fc" id="L200">    cfield.FIELDTOVALIDATE = field.isFieldtovalidate();</span>
-<span class="fc" id="L201">    cfield.FIELDPOSITION = field.getFieldposition();</span>
-<span class="fc" id="L202">    cfield.FIELDRANK = field.getFieldrank();</span>
-<span class="fc" id="L203">    fields.add(cfield);</span>
-<span class="fc" id="L204">  }</span>
+<span class="nc" id="L195">    final ConfigHttpField cfield = new ConfigHttpField();</span>
+<span class="nc" id="L196">    cfield.FIELDNAME = field.getFieldname();</span>
+<span class="nc" id="L197">    cfield.FIELDTYPE = field.getFieldtype();</span>
+<span class="nc" id="L198">    cfield.FIELDINFO = field.getFieldinfo();</span>
+<span class="nc" id="L199">    cfield.FIELDVALUE = field.fieldvalue;</span>
+<span class="nc" id="L200">    cfield.FIELDVISIBILITY = field.isFieldvisibility();</span>
+<span class="nc" id="L201">    cfield.FIELDMANDATORY = field.isFieldmandatory();</span>
+<span class="nc" id="L202">    cfield.FIELDCOOKIESET = field.isFieldcookieset();</span>
+<span class="nc" id="L203">    cfield.FIELDTOVALIDATE = field.isFieldtovalidate();</span>
+<span class="nc" id="L204">    cfield.FIELDPOSITION = field.getFieldposition();</span>
+<span class="nc" id="L205">    cfield.FIELDRANK = field.getFieldrank();</span>
+<span class="nc" id="L206">    fields.add(cfield);</span>
+<span class="nc" id="L207">  }</span>
 
   protected static void addToElement(final List&lt;ConfigHttpPage&gt; pages,
                                      final HttpPage page) {
-<span class="fc" id="L208">    final ConfigHttpPage cpage = new ConfigHttpPage();</span>
-<span class="fc" id="L209">    cpage.PAGENAME = page.getPagename();</span>
-<span class="fc" id="L210">    cpage.FILEFORM = page.getFileform();</span>
-<span class="fc" id="L211">    cpage.HEADER = page.getHeader();</span>
-<span class="fc" id="L212">    cpage.FOOTER = page.getFooter();</span>
-<span class="fc" id="L213">    cpage.BEGINFORM = page.getBeginform();</span>
-<span class="fc" id="L214">    cpage.ENDFORM = page.getEndform();</span>
-<span class="fc" id="L215">    cpage.NEXTINFORM = page.getNextinform();</span>
-<span class="fc" id="L216">    cpage.URI = page.getUri();</span>
-<span class="fc" id="L217">    cpage.PAGEROLE = page.getPagerole();</span>
-<span class="fc" id="L218">    cpage.ERRORPAGE = page.getErrorpage();</span>
-<span class="fc" id="L219">    cpage.CLASSNAME = page.getClassname();</span>
-<span class="fc" id="L220">    cpage.FIELD = new ArrayList&lt;ConfigHttpField&gt;();</span>
-<span class="fc bfc" id="L221" title="All 2 branches covered.">    for (final AbstractHttpField field : page.getFields().values()) {</span>
-<span class="fc" id="L222">      addToField(cpage.FIELD, field);</span>
-<span class="fc" id="L223">    }</span>
-<span class="fc" id="L224">    pages.add(cpage);</span>
-<span class="fc" id="L225">  }</span>
+<span class="nc" id="L211">    final ConfigHttpPage cpage = new ConfigHttpPage();</span>
+<span class="nc" id="L212">    cpage.PAGENAME = page.getPagename();</span>
+<span class="nc" id="L213">    cpage.FILEFORM = page.getFileform();</span>
+<span class="nc" id="L214">    cpage.HEADER = page.getHeader();</span>
+<span class="nc" id="L215">    cpage.FOOTER = page.getFooter();</span>
+<span class="nc" id="L216">    cpage.BEGINFORM = page.getBeginform();</span>
+<span class="nc" id="L217">    cpage.ENDFORM = page.getEndform();</span>
+<span class="nc" id="L218">    cpage.NEXTINFORM = page.getNextinform();</span>
+<span class="nc" id="L219">    cpage.URI = page.getUri();</span>
+<span class="nc" id="L220">    cpage.PAGEROLE = page.getPagerole();</span>
+<span class="nc" id="L221">    cpage.ERRORPAGE = page.getErrorpage();</span>
+<span class="nc" id="L222">    cpage.CLASSNAME = page.getClassname();</span>
+<span class="nc" id="L223">    cpage.FIELD = new ArrayList&lt;ConfigHttpField&gt;();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    for (final AbstractHttpField field : page.getFields().values()) {</span>
+<span class="nc" id="L225">      addToField(cpage.FIELD, field);</span>
+<span class="nc" id="L226">    }</span>
+<span class="nc" id="L227">    pages.add(cpage);</span>
+<span class="nc" id="L228">  }</span>
 
   public static void exportConfiguration(final HttpPageHandler httpPageHandler,
                                          final String filename)
       throws HttpIncorrectRequestException {
-<span class="fc" id="L230">    final ConfigHttpPages cpages = new ConfigHttpPages();</span>
-<span class="fc" id="L231">    cpages.PAGE = new ArrayList&lt;ConfigHttpPage&gt;();</span>
-<span class="fc bfc" id="L232" title="All 2 branches covered.">    for (final HttpPage page : httpPageHandler.getHashmap().values()) {</span>
-<span class="fc" id="L233">      addToElement(cpages.PAGE, page);</span>
-<span class="fc" id="L234">    }</span>
-<span class="fc" id="L235">    final File file = new File(filename);</span>
+<span class="nc" id="L233">    final ConfigHttpPages cpages = new ConfigHttpPages();</span>
+<span class="nc" id="L234">    cpages.PAGE = new ArrayList&lt;ConfigHttpPage&gt;();</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">    for (final HttpPage page : httpPageHandler.getHashmap().values()) {</span>
+<span class="nc" id="L236">      addToElement(cpages.PAGE, page);</span>
+<span class="nc" id="L237">    }</span>
+<span class="nc" id="L238">    final File file = new File(filename);</span>
     try {
-<span class="fc" id="L237">      JsonHandler.mapper.writerWithDefaultPrettyPrinter()</span>
-<span class="fc" id="L238">                        .writeValue(file, cpages);</span>
-<span class="nc" id="L239">    } catch (final JsonGenerationException e) {</span>
-<span class="nc" id="L240">      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);</span>
-<span class="nc" id="L241">    } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L242">      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);</span>
-<span class="nc" id="L243">    } catch (final IOException e) {</span>
-<span class="nc" id="L244">      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);</span>
-<span class="fc" id="L245">    }</span>
-<span class="fc" id="L246">  }</span>
+<span class="nc" id="L240">      JsonHandler.mapper.writerWithDefaultPrettyPrinter()</span>
+<span class="nc" id="L241">                        .writeValue(file, cpages);</span>
+<span class="nc" id="L242">    } catch (final JsonGenerationException e) {</span>
+<span class="nc" id="L243">      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);</span>
+<span class="nc" id="L244">    } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L245">      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);</span>
+<span class="nc" id="L246">    } catch (final IOException e) {</span>
+<span class="nc" id="L247">      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);</span>
+<span class="nc" id="L248">    }</span>
+<span class="nc" id="L249">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

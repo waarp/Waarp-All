@@ -21,6 +21,7 @@ package org.waarp.common.file;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 
 /**
  * Main object implementing Data Block whaveter the mode, type, structure used.
@@ -42,7 +43,7 @@ public class DataBlock {
   /**
    * Byte Count
    */
-<span class="fc" id="L45">  private int byteCount = -1;</span>
+<span class="nc" id="L46">  private int byteCount = -1;</span>
 
   /**
    * Markers
@@ -79,9 +80,9 @@ public class DataBlock {
   /**
    * Create a simple and empty DataBlock
    */
-<span class="fc" id="L82">  public DataBlock() {</span>
+<span class="nc" id="L83">  public DataBlock() {</span>
     // Empty
-<span class="fc" id="L84">  }</span>
+<span class="nc" id="L85">  }</span>
 
   /**
    * @return the block
@@ -89,26 +90,26 @@ public class DataBlock {
    * @deprecated method, prefer getByteBlock()
    */
   @Deprecated
-  public ByteBuf getBlock() {
-<span class="nc bnc" id="L93" title="All 2 branches missed.">    if (blockBuf == null) {</span>
-<span class="nc" id="L94">      blockBuf = Unpooled.wrappedBuffer(block);</span>
-<span class="nc" id="L95">      offsetBuf = 0;</span>
+  public final ByteBuf getBlock() {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (blockBuf == null) {</span>
+<span class="nc" id="L95">      blockBuf = Unpooled.wrappedBuffer(block);</span>
+<span class="nc" id="L96">      offsetBuf = 0;</span>
     }
-<span class="nc" id="L97">    return blockBuf;</span>
+<span class="nc" id="L98">    return blockBuf;</span>
   }
 
   /**
    * @return the block
    */
-  public byte[] getByteBlock() {
-<span class="fc" id="L104">    return block;</span>
+  public final byte[] getByteBlock() {
+<span class="nc" id="L105">    return block;</span>
   }
 
   /**
    * @return the offset of the ByteBlock
    */
-  public int getOffset() {
-<span class="fc" id="L111">    return offsetBuf;</span>
+  public final int getOffset() {
+<span class="nc" id="L112">    return offsetBuf;</span>
   }
 
   /**
@@ -116,194 +117,216 @@ public class DataBlock {
    *
    * @param offset
    */
-  public void addOffset(final int offset) {
-<span class="nc" id="L120">    offsetBuf += offset;</span>
-<span class="nc" id="L121">  }</span>
+  public final void addOffset(final int offset) {
+<span class="nc" id="L121">    offsetBuf += offset;</span>
+<span class="nc" id="L122">  }</span>
 
   /**
    * Set the block and the byte count according to the block
    *
    * @param block the block to set
    */
-  public void setBlock(final ByteBuf block) {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (isRESTART) {</span>
-<span class="nc" id="L130">      this.block = null;</span>
-<span class="nc" id="L131">      markers = new int[6];</span>
-<span class="nc bnc" id="L132" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
-<span class="nc" id="L133">        markers[i] = block.readByte();</span>
+  public final void setBlock(final ByteBuf block) {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (isRESTART) {</span>
+<span class="nc" id="L131">      this.block = null;</span>
+<span class="nc" id="L132">      markers = new int[6];</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L134">        markers[i] = block.readByte();</span>
       }
-<span class="nc" id="L135">      byteCount = 6;</span>
-<span class="nc" id="L136">      return;</span>
+<span class="nc" id="L136">      byteCount = 6;</span>
+<span class="nc" id="L137">      return;</span>
     }
-<span class="nc" id="L138">    byteCount = block.readableBytes();</span>
-<span class="nc" id="L139">    this.block = new byte[byteCount];</span>
-<span class="nc" id="L140">    offsetBuf = 0;</span>
-<span class="nc" id="L141">    blockBuf = null;</span>
-<span class="nc" id="L142">    block.readBytes(this.block);</span>
-<span class="nc" id="L143">    block.release();</span>
-<span class="nc" id="L144">  }</span>
+<span class="nc" id="L139">    byteCount = block.readableBytes();</span>
+<span class="nc" id="L140">    this.block = new byte[byteCount];</span>
+<span class="nc" id="L141">    offsetBuf = 0;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (blockBuf != null) {</span>
+<span class="nc" id="L143">      WaarpNettyUtil.release(blockBuf);</span>
+<span class="nc" id="L144">      blockBuf = null;</span>
+    }
+<span class="nc" id="L146">    block.readBytes(this.block);</span>
+<span class="nc" id="L147">    WaarpNettyUtil.release(block);</span>
+<span class="nc" id="L148">  }</span>
 
   /**
    * Set the block and the byte count according to the block
    *
    * @param block the block to set
    */
-  public void setBlock(final byte[] block) {
-<span class="pc bpc" id="L152" title="1 of 2 branches missed.">    if (isRESTART) {</span>
-<span class="nc" id="L153">      this.block = null;</span>
-<span class="nc" id="L154">      markers = new int[6];</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
-<span class="nc" id="L156">        markers[i] = block[i];</span>
+  public final void setBlock(final byte[] block) {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    setBlock(block, block != null? block.length : 0);</span>
+<span class="nc" id="L157">  }</span>
+
+  /**
+   * Set the block and the byte count
+   *
+   * @param block the block to set
+   * @param size the real size to set
+   */
+  public final void setBlock(final byte[] block, final int size) {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (isRESTART) {</span>
+<span class="nc" id="L167">      this.block = null;</span>
+<span class="nc" id="L168">      markers = new int[6];</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (block == null) {</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L171">          markers[i] = 0;</span>
+        }
+      } else {
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L175">          markers[i] = block[i];</span>
+        }
       }
-<span class="nc" id="L158">      byteCount = 6;</span>
-<span class="nc" id="L159">      return;</span>
+<span class="nc" id="L178">      byteCount = 6;</span>
+<span class="nc" id="L179">      return;</span>
     }
-<span class="fc" id="L161">    this.block = block;</span>
-<span class="pc bpc" id="L162" title="1 of 2 branches missed.">    if (this.block == null) {</span>
-<span class="nc" id="L163">      byteCount = 0;</span>
+<span class="nc" id="L181">    this.block = block;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">    if (this.block == null) {</span>
+<span class="nc" id="L183">      byteCount = 0;</span>
     } else {
-<span class="fc" id="L165">      byteCount = this.block.length;</span>
+<span class="nc" id="L185">      byteCount = size;</span>
     }
-<span class="fc" id="L167">    blockBuf = null;</span>
-<span class="fc" id="L168">    offsetBuf = 0;</span>
-<span class="fc" id="L169">  }</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (blockBuf != null) {</span>
+<span class="nc" id="L188">      WaarpNettyUtil.release(blockBuf);</span>
+<span class="nc" id="L189">      blockBuf = null;</span>
+    }
+<span class="nc" id="L191">    offsetBuf = 0;</span>
+<span class="nc" id="L192">  }</span>
 
   /**
    * @return the byteCount
    */
-  public int getByteCount() {
-<span class="fc" id="L175">    return byteCount - offsetBuf;</span>
+  public final int getByteCount() {
+<span class="nc" id="L198">    return byteCount - offsetBuf;</span>
   }
 
   /**
    * @param byteCount the byteCount to set
    */
-  public void setByteCount(final int byteCount) {
-<span class="nc" id="L182">    this.byteCount = byteCount;</span>
-<span class="nc" id="L183">  }</span>
+  public final void setByteCount(final int byteCount) {
+<span class="nc" id="L205">    this.byteCount = byteCount;</span>
+<span class="nc" id="L206">  }</span>
 
   /**
    * @param upper upper byte of the 2 bytes length
    * @param lower lower byte of the 2 bytes length
    */
-  public void setByteCount(final byte upper, final byte lower) {
-<span class="nc" id="L190">    byteCount = upper &lt;&lt; 8 | (lower &amp; 0xFF);</span>
-<span class="nc" id="L191">  }</span>
+  public final void setByteCount(final byte upper, final byte lower) {
+<span class="nc" id="L213">    byteCount = upper &lt;&lt; 8 | (lower &amp; 0xFF);</span>
+<span class="nc" id="L214">  }</span>
 
   /**
    * @return the Upper byte of the byte count
    */
-  public byte getByteCountUpper() {
-<span class="nc" id="L197">    return (byte) (byteCount &gt;&gt; 8 &amp; 0xFF);</span>
+  public final byte getByteCountUpper() {
+<span class="nc" id="L220">    return (byte) (byteCount &gt;&gt; 8 &amp; 0xFF);</span>
   }
 
   /**
    * @return the Lower byte of the byte count
    */
-  public byte getByteCountLower() {
-<span class="nc" id="L204">    return (byte) (byteCount &amp; 0xFF);</span>
+  public final byte getByteCountLower() {
+<span class="nc" id="L227">    return (byte) (byteCount &amp; 0xFF);</span>
   }
 
   /**
    * @return the descriptor
    */
-  public byte getDescriptor() {
-<span class="nc" id="L211">    return (byte) (descriptor &amp; 0xFF);</span>
+  public final byte getDescriptor() {
+<span class="nc" id="L234">    return (byte) (descriptor &amp; 0xFF);</span>
   }
 
   /**
    * @param descriptor the descriptor to set
    */
-  public void setDescriptor(final int descriptor) {
-<span class="nc" id="L218">    this.descriptor = descriptor &amp; 0xFF;</span>
-<span class="nc bnc" id="L219" title="All 2 branches missed.">    isEOF = (this.descriptor &amp; EOF) != 0;</span>
-<span class="nc bnc" id="L220" title="All 2 branches missed.">    isEOR = (this.descriptor &amp; EOR) != 0;</span>
-<span class="nc bnc" id="L221" title="All 2 branches missed.">    isERROR = (this.descriptor &amp; ERROR) != 0;</span>
-<span class="nc bnc" id="L222" title="All 2 branches missed.">    isRESTART = (this.descriptor &amp; RESTART) != 0;</span>
-<span class="nc" id="L223">  }</span>
+  public final void setDescriptor(final int descriptor) {
+<span class="nc" id="L241">    this.descriptor = descriptor &amp; 0xFF;</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">    isEOF = (this.descriptor &amp; EOF) != 0;</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    isEOR = (this.descriptor &amp; EOR) != 0;</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    isERROR = (this.descriptor &amp; ERROR) != 0;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">    isRESTART = (this.descriptor &amp; RESTART) != 0;</span>
+<span class="nc" id="L246">  }</span>
 
   /**
    * @return the isEOF
    */
-  public boolean isEOF() {
-<span class="fc" id="L229">    return isEOF;</span>
+  public final boolean isEOF() {
+<span class="nc" id="L252">    return isEOF;</span>
   }
 
   /**
    * @param isEOF the isEOF to set
    */
-  public void setEOF(final boolean isEOF) {
-<span class="fc" id="L236">    this.isEOF = isEOF;</span>
-<span class="fc" id="L237">    descriptor |= EOF;</span>
-<span class="fc" id="L238">  }</span>
+  public final void setEOF(final boolean isEOF) {
+<span class="nc" id="L259">    this.isEOF = isEOF;</span>
+<span class="nc" id="L260">    descriptor |= EOF;</span>
+<span class="nc" id="L261">  }</span>
 
   /**
    * @return the isEOR
    */
-  public boolean isEOR() {
-<span class="nc" id="L244">    return isEOR;</span>
+  public final boolean isEOR() {
+<span class="nc" id="L267">    return isEOR;</span>
   }
 
   /**
    * @param isEOR the isEOR to set
    */
-  public void setEOR(final boolean isEOR) {
-<span class="nc" id="L251">    this.isEOR = isEOR;</span>
-<span class="nc" id="L252">    descriptor |= EOR;</span>
-<span class="nc" id="L253">  }</span>
+  public final void setEOR(final boolean isEOR) {
+<span class="nc" id="L274">    this.isEOR = isEOR;</span>
+<span class="nc" id="L275">    descriptor |= EOR;</span>
+<span class="nc" id="L276">  }</span>
 
   /**
    * @return the isERROR
    */
-  public boolean isERROR() {
-<span class="nc" id="L259">    return isERROR;</span>
+  public final boolean isERROR() {
+<span class="nc" id="L282">    return isERROR;</span>
   }
 
   /**
    * @param isERROR the isERROR to set
    */
-  public void setERROR(final boolean isERROR) {
-<span class="nc" id="L266">    this.isERROR = isERROR;</span>
-<span class="nc" id="L267">    descriptor |= ERROR;</span>
-<span class="nc" id="L268">  }</span>
+  public final void setERROR(final boolean isERROR) {
+<span class="nc" id="L289">    this.isERROR = isERROR;</span>
+<span class="nc" id="L290">    descriptor |= ERROR;</span>
+<span class="nc" id="L291">  }</span>
 
   /**
    * @return the isRESTART
    */
-  public boolean isRESTART() {
-<span class="nc" id="L274">    return isRESTART;</span>
+  public final boolean isRESTART() {
+<span class="nc" id="L297">    return isRESTART;</span>
   }
 
   /**
    * @param isRESTART the isRESTART to set
    */
-  public void setRESTART(final boolean isRESTART) {
-<span class="nc" id="L281">    this.isRESTART = isRESTART;</span>
-<span class="nc" id="L282">    descriptor |= RESTART;</span>
-<span class="nc" id="L283">  }</span>
+  public final void setRESTART(final boolean isRESTART) {
+<span class="nc" id="L304">    this.isRESTART = isRESTART;</span>
+<span class="nc" id="L305">    descriptor |= RESTART;</span>
+<span class="nc" id="L306">  }</span>
 
   /**
    * @return the markers
    */
-  public int[] getMarkers() {
-<span class="nc" id="L289">    return markers;</span>
+  public final int[] getMarkers() {
+<span class="nc" id="L312">    return markers;</span>
   }
 
   /**
    * @return the 6 bytes representation of the markers
    */
-  public byte[] getByteMarkers() {
-<span class="nc" id="L296">    final byte[] bmarkers = new byte[6];</span>
-<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (markers == null) {</span>
-<span class="nc bnc" id="L298" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
-<span class="nc" id="L299">        bmarkers[i] = 0;</span>
+  public final byte[] getByteMarkers() {
+<span class="nc" id="L319">    final byte[] bmarkers = new byte[6];</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">    if (markers == null) {</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L322">        bmarkers[i] = 0;</span>
       }
     } else {
-<span class="nc bnc" id="L302" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
-<span class="nc" id="L303">        bmarkers[i] = (byte) (markers[i] &amp; 0xFF);</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">      for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L326">        bmarkers[i] = (byte) (markers[i] &amp; 0xFF);</span>
       }
     }
-<span class="nc" id="L306">    return bmarkers;</span>
+<span class="nc" id="L329">    return bmarkers;</span>
   }
 
   /**
@@ -311,37 +334,41 @@ public class DataBlock {
    *
    * @param markers the markers to set
    */
-  public void setMarkers(final int[] markers) {
-<span class="nc" id="L315">    this.markers = markers;</span>
-<span class="nc" id="L316">    byteCount = 6;</span>
-<span class="nc" id="L317">  }</span>
+  public final void setMarkers(final int[] markers) {
+<span class="nc" id="L338">    this.markers = markers;</span>
+<span class="nc" id="L339">    byteCount = 6;</span>
+<span class="nc" id="L340">  }</span>
 
   /**
    * Clear the object
    */
-  public void clear() {
-<span class="fc" id="L323">    block = null;</span>
-<span class="fc" id="L324">    byteCount = -1;</span>
-<span class="fc" id="L325">    descriptor = 0;</span>
-<span class="fc" id="L326">    isEOF = false;</span>
-<span class="fc" id="L327">    isEOR = false;</span>
-<span class="fc" id="L328">    isERROR = false;</span>
-<span class="fc" id="L329">    isRESTART = false;</span>
-<span class="fc" id="L330">    markers = null;</span>
-<span class="fc" id="L331">  }</span>
+  public final void clear() {
+<span class="nc bnc" id="L346" title="All 2 branches missed.">    if (blockBuf != null) {</span>
+<span class="nc" id="L347">      WaarpNettyUtil.release(blockBuf);</span>
+<span class="nc" id="L348">      blockBuf = null;</span>
+    }
+<span class="nc" id="L350">    block = null;</span>
+<span class="nc" id="L351">    byteCount = -1;</span>
+<span class="nc" id="L352">    descriptor = 0;</span>
+<span class="nc" id="L353">    isEOF = false;</span>
+<span class="nc" id="L354">    isEOR = false;</span>
+<span class="nc" id="L355">    isERROR = false;</span>
+<span class="nc" id="L356">    isRESTART = false;</span>
+<span class="nc" id="L357">    markers = null;</span>
+<span class="nc" id="L358">  }</span>
 
   /**
    * Is this Block cleared
    *
    * @return True if this Block is cleared
    */
-  public boolean isCleared() {
-<span class="nc bnc" id="L339" title="All 2 branches missed.">    return byteCount == -1;</span>
+  public final boolean isCleared() {
+<span class="nc bnc" id="L366" title="All 2 branches missed.">    return byteCount == -1;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L344">    return &quot;DataBlock Length:&quot; + byteCount + &quot; isEof:&quot; + isEOF + &quot; isEOR:&quot; +</span>
+<span class="nc" id="L371">    return &quot;DataBlock Length:&quot; + byteCount + &quot; isEof:&quot; + isEOF + &quot; isEOR:&quot; +</span>
            isEOR + &quot; isERROR:&quot; + isERROR + &quot; isRESTART:&quot; + isRESTART;
   }
 
@@ -356,24 +383,24 @@ public class DataBlock {
    */
   public static String toBinaryString(final byte[] bytes,
                                       final boolean cutted) {
-<span class="nc" id="L359">    final StringBuilder buffer = new StringBuilder();</span>
-<span class="nc" id="L360">    boolean first = true;</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">    for (final byte b : bytes) {</span>
-<span class="nc bnc" id="L362" title="All 2 branches missed.">      if (cutted) {</span>
-<span class="nc bnc" id="L363" title="All 2 branches missed.">        if (first) {</span>
-<span class="nc" id="L364">          first = false;</span>
+<span class="nc" id="L386">    final StringBuilder buffer = new StringBuilder();</span>
+<span class="nc" id="L387">    boolean first = true;</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">    for (final byte b : bytes) {</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">      if (cutted) {</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">        if (first) {</span>
+<span class="nc" id="L391">          first = false;</span>
         } else {
-<span class="nc" id="L366">          buffer.append(' ');</span>
+<span class="nc" id="L393">          buffer.append(' ');</span>
         }
       }
-<span class="nc" id="L369">      String bin = Integer.toBinaryString(b &amp; 0xFF);</span>
-<span class="nc" id="L370">      bin = bin.substring(0, Math.min(bin.length(), 8));</span>
-<span class="nc bnc" id="L371" title="All 2 branches missed.">      for (int j = 0; j &lt; 8 - bin.length(); j++) {</span>
-<span class="nc" id="L372">        buffer.append('0');</span>
+<span class="nc" id="L396">      String bin = Integer.toBinaryString(b &amp; 0xFF);</span>
+<span class="nc" id="L397">      bin = bin.substring(0, Math.min(bin.length(), 8));</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">      for (int j = 0; j &lt; 8 - bin.length(); j++) {</span>
+<span class="nc" id="L399">        buffer.append('0');</span>
       }
-<span class="nc" id="L374">      buffer.append(bin);</span>
+<span class="nc" id="L401">      buffer.append(bin);</span>
     }
-<span class="nc" id="L376">    return buffer.toString();</span>
+<span class="nc" id="L403">    return buffer.toString();</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

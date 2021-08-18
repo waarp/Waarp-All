@@ -421,31 +421,32 @@ public final class HttpXmlDefinition {
     try {
 <span class="nc" id="L422">      document = XmlUtil.getNewSaxReader().read(filename);</span>
 <span class="nc" id="L423">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L424">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
-<span class="nc" id="L425">      throw new InvalidArgumentException(</span>
+<span class="nc" id="L424">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L425">                   e.getMessage());</span>
+<span class="nc" id="L426">      throw new InvalidArgumentException(</span>
           &quot;Unable to read XML file: &quot; + filename);
-<span class="nc" id="L427">    }</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L429">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
-<span class="nc" id="L430">      throw new InvalidArgumentException(</span>
+<span class="nc" id="L428">    }</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L430">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L431">      throw new InvalidArgumentException(</span>
           &quot;Unable to parse XML file: &quot; + filename);
     }
-<span class="nc" id="L433">    final XmlValue[] values = XmlUtil.read(document, configHttpPages);</span>
-<span class="nc bnc" id="L434" title="All 2 branches missed.">    if (values.length &lt;= 0) {</span>
-<span class="nc" id="L435">      throw new InvalidArgumentException(&quot;XML file is empty&quot;);</span>
+<span class="nc" id="L434">    final XmlValue[] values = XmlUtil.read(document, configHttpPages);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">    if (values.length &lt;= 0) {</span>
+<span class="nc" id="L436">      throw new InvalidArgumentException(&quot;XML file is empty&quot;);</span>
     }
-<span class="nc" id="L437">    final XmlValue value = values[0];</span>
+<span class="nc" id="L438">    final XmlValue value = values[0];</span>
     @SuppressWarnings(&quot;unchecked&quot;)
-<span class="nc" id="L439">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
-<span class="nc" id="L440">    final HashMap&lt;String, HttpPage&gt; pages =</span>
-<span class="nc" id="L441">        new HashMap&lt;String, HttpPage&gt;(list.size());</span>
+<span class="nc" id="L440">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="nc" id="L441">    final HashMap&lt;String, HttpPage&gt; pages =</span>
+<span class="nc" id="L442">        new HashMap&lt;String, HttpPage&gt;(list.size());</span>
     // Now read the configuration
-<span class="nc bnc" id="L443" title="All 2 branches missed.">    for (final XmlValue[] xmlValue : list) {</span>
-<span class="nc" id="L444">      final HttpPage page = loadHttpConfiguration(xmlValue);</span>
-<span class="nc" id="L445">      pages.put(page.getUri(), page);</span>
-<span class="nc" id="L446">    }</span>
-<span class="nc" id="L447">    list.clear();</span>
-<span class="nc" id="L448">    return new HttpPageHandler(pages);</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    for (final XmlValue[] xmlValue : list) {</span>
+<span class="nc" id="L445">      final HttpPage page = loadHttpConfiguration(xmlValue);</span>
+<span class="nc" id="L446">      pages.put(page.getUri(), page);</span>
+<span class="nc" id="L447">    }</span>
+<span class="nc" id="L448">    list.clear();</span>
+<span class="nc" id="L449">    return new HttpPageHandler(pages);</span>
   }
 
   /**
@@ -457,67 +458,67 @@ public final class HttpXmlDefinition {
    * @return the new Element
    */
   private static Element newElement(final String name, final String value) {
-<span class="nc" id="L460">    final Element node = new DefaultElement(name);</span>
-<span class="nc bnc" id="L461" title="All 4 branches missed.">    if (value != null &amp;&amp; value.length() &gt; 0) {</span>
-<span class="nc" id="L462">      node.addText(value);</span>
+<span class="nc" id="L461">    final Element node = new DefaultElement(name);</span>
+<span class="nc bnc" id="L462" title="All 4 branches missed.">    if (value != null &amp;&amp; value.length() &gt; 0) {</span>
+<span class="nc" id="L463">      node.addText(value);</span>
     }
-<span class="nc" id="L464">    return node;</span>
+<span class="nc" id="L465">    return node;</span>
   }
 
   static void addToField(final Element root, final AbstractHttpField field) {
-<span class="nc" id="L468">    root.add(newElement(XML_HTTP_FIELDNAME, field.getFieldname()));</span>
-<span class="nc" id="L469">    root.add(newElement(XML_HTTP_FIELDTYPE, field.getFieldtype().name()));</span>
-<span class="nc" id="L470">    root.add(newElement(XML_HTTP_FIELDINFO, field.getFieldinfo()));</span>
-<span class="nc" id="L471">    root.add(newElement(XML_HTTP_FIELDVALUE, field.fieldvalue));</span>
-<span class="nc" id="L472">    root.add(newElement(XML_HTTP_FIELDVISIBILITY,</span>
-<span class="nc" id="L473">                        Boolean.toString(field.isFieldvisibility())));</span>
-<span class="nc" id="L474">    root.add(newElement(XML_HTTP_FIELDMANDATORY,</span>
-<span class="nc" id="L475">                        Boolean.toString(field.isFieldmandatory())));</span>
-<span class="nc" id="L476">    root.add(newElement(XML_HTTP_FIELDCOOKIESET,</span>
-<span class="nc" id="L477">                        Boolean.toString(field.isFieldcookieset())));</span>
-<span class="nc" id="L478">    root.add(newElement(XML_HTTP_FIELDTOVALIDATE,</span>
-<span class="nc" id="L479">                        Boolean.toString(field.isFieldtovalidate())));</span>
-<span class="nc" id="L480">    root.add(</span>
-<span class="nc" id="L481">        newElement(XML_HTTP_FIELDPOSITION, field.getFieldposition().name()));</span>
-<span class="nc" id="L482">    root.add(</span>
-<span class="nc" id="L483">        newElement(XML_HTTP_FIELDRANK, Integer.toString(field.getFieldrank())));</span>
-<span class="nc" id="L484">  }</span>
+<span class="nc" id="L469">    root.add(newElement(XML_HTTP_FIELDNAME, field.getFieldname()));</span>
+<span class="nc" id="L470">    root.add(newElement(XML_HTTP_FIELDTYPE, field.getFieldtype().name()));</span>
+<span class="nc" id="L471">    root.add(newElement(XML_HTTP_FIELDINFO, field.getFieldinfo()));</span>
+<span class="nc" id="L472">    root.add(newElement(XML_HTTP_FIELDVALUE, field.fieldvalue));</span>
+<span class="nc" id="L473">    root.add(newElement(XML_HTTP_FIELDVISIBILITY,</span>
+<span class="nc" id="L474">                        Boolean.toString(field.isFieldvisibility())));</span>
+<span class="nc" id="L475">    root.add(newElement(XML_HTTP_FIELDMANDATORY,</span>
+<span class="nc" id="L476">                        Boolean.toString(field.isFieldmandatory())));</span>
+<span class="nc" id="L477">    root.add(newElement(XML_HTTP_FIELDCOOKIESET,</span>
+<span class="nc" id="L478">                        Boolean.toString(field.isFieldcookieset())));</span>
+<span class="nc" id="L479">    root.add(newElement(XML_HTTP_FIELDTOVALIDATE,</span>
+<span class="nc" id="L480">                        Boolean.toString(field.isFieldtovalidate())));</span>
+<span class="nc" id="L481">    root.add(</span>
+<span class="nc" id="L482">        newElement(XML_HTTP_FIELDPOSITION, field.getFieldposition().name()));</span>
+<span class="nc" id="L483">    root.add(</span>
+<span class="nc" id="L484">        newElement(XML_HTTP_FIELDRANK, Integer.toString(field.getFieldrank())));</span>
+<span class="nc" id="L485">  }</span>
 
   static void addToElement(final Element root, final HttpPage page) {
-<span class="nc" id="L487">    root.add(newElement(XML_HTTP_PAGENAME, page.getPagename()));</span>
-<span class="nc" id="L488">    root.add(newElement(XML_HTTP_FILEFORM, page.getFileform()));</span>
-<span class="nc" id="L489">    root.add(newElement(XML_HTTP_HEADER, page.getHeader()));</span>
-<span class="nc" id="L490">    root.add(newElement(XML_HTTP_FOOTER, page.getFooter()));</span>
-<span class="nc" id="L491">    root.add(newElement(XML_HTTP_BEGINFORM, page.getBeginform()));</span>
-<span class="nc" id="L492">    root.add(newElement(XML_HTTP_ENDFORM, page.getEndform()));</span>
-<span class="nc" id="L493">    root.add(newElement(XML_HTTP_NEXTINFORM, page.getNextinform()));</span>
-<span class="nc" id="L494">    root.add(newElement(XML_HTTP_URI, page.getUri()));</span>
-<span class="nc" id="L495">    root.add(newElement(XML_HTTP_PAGEROLE, page.getPagerole().name()));</span>
-<span class="nc" id="L496">    root.add(newElement(XML_HTTP_ERRORPAGE, page.getErrorpage()));</span>
-<span class="nc" id="L497">    root.add(newElement(XML_HTTP_CLASSNAME, page.getClassname()));</span>
-<span class="nc" id="L498">    final Element element = root.addElement(XML_HTTP_FIELDS);</span>
-<span class="nc bnc" id="L499" title="All 2 branches missed.">    for (final AbstractHttpField field : page.getFields().values()) {</span>
-<span class="nc" id="L500">      final Element subroot = element.addElement(XML_HTTP_FIELD);</span>
-<span class="nc" id="L501">      addToField(subroot, field);</span>
-<span class="nc" id="L502">    }</span>
-<span class="nc" id="L503">  }</span>
+<span class="nc" id="L488">    root.add(newElement(XML_HTTP_PAGENAME, page.getPagename()));</span>
+<span class="nc" id="L489">    root.add(newElement(XML_HTTP_FILEFORM, page.getFileform()));</span>
+<span class="nc" id="L490">    root.add(newElement(XML_HTTP_HEADER, page.getHeader()));</span>
+<span class="nc" id="L491">    root.add(newElement(XML_HTTP_FOOTER, page.getFooter()));</span>
+<span class="nc" id="L492">    root.add(newElement(XML_HTTP_BEGINFORM, page.getBeginform()));</span>
+<span class="nc" id="L493">    root.add(newElement(XML_HTTP_ENDFORM, page.getEndform()));</span>
+<span class="nc" id="L494">    root.add(newElement(XML_HTTP_NEXTINFORM, page.getNextinform()));</span>
+<span class="nc" id="L495">    root.add(newElement(XML_HTTP_URI, page.getUri()));</span>
+<span class="nc" id="L496">    root.add(newElement(XML_HTTP_PAGEROLE, page.getPagerole().name()));</span>
+<span class="nc" id="L497">    root.add(newElement(XML_HTTP_ERRORPAGE, page.getErrorpage()));</span>
+<span class="nc" id="L498">    root.add(newElement(XML_HTTP_CLASSNAME, page.getClassname()));</span>
+<span class="nc" id="L499">    final Element element = root.addElement(XML_HTTP_FIELDS);</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">    for (final AbstractHttpField field : page.getFields().values()) {</span>
+<span class="nc" id="L501">      final Element subroot = element.addElement(XML_HTTP_FIELD);</span>
+<span class="nc" id="L502">      addToField(subroot, field);</span>
+<span class="nc" id="L503">    }</span>
+<span class="nc" id="L504">  }</span>
 
   public static void exportConfiguration(final HttpPageHandler httpPageHandler,
                                          final String filename)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L508">    final Document document = DocumentHelper.createDocument();</span>
-<span class="nc" id="L509">    final Element root = document.addElement(XML_ROOT_NAME);</span>
-<span class="nc" id="L510">    final Element subroot = root.addElement(XML_HTTP_PAGES);</span>
-<span class="nc bnc" id="L511" title="All 2 branches missed.">    for (final HttpPage page : httpPageHandler.getHashmap().values()) {</span>
-<span class="nc" id="L512">      final Element element = subroot.addElement(XML_HTTP_PAGE);</span>
-<span class="nc" id="L513">      addToElement(element, page);</span>
-<span class="nc" id="L514">    }</span>
+<span class="nc" id="L509">    final Document document = DocumentHelper.createDocument();</span>
+<span class="nc" id="L510">    final Element root = document.addElement(XML_ROOT_NAME);</span>
+<span class="nc" id="L511">    final Element subroot = root.addElement(XML_HTTP_PAGES);</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">    for (final HttpPage page : httpPageHandler.getHashmap().values()) {</span>
+<span class="nc" id="L513">      final Element element = subroot.addElement(XML_HTTP_PAGE);</span>
+<span class="nc" id="L514">      addToElement(element, page);</span>
+<span class="nc" id="L515">    }</span>
     try {
-<span class="nc" id="L516">      XmlUtil.writeXML(filename, null, document);</span>
-<span class="nc" id="L517">    } catch (final IOException e) {</span>
-<span class="nc" id="L518">      throw new HttpIncorrectRequestException(&quot;Cannot write file: &quot; + filename,</span>
+<span class="nc" id="L517">      XmlUtil.writeXML(filename, null, document);</span>
+<span class="nc" id="L518">    } catch (final IOException e) {</span>
+<span class="nc" id="L519">      throw new HttpIncorrectRequestException(&quot;Cannot write file: &quot; + filename,</span>
                                               e);
-<span class="nc" id="L520">    }</span>
-<span class="nc" id="L521">  }</span>
+<span class="nc" id="L521">    }</span>
+<span class="nc" id="L522">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

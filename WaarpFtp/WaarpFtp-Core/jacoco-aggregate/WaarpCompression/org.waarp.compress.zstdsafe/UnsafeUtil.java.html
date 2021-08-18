@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>UnsafeUtil.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Core</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdsafe</a> &gt; <span class="el_source">UnsafeUtil.java</span></div><h1>UnsafeUtil.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdsafe;
+
+import org.waarp.compress.IncompatibleJvmException;
+
+import java.nio.ByteOrder;
+
+import static java.lang.String.*;
+
+final class UnsafeUtil {
+
+  private UnsafeUtil() {
+  }
+
+  static {
+<span class="nc" id="L48">    final ByteOrder order = ByteOrder.nativeOrder();</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">    if (!order.equals(ByteOrder.LITTLE_ENDIAN)) {</span>
+<span class="nc" id="L50">      throw new IncompatibleJvmException(</span>
+<span class="nc" id="L51">          format(&quot;Zstandard requires a little endian platform (found %s)&quot;,</span>
+                 order));
+    }
+<span class="nc" id="L54">  }</span>
+
+  static final void putByte(final byte[] outputBase, final int output,
+                            final byte value) {
+<span class="nc" id="L58">    outputBase[output] = (byte) (value &amp; 0xff);</span>
+<span class="nc" id="L59">  }</span>
+
+  static final void putShort(final byte[] outputBase, final int output,
+                             final short value) {
+<span class="nc" id="L63">    outputBase[output] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L64">    outputBase[output + 1] = (byte) ((value &gt;&gt; 8) &amp; 0xFF);</span>
+<span class="nc" id="L65">  }</span>
+
+  static final void putInt(final byte[] outputBase, final int output,
+                           final int value) {
+<span class="nc" id="L69">    outputBase[output] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L70">    outputBase[output + 1] = (byte) ((value &gt;&gt; 8) &amp; 0xFF);</span>
+<span class="nc" id="L71">    outputBase[output + 2] = (byte) ((value &gt;&gt; 16) &amp; 0xFF);</span>
+<span class="nc" id="L72">    outputBase[output + 3] = (byte) ((value &gt;&gt; 24) &amp; 0xFF);</span>
+<span class="nc" id="L73">  }</span>
+
+  static final void putLong(final byte[] outputBase, final int output,
+                            final long value) {
+<span class="nc" id="L77">    outputBase[output] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L78">    outputBase[output + 1] = (byte) ((value &gt;&gt; 8) &amp; 0xFF);</span>
+<span class="nc" id="L79">    outputBase[output + 2] = (byte) ((value &gt;&gt; 16) &amp; 0xFF);</span>
+<span class="nc" id="L80">    outputBase[output + 3] = (byte) ((value &gt;&gt; 24) &amp; 0xFF);</span>
+<span class="nc" id="L81">    outputBase[output + 4] = (byte) ((value &gt;&gt; 32) &amp; 0xFF);</span>
+<span class="nc" id="L82">    outputBase[output + 5] = (byte) ((value &gt;&gt; 40) &amp; 0xFF);</span>
+<span class="nc" id="L83">    outputBase[output + 6] = (byte) ((value &gt;&gt; 48) &amp; 0xFF);</span>
+<span class="nc" id="L84">    outputBase[output + 7] = (byte) ((value &gt;&gt; 56) &amp; 0xFF);</span>
+<span class="nc" id="L85">  }</span>
+
+  static final void copyMemory(final byte[] inputBase, final int input,
+                               final byte[] outputBase, final int output,
+                               final int size) {
+<span class="nc" id="L90">    System.arraycopy(inputBase, input, outputBase, output, size);</span>
+<span class="nc" id="L91">  }</span>
+
+  static final byte getByte(final byte[] inputBase, final int inputAddress) {
+<span class="nc" id="L94">    return (byte) (inputBase[inputAddress] &amp; 0xFF);</span>
+  }
+
+  static final short getShort(final byte[] inputBase, final int inputAddress) {
+<span class="nc" id="L98">    return (short) (((short) inputBase[inputAddress + 1] &amp; 0xff) &lt;&lt; 8 |</span>
+                    ((short) inputBase[inputAddress] &amp; 0xff));
+  }
+
+  static final int getInt(final byte[] inputBase, final int inputAddress) {
+<span class="nc" id="L103">    return ((int) inputBase[inputAddress + 3] &amp; 0xff) &lt;&lt; 24 |</span>
+           ((int) inputBase[inputAddress + 2] &amp; 0xff) &lt;&lt; 16 |
+           ((int) inputBase[inputAddress + 1] &amp; 0xff) &lt;&lt; 8 |
+           ((int) inputBase[inputAddress] &amp; 0xff);
+  }
+
+  static final long getLong(final byte[] inputBase, final int inputAddress) {
+<span class="nc" id="L110">    return ((long) inputBase[inputAddress + 7] &lt;&lt; 56) |</span>
+           ((long) inputBase[inputAddress + 6] &amp; 0xff) &lt;&lt; 48 |
+           ((long) inputBase[inputAddress + 5] &amp; 0xff) &lt;&lt; 40 |
+           ((long) inputBase[inputAddress + 4] &amp; 0xff) &lt;&lt; 32 |
+           ((long) inputBase[inputAddress + 3] &amp; 0xff) &lt;&lt; 24 |
+           ((long) inputBase[inputAddress + 2] &amp; 0xff) &lt;&lt; 16 |
+           ((long) inputBase[inputAddress + 1] &amp; 0xff) &lt;&lt; 8 |
+           ((long) inputBase[inputAddress] &amp; 0xff);
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

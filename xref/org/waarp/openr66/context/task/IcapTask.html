@@ -90,7 +90,7 @@
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>  <em class="jxr_javadoccomment"> * -ignoreNetworkError -- -file #TRUEFULLPATH# -to</em>
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>  <em class="jxr_javadoccomment"> * requestedHost -rule rule [-copyinfo] [-info information]&lt;br&gt;</em>
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="IcapTask" href="../../../../../org/waarp/openr66/context/task/IcapTask.html#IcapTask">IcapTask</a> <strong class="jxr_keyword">extends</strong> <a name="AbstractExecTask" href="../../../../../org/waarp/openr66/context/task/AbstractExecTask.html#AbstractExecTask">AbstractExecTask</a> {
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="IcapTask" href="../../../../../org/waarp/openr66/context/task/IcapTask.html#IcapTask">IcapTask</a> <strong class="jxr_keyword">extends</strong> <a name="AbstractTask" href="../../../../../org/waarp/openr66/context/task/AbstractTask.html#AbstractTask">AbstractTask</a> {
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>    <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>  <em class="jxr_javadoccomment">   * Internal Logger</em>
 <a class="jxr_linenumber" name="L88" href="#L88">88</a>  <em class="jxr_javadoccomment">   */</em>
@@ -109,9 +109,9 @@
 <a class="jxr_linenumber" name="L101" href="#L101">101</a>   }
 <a class="jxr_linenumber" name="L102" href="#L102">102</a> 
 <a class="jxr_linenumber" name="L103" href="#L103">103</a>   @Override
-<a class="jxr_linenumber" name="L104" href="#L104">104</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> run() {
-<a class="jxr_linenumber" name="L105" href="#L105">105</a>     logger
-<a class="jxr_linenumber" name="L106" href="#L106">106</a>         .info(<span class="jxr_string">"ICAP with "</span> + argRule + ':' + argTransfer + <span class="jxr_string">" and {}"</span>, session);
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> run() {
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>     logger.info(<span class="jxr_string">"ICAP with "</span> + argRule + ':' + argTransfer + <span class="jxr_string">" and {}"</span>,
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>                 session);
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>     String finalname = applyTransferSubstitutions(argRule);
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>     finalname = finalname.replaceAll(<span class="jxr_string">"#([A-Z]+)#"</span>, <span class="jxr_string">"&#92;&#92;${$1}"</span>);
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">final</strong> CommandLine commandLine = <strong class="jxr_keyword">new</strong> CommandLine(<span class="jxr_string">"dummy"</span>);
@@ -147,8 +147,8 @@
 <a class="jxr_linenumber" name="L139" href="#L139">139</a>         logger.error(
 <a class="jxr_linenumber" name="L140" href="#L140">140</a>             <span class="jxr_string">"ICAP Network error with "</span> + argRule + ':' + argTransfer + ':' +
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>             delay + <span class="jxr_string">" and "</span> + session);
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>         futureCompletion
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>             .setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP Network error"</span>));
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>         futureCompletion.setFailure(
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>             <strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP Network error"</span>));
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>         <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>       <strong class="jxr_keyword">case</strong> IcapScanFile.STATUS_KO_SCAN:
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>         <strong class="jxr_keyword">if</strong> (finalizeIcapOnError(args)) {
@@ -158,22 +158,22 @@
 <a class="jxr_linenumber" name="L150" href="#L150">150</a>         logger.error(
 <a class="jxr_linenumber" name="L151" href="#L151">151</a>             <span class="jxr_string">"ICAP KO error with "</span> + argRule + ':' + argTransfer + ':' + delay +
 <a class="jxr_linenumber" name="L152" href="#L152">152</a>             <span class="jxr_string">" and "</span> + session);
-<a class="jxr_linenumber" name="L153" href="#L153">153</a>         futureCompletion
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>             .setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP KO error"</span>));
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>         futureCompletion.setFailure(
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>             <strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP KO error"</span>));
 <a class="jxr_linenumber" name="L155" href="#L155">155</a>         <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>       <strong class="jxr_keyword">case</strong> IcapScanFile.STATUS_KO_SCAN_POST_ACTION_ERROR:
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>         logger.error(
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>             <span class="jxr_string">"ICAP KO post error with "</span> + argRule + ':' + argTransfer + ':' +
 <a class="jxr_linenumber" name="L159" href="#L159">159</a>             delay + <span class="jxr_string">" and "</span> + session);
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>         futureCompletion
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>             .setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP KO post error"</span>));
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>         futureCompletion.setFailure(
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>             <strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP KO post error"</span>));
 <a class="jxr_linenumber" name="L162" href="#L162">162</a>         <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L163" href="#L163">163</a>       <strong class="jxr_keyword">default</strong>:
 <a class="jxr_linenumber" name="L164" href="#L164">164</a>         logger.error(
 <a class="jxr_linenumber" name="L165" href="#L165">165</a>             <span class="jxr_string">"ICAP Unknown error with "</span> + argRule + ':' + argTransfer + ':' +
 <a class="jxr_linenumber" name="L166" href="#L166">166</a>             delay + <span class="jxr_string">" and "</span> + session);
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>         futureCompletion
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>             .setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP Unknown error"</span>));
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>         futureCompletion.setFailure(
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>             <strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(<span class="jxr_string">"ICAP Unknown error"</span>));
 <a class="jxr_linenumber" name="L169" href="#L169">169</a>     }
 <a class="jxr_linenumber" name="L170" href="#L170">170</a>   }
 <a class="jxr_linenumber" name="L171" href="#L171">171</a> 
@@ -199,35 +199,36 @@
 <a class="jxr_linenumber" name="L191" href="#L191">191</a>             transferTask.run();
 <a class="jxr_linenumber" name="L192" href="#L192">192</a>             transferTask.futureCompletion.awaitOrInterruptible();
 <a class="jxr_linenumber" name="L193" href="#L193">193</a>             <strong class="jxr_keyword">if</strong> (transferTask.futureCompletion.isSuccess()) {
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>               futureCompletion
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>                   .setResult(transferTask.futureCompletion.getResult());
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>               logger.info(<span class="jxr_string">"ICAP ended in KO on file but resend is OK for {}"</span>,
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>                           session.getFile().getTrueFile().getAbsolutePath());
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>               futureCompletion.setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(
-<a class="jxr_linenumber" name="L199" href="#L199">199</a>                   <span class="jxr_string">"ICAP ended in KO on file but resend is OK"</span>));
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>             } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>               logger.error(
-<a class="jxr_linenumber" name="L202" href="#L202">202</a>                   <span class="jxr_string">"ICAP KO with Resend in error with "</span> + argRule + ':' +
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>                   argTransfer + ':' + delay + <span class="jxr_string">" and "</span> + session,
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>                   transferTask.futureCompletion.getCause());
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>               <strong class="jxr_keyword">if</strong> (transferTask.futureCompletion.getCause() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>                 futureCompletion.setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(
-<a class="jxr_linenumber" name="L207" href="#L207">207</a>                     <span class="jxr_string">"ICAP ended in KO on file and Resend is KO too"</span>));
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>               } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L209" href="#L209">209</a>                 futureCompletion.setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>                     <span class="jxr_string">"ICAP ended in KO on file and Resend is KO too"</span>,
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>                     transferTask.futureCompletion.getCause()));
-<a class="jxr_linenumber" name="L212" href="#L212">212</a>               }
-<a class="jxr_linenumber" name="L213" href="#L213">213</a>             }
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>           }
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>         }
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>       }
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>     }
-<a class="jxr_linenumber" name="L219" href="#L219">219</a>     <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>   }
-<a class="jxr_linenumber" name="L221" href="#L221">221</a> 
-<a class="jxr_linenumber" name="L222" href="#L222">222</a> }
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>               futureCompletion.setResult(
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>                   transferTask.futureCompletion.getResult());
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>               logger.info(
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>                   <span class="jxr_string">"ICAP ended in KO on file but resend as requested is OK for {}"</span>,
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>                   session.getFile().getTrueFile().getAbsolutePath());
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>               futureCompletion.setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>                   <span class="jxr_string">"ICAP ended in KO on file but resend as requested is OK"</span>));
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>               logger.error(
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>                   <span class="jxr_string">"ICAP KO with Resend in error with "</span> + argRule + ':' +
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>                   argTransfer + ':' + delay + <span class="jxr_string">" and "</span> + session,
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>                   transferTask.futureCompletion.getCause());
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>               <strong class="jxr_keyword">if</strong> (transferTask.futureCompletion.getCause() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>                 futureCompletion.setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>                     <span class="jxr_string">"ICAP ended in KO on file and Resend is KO too"</span>));
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>               } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>                 futureCompletion.setFailure(<strong class="jxr_keyword">new</strong> <a name="OpenR66RunnerErrorException" href="../../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a>(
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>                     <span class="jxr_string">"ICAP ended in KO on file and Resend is KO too"</span>,
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>                     transferTask.futureCompletion.getCause()));
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>               }
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>             }
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>           }
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>         }
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>       }
+<a class="jxr_linenumber" name="L219" href="#L219">219</a>     }
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>     <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>   }
+<a class="jxr_linenumber" name="L222" href="#L222">222</a> 
+<a class="jxr_linenumber" name="L223" href="#L223">223</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

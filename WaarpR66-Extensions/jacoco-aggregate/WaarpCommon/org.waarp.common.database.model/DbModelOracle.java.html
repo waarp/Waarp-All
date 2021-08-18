@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelOracle.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.model</a> &gt; <span class="el_source">DbModelOracle.java</span></div><h1>DbModelOracle.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.model;
+
+import oracle.jdbc.driver.OracleDriver;
+import oracle.jdbc.pool.OracleConnectionPoolDataSource;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbConnectionPool;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.DbDataModel;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Timer;
+
+/**
+ * Oracle Database Model implementation
+ */
+public abstract class DbModelOracle extends DbModelAbstract {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L51">      WaarpLoggerFactory.getLogger(DbModelOracle.class);</span>
+
+<span class="nc" id="L53">  private static final DbType type = DbType.Oracle;</span>
+
+<span class="nc" id="L55">  protected static class DbTypeResolverOracle</span>
+      extends DbModelAbstract.DbTypeResolver {
+
+    @Override
+    public final String getType(final int sqlType) {
+<span class="nc" id="L60">      return DBType.getType(sqlType);</span>
+    }
+
+    @Override
+    public final DbType getDbType() {
+<span class="nc" id="L65">      return type;</span>
+    }
+  }
+
+  static {
+<span class="nc" id="L70">    dbTypeResolver = new DbTypeResolverOracle();</span>
+<span class="nc" id="L71">  }</span>
+
+  protected OracleConnectionPoolDataSource oracleConnectionPoolDataSource;
+  protected DbConnectionPool pool;
+
+  @Override
+  public final DbType getDbType() {
+<span class="nc" id="L78">    return type;</span>
+  }
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   * @param timer
+   * @param delay
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  protected DbModelOracle(final String dbserver, final String dbuser,
+                          final String dbpasswd, final Timer timer,
+                          final long delay)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L96">    this();</span>
+
+    try {
+<span class="nc" id="L99">      oracleConnectionPoolDataSource = new OracleConnectionPoolDataSource();</span>
+<span class="nc" id="L100">    } catch (final SQLException e) {</span>
+      // then no pool
+<span class="nc" id="L102">      oracleConnectionPoolDataSource = null;</span>
+<span class="nc" id="L103">      return;</span>
+<span class="nc" id="L104">    }</span>
+<span class="nc" id="L105">    oracleConnectionPoolDataSource.setURL(dbserver);</span>
+<span class="nc" id="L106">    oracleConnectionPoolDataSource.setUser(dbuser);</span>
+<span class="nc" id="L107">    oracleConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="nc" id="L108">    pool = new DbConnectionPool(oracleConnectionPoolDataSource, timer, delay);</span>
+<span class="nc" id="L109">    logger.info(&quot;Some info: MaxConn: {} LogTimeout: {} ForceClose: {}&quot;,</span>
+<span class="nc" id="L110">                pool.getMaxConnections(), pool.getLoginTimeout(),</span>
+<span class="nc" id="L111">                pool.getTimeoutForceClose());</span>
+<span class="nc" id="L112">  }</span>
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  protected DbModelOracle(final String dbserver, final String dbuser,
+                          final String dbpasswd)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L126">    this();</span>
+
+    try {
+<span class="nc" id="L129">      oracleConnectionPoolDataSource = new OracleConnectionPoolDataSource();</span>
+<span class="nc" id="L130">    } catch (final SQLException e) {</span>
+      // then no pool
+<span class="nc" id="L132">      oracleConnectionPoolDataSource = null;</span>
+<span class="nc" id="L133">      return;</span>
+<span class="nc" id="L134">    }</span>
+<span class="nc" id="L135">    oracleConnectionPoolDataSource.setURL(dbserver);</span>
+<span class="nc" id="L136">    oracleConnectionPoolDataSource.setUser(dbuser);</span>
+<span class="nc" id="L137">    oracleConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="nc" id="L138">    pool = new DbConnectionPool(oracleConnectionPoolDataSource);</span>
+<span class="nc" id="L139">    logger.warn(</span>
+<span class="nc" id="L140">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
+<span class="nc" id="L141">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
+<span class="nc" id="L142">  }</span>
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+<span class="nc" id="L149">  protected DbModelOracle() throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="nc" id="L151">      return;</span>
+    }
+    try {
+<span class="nc" id="L154">      DriverManager.registerDriver(new OracleDriver());</span>
+<span class="nc" id="L155">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="nc" id="L156">    } catch (final SQLException e) {</span>
+      // SQLException
+<span class="nc" id="L158">      logger.error(</span>
+<span class="nc" id="L159">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
+<span class="nc" id="L160">      DbSession.error(e);</span>
+<span class="nc" id="L161">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L162">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
+<span class="nc" id="L163">    }</span>
+<span class="nc" id="L164">  }</span>
+
+  @Override
+  public final void releaseResources() {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (pool != null) {</span>
+      try {
+<span class="nc" id="L170">        pool.dispose();</span>
+<span class="nc" id="L171">      } catch (final SQLException ignored) {</span>
+        // nothing
+<span class="nc" id="L173">      }</span>
+    }
+<span class="nc" id="L175">    pool = null;</span>
+<span class="nc" id="L176">  }</span>
+
+  @Override
+  public final int currentNumberOfPooledConnections() {
+<span class="nc bnc" id="L180" title="All 2 branches missed.">    if (pool != null) {</span>
+<span class="nc" id="L181">      return pool.getActiveConnections();</span>
+    }
+<span class="nc" id="L183">    return DbAdmin.getNbConnection();</span>
+  }
+
+  @Override
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (pool == null) {</span>
+<span class="nc" id="L192">      return super.getDbConnection(server, user, passwd);</span>
+    }
+<span class="nc" id="L194">    synchronized (this) {</span>
+      try {
+<span class="nc" id="L196">        return pool.getConnection();</span>
+<span class="nc" id="L197">      } catch (final SQLException e) {</span>
+        // try to renew the pool
+<span class="nc" id="L199">        oracleConnectionPoolDataSource = new OracleConnectionPoolDataSource();</span>
+<span class="nc" id="L200">        oracleConnectionPoolDataSource.setURL(server);</span>
+<span class="nc" id="L201">        oracleConnectionPoolDataSource.setUser(user);</span>
+<span class="nc" id="L202">        oracleConnectionPoolDataSource.setPassword(passwd);</span>
+<span class="nc" id="L203">        pool.resetPoolDataSource(oracleConnectionPoolDataSource);</span>
+        try {
+<span class="nc" id="L205">          return pool.getConnection();</span>
+<span class="nc" id="L206">        } catch (final SQLException e2) {</span>
+<span class="nc" id="L207">          pool.dispose();</span>
+<span class="nc" id="L208">          pool = null;</span>
+<span class="nc" id="L209">          return super.getDbConnection(server, user, passwd);</span>
+        }
+      }
+    }
+  }
+
+<span class="nc" id="L215">  protected enum DBType {</span>
+<span class="nc" id="L216">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;), VARCHAR(Types.VARCHAR, &quot; VARCHAR2(4000) &quot;),</span>
+<span class="nc" id="L217">    NVARCHAR(Types.NVARCHAR, &quot; VARCHAR2(&quot; + MAX_KEY_VARCHAR + &quot;) &quot;),</span>
+<span class="nc" id="L218">    LONGVARCHAR(Types.LONGVARCHAR, &quot; VARCHAR2(4000) &quot;),</span>
+<span class="nc" id="L219">    BIT(Types.BIT, &quot; CHAR(1) &quot;), TINYINT(Types.TINYINT, &quot; SMALLINT &quot;),</span>
+<span class="nc" id="L220">    SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;), INTEGER(Types.INTEGER, &quot; INTEGER &quot;),</span>
+<span class="nc" id="L221">    BIGINT(Types.BIGINT, &quot; NUMBER(38,0) &quot;), REAL(Types.REAL, &quot; REAL &quot;),</span>
+<span class="nc" id="L222">    DOUBLE(Types.DOUBLE, &quot; DOUBLE PRECISION &quot;),</span>
+<span class="nc" id="L223">    VARBINARY(Types.VARBINARY, &quot; RAW(&quot; + (MAX_BINARY * 2) + &quot;) &quot;),</span>
+<span class="nc" id="L224">    DATE(Types.DATE, &quot; DATE &quot;), TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP(3) &quot;);</span>
+
+    public final int type;
+
+    public final String constructor;
+
+<span class="nc" id="L230">    DBType(final int type, final String constructor) {</span>
+<span class="nc" id="L231">      this.type = type;</span>
+<span class="nc" id="L232">      this.constructor = constructor;</span>
+<span class="nc" id="L233">    }</span>
+
+    public static String getType(final int sqltype) {
+<span class="nc bnc" id="L236" title="All 15 branches missed.">      switch (sqltype) {</span>
+        case Types.CHAR:
+<span class="nc" id="L238">          return CHAR.constructor;</span>
+        case Types.VARCHAR:
+<span class="nc" id="L240">          return VARCHAR.constructor;</span>
+        case Types.NVARCHAR:
+<span class="nc" id="L242">          return NVARCHAR.constructor;</span>
+        case Types.LONGVARCHAR:
+<span class="nc" id="L244">          return LONGVARCHAR.constructor;</span>
+        case Types.BIT:
+<span class="nc" id="L246">          return BIT.constructor;</span>
+        case Types.TINYINT:
+<span class="nc" id="L248">          return TINYINT.constructor;</span>
+        case Types.SMALLINT:
+<span class="nc" id="L250">          return SMALLINT.constructor;</span>
+        case Types.INTEGER:
+<span class="nc" id="L252">          return INTEGER.constructor;</span>
+        case Types.BIGINT:
+<span class="nc" id="L254">          return BIGINT.constructor;</span>
+        case Types.REAL:
+<span class="nc" id="L256">          return REAL.constructor;</span>
+        case Types.DOUBLE:
+<span class="nc" id="L258">          return DOUBLE.constructor;</span>
+        case Types.VARBINARY:
+<span class="nc" id="L260">          return VARBINARY.constructor;</span>
+        case Types.DATE:
+<span class="nc" id="L262">          return DATE.constructor;</span>
+        case Types.TIMESTAMP:
+<span class="nc" id="L264">          return TIMESTAMP.constructor;</span>
+        default:
+<span class="nc" id="L266">          return null;</span>
+      }
+    }
+  }
+
+  @Override
+  public void resetSequence(final DbSession session, final long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L274">    final String action = &quot;DROP SEQUENCE &quot; + DbDataModel.fieldseq;</span>
+<span class="nc" id="L275">    final String action2 =</span>
+        &quot;CREATE SEQUENCE &quot; + DbDataModel.fieldseq + &quot; MINVALUE &quot; +
+        (DbConstant.ILLEGALVALUE + 1) + &quot; START WITH &quot; + newvalue;
+<span class="nc" id="L278">    final DbRequest request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L280">      request.query(action);</span>
+<span class="nc" id="L281">      request.query(action2);</span>
+<span class="nc" id="L282">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L283">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
+<span class="nc" id="L284">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L285">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
+    } finally {
+<span class="nc" id="L287">      request.close();</span>
+    }
+
+<span class="nc" id="L290">    logger.warn(action);</span>
+<span class="nc" id="L291">  }</span>
+
+  @Override
+  public long nextSequence(final DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+<span class="nc" id="L297">    long result = DbConstant.ILLEGALVALUE;</span>
+<span class="nc" id="L298">    final String action =</span>
+        &quot;SELECT &quot; + DbDataModel.fieldseq + &quot;.NEXTVAL FROM DUAL&quot;;
+<span class="nc" id="L300">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L303">      preparedStatement.createPrepareStatement(action);</span>
+      // Limit the search
+<span class="nc" id="L305">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+        try {
+<span class="nc" id="L308">          result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L309">        } catch (final SQLException e) {</span>
+<span class="nc" id="L310">          throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L311">        }</span>
+<span class="nc" id="L312">        return result;</span>
+      } else {
+<span class="nc" id="L314">        throw new WaarpDatabaseNoDataException(</span>
+            &quot;No sequence found. Must be initialized first&quot;);
+      }
+    } finally {
+<span class="nc" id="L318">      preparedStatement.realClose();</span>
+    }
+  }
+
+  @Override
+  protected final String validConnectionString() {
+<span class="nc" id="L324">    return &quot;select 1 from dual&quot;;</span>
+  }
+
+  @Override
+  public final String limitRequest(final String allfields, final String request,
+                                   final int nb) {
+<span class="nc bnc" id="L330" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="nc" id="L331">      return request;</span>
+    }
+<span class="nc" id="L333">    return &quot;select &quot; + allfields + &quot; from ( &quot; + request +</span>
+           &quot; ) where rownum &lt;= &quot; + nb;
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

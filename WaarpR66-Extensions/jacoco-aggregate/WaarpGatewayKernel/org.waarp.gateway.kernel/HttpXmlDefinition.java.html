@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpXmlDefinition.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel</a> &gt; <span class="el_source">HttpXmlDefinition.java</span></div><h1>HttpXmlDefinition.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.tree.DefaultElement;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlDecl;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlType;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
+import org.waarp.gateway.kernel.AbstractHttpField.FieldRole;
+import org.waarp.gateway.kernel.HttpPage.PageRole;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+/**
+ *
+ */
+public final class HttpXmlDefinition {
+  private static final String UNABLE_TO_LINK_VALUE_OF_FIELD =
+      &quot;Unable to link value of field: &quot;;
+
+  private static final String UNABLE_TO_FIND_FIELD = &quot;Unable to find field: &quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L58">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L59">      WaarpLoggerFactory.getLogger(HttpXmlDefinition.class);</span>
+
+  /*
+   * pagename, fileform, header, footer, beginform, endform, nextinform, uri, pagerole, errorpage, classname,
+   * &lt;br&gt; &lt;fieldname, fieldtype, fieldinfo, fieldvalue, fieldvisibility, fieldmandatory, fieldcookieset,
+   * fieldtovalidate, fieldposition, fieldrank&gt;*
+   */
+  /**
+   * HTTP global root
+   */
+  private static final String XML_ROOT_NAME = &quot;root&quot;;
+  /**
+   * HTTP global root
+   */
+  private static final String XML_HTTP_ROOT = '/' + XML_ROOT_NAME + '/';
+  /**
+   * HTTP Pages
+   */
+  private static final String XML_HTTP_PAGES = &quot;pages&quot;;
+  /**
+   * HTTP Page root
+   */
+  private static final String XML_HTTP_PAGE = &quot;page&quot;;
+  /**
+   * HTTP Pagename
+   */
+  private static final String XML_HTTP_PAGENAME = &quot;pagename&quot;;
+  /**
+   * HTTP Pagename
+   */
+  private static final String XML_HTTP_FILEFORM = &quot;fileform&quot;;
+  /**
+   * HTTP Header
+   */
+  private static final String XML_HTTP_HEADER = &quot;header&quot;;
+  /**
+   * HTTP Footer
+   */
+  private static final String XML_HTTP_FOOTER = &quot;footer&quot;;
+  /**
+   * HTTP begin form
+   */
+  private static final String XML_HTTP_BEGINFORM = &quot;beginform&quot;;
+  /**
+   * HTTP end form
+   */
+  private static final String XML_HTTP_ENDFORM = &quot;endform&quot;;
+  /**
+   * HTTP next in form
+   */
+  private static final String XML_HTTP_NEXTINFORM = &quot;nextinform&quot;;
+  /**
+   * HTTP uri
+   */
+  private static final String XML_HTTP_URI = &quot;uri&quot;;
+  /**
+   * HTTP Page role
+   */
+  private static final String XML_HTTP_PAGEROLE = &quot;pagerole&quot;;
+  /**
+   * HTTP error page (uri as reference to access to HttpPage Object)
+   */
+  private static final String XML_HTTP_ERRORPAGE = &quot;errorpage&quot;;
+  /**
+   * HTTP Class name
+   */
+  private static final String XML_HTTP_CLASSNAME = &quot;classname&quot;;
+  /*
+   * fieldname, fieldtype, fieldinfo, fieldvalue, fieldvisibility, fieldmandatory, fieldcookieset,
+   * fieldtovalidate, fieldposition, fieldrank
+   */
+  /**
+   * HTTP fields list
+   */
+  private static final String XML_HTTP_FIELDS = &quot;fields&quot;;
+  /**
+   * HTTP field definition
+   */
+  private static final String XML_HTTP_FIELD = &quot;field&quot;;
+  /**
+   * HTTP fieldname
+   */
+  private static final String XML_HTTP_FIELDNAME = &quot;fieldname&quot;;
+  /**
+   * HTTP fieldtype
+   */
+  private static final String XML_HTTP_FIELDTYPE = &quot;fieldtype&quot;;
+  /**
+   * HTTP fieldinfo
+   */
+  private static final String XML_HTTP_FIELDINFO = &quot;fieldinfo&quot;;
+  /**
+   * HTTP fieldvalue
+   */
+  private static final String XML_HTTP_FIELDVALUE = &quot;fieldvalue&quot;;
+  /**
+   * HTTP fieldvisibility
+   */
+  private static final String XML_HTTP_FIELDVISIBILITY = &quot;fieldvisibility&quot;;
+  /**
+   * HTTP fieldmandatory
+   */
+  private static final String XML_HTTP_FIELDMANDATORY = &quot;fieldmandatory&quot;;
+  /**
+   * HTTP fieldcookieset
+   */
+  private static final String XML_HTTP_FIELDCOOKIESET = &quot;fieldcookieset&quot;;
+  /**
+   * HTTP fieldtovalidate
+   */
+  private static final String XML_HTTP_FIELDTOVALIDATE = &quot;fieldtovalidate&quot;;
+  /**
+   * HTTP fieldposition
+   */
+  private static final String XML_HTTP_FIELDPOSITION = &quot;fieldposition&quot;;
+  /**
+   * HTTP fieldrank
+   */
+  private static final String XML_HTTP_FIELDRANK = &quot;fieldrank&quot;;
+
+  /**
+   * Structure of the Configuration: Field
+   */
+<span class="nc" id="L182">  private static final XmlDecl[] configHttpField = {</span>
+      // 1 Field
+      new XmlDecl(XmlType.STRING, XML_HTTP_FIELDNAME),
+      new XmlDecl(XmlType.STRING, XML_HTTP_FIELDTYPE),
+      new XmlDecl(XmlType.STRING, XML_HTTP_FIELDINFO),
+      new XmlDecl(XmlType.STRING, XML_HTTP_FIELDVALUE),
+      new XmlDecl(XmlType.BOOLEAN, XML_HTTP_FIELDVISIBILITY),
+      new XmlDecl(XmlType.BOOLEAN, XML_HTTP_FIELDMANDATORY),
+      new XmlDecl(XmlType.BOOLEAN, XML_HTTP_FIELDCOOKIESET),
+      new XmlDecl(XmlType.BOOLEAN, XML_HTTP_FIELDTOVALIDATE),
+      new XmlDecl(XmlType.STRING, XML_HTTP_FIELDPOSITION),
+      new XmlDecl(XmlType.INTEGER, XML_HTTP_FIELDRANK)
+  };
+
+  /**
+   * Structure of the Configuration: Page
+   */
+<span class="nc" id="L199">  private static final XmlDecl[] configHttpPage = {</span>
+      // 1 Page
+      new XmlDecl(XmlType.STRING, XML_HTTP_PAGENAME),
+      new XmlDecl(XmlType.STRING, XML_HTTP_FILEFORM),
+      new XmlDecl(XmlType.STRING, XML_HTTP_HEADER),
+      new XmlDecl(XmlType.STRING, XML_HTTP_FOOTER),
+      new XmlDecl(XmlType.STRING, XML_HTTP_BEGINFORM),
+      new XmlDecl(XmlType.STRING, XML_HTTP_ENDFORM),
+      new XmlDecl(XmlType.STRING, XML_HTTP_NEXTINFORM),
+      new XmlDecl(XmlType.STRING, XML_HTTP_URI),
+      new XmlDecl(XmlType.STRING, XML_HTTP_PAGEROLE),
+      new XmlDecl(XmlType.STRING, XML_HTTP_ERRORPAGE),
+      new XmlDecl(XmlType.STRING, XML_HTTP_CLASSNAME),
+      // all fields
+      new XmlDecl(XML_HTTP_FIELD, XmlType.XVAL,
+                  XML_HTTP_FIELDS + '/' + XML_HTTP_FIELD, configHttpField, true)
+  };
+
+  /**
+   * Structure of the Configuration: Pages
+   * &lt;p&gt;
+   * from root =&gt; Pages.Page
+   */
+<span class="nc" id="L222">  private static final XmlDecl[] configHttpPages = {</span>
+      // all pages
+      new XmlDecl(XML_HTTP_PAGE, XmlType.XVAL,
+                  XML_HTTP_ROOT + XML_HTTP_PAGES + '/' + XML_HTTP_PAGE,
+                  configHttpPage, true)
+  };
+
+  private HttpXmlDefinition() {
+  }
+
+  static AbstractHttpField loadHttpPage(final XmlValue[] xmlValue)
+      throws InvalidArgumentException {
+<span class="nc" id="L234">    final XmlHash hash = new XmlHash(xmlValue);</span>
+<span class="nc" id="L235">    XmlValue value = hash.get(XML_HTTP_FIELDNAME);</span>
+<span class="nc bnc" id="L236" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L237">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDNAME);</span>
+<span class="nc" id="L238">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDNAME);
+    }
+<span class="nc" id="L241">    final String fieldname = value.getString();</span>
+<span class="nc" id="L242">    value = hash.get(XML_HTTP_FIELDTYPE);</span>
+<span class="nc bnc" id="L243" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L244">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDTYPE);</span>
+<span class="nc" id="L245">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDTYPE);
+    }
+<span class="nc" id="L248">    final String fieldtype = value.getString();</span>
+    final FieldRole fieldRole;
+    try {
+<span class="nc" id="L251">      fieldRole = FieldRole.valueOf(fieldtype);</span>
+<span class="nc" id="L252">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L253">      logger.error(UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_FIELDTYPE);</span>
+<span class="nc" id="L254">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_FIELDTYPE);
+<span class="nc" id="L256">    }</span>
+<span class="nc" id="L257">    value = hash.get(XML_HTTP_FIELDINFO);</span>
+<span class="nc" id="L258">    String fieldinfo = fieldname;</span>
+<span class="nc bnc" id="L259" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L260">      fieldinfo = value.getString();</span>
+    }
+<span class="nc" id="L262">    value = hash.get(XML_HTTP_FIELDVALUE);</span>
+<span class="nc" id="L263">    String fieldvalue = null;</span>
+<span class="nc bnc" id="L264" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L265">      fieldvalue = value.getString();</span>
+    }
+<span class="nc" id="L267">    value = hash.get(XML_HTTP_FIELDVISIBILITY);</span>
+<span class="nc" id="L268">    boolean fieldvisibility = true;</span>
+<span class="nc bnc" id="L269" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L270">      fieldvisibility = value.getBoolean();</span>
+    }
+<span class="nc" id="L272">    value = hash.get(XML_HTTP_FIELDMANDATORY);</span>
+<span class="nc" id="L273">    boolean fieldmandatory = true;</span>
+<span class="nc bnc" id="L274" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L275">      fieldmandatory = value.getBoolean();</span>
+    }
+<span class="nc" id="L277">    value = hash.get(XML_HTTP_FIELDCOOKIESET);</span>
+<span class="nc" id="L278">    boolean fieldcookieset = false;</span>
+<span class="nc bnc" id="L279" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L280">      fieldcookieset = value.getBoolean();</span>
+    }
+<span class="nc" id="L282">    value = hash.get(XML_HTTP_FIELDTOVALIDATE);</span>
+<span class="nc" id="L283">    boolean fieldtovalidate = false;</span>
+<span class="nc bnc" id="L284" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L285">      fieldtovalidate = value.getBoolean();</span>
+    }
+<span class="nc" id="L287">    value = hash.get(XML_HTTP_FIELDPOSITION);</span>
+<span class="nc" id="L288">    FieldPosition fieldposition = FieldPosition.ANY;</span>
+<span class="nc bnc" id="L289" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L290">      fieldposition = FieldPosition.valueOf(value.getString());</span>
+    }
+<span class="nc" id="L292">    value = hash.get(XML_HTTP_FIELDRANK);</span>
+<span class="nc bnc" id="L293" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L294">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDRANK);</span>
+<span class="nc" id="L295">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDRANK);
+    }
+<span class="nc" id="L298">    final int fieldrank = value.getInteger();</span>
+<span class="nc" id="L299">    return new DefaultHttpField(fieldname, fieldRole, fieldinfo, fieldvalue,</span>
+                                fieldvisibility, fieldmandatory, fieldcookieset,
+                                fieldtovalidate, fieldposition, fieldrank);
+  }
+
+  static HttpPage loadHttpConfiguration(final XmlValue[] xmlValue)
+      throws InvalidArgumentException, ClassNotFoundException,
+             InstantiationException, IllegalAccessException {
+<span class="nc" id="L307">    final XmlHash hash = new XmlHash(xmlValue);</span>
+<span class="nc" id="L308">    XmlValue value = hash.get(XML_HTTP_PAGENAME);</span>
+<span class="nc bnc" id="L309" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L310">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_PAGENAME);</span>
+<span class="nc" id="L311">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_PAGENAME);
+    }
+<span class="nc" id="L314">    final String pagename = value.getString();</span>
+<span class="nc" id="L315">    value = hash.get(XML_HTTP_FILEFORM);</span>
+<span class="nc" id="L316">    String fileform = null;</span>
+<span class="nc bnc" id="L317" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L318">      fileform = value.getString();</span>
+    }
+<span class="nc" id="L320">    value = hash.get(XML_HTTP_HEADER);</span>
+<span class="nc" id="L321">    String header = null;</span>
+<span class="nc bnc" id="L322" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L323">      header = value.getString();</span>
+    }
+<span class="nc" id="L325">    value = hash.get(XML_HTTP_FOOTER);</span>
+<span class="nc" id="L326">    String footer = null;</span>
+<span class="nc bnc" id="L327" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L328">      footer = value.getString();</span>
+    }
+<span class="nc" id="L330">    value = hash.get(XML_HTTP_BEGINFORM);</span>
+<span class="nc" id="L331">    String beginform = null;</span>
+<span class="nc bnc" id="L332" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L333">      beginform = value.getString();</span>
+    }
+<span class="nc" id="L335">    value = hash.get(XML_HTTP_ENDFORM);</span>
+<span class="nc" id="L336">    String endform = null;</span>
+<span class="nc bnc" id="L337" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L338">      endform = value.getString();</span>
+    }
+<span class="nc" id="L340">    value = hash.get(XML_HTTP_NEXTINFORM);</span>
+<span class="nc" id="L341">    String nextinform = null;</span>
+<span class="nc bnc" id="L342" title="All 6 branches missed.">    if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getString().length() != 0) {</span>
+<span class="nc" id="L343">      nextinform = value.getString();</span>
+    }
+<span class="nc" id="L345">    value = hash.get(XML_HTTP_URI);</span>
+<span class="nc bnc" id="L346" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L347">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_URI);</span>
+<span class="nc" id="L348">      throw new InvalidArgumentException(UNABLE_TO_FIND_FIELD + XML_HTTP_URI);</span>
+    }
+<span class="nc" id="L350">    final String uri = value.getString();</span>
+<span class="nc" id="L351">    value = hash.get(XML_HTTP_PAGEROLE);</span>
+<span class="nc bnc" id="L352" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L353">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_PAGEROLE);</span>
+<span class="nc" id="L354">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_PAGEROLE);
+    }
+<span class="nc" id="L357">    final String pagerole = value.getString();</span>
+    final PageRole pageRole;
+    try {
+<span class="nc" id="L360">      pageRole = PageRole.valueOf(pagerole);</span>
+<span class="nc" id="L361">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L362">      logger.error(UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_PAGEROLE);</span>
+<span class="nc" id="L363">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_PAGEROLE);
+<span class="nc" id="L365">    }</span>
+<span class="nc" id="L366">    value = hash.get(XML_HTTP_ERRORPAGE);</span>
+<span class="nc bnc" id="L367" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L368">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_ERRORPAGE);</span>
+<span class="nc" id="L369">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_ERRORPAGE);
+    }
+<span class="nc" id="L372">    final String errorpage = value.getString();</span>
+<span class="nc" id="L373">    value = hash.get(XML_HTTP_CLASSNAME);</span>
+<span class="nc bnc" id="L374" title="All 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().length() == 0) {</span>
+<span class="nc" id="L375">      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_CLASSNAME);</span>
+<span class="nc" id="L376">      throw new InvalidArgumentException(</span>
+          UNABLE_TO_FIND_FIELD + XML_HTTP_CLASSNAME);
+    }
+<span class="nc" id="L379">    final String classname = value.getString();</span>
+    // now getting Fields
+<span class="nc" id="L381">    value = hash.get(XML_HTTP_FIELD);</span>
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L383">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="nc" id="L384">    final List&lt;AbstractHttpField&gt; listFields =</span>
+<span class="nc" id="L385">        new ArrayList&lt;AbstractHttpField&gt;(list.size());</span>
+    // Now read the configuration
+<span class="nc bnc" id="L387" title="All 2 branches missed.">    for (final XmlValue[] fieldValue : list) {</span>
+<span class="nc" id="L388">      final AbstractHttpField field = loadHttpPage(fieldValue);</span>
+<span class="nc" id="L389">      listFields.add(field.getFieldrank(), field);</span>
+<span class="nc" id="L390">    }</span>
+<span class="nc" id="L391">    list.clear();</span>
+<span class="nc" id="L392">    final LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap =</span>
+<span class="nc" id="L393">        new LinkedHashMap&lt;String, AbstractHttpField&gt;(listFields.size());</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">    for (final AbstractHttpField abstractHttpField : listFields) {</span>
+<span class="nc" id="L395">      linkedHashMap.put(abstractHttpField.getFieldname(), abstractHttpField);</span>
+<span class="nc" id="L396">    }</span>
+<span class="nc" id="L397">    listFields.clear();</span>
+<span class="nc" id="L398">    return new HttpPage(pagename, fileform, header, footer, beginform, endform,</span>
+                        nextinform, uri, pageRole, errorpage, classname,
+                        linkedHashMap);
+  }
+
+  /**
+   * Initiate the configuration from the xml file for Http server
+   *
+   * @param filename
+   *
+   * @return the List&lt;HttpPage&gt; if OK
+   *
+   * @throws InvalidArgumentException
+   * @throws ClassNotFoundException
+   * @throws IllegalAccessException
+   * @throws InstantiationException
+   */
+  public static HttpPageHandler setConfigurationHttpServerFromXml(
+      final String filename)
+      throws InvalidArgumentException, ClassNotFoundException,
+             InstantiationException, IllegalAccessException {
+    final Document document;
+    // Open config file
+    try {
+<span class="nc" id="L422">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L423">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L424">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L425">                   e.getMessage());</span>
+<span class="nc" id="L426">      throw new InvalidArgumentException(</span>
+          &quot;Unable to read XML file: &quot; + filename);
+<span class="nc" id="L428">    }</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L430">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L431">      throw new InvalidArgumentException(</span>
+          &quot;Unable to parse XML file: &quot; + filename);
+    }
+<span class="nc" id="L434">    final XmlValue[] values = XmlUtil.read(document, configHttpPages);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">    if (values.length &lt;= 0) {</span>
+<span class="nc" id="L436">      throw new InvalidArgumentException(&quot;XML file is empty&quot;);</span>
+    }
+<span class="nc" id="L438">    final XmlValue value = values[0];</span>
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L440">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="nc" id="L441">    final HashMap&lt;String, HttpPage&gt; pages =</span>
+<span class="nc" id="L442">        new HashMap&lt;String, HttpPage&gt;(list.size());</span>
+    // Now read the configuration
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    for (final XmlValue[] xmlValue : list) {</span>
+<span class="nc" id="L445">      final HttpPage page = loadHttpConfiguration(xmlValue);</span>
+<span class="nc" id="L446">      pages.put(page.getUri(), page);</span>
+<span class="nc" id="L447">    }</span>
+<span class="nc" id="L448">    list.clear();</span>
+<span class="nc" id="L449">    return new HttpPageHandler(pages);</span>
+  }
+
+  /**
+   * Construct a new Element with value
+   *
+   * @param name
+   * @param value
+   *
+   * @return the new Element
+   */
+  private static Element newElement(final String name, final String value) {
+<span class="nc" id="L461">    final Element node = new DefaultElement(name);</span>
+<span class="nc bnc" id="L462" title="All 4 branches missed.">    if (value != null &amp;&amp; value.length() &gt; 0) {</span>
+<span class="nc" id="L463">      node.addText(value);</span>
+    }
+<span class="nc" id="L465">    return node;</span>
+  }
+
+  static void addToField(final Element root, final AbstractHttpField field) {
+<span class="nc" id="L469">    root.add(newElement(XML_HTTP_FIELDNAME, field.getFieldname()));</span>
+<span class="nc" id="L470">    root.add(newElement(XML_HTTP_FIELDTYPE, field.getFieldtype().name()));</span>
+<span class="nc" id="L471">    root.add(newElement(XML_HTTP_FIELDINFO, field.getFieldinfo()));</span>
+<span class="nc" id="L472">    root.add(newElement(XML_HTTP_FIELDVALUE, field.fieldvalue));</span>
+<span class="nc" id="L473">    root.add(newElement(XML_HTTP_FIELDVISIBILITY,</span>
+<span class="nc" id="L474">                        Boolean.toString(field.isFieldvisibility())));</span>
+<span class="nc" id="L475">    root.add(newElement(XML_HTTP_FIELDMANDATORY,</span>
+<span class="nc" id="L476">                        Boolean.toString(field.isFieldmandatory())));</span>
+<span class="nc" id="L477">    root.add(newElement(XML_HTTP_FIELDCOOKIESET,</span>
+<span class="nc" id="L478">                        Boolean.toString(field.isFieldcookieset())));</span>
+<span class="nc" id="L479">    root.add(newElement(XML_HTTP_FIELDTOVALIDATE,</span>
+<span class="nc" id="L480">                        Boolean.toString(field.isFieldtovalidate())));</span>
+<span class="nc" id="L481">    root.add(</span>
+<span class="nc" id="L482">        newElement(XML_HTTP_FIELDPOSITION, field.getFieldposition().name()));</span>
+<span class="nc" id="L483">    root.add(</span>
+<span class="nc" id="L484">        newElement(XML_HTTP_FIELDRANK, Integer.toString(field.getFieldrank())));</span>
+<span class="nc" id="L485">  }</span>
+
+  static void addToElement(final Element root, final HttpPage page) {
+<span class="nc" id="L488">    root.add(newElement(XML_HTTP_PAGENAME, page.getPagename()));</span>
+<span class="nc" id="L489">    root.add(newElement(XML_HTTP_FILEFORM, page.getFileform()));</span>
+<span class="nc" id="L490">    root.add(newElement(XML_HTTP_HEADER, page.getHeader()));</span>
+<span class="nc" id="L491">    root.add(newElement(XML_HTTP_FOOTER, page.getFooter()));</span>
+<span class="nc" id="L492">    root.add(newElement(XML_HTTP_BEGINFORM, page.getBeginform()));</span>
+<span class="nc" id="L493">    root.add(newElement(XML_HTTP_ENDFORM, page.getEndform()));</span>
+<span class="nc" id="L494">    root.add(newElement(XML_HTTP_NEXTINFORM, page.getNextinform()));</span>
+<span class="nc" id="L495">    root.add(newElement(XML_HTTP_URI, page.getUri()));</span>
+<span class="nc" id="L496">    root.add(newElement(XML_HTTP_PAGEROLE, page.getPagerole().name()));</span>
+<span class="nc" id="L497">    root.add(newElement(XML_HTTP_ERRORPAGE, page.getErrorpage()));</span>
+<span class="nc" id="L498">    root.add(newElement(XML_HTTP_CLASSNAME, page.getClassname()));</span>
+<span class="nc" id="L499">    final Element element = root.addElement(XML_HTTP_FIELDS);</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">    for (final AbstractHttpField field : page.getFields().values()) {</span>
+<span class="nc" id="L501">      final Element subroot = element.addElement(XML_HTTP_FIELD);</span>
+<span class="nc" id="L502">      addToField(subroot, field);</span>
+<span class="nc" id="L503">    }</span>
+<span class="nc" id="L504">  }</span>
+
+  public static void exportConfiguration(final HttpPageHandler httpPageHandler,
+                                         final String filename)
+      throws HttpIncorrectRequestException {
+<span class="nc" id="L509">    final Document document = DocumentHelper.createDocument();</span>
+<span class="nc" id="L510">    final Element root = document.addElement(XML_ROOT_NAME);</span>
+<span class="nc" id="L511">    final Element subroot = root.addElement(XML_HTTP_PAGES);</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">    for (final HttpPage page : httpPageHandler.getHashmap().values()) {</span>
+<span class="nc" id="L513">      final Element element = subroot.addElement(XML_HTTP_PAGE);</span>
+<span class="nc" id="L514">      addToElement(element, page);</span>
+<span class="nc" id="L515">    }</span>
+    try {
+<span class="nc" id="L517">      XmlUtil.writeXML(filename, null, document);</span>
+<span class="nc" id="L518">    } catch (final IOException e) {</span>
+<span class="nc" id="L519">      throw new HttpIncorrectRequestException(&quot;Cannot write file: &quot; + filename,</span>
+                                              e);
+<span class="nc" id="L521">    }</span>
+<span class="nc" id="L522">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

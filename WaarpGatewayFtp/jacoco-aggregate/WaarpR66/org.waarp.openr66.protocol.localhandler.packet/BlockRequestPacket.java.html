@@ -70,45 +70,45 @@ public class BlockRequestPacket extends AbstractLocalPacket {
 <span class="nc" id="L70">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
 <span class="nc" id="L74">    return true;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
 <span class="nc" id="L80">    end = Unpooled.EMPTY_BUFFER;</span>
 <span class="nc" id="L81">    middle = Unpooled.EMPTY_BUFFER;</span>
 <span class="nc" id="L82">    final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1 + key.length;</span>
 <span class="nc" id="L83">    final int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L84">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc" id="L84">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
 <span class="nc" id="L85">    header = WaarpNettyUtil.slice(global, offset, 1 + key.length);</span>
 <span class="nc bnc" id="L86" title="All 2 branches missed.">    header.writeByte(block? 1 : 0);</span>
 <span class="nc" id="L87">    header.writeBytes(key);</span>
 <span class="nc" id="L88">  }</span>
 
   @Override
-  public String toString() {
+  public final String toString() {
 <span class="nc" id="L92">    return &quot;BlockRequestPacket: &quot; + block;</span>
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
 <span class="nc" id="L97">    return LocalPacketFactory.BLOCKREQUESTPACKET;</span>
   }
 
   /**
    * @return True if the request is to block new requests, else false
    */
-  public boolean getBlock() {
+  public final boolean getBlock() {
 <span class="nc" id="L104">    return block;</span>
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
+  public final byte[] getKey() {
 <span class="nc" id="L111">    return key;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

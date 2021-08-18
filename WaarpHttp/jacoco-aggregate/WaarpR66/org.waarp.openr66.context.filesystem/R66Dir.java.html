@@ -46,13 +46,13 @@ public class R66Dir extends FilesystemBasedDirImpl {
    * @param session
    */
   public R66Dir(final R66Session session) {
-<span class="fc" id="L49">    super(session, new FilesystemBasedOptsMLSxImpl());</span>
-<span class="fc" id="L50">  }</span>
+<span class="nc" id="L49">    super(session, new FilesystemBasedOptsMLSxImpl());</span>
+<span class="nc" id="L50">  }</span>
 
   @Override
-  public R66File newFile(final String path, final boolean append)
+  public final R66File newFile(final String path, final boolean append)
       throws CommandAbstractException {
-<span class="fc" id="L55">    return new R66File((R66Session) getSession(), this, path, append);</span>
+<span class="nc" id="L55">    return new R66File((R66Session) getSession(), this, path, append);</span>
   }
 
   /**
@@ -69,28 +69,28 @@ public class R66Dir extends FilesystemBasedDirImpl {
   public synchronized R66File setUniqueFile(final long prefix,
                                             final String filename)
       throws CommandAbstractException {
-<span class="fc" id="L72">    checkIdentify();</span>
+<span class="nc" id="L72">    checkIdentify();</span>
     final File file;
-<span class="fc" id="L74">    String prename = prefix + &quot;_&quot;;</span>
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    if (prename.length() &lt; 3) {</span>
+<span class="nc" id="L74">    String prename = prefix + &quot;_&quot;;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    if (prename.length() &lt; 3) {</span>
 <span class="nc" id="L76">      prename = &quot;xx_&quot; + prename;</span>
     }
-<span class="fc" id="L78">    String basename = R66File.getBasename(filename);</span>
-<span class="fc" id="L79">    if (basename.length() &gt;</span>
-<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        Configuration.configuration.getMaxfilenamelength() - 55) {</span>
+<span class="nc" id="L78">    String basename = R66File.getBasename(filename);</span>
+<span class="nc" id="L79">    if (basename.length() &gt;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        Configuration.configuration.getMaxfilenamelength() - 55) {</span>
 <span class="nc" id="L81">      basename = basename.substring(basename.length() -</span>
-                                    Configuration.configuration
-<span class="nc" id="L83">                                        .getMaxfilenamelength() + 55);</span>
+<span class="nc" id="L82">                                    Configuration.configuration.getMaxfilenamelength() +</span>
+                                    55);
     }
     try {
-<span class="fc" id="L86">      file =</span>
-<span class="fc" id="L87">          File.createTempFile(prename, '_' + basename + Configuration.EXT_R66,</span>
-<span class="fc" id="L88">                              getFileFromPath(currentDir));</span>
+<span class="nc" id="L86">      file =</span>
+<span class="nc" id="L87">          File.createTempFile(prename, '_' + basename + Configuration.EXT_R66,</span>
+<span class="nc" id="L88">                              getFileFromPath(currentDir));</span>
 <span class="nc" id="L89">    } catch (final IOException e) {</span>
 <span class="nc" id="L90">      throw new Reply550Exception(&quot;Cannot create unique file from &quot; + basename);</span>
-<span class="fc" id="L91">    }</span>
-<span class="fc" id="L92">    final String currentFile = getRelativePath(file);</span>
-<span class="fc" id="L93">    return newFile(normalizePath(currentFile), false);</span>
+<span class="nc" id="L91">    }</span>
+<span class="nc" id="L92">    final String currentFile = getRelativePath(file);</span>
+<span class="nc" id="L93">    return newFile(normalizePath(currentFile), false);</span>
   }
 
   /**
@@ -99,12 +99,12 @@ public class R66Dir extends FilesystemBasedDirImpl {
    * @return the final unique basename without the temporary extension
    */
   public static String getFinalUniqueFilename(final R66File file) {
-<span class="fc" id="L102">    String finalpath = file.getBasename();</span>
-<span class="fc" id="L103">    final int pos = finalpath.lastIndexOf(Configuration.EXT_R66);</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">    if (pos &gt; 0) {</span>
-<span class="fc" id="L105">      finalpath = finalpath.substring(0, pos);</span>
+<span class="nc" id="L102">    String finalpath = file.getBasename();</span>
+<span class="nc" id="L103">    final int pos = finalpath.lastIndexOf(Configuration.EXT_R66);</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (pos &gt; 0) {</span>
+<span class="nc" id="L105">      finalpath = finalpath.substring(0, pos);</span>
     }
-<span class="fc" id="L107">    return finalpath;</span>
+<span class="nc" id="L107">    return finalpath;</span>
   }
 
   /**
@@ -125,8 +125,8 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  protected List&lt;String&gt; wildcardFilesNoCheck(final String pathWithWildcard)
-      throws CommandAbstractException {
+  protected final List&lt;String&gt; wildcardFilesNoCheck(
+      final String pathWithWildcard) throws CommandAbstractException {
 <span class="nc" id="L130">    final List&lt;String&gt; resultPaths = new ArrayList&lt;String&gt;();</span>
     // First check if pathWithWildcard contains wildcards
 <span class="nc bnc" id="L132" title="All 4 branches missed.">    if (!(pathWithWildcard.contains(&quot;*&quot;) || pathWithWildcard.contains(&quot;?&quot;) ||</span>
@@ -199,7 +199,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  public R66File setFileNoCheck(final String path)
+  public final R66File setFileNoCheck(final String path)
       throws CommandAbstractException {
 <span class="nc" id="L204">    checkIdentify();</span>
 <span class="nc" id="L205">    final String newpath = consolidatePath(path);</span>
@@ -218,19 +218,19 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @return the full path associated with the current Dir
    */
-  public String getFullPath() {
-<span class="pc bpc" id="L222" title="1 of 2 branches missed.">    if (session.getAuth() == null) {</span>
+  public final String getFullPath() {
+<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (session.getAuth() == null) {</span>
 <span class="nc" id="L223">      return currentDir;</span>
     }
-<span class="pc bpc" id="L225" title="1 of 2 branches missed.">    if (isAbsolute(currentDir)) {</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    if (isAbsolute(currentDir)) {</span>
 <span class="nc" id="L226">      return currentDir;</span>
     }
-<span class="fc" id="L228">    return ((R66Auth) session.getAuth()).getAbsolutePath(currentDir);</span>
+<span class="nc" id="L228">    return ((R66Auth) session.getAuth()).getAbsolutePath(currentDir);</span>
   }
 
   @Override
   public String toString() {
-<span class="fc" id="L233">    return &quot;Dir: &quot; + currentDir;</span>
+<span class="nc" id="L233">    return &quot;Dir: &quot; + currentDir;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

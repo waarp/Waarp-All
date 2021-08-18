@@ -103,7 +103,7 @@
 <a class="jxr_linenumber" name="L95" href="#L95">95</a>    <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>  <em class="jxr_javadoccomment">   * @return the current ShutdownConfiguration</em>
 <a class="jxr_linenumber" name="L97" href="#L97">97</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>    <strong class="jxr_keyword">public</strong> ShutdownConfiguration getShutdownConfiguration() {
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> ShutdownConfiguration getShutdownConfiguration() {
 <a class="jxr_linenumber" name="L99" href="#L99">99</a>      <strong class="jxr_keyword">return</strong> shutdownConfiguration;
 <a class="jxr_linenumber" name="L100" href="#L100">100</a>   }
 <a class="jxr_linenumber" name="L101" href="#L101">101</a> 
@@ -329,8 +329,8 @@
 <a class="jxr_linenumber" name="L321" href="#L321">321</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L322" href="#L322">322</a> <em class="jxr_javadoccomment">   * Extra call to ensure exit after long delay</em>
 <a class="jxr_linenumber" name="L323" href="#L323">323</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L324" href="#L324">324</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> launchFinalExit() {
-<a class="jxr_linenumber" name="L325" href="#L325">325</a>     <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> launchFinalExit() {
+<a class="jxr_linenumber" name="L325" href="#L325">325</a>     <strong class="jxr_keyword">if</strong> (WaarpSystemUtil.isJunit()) {
 <a class="jxr_linenumber" name="L326" href="#L326">326</a>       <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L327" href="#L327">327</a>     }
 <a class="jxr_linenumber" name="L328" href="#L328">328</a>     <strong class="jxr_keyword">final</strong> Timer timer = <strong class="jxr_keyword">new</strong> Timer(<span class="jxr_string">"WaarpFinalExit"</span>, <strong class="jxr_keyword">true</strong>);
@@ -345,7 +345,7 @@
 <a class="jxr_linenumber" name="L337" href="#L337">337</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L338" href="#L338">338</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> String getArgs() {
 <a class="jxr_linenumber" name="L339" href="#L339">339</a>     <strong class="jxr_keyword">final</strong> String test = System.getProperty(SUN_JAVA_COMMAND);
-<a class="jxr_linenumber" name="L340" href="#L340">340</a>     <strong class="jxr_keyword">if</strong> (test != <strong class="jxr_keyword">null</strong> &amp;&amp; !test.isEmpty()) {
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>     <strong class="jxr_keyword">if</strong> (ParametersChecker.isNotEmpty(test)) {
 <a class="jxr_linenumber" name="L341" href="#L341">341</a>       <em class="jxr_comment">// compute args directly</em>
 <a class="jxr_linenumber" name="L342" href="#L342">342</a>       <em class="jxr_comment">// program main and program arguments</em>
 <a class="jxr_linenumber" name="L343" href="#L343">343</a>       <strong class="jxr_keyword">final</strong> String[] mainCommand = test.split(<span class="jxr_string">" "</span>);
@@ -391,7 +391,7 @@
 <a class="jxr_linenumber" name="L383" href="#L383">383</a>     }
 <a class="jxr_linenumber" name="L384" href="#L384">384</a>     <strong class="jxr_keyword">final</strong> String path = ManagementFactory.getRuntimeMXBean().getClassPath();
 <a class="jxr_linenumber" name="L385" href="#L385">385</a>     <strong class="jxr_keyword">final</strong> StringBuilder newArgs = <strong class="jxr_keyword">new</strong> StringBuilder();
-<a class="jxr_linenumber" name="L386" href="#L386">386</a>     <strong class="jxr_keyword">if</strong> (path != <strong class="jxr_keyword">null</strong> &amp;&amp; !path.isEmpty()) {
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>     <strong class="jxr_keyword">if</strong> (ParametersChecker.isNotEmpty(path)) {
 <a class="jxr_linenumber" name="L387" href="#L387">387</a>       newArgs.append(<span class="jxr_string">"-cp "</span>).append(path);
 <a class="jxr_linenumber" name="L388" href="#L388">388</a>     }
 <a class="jxr_linenumber" name="L389" href="#L389">389</a>     newArgs.append(' ').append(main.getName());
@@ -412,8 +412,8 @@
 <a class="jxr_linenumber" name="L404" href="#L404">404</a>         }
 <a class="jxr_linenumber" name="L405" href="#L405">405</a>       }
 <a class="jxr_linenumber" name="L406" href="#L406">406</a>       <em class="jxr_comment">// Already stopped</em>
-<a class="jxr_linenumber" name="L407" href="#L407">407</a>       SysErrLogger.FAKE_LOGGER
-<a class="jxr_linenumber" name="L408" href="#L408">408</a>           .syserr(<span class="jxr_string">"Halt System now - services already stopped -"</span>);
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>       SysErrLogger.FAKE_LOGGER.syserr(
+<a class="jxr_linenumber" name="L408" href="#L408">408</a>           <span class="jxr_string">"Halt System now - services already stopped -"</span>);
 <a class="jxr_linenumber" name="L409" href="#L409">409</a>       <em class="jxr_comment">//FBGEXIT DetectionUtils.SystemExit(0)</em>
 <a class="jxr_linenumber" name="L410" href="#L410">410</a>       <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L411" href="#L411">411</a>     }

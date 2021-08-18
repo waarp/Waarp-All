@@ -40,7 +40,7 @@ public class GUID implements Comparable&lt;GUID&gt; {
 
   private static final String ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID =
       &quot;Attempted to parse malformed ARK GUID: &quot;;
-<span class="fc" id="L43">  private static final Object FORSYNC = new Object();</span>
+<span class="nc" id="L43">  private static final Object FORSYNC = new Object();</span>
   /**
    * Native size of the GUID
    */
@@ -94,9 +94,9 @@ public class GUID implements Comparable&lt;GUID&gt; {
    *
    * @param size size of the byte representation
    */
-<span class="fc" id="L97">  GUID(final int size) {</span>
-<span class="fc" id="L98">    bguid = new byte[size];</span>
-<span class="fc" id="L99">  }</span>
+<span class="nc" id="L97">  GUID(final int size) {</span>
+<span class="nc" id="L98">    bguid = new byte[size];</span>
+<span class="nc" id="L99">  }</span>
 
   /**
    * Constructor that takes a byte array as this GUID's content
@@ -106,13 +106,13 @@ public class GUID implements Comparable&lt;GUID&gt; {
    * @throws InvalidArgumentException
    */
   public GUID(final byte[] bytes) throws InvalidArgumentException {
-<span class="fc" id="L109">    this(KEYSIZE);</span>
-<span class="fc" id="L110">    setBytes(bytes, KEYSIZE);</span>
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L109">    this(KEYSIZE);</span>
+<span class="nc" id="L110">    setBytes(bytes, KEYSIZE);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (getVersion() != VERSION) {</span>
 <span class="nc" id="L112">      throw new InvalidArgumentException(</span>
 <span class="nc" id="L113">          &quot;Version is incorrect: &quot; + getVersion());</span>
     }
-<span class="fc" id="L115">  }</span>
+<span class="nc" id="L115">  }</span>
 
   /**
    * Build from String key
@@ -122,13 +122,13 @@ public class GUID implements Comparable&lt;GUID&gt; {
    * @throws InvalidArgumentException
    */
   public GUID(final String idsource) throws InvalidArgumentException {
-<span class="fc" id="L125">    this(KEYSIZE);</span>
-<span class="fc" id="L126">    setString(idsource);</span>
-<span class="pc bpc" id="L127" title="1 of 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L125">    this(KEYSIZE);</span>
+<span class="nc" id="L126">    setString(idsource);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (getVersion() != VERSION) {</span>
 <span class="nc" id="L128">      throw new InvalidArgumentException(</span>
 <span class="nc" id="L129">          &quot;Version is incorrect: &quot; + getVersion());</span>
     }
-<span class="fc" id="L131">  }</span>
+<span class="nc" id="L131">  }</span>
 
   /**
    * Internal function
@@ -143,16 +143,16 @@ public class GUID implements Comparable&lt;GUID&gt; {
   @JsonIgnore
   GUID setBytes(final byte[] bytes, final int size)
       throws InvalidArgumentException {
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">    if (bytes == null) {</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (bytes == null) {</span>
 <span class="nc" id="L147">      throw new InvalidArgumentException(&quot;Empty argument&quot;);</span>
     }
-<span class="fc bfc" id="L149" title="All 2 branches covered.">    if (bytes.length != size) {</span>
-<span class="fc" id="L150">      throw new InvalidArgumentException(</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">    if (bytes.length != size) {</span>
+<span class="nc" id="L150">      throw new InvalidArgumentException(</span>
           &quot;Attempted to parse malformed GUID: (&quot; + bytes.length + &quot;) &quot; +
-<span class="fc" id="L152">          Arrays.toString(bytes));</span>
+<span class="nc" id="L152">          Arrays.toString(bytes));</span>
     }
-<span class="fc" id="L154">    System.arraycopy(bytes, 0, bguid, 0, size);</span>
-<span class="fc" id="L155">    return this;</span>
+<span class="nc" id="L154">    System.arraycopy(bytes, 0, bguid, 0, size);</span>
+<span class="nc" id="L155">    return this;</span>
   }
 
   /**
@@ -160,8 +160,8 @@ public class GUID implements Comparable&lt;GUID&gt; {
    * Platform Id and timestamp with no tenant
    */
   public GUID() {
-<span class="fc" id="L163">    this(0, JvmProcessId.macAddressAsInt() &amp; 0x7FFFFFFF);</span>
-<span class="fc" id="L164">  }</span>
+<span class="nc" id="L163">    this(0, JvmProcessId.macAddressAsInt() &amp; 0x7FFFFFFF);</span>
+<span class="nc" id="L164">  }</span>
 
   /**
    * Constructor that generates a new GUID using the current process id and
@@ -174,12 +174,12 @@ public class GUID implements Comparable&lt;GUID&gt; {
    *     of range
    */
   public GUID(final int tenantId, final int platformId) {
-<span class="fc" id="L177">    this(KEYSIZE);</span>
-<span class="pc bpc" id="L178" title="2 of 4 branches missed.">    if (tenantId &lt; 0 || tenantId &gt; 0x3FFFFFFF) {</span>
+<span class="nc" id="L177">    this(KEYSIZE);</span>
+<span class="nc bnc" id="L178" title="All 4 branches missed.">    if (tenantId &lt; 0 || tenantId &gt; 0x3FFFFFFF) {</span>
 <span class="nc" id="L179">      throw new IllegalArgumentException(</span>
           &quot;DomainId must be between 0 and 2^30-1: &quot; + tenantId);
     }
-<span class="pc bpc" id="L182" title="2 of 4 branches missed.">    if (platformId &lt; 0 || platformId &gt; 0x7FFFFFFF) {</span>
+<span class="nc bnc" id="L182" title="All 4 branches missed.">    if (platformId &lt; 0 || platformId &gt; 0x7FFFFFFF) {</span>
 <span class="nc" id="L183">      throw new IllegalArgumentException(</span>
           &quot;PlatformId must be between 0 and 2^31-1: &quot; + platformId);
     }
@@ -187,16 +187,16 @@ public class GUID implements Comparable&lt;GUID&gt; {
     // atomically
     final long time;
     final int count;
-<span class="fc" id="L190">    synchronized (FORSYNC) {</span>
-<span class="fc" id="L191">      long tmptime = System.currentTimeMillis();</span>
-<span class="fc bfc" id="L192" title="All 2 branches covered.">      if (lastTimeStamp != tmptime) {</span>
-<span class="fc" id="L193">        counter = 0;</span>
-<span class="fc" id="L194">        lastTimeStamp = tmptime;</span>
+<span class="nc" id="L190">    synchronized (FORSYNC) {</span>
+<span class="nc" id="L191">      long tmptime = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      if (lastTimeStamp != tmptime) {</span>
+<span class="nc" id="L193">        counter = 0;</span>
+<span class="nc" id="L194">        lastTimeStamp = tmptime;</span>
       }
-<span class="fc" id="L196">      count = ++counter;</span>
-<span class="pc bpc" id="L197" title="1 of 2 branches missed.">      if (count &gt; 0xFFFFFF) {</span>
+<span class="nc" id="L196">      count = ++counter;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">      if (count &gt; 0xFFFFFF) {</span>
         try {
-<span class="nc" id="L199">          FORSYNC.wait(1);//NOSONAR</span>
+<span class="nc" id="L199">          Thread.sleep(1);//NOSONAR</span>
 <span class="nc" id="L200">        } catch (final InterruptedException e) {//NOSONAR</span>
           // ignore
 <span class="nc" id="L202">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
@@ -205,103 +205,103 @@ public class GUID implements Comparable&lt;GUID&gt; {
 <span class="nc" id="L205">        counter = 0;</span>
 <span class="nc" id="L206">        lastTimeStamp = tmptime;</span>
       }
-<span class="fc" id="L208">      time = tmptime;</span>
-<span class="fc" id="L209">    }</span>
+<span class="nc" id="L208">      time = tmptime;</span>
+<span class="nc" id="L209">    }</span>
     // 1 bytes = Version (8)
-<span class="fc" id="L211">    bguid[HEADER_POS] = (byte) VERSION;</span>
+<span class="nc" id="L211">    bguid[HEADER_POS] = (byte) VERSION;</span>
 
     // 4 bytes - 2 bits = Domain (30)
-<span class="fc" id="L214">    int value = tenantId;</span>
-<span class="fc" id="L215">    bguid[TENANT_POS + 3] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L216">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L217">    bguid[TENANT_POS + 2] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L218">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L219">    bguid[TENANT_POS + 1] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L220">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L221">    bguid[TENANT_POS] = (byte) (value &amp; 0x3F);</span>
+<span class="nc" id="L214">    int value = tenantId;</span>
+<span class="nc" id="L215">    bguid[TENANT_POS + 3] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L216">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L217">    bguid[TENANT_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L218">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L219">    bguid[TENANT_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L220">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L221">    bguid[TENANT_POS] = (byte) (value &amp; 0x3F);</span>
 
     // 4 bytes = -1 bit Platform (31)
-<span class="fc" id="L224">    value = platformId;</span>
-<span class="fc" id="L225">    bguid[PLATFORM_POS + 3] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L226">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L227">    bguid[PLATFORM_POS + 2] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L228">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L229">    bguid[PLATFORM_POS + 1] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L230">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L231">    bguid[PLATFORM_POS] = (byte) (value &amp; 0x7F);</span>
+<span class="nc" id="L224">    value = platformId;</span>
+<span class="nc" id="L225">    bguid[PLATFORM_POS + 3] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L226">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L227">    bguid[PLATFORM_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L228">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L229">    bguid[PLATFORM_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L230">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L231">    bguid[PLATFORM_POS] = (byte) (value &amp; 0x7F);</span>
 
     // 3 bytes = -2 bits JVMPID (22)
-<span class="fc" id="L234">    value = JvmProcessId.JVMPID;</span>
-<span class="fc" id="L235">    bguid[PID_POS + 2] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L236">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L237">    bguid[PID_POS + 1] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L238">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L239">    bguid[PID_POS] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L234">    value = JvmProcessId.JVMPID;</span>
+<span class="nc" id="L235">    bguid[PID_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L236">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L237">    bguid[PID_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L238">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L239">    bguid[PID_POS] = (byte) (value &amp; 0xFF);</span>
 
     // 6 bytes = timestamp (so up to 8 925 years after Time 0 so year 10
     // 895)
-<span class="fc" id="L243">    long lvalue = time;</span>
-<span class="fc" id="L244">    bguid[TIME_POS + 5] = (byte) (lvalue &amp; 0xFF);</span>
-<span class="fc" id="L245">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L246">    bguid[TIME_POS + 4] = (byte) (lvalue &amp; 0xFF);</span>
-<span class="fc" id="L247">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L248">    bguid[TIME_POS + 3] = (byte) (lvalue &amp; 0xFF);</span>
-<span class="fc" id="L249">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L250">    bguid[TIME_POS + 2] = (byte) (lvalue &amp; 0xFF);</span>
-<span class="fc" id="L251">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L252">    bguid[TIME_POS + 1] = (byte) (lvalue &amp; 0xFF);</span>
-<span class="fc" id="L253">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L254">    bguid[TIME_POS] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="nc" id="L243">    long lvalue = time;</span>
+<span class="nc" id="L244">    bguid[TIME_POS + 5] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="nc" id="L245">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L246">    bguid[TIME_POS + 4] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="nc" id="L247">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L248">    bguid[TIME_POS + 3] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="nc" id="L249">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L250">    bguid[TIME_POS + 2] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="nc" id="L251">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L252">    bguid[TIME_POS + 1] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="nc" id="L253">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L254">    bguid[TIME_POS] = (byte) (lvalue &amp; 0xFF);</span>
 
     // 3 bytes = counter against collision
-<span class="fc" id="L257">    value = count;</span>
-<span class="fc" id="L258">    bguid[COUNTER_POS + 2] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L259">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L260">    bguid[COUNTER_POS + 1] = (byte) (value &amp; 0xFF);</span>
-<span class="fc" id="L261">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L262">    bguid[COUNTER_POS] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L257">    value = count;</span>
+<span class="nc" id="L258">    bguid[COUNTER_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L259">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L260">    bguid[COUNTER_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="nc" id="L261">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L262">    bguid[COUNTER_POS] = (byte) (value &amp; 0xFF);</span>
 
-<span class="fc" id="L264">  }</span>
+<span class="nc" id="L264">  }</span>
 
   /**
    * @return the Base32 representation (default of toString)
    */
   @JsonIgnore
-  public String toBase32() {
-<span class="fc" id="L271">    return BaseXx.getBase32(bguid);</span>
+  public final String toBase32() {
+<span class="nc" id="L271">    return BaseXx.getBase32(bguid);</span>
   }
 
   /**
    * @return the Base64 representation (default of toString)
    */
   @JsonIgnore
-  public String toBase64() {
-<span class="fc" id="L279">    return BaseXx.getBase64UrlWithoutPadding(bguid);</span>
+  public final String toBase64() {
+<span class="nc" id="L279">    return BaseXx.getBase64UrlWithoutPadding(bguid);</span>
   }
 
   /**
    * @return the Hexadecimal representation
    */
   @JsonIgnore
-  public String toHex() {
-<span class="fc" id="L287">    return BaseXx.getBase16(bguid);</span>
+  public final String toHex() {
+<span class="nc" id="L287">    return BaseXx.getBase16(bguid);</span>
   }
 
   /**
    * @return the Ark representation of this GUID
    */
   @JsonIgnore
-  public String toArk() {
-<span class="fc" id="L295">    return new StringBuilder(ARK).append(getTenantId()).append('/')</span>
-<span class="fc" id="L296">                                 .append(toArkName()).toString();</span>
+  public final String toArk() {
+<span class="nc" id="L295">    return new StringBuilder(ARK).append(getTenantId()).append('/')</span>
+<span class="nc" id="L296">                                 .append(toArkName()).toString();</span>
   }
 
   /**
    * @return the String representation of this GUID
    */
   @JsonGetter(&quot;id&quot;)
-  public String getId() {
-<span class="fc" id="L304">    return toString();</span>
+  public final String getId() {
+<span class="nc" id="L304">    return toString();</span>
   }
 
   /**
@@ -315,67 +315,67 @@ public class GUID implements Comparable&lt;GUID&gt; {
    */
   @JsonSetter(&quot;id&quot;)
   GUID setString(final String idsource) throws InvalidArgumentException {
-<span class="pc bpc" id="L318" title="1 of 2 branches missed.">    if (idsource == null) {</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">    if (idsource == null) {</span>
 <span class="nc" id="L319">      throw new InvalidArgumentException(&quot;Empty argument&quot;);</span>
     }
-<span class="fc" id="L321">    final String id = idsource.trim();</span>
-<span class="fc bfc" id="L322" title="All 2 branches covered.">    if (idsource.startsWith(ARK)) {</span>
-<span class="fc" id="L323">      String ids = idsource;</span>
-<span class="fc" id="L324">      ids = ids.substring(ARK.length());</span>
-<span class="fc" id="L325">      final int separator = ids.indexOf('/');</span>
-<span class="fc bfc" id="L326" title="All 2 branches covered.">      if (separator &lt;= 0) {</span>
-<span class="fc" id="L327">        throw new InvalidArgumentException(</span>
+<span class="nc" id="L321">    final String id = idsource.trim();</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">    if (idsource.startsWith(ARK)) {</span>
+<span class="nc" id="L323">      String ids = idsource;</span>
+<span class="nc" id="L324">      ids = ids.substring(ARK.length());</span>
+<span class="nc" id="L325">      final int separator = ids.indexOf('/');</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">      if (separator &lt;= 0) {</span>
+<span class="nc" id="L327">        throw new InvalidArgumentException(</span>
             ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
       }
       int tenantId;
       try {
-<span class="fc" id="L332">        tenantId = Integer.parseInt(ids.substring(0, separator));</span>
-<span class="fc" id="L333">      } catch (final NumberFormatException e) {</span>
-<span class="fc" id="L334">        throw new InvalidArgumentException(</span>
+<span class="nc" id="L332">        tenantId = Integer.parseInt(ids.substring(0, separator));</span>
+<span class="nc" id="L333">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L334">        throw new InvalidArgumentException(</span>
             ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
-<span class="fc" id="L336">      }</span>
+<span class="nc" id="L336">      }</span>
       // BASE32
-<span class="fc" id="L338">      ids = ids.substring(separator + 1);</span>
-<span class="fc" id="L339">      final byte[] base32 = BaseXx.getFromBase32(ids);</span>
-<span class="fc bfc" id="L340" title="All 2 branches covered.">      if (base32.length != KEYSIZE - TENANT_SIZE) {</span>
-<span class="fc" id="L341">        throw new InvalidArgumentException(</span>
+<span class="nc" id="L338">      ids = ids.substring(separator + 1);</span>
+<span class="nc" id="L339">      final byte[] base32 = BaseXx.getFromBase32(ids);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">      if (base32.length != KEYSIZE - TENANT_SIZE) {</span>
+<span class="nc" id="L341">        throw new InvalidArgumentException(</span>
             ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
       }
-<span class="fc" id="L344">      System.arraycopy(base32, 0, bguid, HEADER_POS, HEADER_SIZE);</span>
+<span class="nc" id="L344">      System.arraycopy(base32, 0, bguid, HEADER_POS, HEADER_SIZE);</span>
       // GUID Domain default to 0 (from 0 to 2^30-1)
-<span class="fc" id="L346">      bguid[TENANT_POS + 3] = (byte) (tenantId &amp; 0xFF);</span>
-<span class="fc" id="L347">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L348">      bguid[TENANT_POS + 2] = (byte) (tenantId &amp; 0xFF);</span>
-<span class="fc" id="L349">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L350">      bguid[TENANT_POS + 1] = (byte) (tenantId &amp; 0xFF);</span>
-<span class="fc" id="L351">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
-<span class="fc" id="L352">      bguid[TENANT_POS] = (byte) (tenantId &amp; 0x3F);</span>
+<span class="nc" id="L346">      bguid[TENANT_POS + 3] = (byte) (tenantId &amp; 0xFF);</span>
+<span class="nc" id="L347">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L348">      bguid[TENANT_POS + 2] = (byte) (tenantId &amp; 0xFF);</span>
+<span class="nc" id="L349">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L350">      bguid[TENANT_POS + 1] = (byte) (tenantId &amp; 0xFF);</span>
+<span class="nc" id="L351">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="nc" id="L352">      bguid[TENANT_POS] = (byte) (tenantId &amp; 0x3F);</span>
       // BASE32
-<span class="fc" id="L354">      System.arraycopy(base32, HEADER_SIZE, bguid, PLATFORM_POS,</span>
+<span class="nc" id="L354">      System.arraycopy(base32, HEADER_SIZE, bguid, PLATFORM_POS,</span>
                        PLATFORM_SIZE + PID_SIZE + TIME_SIZE + COUNTER_SIZE);
-<span class="fc" id="L356">      return this;</span>
+<span class="nc" id="L356">      return this;</span>
     }
-<span class="fc" id="L358">    final int len = id.length();</span>
+<span class="nc" id="L358">    final int len = id.length();</span>
     try {
-<span class="fc bfc" id="L360" title="All 2 branches covered.">      if (len == KEYB16SIZE) {</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (len == KEYB16SIZE) {</span>
         // HEXA BASE16
-<span class="fc" id="L362">        System.arraycopy(BaseXx.getFromBase16(idsource), 0, bguid, 0, KEYSIZE);</span>
-<span class="fc bfc" id="L363" title="All 2 branches covered.">      } else if (len == KEYB32SIZE) {</span>
+<span class="nc" id="L362">        System.arraycopy(BaseXx.getFromBase16(idsource), 0, bguid, 0, KEYSIZE);</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">      } else if (len == KEYB32SIZE) {</span>
         // BASE32
-<span class="fc" id="L365">        System.arraycopy(BaseXx.getFromBase32(idsource), 0, bguid, 0, KEYSIZE);</span>
-<span class="fc bfc" id="L366" title="All 2 branches covered.">      } else if (len == KEYB64SIZE) {</span>
+<span class="nc" id="L365">        System.arraycopy(BaseXx.getFromBase32(idsource), 0, bguid, 0, KEYSIZE);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">      } else if (len == KEYB64SIZE) {</span>
         // BASE64
-<span class="fc" id="L368">        System.arraycopy(BaseXx.getFromBase64UrlWithoutPadding(idsource), 0,</span>
+<span class="nc" id="L368">        System.arraycopy(BaseXx.getFromBase64UrlWithoutPadding(idsource), 0,</span>
                          bguid, 0, KEYSIZE);
       } else {
-<span class="fc" id="L371">        throw new InvalidArgumentException(</span>
+<span class="nc" id="L371">        throw new InvalidArgumentException(</span>
             &quot;Attempted to parse malformed GUID: (&quot; + len + &quot;) &quot; + id);
       }
 <span class="nc" id="L374">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L375">      throw new InvalidArgumentException(</span>
           &quot;Attempted to parse malformed GUID: &quot; + id, e);
-<span class="fc" id="L377">    }</span>
-<span class="fc" id="L378">    return this;</span>
+<span class="nc" id="L377">    }</span>
+<span class="nc" id="L378">    return this;</span>
   }
 
   /**
@@ -385,7 +385,7 @@ public class GUID implements Comparable&lt;GUID&gt; {
    */
   @JsonIgnore
   public final int getVersion() {
-<span class="fc" id="L388">    return bguid[HEADER_POS] &amp; 0xFF;</span>
+<span class="nc" id="L388">    return bguid[HEADER_POS] &amp; 0xFF;</span>
   }
 
   /**
@@ -393,7 +393,7 @@ public class GUID implements Comparable&lt;GUID&gt; {
    */
   @JsonIgnore
   public final int getTenantId() {
-<span class="fc" id="L396">    return (bguid[TENANT_POS] &amp; 0x3F) &lt;&lt; BYTE_SIZE * 3 |</span>
+<span class="nc" id="L396">    return (bguid[TENANT_POS] &amp; 0x3F) &lt;&lt; BYTE_SIZE * 3 |</span>
            (bguid[TENANT_POS + 1] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |
            (bguid[TENANT_POS + 2] &amp; 0xFF) &lt;&lt; BYTE_SIZE |
            bguid[TENANT_POS + 3] &amp; 0xFF;
@@ -455,15 +455,15 @@ public class GUID implements Comparable&lt;GUID&gt; {
    */
   @JsonIgnore
   public final long getTimestamp() {
-<span class="pc bpc" id="L458" title="1 of 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">    if (getVersion() != VERSION) {</span>
 <span class="nc" id="L459">      return -1;</span>
     }
-<span class="fc" id="L461">    long time = 0;</span>
-<span class="fc bfc" id="L462" title="All 2 branches covered.">    for (int i = 0; i &lt; TIME_SIZE; i++) {</span>
-<span class="fc" id="L463">      time &lt;&lt;= BYTE_SIZE;</span>
-<span class="fc" id="L464">      time |= bguid[TIME_POS + i] &amp; 0xFF;</span>
+<span class="nc" id="L461">    long time = 0;</span>
+<span class="nc bnc" id="L462" title="All 2 branches missed.">    for (int i = 0; i &lt; TIME_SIZE; i++) {</span>
+<span class="nc" id="L463">      time &lt;&lt;= BYTE_SIZE;</span>
+<span class="nc" id="L464">      time |= bguid[TIME_POS + i] &amp; 0xFF;</span>
     }
-<span class="fc" id="L466">    return time;</span>
+<span class="nc" id="L466">    return time;</span>
   }
 
   /**
@@ -471,7 +471,7 @@ public class GUID implements Comparable&lt;GUID&gt; {
    */
   @JsonIgnore
   public final int getCounter() {
-<span class="fc" id="L474">    return (bguid[COUNTER_POS] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |</span>
+<span class="nc" id="L474">    return (bguid[COUNTER_POS] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |</span>
            (bguid[COUNTER_POS + 1] &amp; 0xFF) &lt;&lt; BYTE_SIZE |
            bguid[COUNTER_POS + 2] &amp; 0xFF;
   }
@@ -480,17 +480,17 @@ public class GUID implements Comparable&lt;GUID&gt; {
    * @return the Ark Name part of Ark representation
    */
   public final String toArkName() {
-<span class="fc" id="L483">    final byte[] temp = new byte[KEYSIZE - TENANT_SIZE];</span>
-<span class="fc" id="L484">    System.arraycopy(bguid, HEADER_POS, temp, 0, HEADER_SIZE);</span>
-<span class="fc" id="L485">    System.arraycopy(bguid, PLATFORM_POS, temp, HEADER_SIZE,</span>
+<span class="nc" id="L483">    final byte[] temp = new byte[KEYSIZE - TENANT_SIZE];</span>
+<span class="nc" id="L484">    System.arraycopy(bguid, HEADER_POS, temp, 0, HEADER_SIZE);</span>
+<span class="nc" id="L485">    System.arraycopy(bguid, PLATFORM_POS, temp, HEADER_SIZE,</span>
                      PLATFORM_SIZE + PID_SIZE + TIME_SIZE + COUNTER_SIZE);
-<span class="fc" id="L487">    return BaseXx.getBase32(temp);</span>
+<span class="nc" id="L487">    return BaseXx.getBase32(temp);</span>
   }
 
 
   @Override
   public String toString() {
-<span class="fc" id="L493">    return toBase32();</span>
+<span class="nc" id="L493">    return toBase32();</span>
   }
 
   /**
@@ -499,39 +499,39 @@ public class GUID implements Comparable&lt;GUID&gt; {
    * @return raw byte array of GUID
    */
   @JsonIgnore
-  public byte[] getBytes() {
-<span class="fc" id="L503">    return Arrays.copyOf(bguid, bguid.length);</span>
+  public final byte[] getBytes() {
+<span class="nc" id="L503">    return Arrays.copyOf(bguid, bguid.length);</span>
   }
 
   @Override
   @JsonIgnore
-  public int hashCode() {
-<span class="fc" id="L509">    return Arrays.hashCode(bguid);</span>
+  public final int hashCode() {
+<span class="nc" id="L509">    return Arrays.hashCode(bguid);</span>
   }
 
   @Override
-  public boolean equals(final Object o) {
-<span class="fc bfc" id="L514" title="All 2 branches covered.">    if (!(o instanceof GUID)) {</span>
-<span class="fc" id="L515">      return false;</span>
+  public final boolean equals(final Object o) {
+<span class="nc bnc" id="L514" title="All 2 branches missed.">    if (!(o instanceof GUID)) {</span>
+<span class="nc" id="L515">      return false;</span>
     }
-<span class="pc bpc" id="L517" title="1 of 4 branches missed.">    return this == o || Arrays.equals(bguid, ((GUID) o).bguid);</span>
+<span class="nc bnc" id="L517" title="All 4 branches missed.">    return this == o || Arrays.equals(bguid, ((GUID) o).bguid);</span>
   }
 
   @Override
-  public int compareTo(final GUID guid) {
-<span class="fc" id="L522">    final int id = getTenantId();</span>
-<span class="fc" id="L523">    final int id2 = guid.getTenantId();</span>
-<span class="pc bpc" id="L524" title="1 of 2 branches missed.">    if (id != id2) {</span>
+  public final int compareTo(final GUID guid) {
+<span class="nc" id="L522">    final int id = getTenantId();</span>
+<span class="nc" id="L523">    final int id2 = guid.getTenantId();</span>
+<span class="nc bnc" id="L524" title="All 2 branches missed.">    if (id != id2) {</span>
 <span class="nc bnc" id="L525" title="All 2 branches missed.">      return id &lt; id2? -1 : 1;</span>
     }
-<span class="fc" id="L527">    final long ts = getTimestamp();</span>
-<span class="fc" id="L528">    final long ts2 = guid.getTimestamp();</span>
-<span class="pc bpc" id="L529" title="1 of 2 branches missed.">    if (ts == ts2) {</span>
-<span class="fc" id="L530">      final int ct = getCounter();</span>
-<span class="fc" id="L531">      final int ct2 = guid.getCounter();</span>
-<span class="pc bpc" id="L532" title="1 of 2 branches missed.">      if (ct == ct2) {</span>
+<span class="nc" id="L527">    final long ts = getTimestamp();</span>
+<span class="nc" id="L528">    final long ts2 = guid.getTimestamp();</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">    if (ts == ts2) {</span>
+<span class="nc" id="L530">      final int ct = getCounter();</span>
+<span class="nc" id="L531">      final int ct2 = guid.getCounter();</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">      if (ct == ct2) {</span>
         // then all must be equals, else whatever
-<span class="pc bpc" id="L534" title="1 of 2 branches missed.">        return Arrays.equals(this.bguid, guid.getBytes())? 0 : -1;</span>
+<span class="nc bnc" id="L534" title="All 2 branches missed.">        return Arrays.equals(this.bguid, guid.getBytes())? 0 : -1;</span>
       }
       // Cannot be equal
 <span class="nc bnc" id="L537" title="All 2 branches missed.">      return ct &lt; ct2? -1 : 1;</span>
@@ -541,4 +541,4 @@ public class GUID implements Comparable&lt;GUID&gt; {
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

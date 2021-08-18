@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpConfiguration.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.config</a> &gt; <span class="el_source">FtpConfiguration.java</span></div><h1>FtpConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.config;
+
+import io.netty.channel.Channel;
+import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
+import io.netty.util.AttributeKey;
+import org.waarp.common.file.FileParameterInterface;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpShutdownHook.ShutdownConfiguration;
+import org.waarp.ftp.core.control.BusinessHandler;
+import org.waarp.ftp.core.data.handler.DataBusinessHandler;
+import org.waarp.ftp.core.exception.FtpNoConnectionException;
+import org.waarp.ftp.core.exception.FtpUnknownFieldException;
+import org.waarp.ftp.core.session.FtpSession;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * Abstract class for configuration
+ */
+public abstract class FtpConfiguration {
+  public static final String FTP_SESSION_ATTRIBUTE_KEY_NAME = &quot;FtpSession&quot;;
+<span class="nc" id="L47">  public static final AttributeKey&lt;FtpSession&gt; FTP_SESSION_ATTRIBUTE_KEY =</span>
+<span class="nc" id="L48">      AttributeKey.newInstance(FTP_SESSION_ATTRIBUTE_KEY_NAME);</span>
+  private static final String STOU = &quot;.stou&quot;;
+  private static final String PROPERTY_HAS_NO_VALUE = &quot;Property has no value: &quot;;
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L54">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L55">      WaarpLoggerFactory.getLogger(FtpConfiguration.class);</span>
+  /**
+   * Global Accessor
+   */
+  public static Object ftpConfiguration;
+
+  // FTP Configuration: Externals
+  /**
+   * Default session limit 64Mbit, so up to 8 full simultaneous clients
+   */
+  static final long DEFAULT_SESSION_LIMIT = 0x800000L;
+
+  /**
+   * Default global limit 512Mbit
+   */
+  static final long DEFAULT_GLOBAL_LIMIT = 0x4000000L;
+
+  /**
+   * Nb of milliseconds after pending data transfer is in timeout
+   */
+<span class="nc" id="L75">  private static long dataTimeoutCon = 5000;</span>
+
+  /**
+   * PASSWORD for SHUTDOWN
+   */
+  private static final String FTP_PASSWORD = &quot;FTP_PASSWORD&quot;;//NOSONAR
+
+  // END OF STATIC VALUES
+  /**
+   * Internal configuration
+   */
+  private final FtpInternalConfiguration internalConfiguration;
+
+  /**
+   * SERVER PORT
+   */
+<span class="nc" id="L91">  private int serverPort = 21;</span>
+  /**
+   * Default Address if any
+   */
+  private String serverAddress;
+
+  /**
+   * Base Directory
+   */
+  private String baseDirectory;
+
+  /**
+   * Associated FileParameterInterface
+   */
+  private final FileParameterInterface fileParameter;
+
+  /**
+   * True if the service is going to shutdown
+   */
+  private boolean isShutdown;
+
+  /**
+   * Default number of threads in pool for Server. The default value is for
+   * client for Executor in the Pipeline
+   * for Business logic. Server will change this value on startup if not set.
+   * Default 0 means in proportion of
+   * real core number.
+   */
+  private int serverThread;
+
+  /**
+   * Default number of threads in pool for Client part.
+   */
+<span class="nc" id="L124">  private int clientThread = 80;</span>
+
+  /**
+   * Which class owns this configuration
+   */
+  final Class&lt;?&gt; fromClass;
+
+  /**
+   * Which class will be used for DataBusinessHandler
+   */
+  final Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler;
+
+  /**
+   * Which class will be used for BusinessHandler
+   */
+  final Class&lt;? extends BusinessHandler&gt; businessHandler;
+
+  /**
+   * Internal Lock
+   */
+<span class="nc" id="L144">  private final ReentrantLock lock = new ReentrantLock();</span>
+
+  /**
+   * Nb of milliseconds after connection is in timeout
+   */
+<span class="nc" id="L149">  private long timeoutCon = 30000;</span>
+
+  /**
+   * Size by default of block size for receive/sending files. Should be a
+   * multiple of 8192 (maximum = 64K due to
+   * block limitation to 2 bytes)
+   */
+<span class="nc" id="L156">  private int blocksize = 0x10000; // 64K</span>
+
+  /**
+   * Limit in Write byte/s to apply globally to the FTP Server
+   */
+<span class="nc" id="L161">  protected long serverGlobalWriteLimit = DEFAULT_GLOBAL_LIMIT;</span>
+
+  /**
+   * Limit in Read byte/s to apply globally to the FTP Server
+   */
+<span class="nc" id="L166">  protected long serverGlobalReadLimit = DEFAULT_GLOBAL_LIMIT;</span>
+
+  /**
+   * Limit in Write byte/s to apply by session to the FTP Server
+   */
+<span class="nc" id="L171">  protected long serverChannelWriteLimit = DEFAULT_SESSION_LIMIT;</span>
+
+  /**
+   * Limit in Read byte/s to apply by session to the FTP Server
+   */
+<span class="nc" id="L176">  protected long serverChannelReadLimit = DEFAULT_SESSION_LIMIT;</span>
+
+  /**
+   * Delay in ms between two checks
+   */
+<span class="nc" id="L181">  protected long delayLimit = 1000;</span>
+
+  /**
+   * Should the file be deleted when the transfer is aborted on STOR like
+   * commands
+   */
+  private boolean deleteOnAbort;
+
+  /**
+   * Max global memory limit: default is 1GB
+   */
+<span class="nc" id="L192">  private int maxGlobalMemory = 1073741824;</span>
+
+  /**
+   * 1 = Active, -1 = Passive, 0 = Both
+   */
+<span class="nc" id="L197">  private int activePassiveMode = 0;</span>
+
+  /**
+   * General Configuration Object
+   */
+<span class="nc" id="L202">  private final HashMap&lt;String, Object&gt; properties =</span>
+      new HashMap&lt;String, Object&gt;();
+
+  /**
+   * Use by ShutdownHook
+   */
+<span class="nc" id="L208">  private final ShutdownConfiguration shutdownConfiguration =</span>
+      new ShutdownConfiguration();
+
+  /**
+   * Simple constructor
+   *
+   * @param classtype Owner
+   * @param businessHandler class that will be used for
+   *     BusinessHandler
+   * @param dataBusinessHandler class that will be used for
+   *     DataBusinessHandler
+   * @param fileParameter the FileParameterInterface to used
+   */
+  protected FtpConfiguration(final Class&lt;?&gt; classtype,
+                             final Class&lt;? extends BusinessHandler&gt; businessHandler,
+                             final Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler,
+<span class="nc" id="L224">                             final FileParameterInterface fileParameter) {</span>
+<span class="nc" id="L225">    fromClass = classtype;</span>
+<span class="nc" id="L226">    this.dataBusinessHandler = dataBusinessHandler;</span>
+<span class="nc" id="L227">    this.businessHandler = businessHandler;</span>
+<span class="nc" id="L228">    internalConfiguration = new FtpInternalConfiguration(this);</span>
+<span class="nc" id="L229">    this.fileParameter = fileParameter;</span>
+<span class="nc" id="L230">    ftpConfiguration = this;</span>
+<span class="nc" id="L231">  }</span>
+
+  /**
+   * @param key
+   *
+   * @return The String property associated to the key
+   *
+   * @throws FtpUnknownFieldException
+   */
+  public final String getStringProperty(final String key)
+      throws FtpUnknownFieldException {
+<span class="nc" id="L242">    final String s = (String) properties.get(key);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (s == null) {</span>
+<span class="nc" id="L244">      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);</span>
+    }
+<span class="nc" id="L246">    return s;</span>
+  }
+
+  /**
+   * @param key
+   *
+   * @return The Integer property associated to the key
+   *
+   * @throws FtpUnknownFieldException
+   */
+  public final int getIntProperty(final String key)
+      throws FtpUnknownFieldException {
+<span class="nc" id="L258">    final Integer i = (Integer) properties.get(key);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (i == null) {</span>
+<span class="nc" id="L260">      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);</span>
+    }
+<span class="nc" id="L262">    return i;</span>
+  }
+
+  /**
+   * @param key
+   *
+   * @return The File associated to the key
+   *
+   * @throws FtpUnknownFieldException
+   */
+  public final File getFileProperty(final String key)
+      throws FtpUnknownFieldException {
+<span class="nc" id="L274">    final File f = (File) properties.get(key);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">    if (f == null) {</span>
+<span class="nc" id="L276">      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);</span>
+    }
+<span class="nc" id="L278">    return f;</span>
+  }
+
+  /**
+   * @param key
+   *
+   * @return The Object property associated to the key
+   *
+   * @throws FtpUnknownFieldException
+   */
+  public final Object getProperty(final String key)
+      throws FtpUnknownFieldException {
+<span class="nc" id="L290">    final Object o = properties.get(key);</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L292">      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);</span>
+    }
+<span class="nc" id="L294">    return o;</span>
+  }
+
+  /**
+   * @return the TCP Port to listen in the Ftp Server
+   */
+  public final int getServerPort() {
+<span class="nc" id="L301">    return serverPort;</span>
+  }
+
+  /**
+   * @return the Address of the Ftp Server if any (may be null)
+   */
+  public final String getServerAddress() {
+<span class="nc" id="L308">    return serverAddress;</span>
+  }
+
+  /**
+   * @return the limit in Write byte/s to apply globally to the Ftp Server
+   */
+  public final long getServerGlobalWriteLimit() {
+<span class="nc" id="L315">    return serverGlobalWriteLimit;</span>
+  }
+
+  /**
+   * @return the limit in Write byte/s to apply for each session to the Ftp
+   *     Server
+   */
+  public final long getServerChannelWriteLimit() {
+<span class="nc" id="L323">    return serverChannelWriteLimit;</span>
+  }
+
+  /**
+   * @return the limit in Read byte/s to apply globally to the Ftp Server
+   */
+  public final long getServerGlobalReadLimit() {
+<span class="nc" id="L330">    return serverGlobalReadLimit;</span>
+  }
+
+  /**
+   * @return the limit in Read byte/s to apply for each session to the Ftp
+   *     Server
+   */
+  public final long getServerChannelReadLimit() {
+<span class="nc" id="L338">    return serverChannelReadLimit;</span>
+  }
+
+  /**
+   * @return the delayLimit to apply between two check
+   */
+  public final long getDelayLimit() {
+<span class="nc" id="L345">    return delayLimit;</span>
+  }
+
+  /**
+   * Check the password for Shutdown
+   *
+   * @param password
+   *
+   * @return True if the password is OK
+   */
+  public boolean checkPassword(final String password) {
+    final String serverpassword;
+    try {
+<span class="nc" id="L358">      serverpassword = getStringProperty(FTP_PASSWORD);</span>
+<span class="nc" id="L359">    } catch (final FtpUnknownFieldException e) {</span>
+<span class="nc" id="L360">      return false;</span>
+<span class="nc" id="L361">    }</span>
+<span class="nc" id="L362">    return serverpassword.equals(password);</span>
+  }
+
+  /**
+   * Return the next available port for passive connections.
+   *
+   * @return the next available Port for Passive connections
+   */
+  public abstract int getNextRangePort();
+
+  /**
+   * @return the Base Directory of this Ftp Server
+   */
+  public final String getBaseDirectory() {
+<span class="nc" id="L376">    return baseDirectory;</span>
+  }
+
+  /**
+   * @param key
+   * @param s
+   */
+  public final void setStringProperty(final String key, final String s) {
+<span class="nc" id="L384">    properties.put(key, s);</span>
+<span class="nc" id="L385">  }</span>
+
+  /**
+   * @param key
+   * @param i
+   */
+  public final void setIntProperty(final String key, final int i) {
+<span class="nc" id="L392">    properties.put(key, i);</span>
+<span class="nc" id="L393">  }</span>
+
+  /**
+   * @param key
+   * @param f
+   */
+  public final void setFileProperty(final String key, final File f) {
+<span class="nc" id="L400">    properties.put(key, f);</span>
+<span class="nc" id="L401">  }</span>
+
+  /**
+   * @param key
+   * @param o
+   */
+  public final void setProperty(final String key, final Object o) {
+<span class="nc" id="L408">    properties.put(key, o);</span>
+<span class="nc" id="L409">  }</span>
+
+  /**
+   * @param port the new port
+   */
+  public final void setServerPort(final int port) {
+<span class="nc" id="L415">    serverPort = port;</span>
+<span class="nc" id="L416">  }</span>
+
+  /**
+   * @param address the address to use while answering for address
+   */
+  public final void setServerAddress(final String address) {
+<span class="nc" id="L422">    serverAddress = address;</span>
+<span class="nc" id="L423">  }</span>
+
+  /**
+   * @param dir the new base directory
+   */
+  public final void setBaseDirectory(final String dir) {
+<span class="nc" id="L429">    baseDirectory = dir;</span>
+<span class="nc" id="L430">  }</span>
+
+  /**
+   * @param password the new password for shutdown
+   */
+  public final void setPassword(final String password) {
+<span class="nc" id="L436">    setStringProperty(FTP_PASSWORD, password);</span>
+<span class="nc" id="L437">  }</span>
+
+  /**
+   * @return the dataBusinessHandler
+   */
+  public final Class&lt;? extends DataBusinessHandler&gt; getDataBusinessHandler() {
+<span class="nc" id="L443">    return dataBusinessHandler;</span>
+  }
+
+  /**
+   * Init internal configuration
+   *
+   * @throws FtpNoConnectionException
+   */
+  public final void serverStartup() throws FtpNoConnectionException {
+<span class="nc" id="L452">    logger.debug(&quot;Server Startup&quot;);</span>
+<span class="nc" id="L453">    internalConfiguration.serverStartup();</span>
+<span class="nc" id="L454">    logger.debug(&quot;Server Startup done&quot;);</span>
+<span class="nc" id="L455">  }</span>
+
+  /**
+   * Reset the global monitor for bandwidth limitation and change future
+   * channel
+   * monitors with values divided by
+   * 10 (channel = global / 10)
+   *
+   * @param writeLimit
+   * @param readLimit
+   */
+  public final void changeNetworkLimit(final long writeLimit,
+                                       final long readLimit) {
+<span class="nc bnc" id="L468" title="All 2 branches missed.">    long newWriteLimit = writeLimit &gt; 1024? writeLimit : serverGlobalWriteLimit;</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">    if (writeLimit &lt;= 0) {</span>
+<span class="nc" id="L470">      newWriteLimit = 0;</span>
+    }
+<span class="nc bnc" id="L472" title="All 2 branches missed.">    long newReadLimit = readLimit &gt; 1024? readLimit : serverGlobalReadLimit;</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">    if (readLimit &lt;= 0) {</span>
+<span class="nc" id="L474">      newReadLimit = 0;</span>
+    }
+<span class="nc" id="L476">    final FtpGlobalTrafficShapingHandler fgts =</span>
+<span class="nc" id="L477">        internalConfiguration.getGlobalTrafficShapingHandler();</span>
+<span class="nc" id="L478">    fgts.configure(newWriteLimit, newReadLimit);</span>
+<span class="nc" id="L479">    serverChannelReadLimit = newReadLimit / 10;</span>
+<span class="nc" id="L480">    serverChannelWriteLimit = newWriteLimit / 10;</span>
+<span class="nc bnc" id="L481" title="All 2 branches missed.">    if (fgts instanceof GlobalChannelTrafficShapingHandler) {</span>
+<span class="nc" id="L482">      fgts.configureChannel(serverChannelWriteLimit, serverChannelReadLimit);</span>
+    }
+<span class="nc" id="L484">  }</span>
+
+  /**
+   * Compute number of threads for both client and server from the real number
+   * of available processors (double +
+   * 1) if the value is less than 64 threads.
+   */
+  public final void computeNbThreads() {
+<span class="nc" id="L492">    int nb = Runtime.getRuntime().availableProcessors() * 2 + 1;</span>
+<span class="nc bnc" id="L493" title="All 2 branches missed.">    if (nb &gt; 32) {</span>
+<span class="nc" id="L494">      nb = Runtime.getRuntime().availableProcessors() + 1;</span>
+    }
+<span class="nc bnc" id="L496" title="All 2 branches missed.">    if (getServerThread() &lt; nb) {</span>
+<span class="nc" id="L497">      setServerThread(nb);</span>
+<span class="nc" id="L498">      setClientThread(getServerThread() * 10);</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">    } else if (getClientThread() &lt; nb) {</span>
+<span class="nc" id="L500">      setClientThread(nb * 10);</span>
+    }
+<span class="nc" id="L502">  }</span>
+
+  /**
+   * In bind/unbind operation, lock
+   */
+  public final void bindLock() {
+<span class="nc" id="L508">    lock.lock();</span>
+<span class="nc" id="L509">  }</span>
+
+  /**
+   * In bind/unbind operation, unlock
+   */
+  public final void bindUnlock() {
+<span class="nc" id="L515">    lock.unlock();</span>
+<span class="nc" id="L516">  }</span>
+
+  /**
+   * @return the FtpInternalConfiguration
+   */
+  public final FtpInternalConfiguration getFtpInternalConfiguration() {
+<span class="nc" id="L522">    return internalConfiguration;</span>
+  }
+
+  /**
+   * Add a session from a couple of addresses
+   *
+   * @param ipOnly
+   * @param fullIp
+   * @param session
+   */
+  public final void setNewFtpSession(final InetAddress ipOnly,
+                                     final InetSocketAddress fullIp,
+                                     final FtpSession session) {
+<span class="nc" id="L535">    internalConfiguration.setNewFtpSession(ipOnly, fullIp, session);</span>
+<span class="nc" id="L536">  }</span>
+
+  /**
+   * Return and remove the FtpSession
+   *
+   * @param channel
+   * @param active
+   *
+   * @return the FtpSession if it exists associated to this channel
+   */
+  public final FtpSession getFtpSession(final Channel channel,
+                                        final boolean active) {
+<span class="nc" id="L548">    FtpSession session = null;</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">    for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB * 2; i++) {</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">      if (active) {</span>
+<span class="nc" id="L551">        session = channel.attr(FTP_SESSION_ATTRIBUTE_KEY).get();</span>
+<span class="nc bnc" id="L552" title="All 2 branches missed.">        if (session != null) {</span>
+<span class="nc" id="L553">          return session;</span>
+        }
+        try {
+<span class="nc" id="L556">          Thread.sleep(FtpInternalConfiguration.RETRYINMS * 10);</span>
+<span class="nc" id="L557">        } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L558">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L559">        }</span>
+      } else {
+<span class="nc" id="L561">        session = internalConfiguration.getFtpSession(channel);</span>
+<span class="nc bnc" id="L562" title="All 2 branches missed.">        if (session == null) {</span>
+<span class="nc" id="L563">          logger.debug(&quot;Session not found at try &quot; + i);</span>
+          try {
+<span class="nc" id="L565">            Thread.sleep(FtpInternalConfiguration.RETRYINMS * 10);</span>
+<span class="nc" id="L566">          } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L567">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L568">          }</span>
+        } else {
+<span class="nc" id="L570">          return session;</span>
+        }
+      }
+    }
+<span class="nc bnc" id="L574" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc bnc" id="L575" title="All 2 branches missed.">      if (active) {</span>
+<span class="nc" id="L576">        session = channel.attr(FTP_SESSION_ATTRIBUTE_KEY).get();</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">        if (session != null) {</span>
+<span class="nc" id="L578">          return session;</span>
+        }
+      } else {
+        // Last try using all current sessions
+<span class="nc" id="L582">        session = internalConfiguration.findPassiveFtpSession(channel);</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">        if (session != null) {</span>
+<span class="nc" id="L584">          logger.debug(&quot;Found from port Passive? {}&quot;, channel.localAddress());</span>
+<span class="nc" id="L585">          return session;</span>
+        }
+      }
+    }
+<span class="nc bnc" id="L589" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc bnc" id="L590" title="All 2 branches missed.">      logger.error(&quot;Could not find {} session for {}&quot;,</span>
+                   active? &quot;Active&quot; : &quot;Passive&quot;, channel);
+    }
+<span class="nc" id="L593">    return session;</span>
+  }
+
+  /**
+   * Remove the FtpSession
+   *
+   * @param ipOnly
+   * @param fullIp
+   */
+  public final void delFtpSession(final InetAddress ipOnly,
+                                  final InetSocketAddress fullIp) {
+<span class="nc" id="L604">    internalConfiguration.delFtpSession(ipOnly, fullIp);</span>
+<span class="nc" id="L605">  }</span>
+
+  /**
+   * @return the fileParameter
+   */
+  public final FileParameterInterface getFileParameter() {
+<span class="nc" id="L611">    return fileParameter;</span>
+  }
+
+  public final String getUniqueExtension() {
+    // Can be overridden if necessary
+<span class="nc" id="L616">    return STOU;</span>
+  }
+
+  /**
+   * To use if any external resources are to be released when shutting down
+   */
+  public void releaseResources() {
+<span class="nc" id="L623">    internalConfiguration.releaseResources();</span>
+<span class="nc" id="L624">  }</span>
+
+  /**
+   * Shutdown process is on going
+   */
+  public abstract void inShutdownProcess();
+
+  /**
+   * @return the isShutdown
+   */
+  public final boolean isShutdown() {
+<span class="nc" id="L635">    return isShutdown;</span>
+  }
+
+  /**
+   * @param isShutdown the isShutdown to set
+   */
+  public final void setShutdown(final boolean isShutdown) {
+<span class="nc" id="L642">    this.isShutdown = isShutdown;</span>
+<span class="nc" id="L643">  }</span>
+
+  /**
+   * @return the sERVER_THREAD
+   */
+  public final int getServerThread() {
+<span class="nc" id="L649">    return serverThread;</span>
+  }
+
+  /**
+   * @param serverThread0 the sERVER_THREAD to set
+   */
+  public final void setServerThread(final int serverThread0) {
+<span class="nc" id="L656">    serverThread = serverThread0;</span>
+<span class="nc" id="L657">  }</span>
+
+  /**
+   * @return the cLIENT_THREAD
+   */
+  public final int getClientThread() {
+<span class="nc" id="L663">    return clientThread;</span>
+  }
+
+  /**
+   * @param clientThread0 the cLIENT_THREAD to set
+   */
+  public final void setClientThread(final int clientThread0) {
+<span class="nc" id="L670">    clientThread = clientThread0;</span>
+<span class="nc" id="L671">  }</span>
+
+  /**
+   * @return the tIMEOUTCON
+   */
+  public final long getTimeoutCon() {
+<span class="nc" id="L677">    return timeoutCon;</span>
+  }
+
+  /**
+   * @param tIMEOUTCON the tIMEOUTCON to set
+   */
+  public final void setTimeoutCon(final long tIMEOUTCON) {
+<span class="nc" id="L684">    timeoutCon = tIMEOUTCON;</span>
+<span class="nc" id="L685">  }</span>
+
+  /**
+   * @return the bLOCKSIZE
+   */
+  public final int getBlocksize() {
+<span class="nc" id="L691">    return blocksize;</span>
+  }
+
+  /**
+   * @param bLOCKSIZE the bLOCKSIZE to set
+   */
+  public final void setBlocksize(final int bLOCKSIZE) {
+<span class="nc" id="L698">    blocksize = bLOCKSIZE;</span>
+<span class="nc" id="L699">  }</span>
+
+  /**
+   * @return the deleteOnAbort
+   */
+  public final boolean isDeleteOnAbort() {
+<span class="nc" id="L705">    return deleteOnAbort;</span>
+  }
+
+  /**
+   * @param deleteOnAbort the deleteOnAbort to set
+   */
+  public final void setDeleteOnAbort(final boolean deleteOnAbort) {
+<span class="nc" id="L712">    this.deleteOnAbort = deleteOnAbort;</span>
+<span class="nc" id="L713">  }</span>
+
+  /**
+   * @return the dATATIMEOUTCON
+   */
+  public static long getDataTimeoutCon() {
+<span class="nc" id="L719">    return dataTimeoutCon;</span>
+  }
+
+  /**
+   * @param dATATIMEOUTCON the dATATIMEOUTCON to set
+   */
+  public static void setDataTimeoutCon(final long dATATIMEOUTCON) {
+<span class="nc" id="L726">    dataTimeoutCon = dATATIMEOUTCON;</span>
+<span class="nc" id="L727">  }</span>
+
+  /**
+   * @return the active (1) or passive (-1) or both (0) mode
+   */
+  public final int getActivePassiveMode() {
+<span class="nc" id="L733">    return activePassiveMode;</span>
+  }
+
+  /**
+   * @param activePassiveModeArg the mode to set (1 = Active, -1 = Passive, 0 = Both - default -)
+   */
+  public final void setActivePassiveMode(final int activePassiveModeArg) {
+<span class="nc bnc" id="L740" title="All 4 branches missed.">    activePassiveMode =</span>
+        activePassiveModeArg &lt; 0? -1 : (activePassiveModeArg &gt; 0? 1 : 0);
+<span class="nc" id="L742">  }</span>
+
+  /**
+   * @return the maxGlobalMemory
+   */
+  public final int getMaxGlobalMemory() {
+<span class="nc" id="L748">    return maxGlobalMemory;</span>
+  }
+
+  /**
+   * @param maxGlobalMemory the maxGlobalMemory to set
+   */
+  public final void setMaxGlobalMemory(final int maxGlobalMemory) {
+<span class="nc" id="L755">    this.maxGlobalMemory = maxGlobalMemory;</span>
+<span class="nc" id="L756">  }</span>
+
+  /**
+   * @return the shutdownConfiguration
+   */
+  public final ShutdownConfiguration getShutdownConfiguration() {
+<span class="nc" id="L762">    return shutdownConfiguration;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

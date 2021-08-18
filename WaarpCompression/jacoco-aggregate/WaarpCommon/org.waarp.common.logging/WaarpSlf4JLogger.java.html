@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpSlf4JLogger.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Compression</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.logging</a> &gt; <span class="el_source">WaarpSlf4JLogger.java</span></div><h1>WaarpSlf4JLogger.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.logging;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
+/**
+ * logger using SLF4J from LOGBACK
+ */
+public class WaarpSlf4JLogger extends AbstractWaarpLogger {
+  private static final long serialVersionUID = -7588688826950608830L;
+  /**
+   * Internal logger
+   */
+  private final Logger logger;
+
+  /**
+   * @param logger
+   */
+  public WaarpSlf4JLogger(final Logger logger) {
+<span class="nc" id="L40">    super(logger.getName());</span>
+<span class="nc" id="L41">    this.logger = logger;</span>
+<span class="nc" id="L42">  }</span>
+
+  @Override
+  public final void setLevel(final WaarpLogLevel level) {
+<span class="nc bnc" id="L46" title="All 7 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L48">        logger.setLevel(Level.TRACE);</span>
+<span class="nc" id="L49">        break;</span>
+      case DEBUG:
+<span class="nc" id="L51">        logger.setLevel(Level.DEBUG);</span>
+<span class="nc" id="L52">        break;</span>
+      case INFO:
+<span class="nc" id="L54">        logger.setLevel(Level.INFO);</span>
+<span class="nc" id="L55">        break;</span>
+      case WARN:
+<span class="nc" id="L57">        logger.setLevel(Level.WARN);</span>
+<span class="nc" id="L58">        break;</span>
+      case ERROR:
+<span class="nc" id="L60">        logger.setLevel(Level.ERROR);</span>
+<span class="nc" id="L61">        break;</span>
+      case NONE:
+<span class="nc" id="L63">        logger.setLevel(Level.OFF);</span>
+        break;
+    }
+<span class="nc" id="L66">  }</span>
+
+  @Override
+  public final boolean isTraceEnabled() {
+<span class="nc" id="L70">    return logger.isTraceEnabled();</span>
+  }
+
+  @Override
+  public final void junit(final int callee, final String msg) {
+<span class="nc" id="L75">    logger.warn(getLoggerMethodAndLineCallee(callee + 1) + msg);</span>
+<span class="nc" id="L76">  }</span>
+
+  @Override
+  public final void trace(final String msg) {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L81">      logger.trace(getLoggerMethodAndLine() + msg);</span>
+    }
+<span class="nc" id="L83">  }</span>
+
+  @Override
+  public final void trace(final String format, final Object arg) {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L88">      logger.trace(getLoggerMethodAndLine() + format, arg);</span>
+    }
+<span class="nc" id="L90">  }</span>
+
+  @Override
+  public final void trace(final String format, final Object argA,
+                          final Object argB) {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L96">      logger.trace(getLoggerMethodAndLine() + format, argA, argB);</span>
+    }
+<span class="nc" id="L98">  }</span>
+
+  @Override
+  public final void trace(final String format, final Object... argArray) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L103">      logger.trace(getLoggerMethodAndLine() + format, argArray);</span>
+    }
+<span class="nc" id="L105">  }</span>
+
+  @Override
+  public final void trace(final String msg, final Throwable t) {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L110">      logger.trace(getLoggerMethodAndLine() + msg, t);</span>
+    }
+<span class="nc" id="L112">  }</span>
+
+  @Override
+  public final boolean isDebugEnabled() {
+<span class="nc" id="L116">    return logger.isDebugEnabled();</span>
+  }
+
+  @Override
+  public final void debug(final String msg) {
+<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L122">      logger.debug(getLoggerMethodAndLine() + msg);</span>
+    }
+<span class="nc" id="L124">  }</span>
+
+  @Override
+  public final void debug(final String format, final Object arg) {
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L129">      logger.debug(getLoggerMethodAndLine() + format, arg);</span>
+    }
+<span class="nc" id="L131">  }</span>
+
+  @Override
+  public final void debug(final String format, final Object argA,
+                          final Object argB) {
+<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L137">      logger.debug(getLoggerMethodAndLine() + format, argA, argB);</span>
+    }
+<span class="nc" id="L139">  }</span>
+
+  @Override
+  public final void debug(final String format, final Object... argArray) {
+<span class="nc bnc" id="L143" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L144">      logger.debug(getLoggerMethodAndLine() + format, argArray);</span>
+    }
+<span class="nc" id="L146">  }</span>
+
+  @Override
+  public final void debug(final String msg, final Throwable t) {
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L151">      logger.debug(getLoggerMethodAndLine() + msg, t);</span>
+    }
+<span class="nc" id="L153">  }</span>
+
+  @Override
+  public final boolean isInfoEnabled() {
+<span class="nc" id="L157">    return logger.isInfoEnabled();</span>
+  }
+
+  @Override
+  public final void info(final String msg) {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L163">      logger.info(getLoggerMethodAndLine() + msg);</span>
+    }
+<span class="nc" id="L165">  }</span>
+
+  @Override
+  public final void info(final String format, final Object arg) {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L170">      logger.info(getLoggerMethodAndLine() + format, arg);</span>
+    }
+<span class="nc" id="L172">  }</span>
+
+  @Override
+  public final void info(final String format, final Object argA,
+                         final Object argB) {
+<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L178">      logger.info(getLoggerMethodAndLine() + format, argA, argB);</span>
+    }
+<span class="nc" id="L180">  }</span>
+
+  @Override
+  public final void info(final String format, final Object... argArray) {
+<span class="nc bnc" id="L184" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L185">      logger.info(getLoggerMethodAndLine() + format, argArray);</span>
+    }
+<span class="nc" id="L187">  }</span>
+
+  @Override
+  public final void info(final String msg, final Throwable t) {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L192">      logger.info(getLoggerMethodAndLine() + msg, t);</span>
+    }
+<span class="nc" id="L194">  }</span>
+
+  @Override
+  public final boolean isWarnEnabled() {
+<span class="nc" id="L198">    return logger.isWarnEnabled();</span>
+  }
+
+  @Override
+  public final void warn(final String msg) {
+<span class="nc bnc" id="L203" title="All 2 branches missed.">    if (logger.isWarnEnabled()) {</span>
+<span class="nc" id="L204">      logger.warn(getLoggerMethodAndLine() + msg);</span>
+    }
+<span class="nc" id="L206">  }</span>
+
+  @Override
+  public final void warn(final String format, final Object arg) {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">    if (logger.isWarnEnabled()) {</span>
+<span class="nc" id="L211">      logger.warn(getLoggerMethodAndLine() + format, arg);</span>
+    }
+<span class="nc" id="L213">  }</span>
+
+  @Override
+  public final void warn(final String format, final Object... argArray) {
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (logger.isWarnEnabled()) {</span>
+<span class="nc" id="L218">      logger.warn(getLoggerMethodAndLine() + format, argArray);</span>
+    }
+<span class="nc" id="L220">  }</span>
+
+  @Override
+  public final void warn(final String format, final Object argA,
+                         final Object argB) {
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    if (logger.isWarnEnabled()) {</span>
+<span class="nc" id="L226">      logger.warn(getLoggerMethodAndLine() + format, argA, argB);</span>
+    }
+<span class="nc" id="L228">  }</span>
+
+  @Override
+  public final void warn(final String msg, final Throwable t) {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    if (logger.isWarnEnabled()) {</span>
+<span class="nc" id="L233">      logger.warn(getLoggerMethodAndLine() + msg, t);</span>
+    }
+<span class="nc" id="L235">  }</span>
+
+  @Override
+  public final boolean isErrorEnabled() {
+<span class="nc" id="L239">    return logger.isErrorEnabled();</span>
+  }
+
+  @Override
+  public final void error(final String msg) {
+<span class="nc" id="L244">    logger.error(getLoggerMethodAndLine() + msg);</span>
+<span class="nc" id="L245">  }</span>
+
+  @Override
+  public final void error(final String format, final Object arg) {
+<span class="nc" id="L249">    logger.error(getLoggerMethodAndLine() + format, arg);</span>
+<span class="nc" id="L250">  }</span>
+
+  @Override
+  public final void error(final String format, final Object argA,
+                          final Object argB) {
+<span class="nc" id="L255">    logger.error(getLoggerMethodAndLine() + format, argA, argB);</span>
+<span class="nc" id="L256">  }</span>
+
+  @Override
+  public final void error(final String format, final Object... argArray) {
+<span class="nc" id="L260">    logger.error(getLoggerMethodAndLine() + format, argArray);</span>
+<span class="nc" id="L261">  }</span>
+
+  @Override
+  public final void error(final String msg, final Throwable t) {
+<span class="nc" id="L265">    logger.error(getLoggerMethodAndLine() + msg, t);</span>
+<span class="nc" id="L266">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

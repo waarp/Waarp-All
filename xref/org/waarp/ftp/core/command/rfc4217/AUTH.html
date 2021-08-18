@@ -55,7 +55,7 @@
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>        WaarpLoggerFactory.getLogger(AUTH.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>  
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>    @Override
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exec() <strong class="jxr_keyword">throws</strong> <a name="CommandAbstractException" href="../../../../../../org/waarp/common/command/exception/CommandAbstractException.html#CommandAbstractException">CommandAbstractException</a> {
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> exec() <strong class="jxr_keyword">throws</strong> <a name="CommandAbstractException" href="../../../../../../org/waarp/common/command/exception/CommandAbstractException.html#CommandAbstractException">CommandAbstractException</a> {
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">if</strong> (!getSession().getConfiguration().getFtpInternalConfiguration()
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>                       .isAcceptAuthProt()) {
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="Reply534Exception" href="../../../../../../org/waarp/common/command/exception/Reply534Exception.html#Reply534Exception">Reply534Exception</a>(<span class="jxr_string">"AUTH SSL / TLS not supported"</span>);
@@ -75,25 +75,23 @@
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>        logger.debug(<span class="jxr_string">"Start TLS"</span>);
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>        getSession().rein();
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>        getSession().setNextCommand(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>        getSession()
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>            .setReplyCode(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE,
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>                          <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>      } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"SSL"</span>.equalsIgnoreCase(types[0])) {
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>        <em class="jxr_comment">// Both Command and Data will have SSL</em>
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>        logger.debug(<span class="jxr_string">"Start SSL"</span>);
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>        getSession().rein();
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>        getSession().setNextCommand(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>        getSession()
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>            .setReplyCode(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE,
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>                          <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>        getSession().setDataSsl(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>      } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="Reply504Exception" href="../../../../../../org/waarp/common/command/exception/Reply504Exception.html#Reply504Exception">Reply504Exception</a>(<span class="jxr_string">"Unknown Parameter: "</span> + types[0]);
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>      }
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>      logger.debug(<span class="jxr_string">"End of AUTH {}"</span>, types[0]);
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>    }
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  }
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>        getSession().setReplyCode(
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>            ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE, <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>      } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"SSL"</span>.equalsIgnoreCase(types[0])) {
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>        <em class="jxr_comment">// Both Command and Data will have SSL</em>
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>        logger.debug(<span class="jxr_string">"Start SSL"</span>);
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>        getSession().rein();
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>        getSession().setNextCommand(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>        getSession().setReplyCode(
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>            ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE, <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>        getSession().setDataSsl(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>      } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="Reply504Exception" href="../../../../../../org/waarp/common/command/exception/Reply504Exception.html#Reply504Exception">Reply504Exception</a>(<span class="jxr_string">"Unknown Parameter: "</span> + types[0]);
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>      }
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>      logger.debug(<span class="jxr_string">"End of AUTH {}"</span>, types[0]);
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>    }
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

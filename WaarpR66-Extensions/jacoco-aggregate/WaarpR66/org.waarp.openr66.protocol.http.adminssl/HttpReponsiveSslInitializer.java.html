@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpReponsiveSslInitializer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.adminssl</a> &gt; <span class="el_source">HttpReponsiveSslInitializer.java</span></div><h1>HttpReponsiveSslInitializer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.adminssl;
+
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.http.HttpContentCompressor;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+/**
+ *
+ */
+public class HttpReponsiveSslInitializer
+    extends ChannelInitializer&lt;SocketChannel&gt; {
+  private final boolean useHttpCompression;
+
+<span class="nc" id="L39">  public HttpReponsiveSslInitializer(final boolean useHttpCompression) {</span>
+<span class="nc" id="L40">    this.useHttpCompression = useHttpCompression;</span>
+<span class="nc" id="L41">  }</span>
+
+  @Override
+  protected void initChannel(final SocketChannel ch) {
+<span class="nc" id="L45">    final ChannelPipeline pipeline = ch.pipeline();</span>
+    // Add SSL handler first to encrypt and decrypt everything.
+<span class="nc" id="L47">    final SslHandler sslhandler = Configuration.getWaarpSslContextFactory()</span>
+<span class="nc" id="L48">                                               .createHandlerServer(false, ch);</span>
+<span class="nc" id="L49">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
+
+<span class="nc" id="L51">    pipeline.addLast(&quot;decoder&quot;, new HttpServerCodec());</span>
+<span class="nc" id="L52">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
+<span class="nc" id="L53">        Configuration.configuration.getMaxGlobalMemory()));</span>
+<span class="nc" id="L54">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">    if (useHttpCompression) {</span>
+<span class="nc" id="L56">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
+    }
+<span class="nc" id="L58">    pipeline.addLast(&quot;handler&quot;, new HttpResponsiveSslHandler());</span>
+<span class="nc" id="L59">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

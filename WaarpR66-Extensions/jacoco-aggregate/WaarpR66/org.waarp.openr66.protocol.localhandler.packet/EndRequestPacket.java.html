@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>EndRequestPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">EndRequestPacket.java</span></div><h1>EndRequestPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+import java.nio.charset.Charset;
+
+/**
+ * End of Request class
+ * &lt;p&gt;
+ * header = Error.code middle = way end = might be empty
+ */
+public class EndRequestPacket extends AbstractLocalPacket {
+  private static final byte ASKVALIDATE = 0;
+
+  private static final byte ANSWERVALIDATE = 1;
+
+  private final int code;
+
+  private byte way;
+
+  private String optional;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new EndTransferPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static EndRequestPacket createFromBuffer(final int headerLength,
+                                                  final int middleLength,
+                                                  final int endLength,
+                                                  final ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (headerLength - 1 != 4) {</span>
+<span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+    }
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="nc" id="L66">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+    }
+<span class="nc" id="L68">    final int bheader = buf.readInt();</span>
+<span class="nc" id="L69">    final byte valid = buf.readByte();</span>
+    final String optional;
+<span class="nc bnc" id="L71" title="All 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="nc" id="L72">      optional =</span>
+<span class="nc" id="L73">          buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());</span>
+<span class="nc" id="L74">      buf.skipBytes(endLength);</span>
+<span class="nc" id="L75">      return new EndRequestPacket(bheader, valid, optional);</span>
+    }
+<span class="nc" id="L77">    return new EndRequestPacket(bheader, valid);</span>
+  }
+
+  /**
+   * @param code
+   * @param valid
+   * @param optional
+   */
+  private EndRequestPacket(final int code, final byte valid,
+<span class="nc" id="L86">                           final String optional) {</span>
+<span class="nc" id="L87">    this.code = code;</span>
+<span class="nc" id="L88">    way = valid;</span>
+<span class="nc" id="L89">    this.optional = optional;</span>
+<span class="nc" id="L90">  }</span>
+
+  /**
+   * @param code
+   * @param valid
+   */
+<span class="nc" id="L96">  private EndRequestPacket(final int code, final byte valid) {</span>
+<span class="nc" id="L97">    this.code = code;</span>
+<span class="nc" id="L98">    way = valid;</span>
+<span class="nc" id="L99">  }</span>
+
+  /**
+   * @param code
+   */
+<span class="nc" id="L104">  public EndRequestPacket(final int code) {</span>
+<span class="nc" id="L105">    this.code = code;</span>
+<span class="nc" id="L106">    way = ASKVALIDATE;</span>
+<span class="nc" id="L107">  }</span>
+
+  @Override
+  public final boolean hasGlobalBuffer() {
+<span class="nc" id="L111">    return true;</span>
+  }
+
+  @Override
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
+<span class="nc" id="L117">    final int headerSize = 4;</span>
+<span class="nc" id="L118">    final int middleSize = 1;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    final byte[] endBytes =</span>
+<span class="nc" id="L120">        optional != null? optional.getBytes(WaarpStringUtils.UTF8) :</span>
+            EMPTY_ARRAY;
+<span class="nc" id="L122">    final int endSize = endBytes.length;</span>
+<span class="nc" id="L123">    final int globalSize =</span>
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+<span class="nc" id="L125">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L126">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
+<span class="nc" id="L127">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="nc" id="L128">    header.writeInt(code);</span>
+<span class="nc" id="L129">    offset += headerSize;</span>
+<span class="nc" id="L130">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="nc" id="L131">    middle.writeByte(way);</span>
+<span class="nc" id="L132">    offset += middleSize;</span>
+<span class="nc" id="L133">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (optional != null) {</span>
+<span class="nc" id="L135">      end.writeBytes(endBytes);</span>
+    }
+<span class="nc" id="L137">  }</span>
+
+  @Override
+  public final byte getType() {
+<span class="nc" id="L141">    return LocalPacketFactory.ENDREQUESTPACKET;</span>
+  }
+
+  @Override
+  public final String toString() {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    return &quot;EndRequestPacket: &quot; + code + ' ' + way +</span>
+           (optional != null? ' ' + optional : &quot;&quot;);
+  }
+
+  /**
+   * @return the code
+   */
+  public final int getCode() {
+<span class="nc" id="L154">    return code;</span>
+  }
+
+  /**
+   * @return True if this packet is to be validated
+   */
+  public final boolean isToValidate() {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    return way == ASKVALIDATE;</span>
+  }
+
+  /**
+   * Validate the connection
+   */
+  public final void validate() {
+<span class="nc" id="L168">    way = ANSWERVALIDATE;</span>
+<span class="nc" id="L169">    clear();</span>
+<span class="nc" id="L170">  }</span>
+
+  /**
+   * @return the optional
+   */
+  public final String getOptional() {
+<span class="nc" id="L176">    return optional;</span>
+  }
+
+  /**
+   * @param optional the optional to set
+   */
+  public final void setOptional(final String optional) {
+<span class="nc" id="L183">    this.optional = optional;</span>
+<span class="nc" id="L184">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

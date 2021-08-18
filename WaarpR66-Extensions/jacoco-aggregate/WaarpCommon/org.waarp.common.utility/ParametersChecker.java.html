@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ParametersChecker.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">ParametersChecker.java</span></div><h1>ParametersChecker.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.utility;
+
+import com.google.common.base.Strings;
+import org.waarp.common.exception.InvalidArgumentException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * Checker for Parameters &lt;br&gt;
+ * &lt;br&gt;
+ * Can be used for String (testing also emptiness) and for general Object.&lt;br&gt;
+ * For null String only, use the special method.
+ */
+public final class ParametersChecker {
+  public static final String DEFAULT_ERROR =
+      &quot;Parameter should not be null or empty&quot;;
+  // Default ASCII for Param check
+<span class="nc" id="L40">  public static final Pattern UNPRINTABLE_PATTERN =</span>
+<span class="nc" id="L41">      Pattern.compile(&quot;[\\p{Cntrl}&amp;&amp;[^\r\n\t]]&quot;);</span>
+<span class="nc" id="L42">  public static final List&lt;String&gt; RULES = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L43">  public static final String[] ZERO_ARRAY_STRING = new String[0];</span>
+  // default parameters for XML check
+  static final String CDATA_TAG_UNESCAPED = &quot;&lt;![CDATA[&quot;;
+  static final String CDATA_TAG_ESCAPED = &quot;&amp;lt;![CDATA[&quot;;
+  static final String ENTITY_TAG_UNESCAPED = &quot;&lt;!ENTITY&quot;;
+  static final String ENTITY_TAG_ESCAPED = &quot;&amp;lt;!ENTITY&quot;;
+  // default parameters for Javascript check
+  static final String SCRIPT_TAG_UNESCAPED = &quot;&lt;script&gt;&quot;;
+  static final String SCRIPT_TAG_ESCAPED = &quot;&amp;lt;script&amp;gt;&quot;;
+  // default parameters for Json check
+  private static final String TAG_START =
+      &quot;\\&lt;\\w+((\\s+\\w+(\\s*\\=\\s*(?:\&quot;.*?\&quot;|'.*?'|[^'\&quot;\\&gt;\\s]+))?)+\\s*|\\s*)\\&gt;&quot;;
+  private static final String TAG_END = &quot;\\&lt;/\\w+\\&gt;&quot;;
+  private static final String TAG_SELF_CLOSING =
+      &quot;\\&lt;\\w+((\\s+\\w+(\\s*\\=\\s*(?:\&quot;.*?\&quot;|'.*?'|[^'\&quot;\\&gt;\\s]+))?)+\\s*|\\s*)/\\&gt;&quot;;
+  private static final String HTML_ENTITY = &quot;&amp;[a-zA-Z][a-zA-Z0-9]+;&quot;;
+  // Allowed
+<span class="nc" id="L60">  public static final Pattern HTML_PATTERN = Pattern.compile(</span>
+      '(' + TAG_START + &quot;.*&quot; + TAG_END + &quot;)|(&quot; + TAG_SELF_CLOSING + &quot;)|(&quot; +
+      HTML_ENTITY + ')', Pattern.DOTALL);
+
+  static {
+<span class="nc" id="L65">    RULES.add(CDATA_TAG_UNESCAPED);</span>
+<span class="nc" id="L66">    RULES.add(CDATA_TAG_ESCAPED);</span>
+<span class="nc" id="L67">    RULES.add(ENTITY_TAG_UNESCAPED);</span>
+<span class="nc" id="L68">    RULES.add(ENTITY_TAG_ESCAPED);</span>
+<span class="nc" id="L69">    RULES.add(SCRIPT_TAG_UNESCAPED);</span>
+<span class="nc" id="L70">    RULES.add(SCRIPT_TAG_ESCAPED);</span>
+<span class="nc" id="L71">  }</span>
+
+  private ParametersChecker() {
+    // empty
+  }
+
+  private static final String MANDATORY_PARAMETER = &quot; is mandatory parameter&quot;;
+
+  /**
+   * Check if any parameter are null or empty and if so, throw an
+   * IllegalArgumentException
+   *
+   * @param errorMessage the error message
+   * @param parameters parameters to be checked
+   *
+   * @throws IllegalArgumentException if null or empty
+   */
+  public static void checkParameter(final String errorMessage,
+                                    final String... parameters) {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L91">      throw new IllegalArgumentException(errorMessage);</span>
+    }
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    for (final String parameter : parameters) {</span>
+<span class="nc bnc" id="L94" title="All 4 branches missed.">      if (Strings.isNullOrEmpty(parameter) || parameter.trim().isEmpty()) {</span>
+<span class="nc" id="L95">        throw new IllegalArgumentException(errorMessage);</span>
+      }
+    }
+<span class="nc" id="L98">  }</span>
+
+  /**
+   * Check if any parameter are null or empty and if so, throw an
+   * IllegalArgumentException
+   *
+   * @param errorMessage the error message
+   * @param parameters set of parameters
+   *
+   * @throws IllegalArgumentException if null or empty
+   */
+  public static void checkParameterDefault(final String errorMessage,
+                                           final String... parameters) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L112">      throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);</span>
+    }
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    for (final String parameter : parameters) {</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">      if (Strings.isNullOrEmpty(parameter) || parameter.trim().isEmpty()) {</span>
+<span class="nc" id="L116">        throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);</span>
+      }
+    }
+<span class="nc" id="L119">  }</span>
+
+  /**
+   * Check if any parameter are null or empty and if so, return false
+   *
+   * @param parameters set of parameters
+   *
+   * @return True if not null and not empty neither containing only spaces
+   */
+  public static boolean isNotEmpty(final String... parameters) {
+<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L130">      return false;</span>
+    }
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    for (final String parameter : parameters) {</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">      if (Strings.isNullOrEmpty(parameter) || parameter.trim().isEmpty()) {</span>
+<span class="nc" id="L134">        return false;</span>
+      }
+    }
+<span class="nc" id="L137">    return true;</span>
+  }
+
+  /**
+   * Check if any parameter are null or empty and if so, return true
+   *
+   * @param parameters set of parameters
+   *
+   * @return True if any is null or empty or containing only spaces
+   */
+  public static boolean isEmpty(final String... parameters) {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L149">      return true;</span>
+    }
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    for (final String parameter : parameters) {</span>
+<span class="nc bnc" id="L152" title="All 4 branches missed.">      if (Strings.isNullOrEmpty(parameter) || parameter.trim().isEmpty()) {</span>
+<span class="nc" id="L153">        return true;</span>
+      }
+    }
+<span class="nc" id="L156">    return false;</span>
+  }
+
+  /**
+   * Check if any parameter are null or empty and if so, throw an
+   * IllegalArgumentException
+   *
+   * @param errorMessage the error message
+   * @param parameters set of parameters
+   *
+   * @throws IllegalArgumentException if null or empty
+   */
+  public static void checkParameterDefault(final String errorMessage,
+                                           final Object... parameters) {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L171">      throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);</span>
+    }
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    for (final Object parameter : parameters) {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      if (parameter == null) {</span>
+<span class="nc" id="L175">        throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);</span>
+      }
+    }
+<span class="nc" id="L178">  }</span>
+
+  /**
+   * Check if any parameter are null and if so, throw an
+   * IllegalArgumentException
+   *
+   * @param errorMessage the error message
+   * @param parameters parameters to be checked
+   *
+   * @throws IllegalArgumentException if null
+   */
+  public static void checkParameterNullOnly(final String errorMessage,
+                                            final String... parameters) {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L192">      throw new IllegalArgumentException(errorMessage);</span>
+    }
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    for (final String parameter : parameters) {</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">      if (parameter == null) {</span>
+<span class="nc" id="L196">        throw new IllegalArgumentException(errorMessage);</span>
+      }
+    }
+<span class="nc" id="L199">  }</span>
+
+  /**
+   * Check if any parameter are null and if so, throw an
+   * IllegalArgumentException
+   *
+   * @param errorMessage set of parameters
+   * @param parameters set parameters to be checked
+   *
+   * @throws IllegalArgumentException if null
+   */
+  public static void checkParameter(final String errorMessage,
+                                    final Object... parameters) {
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (parameters == null) {</span>
+<span class="nc" id="L213">      throw new IllegalArgumentException(errorMessage);</span>
+    }
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    for (final Object parameter : parameters) {</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">      if (parameter == null) {</span>
+<span class="nc" id="L217">        throw new IllegalArgumentException(errorMessage);</span>
+      }
+    }
+<span class="nc" id="L220">  }</span>
+
+  /**
+   * Check if an integer parameter is greater or equals to minValue
+   *
+   * @param name name of the variable
+   * @param variable the value of variable to check
+   * @param minValue the min value
+   */
+  public static void checkValue(final String name, final long variable,
+                                final long minValue) {
+<span class="nc bnc" id="L231" title="All 2 branches missed.">    if (variable &lt; minValue) {</span>
+<span class="nc" id="L232">      throw new IllegalArgumentException(</span>
+          &quot;Parameter &quot; + name + &quot; is less than &quot; + minValue);
+    }
+<span class="nc" id="L235">  }</span>
+
+  /**
+   * Check external argument to avoid Path Traversal attack
+   *
+   * @param value to check
+   *
+   * @throws InvalidArgumentException
+   */
+  public static String checkSanityString(final String value)
+      throws InvalidArgumentException {
+<span class="nc" id="L246">    checkSanityString(new String[] { value });</span>
+<span class="nc" id="L247">    return value;</span>
+  }
+
+  /**
+   * Check external argument (null is consider as correct)
+   *
+   * @param strings
+   *
+   * @throws InvalidArgumentException
+   */
+  public static void checkSanityString(final String... strings)
+      throws InvalidArgumentException {
+<span class="nc bnc" id="L259" title="All 2 branches missed.">    for (final String field : strings) {</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      if (isEmpty(field)) {</span>
+<span class="nc" id="L261">        continue;</span>
+      }
+<span class="nc bnc" id="L263" title="All 2 branches missed.">      if (UNPRINTABLE_PATTERN.matcher(field).find()) {</span>
+<span class="nc" id="L264">        throw new InvalidArgumentException(&quot;Invalid input bytes&quot;);</span>
+      }
+<span class="nc bnc" id="L266" title="All 2 branches missed.">      for (final String rule : RULES) {</span>
+<span class="nc bnc" id="L267" title="All 4 branches missed.">        if (rule != null &amp;&amp; field.contains(rule)) {</span>
+<span class="nc" id="L268">          throw new InvalidArgumentException(&quot;Invalid tag sanity check&quot;);</span>
+        }
+<span class="nc" id="L270">      }</span>
+    }
+<span class="nc" id="L272">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DownloadServlet.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpHttp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.http.protocol.servlet</a> &gt; <span class="el_source">DownloadServlet.java</span></div><h1>DownloadServlet.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.http.protocol.servlet;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.guid.LongUuid;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.http.protocol.HttpDownloadSession;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+/**
+ * Download Servlet: enables downloading file from Web Browser to final user
+ */
+<span class="nc" id="L48">public class DownloadServlet extends AbstractServlet {</span>
+  private static final long serialVersionUID = 2002L;
+  public static final String FILENAME = &quot;filename&quot;;
+  public static final String IDENTIFIER = &quot;identifier&quot;;
+<span class="nc" id="L52">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L53">      WaarpLoggerFactory.getLogger(DownloadServlet.class);</span>
+  public static final String X_HASH_SHA_256 = &quot;X-Hash-Sha-256&quot;;
+
+  @Override
+  protected final void doPost(final HttpServletRequest request,
+                              final HttpServletResponse response) {
+<span class="nc" id="L59">    doGet(request, response);</span>
+<span class="nc" id="L60">  }</span>
+
+  @Override
+  protected final void doHead(final HttpServletRequest request,
+                              final HttpServletResponse response) {
+<span class="nc" id="L65">    final Map&lt;String, String&gt; arguments = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L66">    final Enumeration&lt;String&gt; names = request.getParameterNames();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    while (names.hasMoreElements()) {</span>
+<span class="nc" id="L68">      final String name = names.nextElement();</span>
+<span class="nc" id="L69">      arguments.put(name, request.getParameter(name));</span>
+<span class="nc" id="L70">    }</span>
+<span class="nc" id="L71">    final String filename = getFilename(arguments);</span>
+<span class="nc" id="L72">    logger.debug(&quot;RECVHEAD: {}&quot;, filename);</span>
+    try {
+<span class="nc" id="L74">      final HttpDownloadSession session =</span>
+<span class="nc" id="L75">          getDownloadSession(arguments, filename, true);//NOSONAR</span>
+<span class="nc" id="L76">      logger.debug(&quot;RECVHEAD SESSION: {}&quot;, session);</span>
+<span class="nc" id="L77">      logger.debug(&quot;Check on going&quot;);</span>
+<span class="nc" id="L78">      response.setHeader(&quot;Expires&quot;, &quot;0&quot;);</span>
+<span class="nc" id="L79">      response.setHeader(&quot;Cache-Control&quot;,</span>
+                         &quot;must-revalidate, post-check=0, &quot; + &quot;pre-check=0&quot;);
+<span class="nc bnc" id="L81" title="All 2 branches missed.">      if (session == null) {</span>
+<span class="nc" id="L82">        logger.debug(&quot;Not found&quot;);</span>
+<span class="nc" id="L83">        response.setStatus(404);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      } else if (session.isTransmitting()) {</span>
+<span class="nc" id="L85">        logger.debug(&quot;On going&quot;);</span>
+<span class="nc" id="L86">        response.setStatus(202);</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      } else if (session.isFinished()) {</span>
+<span class="nc" id="L88">        logger.debug(&quot;Done&quot;);</span>
+<span class="nc" id="L89">        response.setHeader(X_HASH_SHA_256, session.getComputedHadh());</span>
+<span class="nc" id="L90">        response.setStatus(200);</span>
+      }
+<span class="nc" id="L92">    } catch (final ServletException e) {</span>
+<span class="nc" id="L93">      logger.error(e.getMessage());</span>
+<span class="nc" id="L94">      response.setStatus(400);</span>
+<span class="nc" id="L95">    }</span>
+<span class="nc" id="L96">  }</span>
+
+  @Override
+  protected final void doGet(final HttpServletRequest request,
+                             final HttpServletResponse response) {
+<span class="nc" id="L101">    final ExecutorService executor = Executors.newSingleThreadExecutor();</span>
+    try {
+<span class="nc" id="L103">      final Map&lt;String, String&gt; arguments = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L104">      final Enumeration&lt;String&gt; names = request.getParameterNames();</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">      while (names.hasMoreElements()) {</span>
+<span class="nc" id="L106">        final String name = names.nextElement();</span>
+<span class="nc" id="L107">        arguments.put(name, request.getParameter(name));</span>
+<span class="nc" id="L108">      }</span>
+<span class="nc" id="L109">      final String filename = getFilename(arguments);</span>
+<span class="nc" id="L110">      logger.debug(&quot;RECVGET: {}&quot;, filename);</span>
+      try {
+<span class="nc" id="L112">        final HttpDownloadSession session =</span>
+<span class="nc" id="L113">            getDownloadSession(arguments, filename, false);</span>
+<span class="nc" id="L114">        logger.debug(&quot;SESSION: {}&quot;, session);</span>
+<span class="nc" id="L115">        final Callable&lt;String&gt; hashCompute = new Callable&lt;String&gt;() {</span>
+          @Override
+          public final String call() {
+<span class="nc" id="L118">            return session.getHash();</span>
+          }
+        };
+<span class="nc" id="L121">        final Future&lt;String&gt; future = executor.submit(hashCompute);</span>
+<span class="nc" id="L122">        response.setHeader(&quot;Content-Disposition&quot;,</span>
+<span class="nc" id="L123">                           &quot;attachment; filename=\&quot;&quot; + session.getFinalName() +</span>
+                           &quot;\&quot;&quot;);
+<span class="nc" id="L125">        response.setHeader(&quot;Content-Description&quot;, &quot;File Transfer&quot;);</span>
+<span class="nc" id="L126">        response.setHeader(&quot;Content-Type&quot;, &quot;application/octet-stream&quot;);</span>
+<span class="nc" id="L127">        response.setHeader(&quot;Content-Transfer-Encoding&quot;, &quot;binary&quot;);</span>
+<span class="nc" id="L128">        response.setHeader(&quot;Expires&quot;, &quot;0&quot;);</span>
+<span class="nc" id="L129">        response.setHeader(&quot;Cache-Control&quot;,</span>
+                           &quot;must-revalidate, post-check=0, &quot; + &quot;pre-check=0&quot;);
+        // Used by javascript downloader
+<span class="nc" id="L132">        final Cookie cookie = new Cookie(&quot;fileDownload&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L133">        cookie.setHttpOnly(true);</span>
+<span class="nc" id="L134">        cookie.setSecure(true);</span>
+<span class="nc" id="L135">        response.addCookie(cookie);</span>
+<span class="nc" id="L136">        response.setHeader(&quot;Content-Length&quot;,</span>
+<span class="nc" id="L137">                           Long.toString(session.getFileSize()));</span>
+<span class="nc" id="L138">        String hash = null;</span>
+        try {
+<span class="nc" id="L140">          hash = future.get();</span>
+<span class="nc" id="L141">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L142">          logger.debug(e);</span>
+<span class="nc" id="L143">        } catch (final ExecutionException e) {</span>
+<span class="nc" id="L144">          logger.debug(e);</span>
+<span class="nc" id="L145">        }</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (hash != null) {</span>
+<span class="nc" id="L147">          response.setHeader(X_HASH_SHA_256, hash);</span>
+
+        }
+        try {
+<span class="nc bnc" id="L151" title="All 2 branches missed.">          if (session.tryWrite(response.getOutputStream())) {</span>
+<span class="nc" id="L152">            session.downloadFinished();</span>
+<span class="nc" id="L153">            logger.info(&quot;Download OK: {}&quot;, session);</span>
+<span class="nc" id="L154">            response.setStatus(HttpServletResponse.SC_OK);</span>
+          } else {
+<span class="nc" id="L156">            logger.info(&quot;NOT FOUND: {}&quot;, session);</span>
+<span class="nc" id="L157">            response.setStatus(HttpServletResponse.SC_NOT_FOUND);</span>
+          }
+<span class="nc" id="L159">        } catch (final IOException e) {</span>
+<span class="nc" id="L160">          logger.error(&quot;Error: {} {}&quot;, session, e.getMessage());</span>
+<span class="nc" id="L161">          response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L162">        }</span>
+<span class="nc" id="L163">      } catch (final ServletException e) {</span>
+<span class="nc" id="L164">        logger.error(e.getMessage());</span>
+<span class="nc" id="L165">        response.setStatus(400);</span>
+<span class="nc" id="L166">      }</span>
+    } finally {
+<span class="nc" id="L168">      executor.shutdown();</span>
+    }
+<span class="nc" id="L170">  }</span>
+
+  private String getFilename(final Map&lt;String, String&gt; arguments) {
+<span class="nc" id="L173">    return arguments.get(FILENAME);</span>
+  }
+
+  private HttpDownloadSession getDownloadSession(
+      final Map&lt;String, String&gt; arguments, final String filename,
+      final boolean check) throws ServletException {
+<span class="nc" id="L179">    final String rulename = arguments.get(RULENAME);</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">    if (rulename == null) {</span>
+<span class="nc" id="L181">      throw new ServletException(INVALID_REQUEST_PARAMS);</span>
+    }
+<span class="nc" id="L183">    String identifier = arguments.get(IDENTIFIER);</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">    if (identifier == null) {</span>
+<span class="nc" id="L185">      identifier = new LongUuid().getLong() + &quot;&quot;;</span>
+    }
+<span class="nc" id="L187">    String comment = arguments.get(COMMENT);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (comment == null) {</span>
+<span class="nc" id="L189">      comment = &quot;Web Download &quot; + identifier;</span>
+    }
+
+    try {
+<span class="nc" id="L193">      final HttpAuthent authent =</span>
+<span class="nc" id="L194">          (HttpAuthent) WaarpSystemUtil.newInstance(authentClass);</span>
+<span class="nc" id="L195">      authent.initializeAuthent(arguments);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">      if (check) {</span>
+        try {
+<span class="nc" id="L198">          return new HttpDownloadSession(identifier, authent);</span>
+<span class="nc" id="L199">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L200">          logger.debug(e);</span>
+<span class="nc" id="L201">          return null;</span>
+        }
+      }
+<span class="nc" id="L204">      return new HttpDownloadSession(filename, rulename, identifier, comment,</span>
+                                     authent);
+<span class="nc" id="L206">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L207">      throw new ServletException(</span>
+<span class="nc" id="L208">          INVALID_REQUEST_PARAMS + &quot;: &quot; + e.getMessage());</span>
+<span class="nc" id="L209">    } catch (final InvocationTargetException e) {</span>
+<span class="nc" id="L210">      throw new ServletException(</span>
+<span class="nc" id="L211">          INVALID_REQUEST_PARAMS + &quot;: &quot; + e.getMessage());</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

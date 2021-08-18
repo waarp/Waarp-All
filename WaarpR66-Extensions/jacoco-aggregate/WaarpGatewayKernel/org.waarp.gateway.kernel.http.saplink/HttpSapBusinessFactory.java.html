@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpSapBusinessFactory.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.http.saplink</a> &gt; <span class="el_source">HttpSapBusinessFactory.java</span></div><h1>HttpSapBusinessFactory.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.http.saplink;
+
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.AbstractHttpBusinessRequest;
+import org.waarp.gateway.kernel.AbstractHttpField;
+import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
+import org.waarp.gateway.kernel.AbstractHttpField.FieldRole;
+import org.waarp.gateway.kernel.DefaultHttpField;
+import org.waarp.gateway.kernel.HttpBusinessFactory;
+import org.waarp.gateway.kernel.HttpPage;
+import org.waarp.gateway.kernel.HttpPage.PageRole;
+import org.waarp.gateway.kernel.HttpPageHandler;
+
+import java.net.SocketAddress;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ *
+ */
+public class HttpSapBusinessFactory extends HttpBusinessFactory {
+
+  public static final String SAPLINK = &quot;/saplink&quot;;
+
+  @Override
+  public AbstractHttpBusinessRequest getNewHttpBusinessRequest(
+      final SocketAddress remoteAddress,
+      final Map&lt;String, AbstractHttpField&gt; fields, final HttpPage page) {
+<span class="nc" id="L49">    return null;</span>
+  }
+
+  /**
+   * All functions for SapArg: some could be not implemented. Note that create
+   * and update exist in two modes
+   * (Post and Put)
+   */
+<span class="nc" id="L57">  public enum SapFunction {</span>
+<span class="nc" id="L58">    info, get, docGet, createPost, createPut, mCreate, append, updatePost,</span>
+<span class="nc" id="L59">    updatePut, delete</span>
+  }
+
+  /**
+   * All fields for SapArg
+   */
+<span class="nc" id="L65">  public enum SapField {</span>
+<span class="nc" id="L66">    contRep, docId, compId, pVersion, resultAs, accessMode, authId, expiration,</span>
+<span class="nc" id="L67">    secKey, fromOffset, toOffset, Content_Type(&quot;Content-Type&quot;), charset,</span>
+<span class="nc" id="L68">    version, Content_Length(&quot;Content-Length&quot;), docProt, pattern, caseSensitive,</span>
+<span class="nc" id="L69">    numResults, X_compId(&quot;X-compId&quot;), X_docId(&quot;X-docId&quot;),</span>
+<span class="nc" id="L70">    X_docStatus(&quot;X-docStatus&quot;), X_contentRep(&quot;X-contentRep&quot;),</span>
+<span class="nc" id="L71">    X_pVersion(&quot;X-pVersion&quot;), X_dateC(&quot;X-dateC&quot;), X_timeC(&quot;X-timeC&quot;),</span>
+<span class="nc" id="L72">    X_dateM(&quot;X-dateM&quot;), X_timeM(&quot;X-timeM&quot;), X_numberComps(&quot;X-numberComps&quot;),</span>
+<span class="nc" id="L73">    X_Content_Type(&quot;X-Content-Type&quot;), X_Content_Length(&quot;X-Content-Length&quot;),</span>
+<span class="nc" id="L74">    X_compStatus(&quot;X-compStatus&quot;), X_compDateC(&quot;X-compDateC&quot;),</span>
+<span class="nc" id="L75">    X_compTimeC(&quot;X-compTimeC&quot;), X_compDateM(&quot;X-compDateM&quot;),</span>
+<span class="nc" id="L76">    X_compTimeM(&quot;X-compTimeM&quot;), X_numComps(&quot;X-numComps&quot;),</span>
+<span class="nc" id="L77">    X_contRep(&quot;X-contRep&quot;), Filename, last_none;</span>
+
+    /**
+     * True String as Field
+     */
+    public final String value;
+
+<span class="nc" id="L84">    SapField(final String value) {</span>
+<span class="nc" id="L85">      this.value = value;</span>
+<span class="nc" id="L86">    }</span>
+
+<span class="nc" id="L88">    SapField() {</span>
+<span class="nc" id="L89">      value = name();</span>
+<span class="nc" id="L90">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L94">      return value;</span>
+    }
+  }
+
+  /**
+   * Array of status: one entry by SapFunction, each entry has in that order
+   * UrlMandatory, UrlOptional,
+   * HeaderMandatory, HeaderOptional,BodyMandatory, BodyOptional,
+   * SecurityOptional. If one SapArg is in the
+   * array, it has the status associated with the rank. One SapArg can appears
+   * in multiple rank.
+   */
+<span class="nc" id="L106">  private static final SapField[][][] allStatus = {</span>
+      // info
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion },
+          { SapField.compId, SapField.resultAs }, {}, {}, {}, {}, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // get
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion },
+          { SapField.compId, SapField.fromOffset, SapField.toOffset }, {}, {},
+          {}, {}, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // docGet (potential multiple get)
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion }, {}, {}, {},
+          {}, {}, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // createPost
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion },
+          { SapField.docProt }, { SapField.Content_Length }, {},
+          { SapField.compId, SapField.Content_Length }, {
+          SapField.Content_Type, SapField.charset, SapField.version
+      }, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // createPut
+      {
+          {
+              SapField.contRep, SapField.docId, SapField.compId,
+              SapField.pVersion
+          }, { SapField.docProt }, { SapField.Content_Length }, {}, {}, {
+          SapField.Content_Type, SapField.charset, SapField.version
+      }, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // mCreate
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion },
+          { SapField.docProt }, {}, {}, {
+          SapField.X_compId, SapField.X_docId, SapField.Content_Length
+      }, {
+          SapField.Content_Type, SapField.charset, SapField.version
+      }, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // append
+      {
+          {
+              SapField.contRep, SapField.docId, SapField.compId,
+              SapField.pVersion
+          }, {}, {}, {}, {}, {}, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // updatePost
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion }, {}, {}, {},
+          { SapField.compId, SapField.Content_Length }, {
+          SapField.Content_Type, SapField.charset, SapField.version
+      }, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // updatePut
+      {
+          {
+              SapField.contRep, SapField.docId, SapField.compId,
+              SapField.pVersion
+          }, {}, { SapField.Content_Length }, {}, {}, {
+          SapField.Content_Type, SapField.charset, SapField.version
+      }, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+      // delete
+      {
+          { SapField.contRep, SapField.docId, SapField.pVersion },
+          { SapField.compId }, {}, {}, {}, {}, {
+          SapField.secKey, SapField.accessMode, SapField.authId,
+          SapField.expiration
+      }
+      },
+  };
+
+<span class="nc" id="L209">  public HttpSapBusinessFactory() {</span>
+    // nothing
+<span class="nc" id="L211">  }</span>
+
+  public static HttpPageHandler initializeHttpPageHandler() {
+    // manual creation
+<span class="nc" id="L215">    final HashMap&lt;String, HttpPage&gt; pages = new HashMap&lt;String, HttpPage&gt;();</span>
+    String pagename;
+    String header;
+    String footer;
+    String beginform;
+    String endform;
+    String nextinform;
+    String uri;
+    String errorpage;
+    final String classname;
+    PageRole pageRole;
+    LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap;
+
+    try {
+      // Need as default error pages: 400, 401, 403, 404, 406, 500
+<span class="nc" id="L230">      final HttpPageHandler pageHandler = new HttpPageHandler(pages);</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (!HttpBusinessFactory.addDefaultErrorPages(pageHandler, &quot;SAP ERROR&quot;,</span>
+                                                    HttpSapBusinessFactory.class)) {
+<span class="nc" id="L233">        throw new IllegalAccessException(&quot;Cannot build default error pages&quot;);</span>
+      }
+
+<span class="nc" id="L236">      classname = HttpSapBusinessFactory.class.getName();</span>
+
+      // info
+<span class="nc" id="L239">      pageRole = PageRole.GETDOWNLOAD;</span>
+<span class="nc" id="L240">      pagename = SapFunction.info.name();</span>
+<span class="nc" id="L241">      uri = SAPLINK;</span>
+<span class="nc" id="L242">      header = null;</span>
+<span class="nc" id="L243">      footer = null;</span>
+<span class="nc" id="L244">      beginform = null;</span>
+<span class="nc" id="L245">      endform = null;</span>
+<span class="nc" id="L246">      nextinform = null;</span>
+<span class="nc" id="L247">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L248">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L249">      addDefaultFields(linkedHashMap, allStatus[SapFunction.info.ordinal()]);</span>
+<span class="nc" id="L250">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // get
+<span class="nc" id="L255">      pageRole = PageRole.GETDOWNLOAD;</span>
+<span class="nc" id="L256">      pagename = SapFunction.get.name();</span>
+<span class="nc" id="L257">      uri = SAPLINK;</span>
+<span class="nc" id="L258">      header = null;</span>
+<span class="nc" id="L259">      footer = null;</span>
+<span class="nc" id="L260">      beginform = null;</span>
+<span class="nc" id="L261">      endform = null;</span>
+<span class="nc" id="L262">      nextinform = null;</span>
+<span class="nc" id="L263">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L264">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L265">      addDefaultFields(linkedHashMap, allStatus[SapFunction.get.ordinal()]);</span>
+<span class="nc" id="L266">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // docGet
+<span class="nc" id="L271">      pageRole = PageRole.GETDOWNLOAD;</span>
+<span class="nc" id="L272">      pagename = SapFunction.docGet.name();</span>
+<span class="nc" id="L273">      uri = SAPLINK;</span>
+<span class="nc" id="L274">      header = null;</span>
+<span class="nc" id="L275">      footer = null;</span>
+<span class="nc" id="L276">      beginform = null;</span>
+<span class="nc" id="L277">      endform = null;</span>
+<span class="nc" id="L278">      nextinform = null;</span>
+<span class="nc" id="L279">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L280">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L281">      addDefaultFields(linkedHashMap, allStatus[SapFunction.docGet.ordinal()]);</span>
+<span class="nc" id="L282">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // createPost
+<span class="nc" id="L287">      pageRole = PageRole.POSTUPLOAD;</span>
+<span class="nc" id="L288">      pagename = SapFunction.createPost.name();</span>
+<span class="nc" id="L289">      uri = SAPLINK;</span>
+<span class="nc" id="L290">      header = null;</span>
+<span class="nc" id="L291">      footer = null;</span>
+<span class="nc" id="L292">      beginform = null;</span>
+<span class="nc" id="L293">      endform = null;</span>
+<span class="nc" id="L294">      nextinform = null;</span>
+<span class="nc" id="L295">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L296">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L297">      addDefaultFields(linkedHashMap,</span>
+<span class="nc" id="L298">                       allStatus[SapFunction.createPost.ordinal()]);</span>
+<span class="nc" id="L299">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // createPut
+<span class="nc" id="L304">      pageRole = PageRole.PUT;</span>
+<span class="nc" id="L305">      pagename = SapFunction.createPut.name();</span>
+<span class="nc" id="L306">      uri = SAPLINK;</span>
+<span class="nc" id="L307">      header = null;</span>
+<span class="nc" id="L308">      footer = null;</span>
+<span class="nc" id="L309">      beginform = null;</span>
+<span class="nc" id="L310">      endform = null;</span>
+<span class="nc" id="L311">      nextinform = null;</span>
+<span class="nc" id="L312">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L313">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L314">      addDefaultFields(linkedHashMap,</span>
+<span class="nc" id="L315">                       allStatus[SapFunction.createPut.ordinal()]);</span>
+<span class="nc" id="L316">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // mCreate
+<span class="nc" id="L321">      pageRole = PageRole.POSTUPLOAD;</span>
+<span class="nc" id="L322">      pagename = SapFunction.mCreate.name();</span>
+<span class="nc" id="L323">      uri = SAPLINK;</span>
+<span class="nc" id="L324">      header = null;</span>
+<span class="nc" id="L325">      footer = null;</span>
+<span class="nc" id="L326">      beginform = null;</span>
+<span class="nc" id="L327">      endform = null;</span>
+<span class="nc" id="L328">      nextinform = null;</span>
+<span class="nc" id="L329">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L330">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L331">      addDefaultFields(linkedHashMap, allStatus[SapFunction.mCreate.ordinal()]);</span>
+<span class="nc" id="L332">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // append
+<span class="nc" id="L337">      pageRole = PageRole.PUT;</span>
+<span class="nc" id="L338">      pagename = SapFunction.append.name();</span>
+<span class="nc" id="L339">      uri = SAPLINK;</span>
+<span class="nc" id="L340">      header = null;</span>
+<span class="nc" id="L341">      footer = null;</span>
+<span class="nc" id="L342">      beginform = null;</span>
+<span class="nc" id="L343">      endform = null;</span>
+<span class="nc" id="L344">      nextinform = null;</span>
+<span class="nc" id="L345">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L346">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L347">      addDefaultFields(linkedHashMap, allStatus[SapFunction.append.ordinal()]);</span>
+<span class="nc" id="L348">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // updatePost
+<span class="nc" id="L353">      pageRole = PageRole.POSTUPLOAD;</span>
+<span class="nc" id="L354">      pagename = SapFunction.updatePost.name();</span>
+<span class="nc" id="L355">      uri = SAPLINK;</span>
+<span class="nc" id="L356">      header = null;</span>
+<span class="nc" id="L357">      footer = null;</span>
+<span class="nc" id="L358">      beginform = null;</span>
+<span class="nc" id="L359">      endform = null;</span>
+<span class="nc" id="L360">      nextinform = null;</span>
+<span class="nc" id="L361">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L362">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L363">      addDefaultFields(linkedHashMap,</span>
+<span class="nc" id="L364">                       allStatus[SapFunction.updatePost.ordinal()]);</span>
+<span class="nc" id="L365">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // updatePut
+<span class="nc" id="L370">      pageRole = PageRole.PUT;</span>
+<span class="nc" id="L371">      pagename = SapFunction.updatePut.name();</span>
+<span class="nc" id="L372">      uri = SAPLINK;</span>
+<span class="nc" id="L373">      header = null;</span>
+<span class="nc" id="L374">      footer = null;</span>
+<span class="nc" id="L375">      beginform = null;</span>
+<span class="nc" id="L376">      endform = null;</span>
+<span class="nc" id="L377">      nextinform = null;</span>
+<span class="nc" id="L378">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L379">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L380">      addDefaultFields(linkedHashMap,</span>
+<span class="nc" id="L381">                       allStatus[SapFunction.updatePut.ordinal()]);</span>
+<span class="nc" id="L382">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+      // delete
+<span class="nc" id="L387">      pageRole = PageRole.DELETE;</span>
+<span class="nc" id="L388">      pagename = SapFunction.delete.name();</span>
+<span class="nc" id="L389">      uri = SAPLINK;</span>
+<span class="nc" id="L390">      header = null;</span>
+<span class="nc" id="L391">      footer = null;</span>
+<span class="nc" id="L392">      beginform = null;</span>
+<span class="nc" id="L393">      endform = null;</span>
+<span class="nc" id="L394">      nextinform = null;</span>
+<span class="nc" id="L395">      errorpage = &quot;404&quot;;</span>
+<span class="nc" id="L396">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="nc" id="L397">      addDefaultFields(linkedHashMap, allStatus[SapFunction.delete.ordinal()]);</span>
+<span class="nc" id="L398">      pages.put(uri,</span>
+                new HttpPage(pagename, null, header, footer, beginform, endform,
+                             nextinform, uri, pageRole, errorpage, classname,
+                             linkedHashMap));
+<span class="nc" id="L402">    } catch (final ClassNotFoundException e) {</span>
+<span class="nc" id="L403">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L404">    } catch (final InstantiationException e) {</span>
+<span class="nc" id="L405">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L406">    } catch (final IllegalAccessException e) {</span>
+<span class="nc" id="L407">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L408">    }</span>
+<span class="nc" id="L409">    return new HttpPageHandler(pages);</span>
+  }
+
+  private static void addDefaultFields(
+      final LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap,
+      final SapField[][] fields) {
+    String fieldname;
+    String fieldinfo;
+    String fieldvalue;
+    FieldRole fieldRole;
+    boolean fieldvisibility;
+    boolean fieldmandatory;
+    boolean fieldcookieset;
+    int fieldrank;
+    /*
+     * UrlMandatory, UrlOptional, HeaderMandatory, HeaderOptional,BodyMandatory, BodyOptional, SecurityOptional.
+     */
+<span class="nc" id="L426">    int nb = 0;</span>
+<span class="nc" id="L427">    int rank = 0;</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L429">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L430">      fieldname = field.name();</span>
+<span class="nc" id="L431">      fieldinfo = field.toString();</span>
+<span class="nc" id="L432">      fieldvalue = null;</span>
+<span class="nc" id="L433">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L434">      fieldvisibility = true;</span>
+<span class="nc" id="L435">      fieldmandatory = true;</span>
+<span class="nc" id="L436">      fieldcookieset = false;</span>
+<span class="nc" id="L437">      fieldrank = ++nb;</span>
+<span class="nc" id="L438">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.URL,
+                                             fieldrank));
+    }
+<span class="nc" id="L445">    rank++;</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L447">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L448">      fieldname = field.name();</span>
+<span class="nc" id="L449">      fieldinfo = field.toString();</span>
+<span class="nc" id="L450">      fieldvalue = null;</span>
+<span class="nc" id="L451">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L452">      fieldvisibility = true;</span>
+<span class="nc" id="L453">      fieldmandatory = false;</span>
+<span class="nc" id="L454">      fieldcookieset = false;</span>
+<span class="nc" id="L455">      fieldrank = ++nb;</span>
+<span class="nc" id="L456">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.URL,
+                                             fieldrank));
+    }
+<span class="nc" id="L463">    rank++;</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L465">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L466">      fieldname = field.name();</span>
+<span class="nc" id="L467">      fieldinfo = field.toString();</span>
+<span class="nc" id="L468">      fieldvalue = null;</span>
+<span class="nc" id="L469">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L470">      fieldvisibility = true;</span>
+<span class="nc" id="L471">      fieldmandatory = true;</span>
+<span class="nc" id="L472">      fieldcookieset = false;</span>
+<span class="nc" id="L473">      fieldrank = ++nb;</span>
+<span class="nc" id="L474">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.HEADER,
+                                             fieldrank));
+    }
+<span class="nc" id="L481">    rank++;</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L483">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L484">      fieldname = field.name();</span>
+<span class="nc" id="L485">      fieldinfo = field.toString();</span>
+<span class="nc" id="L486">      fieldvalue = null;</span>
+<span class="nc" id="L487">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L488">      fieldvisibility = true;</span>
+<span class="nc" id="L489">      fieldmandatory = false;</span>
+<span class="nc" id="L490">      fieldcookieset = false;</span>
+<span class="nc" id="L491">      fieldrank = ++nb;</span>
+<span class="nc" id="L492">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.HEADER,
+                                             fieldrank));
+    }
+<span class="nc" id="L499">    rank++;</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L501">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L502">      fieldname = field.name();</span>
+<span class="nc" id="L503">      fieldinfo = field.toString();</span>
+<span class="nc" id="L504">      fieldvalue = null;</span>
+<span class="nc" id="L505">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L506">      fieldvisibility = true;</span>
+<span class="nc" id="L507">      fieldmandatory = true;</span>
+<span class="nc" id="L508">      fieldcookieset = false;</span>
+<span class="nc" id="L509">      fieldrank = ++nb;</span>
+<span class="nc" id="L510">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.BODY,
+                                             fieldrank));
+    }
+<span class="nc" id="L517">    rank++;</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L519">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L520">      fieldname = field.name();</span>
+<span class="nc" id="L521">      fieldinfo = field.toString();</span>
+<span class="nc" id="L522">      fieldvalue = null;</span>
+<span class="nc" id="L523">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L524">      fieldvisibility = true;</span>
+<span class="nc" id="L525">      fieldmandatory = false;</span>
+<span class="nc" id="L526">      fieldcookieset = false;</span>
+<span class="nc" id="L527">      fieldrank = ++nb;</span>
+<span class="nc" id="L528">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.BODY,
+                                             fieldrank));
+    }
+<span class="nc" id="L535">    rank++;</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">    for (int j = 0; j &lt; fields[rank].length; j++) {</span>
+<span class="nc" id="L537">      final SapField field = fields[rank][j];</span>
+<span class="nc" id="L538">      fieldname = field.name();</span>
+<span class="nc" id="L539">      fieldinfo = field.toString();</span>
+<span class="nc" id="L540">      fieldvalue = null;</span>
+<span class="nc" id="L541">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="nc" id="L542">      fieldvisibility = true;</span>
+<span class="nc" id="L543">      fieldmandatory = false;</span>
+<span class="nc" id="L544">      fieldcookieset = false;</span>
+<span class="nc" id="L545">      fieldrank = ++nb;</span>
+<span class="nc" id="L546">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             true, FieldPosition.ANY,
+                                             fieldrank));
+    }
+<span class="nc" id="L553">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

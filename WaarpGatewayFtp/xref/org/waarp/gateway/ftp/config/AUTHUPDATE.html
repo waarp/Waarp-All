@@ -55,7 +55,7 @@
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>        WaarpLoggerFactory.getLogger(AUTHUPDATE.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>  
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>    @Override
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exec() <strong class="jxr_keyword">throws</strong> CommandAbstractException {
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> exec() <strong class="jxr_keyword">throws</strong> CommandAbstractException {
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">if</strong> (!getSession().getAuth().isAdmin()) {
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>        <em class="jxr_comment">// not admin</em>
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply500Exception(<span class="jxr_string">"Command Not Allowed"</span>);
@@ -78,8 +78,8 @@
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>          }
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>        }
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>        <strong class="jxr_keyword">if</strong> (filename == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>          filename = ((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration())
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>              .getAuthenticationFile();
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>          filename =
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>              ((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration()).getAuthenticationFile();
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>        }
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>        <strong class="jxr_keyword">final</strong> File file = <strong class="jxr_keyword">new</strong> File(filename);
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>        <strong class="jxr_keyword">if</strong> (!file.canRead()) {
@@ -87,13 +87,13 @@
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>              <span class="jxr_string">"Filename given as parameter is not found: "</span> + filename);
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>        }
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>      }
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>      <strong class="jxr_keyword">if</strong> (!((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration())
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>          .initializeAuthent(filename, purge)) {
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>      <strong class="jxr_keyword">if</strong> (!((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration()).initializeAuthent(
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>          filename, purge)) {
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply501Exception(<span class="jxr_string">"Filename given as parameter is not correct"</span>);
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>      }
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>      <strong class="jxr_keyword">if</strong> (write &amp;&amp; !((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration())
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>          .saveAuthenticationFile(((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration())
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>                                      .getAuthenticationFile())) {
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>      <strong class="jxr_keyword">if</strong> (write &amp;&amp;
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>          !((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration()).saveAuthenticationFile(
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>              ((<a name="FileBasedConfiguration" href="../../../../../org/waarp/gateway/ftp/config/FileBasedConfiguration.html#FileBasedConfiguration">FileBasedConfiguration</a>) getConfiguration()).getAuthenticationFile())) {
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply501Exception(
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>            <span class="jxr_string">"Update is done but Write operation is not correct"</span>);
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>      }

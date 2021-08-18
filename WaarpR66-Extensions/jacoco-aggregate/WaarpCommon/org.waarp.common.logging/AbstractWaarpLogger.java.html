@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractWaarpLogger.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.logging</a> &gt; <span class="el_source">AbstractWaarpLogger.java</span></div><h1>AbstractWaarpLogger.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2012 The Netty Project
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the &quot;License&quot;); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+package org.waarp.common.logging;
+
+import java.io.Serializable;
+
+/**
+ * A skeletal implementation of {@link WaarpLogger}. This class implements all
+ * methods that have a
+ * {@link WaarpLogLevel} parameter by default to call specific logger methods
+ * such as {@link #info(String)} or
+ * {@link #isInfoEnabled()}.
+ */
+public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
+
+  private static final long serialVersionUID = -6382972526573193470L;
+
+  private static final String EXCEPTION_MESSAGE = &quot;Unexpected exception:&quot;;
+
+  private final String name;
+
+  /**
+   * Creates a new instance.
+   */
+<span class="nc" id="L55">  protected AbstractWaarpLogger(final String name) {</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">    if (name == null) {</span>
+<span class="nc" id="L57">      throw new IllegalArgumentException(&quot;name&quot;);</span>
+    }
+<span class="nc" id="L59">    this.name = name;</span>
+<span class="nc" id="L60">  }</span>
+
+  @Override
+  public final String name() {
+<span class="nc" id="L64">    return name;</span>
+  }
+
+  @Override
+  public final boolean isEnabled(final WaarpLogLevel level) {
+<span class="nc bnc" id="L69" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L71">        return isTraceEnabled();</span>
+      case DEBUG:
+<span class="nc" id="L73">        return isDebugEnabled();</span>
+      case INFO:
+<span class="nc" id="L75">        return isInfoEnabled();</span>
+      case WARN:
+<span class="nc" id="L77">        return isWarnEnabled();</span>
+      case ERROR:
+<span class="nc" id="L79">        return isErrorEnabled();</span>
+      default:
+<span class="nc" id="L81">        return false;</span>
+    }
+  }
+
+  @Override
+  public final void trace(final Throwable t) {
+<span class="nc" id="L87">    trace(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L88">  }</span>
+
+  @Override
+  public final void debug(final Throwable t) {
+<span class="nc" id="L92">    debug(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L93">  }</span>
+
+  @Override
+  public final void info(final Throwable t) {
+<span class="nc" id="L97">    info(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L98">  }</span>
+
+  @Override
+  public final void warn(final Throwable t) {
+<span class="nc" id="L102">    warn(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L103">  }</span>
+
+  @Override
+  public final void error(final Throwable t) {
+<span class="nc" id="L107">    error(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L108">  }</span>
+
+  @Override
+  public final void log(final WaarpLogLevel level, final String msg,
+                        final Throwable cause) {
+<span class="nc bnc" id="L113" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L115">        trace(msg, cause);</span>
+<span class="nc" id="L116">        break;</span>
+      case DEBUG:
+<span class="nc" id="L118">        debug(msg, cause);</span>
+<span class="nc" id="L119">        break;</span>
+      case INFO:
+<span class="nc" id="L121">        info(msg, cause);</span>
+<span class="nc" id="L122">        break;</span>
+      case WARN:
+<span class="nc" id="L124">        warn(msg, cause);</span>
+<span class="nc" id="L125">        break;</span>
+      case ERROR:
+<span class="nc" id="L127">        error(msg, cause);</span>
+<span class="nc" id="L128">        break;</span>
+      default:
+    }
+<span class="nc" id="L131">  }</span>
+
+  @Override
+  public final void log(final WaarpLogLevel level, final Throwable cause) {
+<span class="nc bnc" id="L135" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L137">        trace(cause);</span>
+<span class="nc" id="L138">        break;</span>
+      case DEBUG:
+<span class="nc" id="L140">        debug(cause);</span>
+<span class="nc" id="L141">        break;</span>
+      case INFO:
+<span class="nc" id="L143">        info(cause);</span>
+<span class="nc" id="L144">        break;</span>
+      case WARN:
+<span class="nc" id="L146">        warn(cause);</span>
+<span class="nc" id="L147">        break;</span>
+      case ERROR:
+<span class="nc" id="L149">        error(cause);</span>
+<span class="nc" id="L150">        break;</span>
+      default:
+    }
+<span class="nc" id="L153">  }</span>
+
+  @Override
+  public final void log(final WaarpLogLevel level, final String msg) {
+<span class="nc bnc" id="L157" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L159">        trace(msg);</span>
+<span class="nc" id="L160">        break;</span>
+      case DEBUG:
+<span class="nc" id="L162">        debug(msg);</span>
+<span class="nc" id="L163">        break;</span>
+      case INFO:
+<span class="nc" id="L165">        info(msg);</span>
+<span class="nc" id="L166">        break;</span>
+      case WARN:
+<span class="nc" id="L168">        warn(msg);</span>
+<span class="nc" id="L169">        break;</span>
+      case ERROR:
+<span class="nc" id="L171">        error(msg);</span>
+<span class="nc" id="L172">        break;</span>
+      default:
+    }
+<span class="nc" id="L175">  }</span>
+
+  @Override
+  public final void log(final WaarpLogLevel level, final String format,
+                        final Object arg) {
+<span class="nc bnc" id="L180" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L182">        trace(format, arg);</span>
+<span class="nc" id="L183">        break;</span>
+      case DEBUG:
+<span class="nc" id="L185">        debug(format, arg);</span>
+<span class="nc" id="L186">        break;</span>
+      case INFO:
+<span class="nc" id="L188">        info(format, arg);</span>
+<span class="nc" id="L189">        break;</span>
+      case WARN:
+<span class="nc" id="L191">        warn(format, arg);</span>
+<span class="nc" id="L192">        break;</span>
+      case ERROR:
+<span class="nc" id="L194">        error(format, arg);</span>
+<span class="nc" id="L195">        break;</span>
+      default:
+    }
+<span class="nc" id="L198">  }</span>
+
+  @Override
+  public final void log(final WaarpLogLevel level, final String format,
+                        final Object argA, final Object argB) {
+<span class="nc bnc" id="L203" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L205">        trace(format, argA, argB);</span>
+<span class="nc" id="L206">        break;</span>
+      case DEBUG:
+<span class="nc" id="L208">        debug(format, argA, argB);</span>
+<span class="nc" id="L209">        break;</span>
+      case INFO:
+<span class="nc" id="L211">        info(format, argA, argB);</span>
+<span class="nc" id="L212">        break;</span>
+      case WARN:
+<span class="nc" id="L214">        warn(format, argA, argB);</span>
+<span class="nc" id="L215">        break;</span>
+      case ERROR:
+<span class="nc" id="L217">        error(format, argA, argB);</span>
+<span class="nc" id="L218">        break;</span>
+      default:
+    }
+<span class="nc" id="L221">  }</span>
+
+  @Override
+  public final void log(final WaarpLogLevel level, final String format,
+                        final Object... arguments) {
+<span class="nc bnc" id="L226" title="All 6 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L228">        trace(format, arguments);</span>
+<span class="nc" id="L229">        break;</span>
+      case DEBUG:
+<span class="nc" id="L231">        debug(format, arguments);</span>
+<span class="nc" id="L232">        break;</span>
+      case INFO:
+<span class="nc" id="L234">        info(format, arguments);</span>
+<span class="nc" id="L235">        break;</span>
+      case WARN:
+<span class="nc" id="L237">        warn(format, arguments);</span>
+<span class="nc" id="L238">        break;</span>
+      case ERROR:
+<span class="nc" id="L240">        error(format, arguments);</span>
+<span class="nc" id="L241">        break;</span>
+      default:
+    }
+<span class="nc" id="L244">  }</span>
+
+  protected final Object readResolve() {
+<span class="nc" id="L247">    return WaarpLoggerFactory.getInstance(name());</span>
+  }
+
+  /**
+   * @param o
+   *
+   * @return the simple Class Name
+   */
+  public static String simpleClassName(final Object o) {
+<span class="nc bnc" id="L256" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L257">      return &quot;null_object&quot;;</span>
+    } else {
+<span class="nc" id="L259">      return simpleClassName(o.getClass());</span>
+    }
+  }
+
+  /**
+   * @param clazz
+   *
+   * @return the simple Class Name
+   */
+  public static String simpleClassName(final Class&lt;?&gt; clazz) {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">    if (clazz == null) {</span>
+<span class="nc" id="L270">      return &quot;null_class&quot;;</span>
+    }
+<span class="nc" id="L272">    final Package pkg = clazz.getPackage();</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">    if (pkg != null) {</span>
+<span class="nc" id="L274">      return clazz.getName().substring(pkg.getName().length() + 1);</span>
+    } else {
+<span class="nc" id="L276">      return clazz.getName();</span>
+    }
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L282">    return simpleClassName(this) + '(' + name() + ')';</span>
+  }
+
+  private static final int BASELEVEL;
+  private static final int LOGLEVEL;
+
+  /**
+   * Determine the good level
+   *
+   * @return the default base level
+   */
+  private static int detectLoggingBaseLevel() {
+<span class="nc" id="L294">    final StackTraceElement[] elt = Thread.currentThread().getStackTrace();</span>
+    int i;
+<span class="nc bnc" id="L296" title="All 2 branches missed.">    for (i = 0; i &lt; elt.length; i++) {</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">      if (&quot;detectLoggingBaseLevel&quot;.equalsIgnoreCase(elt[i].getMethodName())) {</span>
+<span class="nc" id="L298">        break;</span>
+      }
+    }
+<span class="nc" id="L301">    return i;</span>
+  }
+
+  static {
+<span class="nc" id="L305">    BASELEVEL = detectLoggingBaseLevel();</span>
+<span class="nc" id="L306">    LOGLEVEL = BASELEVEL + 2;</span>
+<span class="nc" id="L307">  }</span>
+
+  /**
+   * To be used in message for logger (rank 2) like
+   * logger.warn(code,&quot;message:&quot;+getImmediateMethodAndLine(),null);
+   *
+   * @return &quot;ClassAndMethodName(FileName:LineNumber)&quot;
+   */
+  public static String getImmediateMethodAndLine() {
+    final StackTraceElement elt =
+<span class="nc" id="L317">        Thread.currentThread().getStackTrace()[BASELEVEL + 1];</span>
+<span class="nc" id="L318">    return getMethodAndLine(elt);</span>
+  }
+
+  // FIXME TODO for JDK6 IBM add 1 (2-&gt;3 and 3-&gt;4)
+
+  /**
+   * To be used only by Logger (rank 5)
+   *
+   * @return &quot;MethodName(FileName:LineNumber)&quot;
+   */
+  public static String getLoggerMethodAndLine() {
+    final StackTraceElement elt =
+<span class="nc" id="L330">        Thread.currentThread().getStackTrace()[LOGLEVEL];</span>
+<span class="nc" id="L331">    return getMethodAndLine(elt);</span>
+  }
+
+  /**
+   * To be used only by Logger (rank 5)
+   *
+   * @return &quot;MethodName(FileName:LineNumber)&quot;
+   */
+  public static String getLoggerMethodAndLineCallee(final int deep) {
+    final StackTraceElement elt =
+<span class="nc" id="L341">        Thread.currentThread().getStackTrace()[LOGLEVEL + deep];</span>
+<span class="nc" id="L342">    return getMethodAndLine(elt);</span>
+  }
+
+  /**
+   * @param rank is the current depth of call+1 (immediate = 1+1=2)
+   *
+   * @return &quot;ClassAndMethodName(FileName:LineNumber)&quot;
+   */
+  protected static String getRankMethodAndLine(final int rank) {
+<span class="nc" id="L351">    final StackTraceElement elt = Thread.currentThread().getStackTrace()[rank];</span>
+<span class="nc" id="L352">    return getMethodAndLine(elt);</span>
+  }
+
+
+  /**
+   * @param elt
+   *
+   * @return &quot;MethodName(FileName:LineNumber) &quot; from elt
+   */
+  private static String getMethodAndLine(final StackTraceElement elt) {
+<span class="nc" id="L362">    final StringBuilder builder =</span>
+<span class="nc" id="L363">        new StringBuilder(elt.getClassName()).append('.')</span>
+<span class="nc" id="L364">                                             .append(elt.getMethodName())</span>
+<span class="nc" id="L365">                                             .append('(')</span>
+<span class="nc" id="L366">                                             .append(elt.getFileName())</span>
+<span class="nc" id="L367">                                             .append(':')</span>
+<span class="nc" id="L368">                                             .append(elt.getLineNumber())</span>
+<span class="nc" id="L369">                                             .append(&quot;) : &quot;);</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">    if (WaarpLoggerFactory.localName != null) {</span>
+<span class="nc" id="L371">      builder.append('[').append(WaarpLoggerFactory.localName).append(&quot;] &quot;);</span>
+    }
+<span class="nc" id="L373">    return builder.toString();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

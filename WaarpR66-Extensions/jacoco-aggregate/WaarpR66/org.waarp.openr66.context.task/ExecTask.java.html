@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ExecTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">ExecTask.java</span></div><h1>ExecTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.localexec.LocalExecClient;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
+/**
+ * Execute an external command
+ */
+public class ExecTask extends AbstractExecTask {
+
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(ExecTask.class);</span>
+
+  /**
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public ExecTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
+<span class="nc" id="L54">    super(TaskType.EXEC, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L55">  }</span>
+
+  @Override
+  public final void run() {
+    /*
+     * First apply all replacements and format to argRule from context and argTransfer. Will call exec (from first
+     * element of resulting string) with arguments as the following value from the replacements. Return 0 if OK,
+     * else 1 for a warning else as an error. No change should be done in the FILENAME
+     */
+<span class="nc" id="L64">    logger.debug(&quot;Exec with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
+                 session);
+<span class="nc" id="L66">    final String finalname = applyTransferSubstitutions(argRule);</span>
+
+    // Check if the execution will be done through LocalExec daemon
+<span class="nc bnc" id="L69" title="All 4 branches missed.">    if (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {</span>
+<span class="nc" id="L70">      final LocalExecClient localExecClient = new LocalExecClient();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (localExecClient.connect()) {</span>
+<span class="nc" id="L72">        localExecClient.runOneCommand(finalname, delay, waitForValidation,</span>
+                                      futureCompletion);
+<span class="nc" id="L74">        localExecClient.disconnect();</span>
+<span class="nc" id="L75">        return;</span>
+      } // else continue
+    }
+
+<span class="nc" id="L79">    final PrepareCommandExec prepareCommandExec =</span>
+        new PrepareCommandExec(this, finalname, true,
+<span class="nc" id="L81">                               waitForValidation).invoke();</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
+<span class="nc" id="L83">      return;</span>
+    }
+<span class="nc" id="L85">    final CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
+<span class="nc" id="L86">    final DefaultExecutor defaultExecutor =</span>
+<span class="nc" id="L87">        prepareCommandExec.getDefaultExecutor();</span>
+<span class="nc" id="L88">    final PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
+<span class="nc" id="L89">    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
+<span class="nc" id="L90">    final PumpStreamHandler pumpStreamHandler =</span>
+<span class="nc" id="L91">        prepareCommandExec.getPumpStreamHandler();</span>
+<span class="nc" id="L92">    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
+
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (!waitForValidation) {</span>
+      // Do not wait for validation
+<span class="nc" id="L96">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L97">      logger.info(&quot;Exec will start but no WAIT with {}&quot;, commandLine);</span>
+    }
+
+<span class="nc" id="L100">    final ExecuteCommand executeCommand =</span>
+        new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
+<span class="nc" id="L102">                           outputStream, pumpStreamHandler, null).invoke();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (executeCommand.isError()) {</span>
+<span class="nc" id="L104">      return;</span>
+    }
+<span class="nc" id="L106">    int status = executeCommand.getStatus();</span>
+
+<span class="nc bnc" id="L108" title="All 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
+      // kill by the watchdoc (time out)
+<span class="nc" id="L111">      logger.error(&quot;Exec is in Time Out&quot;);</span>
+<span class="nc" id="L112">      status = -1;</span>
+    }
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (status == 0) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (waitForValidation) {</span>
+<span class="nc" id="L116">        futureCompletion.setSuccess();</span>
+      }
+<span class="nc" id="L118">      logger.info(&quot;Exec OK with {}&quot;, commandLine);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L120">      logger.warn(&quot;Exec in warning with &quot; + commandLine);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (waitForValidation) {</span>
+<span class="nc" id="L122">        futureCompletion.setSuccess();</span>
+      }
+    } else {
+<span class="nc" id="L125">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">      if (waitForValidation) {</span>
+<span class="nc" id="L127">        futureCompletion.cancel();</span>
+      }
+    }
+<span class="nc" id="L130">  }</span>
+
+  @Override
+  final void finalizeFromError(final Runnable threadReader, final int status,
+                               final CommandLine commandLine,
+                               final Exception e) {
+<span class="nc" id="L136">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc" id="L137">                 &quot; returns &quot; + e.getMessage());</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    if (waitForValidation) {</span>
+<span class="nc" id="L139">      futureCompletion.setFailure(e);</span>
+    }
+<span class="nc" id="L141">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

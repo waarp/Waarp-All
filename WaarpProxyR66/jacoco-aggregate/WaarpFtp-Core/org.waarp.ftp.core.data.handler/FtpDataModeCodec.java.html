@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpDataModeCodec.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.data.handler</a> &gt; <span class="el_source">FtpDataModeCodec.java</span></div><h1>FtpDataModeCodec.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.data.handler;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageCodec;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.DataBlock;
+import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.compress.zlib.ZlibCodec;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
+import org.waarp.ftp.core.config.FtpInternalConfiguration;
+import org.waarp.ftp.core.data.handler.FtpSeekAheadData.SeekAheadNoBackArrayException;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * First CODEC :&lt;br&gt;
+ * - encode : takes a {@link DataBlock} and transforms it to a ByteBuf&lt;br&gt;
+ * - decode : takes a ByteBuf and transforms it to a {@link DataBlock}&lt;br&gt;
+ * STREAM and BLOCK mode are implemented. COMPRESSED mode is not implemented.
+ */
+public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
+  /*
+   * 3.4.1. STREAM MODE The data is transmitted as a stream of bytes. There is no restriction on the
+   * representation type used; record structures are allowed. In a record structured file EOR and EOF will each
+   * be indicated by a two-byte control code. The first byte of the control code will be all ones, the escape
+   * character. The second byte will have the low order bit on and zeros elsewhere for EOR and the second low
+   * order bit on for EOF; that is, the byte will have value 1 for EOR and value 2 for EOF. EOR and EOF may be
+   * indicated together on the last byte transmitted by turning both low order bits on (i.e., the value 3). If a
+   * byte of all ones was intended to be sent as data, it should be repeated in the second byte of the control
+   * code. If the structure is a file structure, the EOF is indicated by the sending host closing the data
+   * connection and all bytes are data bytes. 3.4.2. BLOCK MODE The file is transmitted as a series of data
+   * blocks preceded by one or more header bytes. The header bytes contain a count field, and descriptor code.
+   * The count field indicates the total length of the data block in bytes, thus marking the beginning of the
+   * next data block (there are no filler bits). The descriptor code defines: last block in the file (EOF) last
+   * block in the record (EOR), restart marker (see the Section on Error Recovery and Restart) or suspect data
+   * (i.e., the data being transferred is suspected of errors and is not reliable). This last code is NOT
+   * intended for error control within FTP. It is motivated by the desire of sites exchanging certain types of
+   * data (e.g., seismic or weather data) to send and receive all the data despite local errors (such as
+   * &quot;magnetic tape read errors&quot;), but to indicate in the transmission that certain portions are suspect).
+   * Record structures are allowed in this mode, and any representation type may be used. The header consists of
+   * the three bytes. Of the 24 bits of header information, the 16 low order bits shall represent byte count,
+   * and the 8 high order bits shall represent descriptor codes as shown below. Block Header
+   * +----------------+----------------+----------------+ | Descriptor | Byte Count | | 8 bits | 16 bits |
+   * +----------------+----------------+----------------+ The descriptor codes are indicated by bit flags in the
+   * descriptor byte. Four codes have been assigned, where each code number is the decimal value of the
+   * corresponding bit in the byte. Code Meaning 128 End of data block is EOR 64 End of data block is EOF 32
+   * Suspected errors in data block 16 Data block is a restart marker With this encoding, more than one
+   * descriptor coded condition may exist for a particular block. As many bits as necessary may be flagged. The
+   * restart marker is embedded in the data stream as an integral number of 8-bit bytes representing printable
+   * characters in the language being used over the control connection (e.g., default--NVT-ASCII). &lt;SP&gt; (Space,
+   * in the appropriate language) must not be used WITHIN a restart marker. For example, to transmit a
+   * six-character marker, the following would be sent: +--------+--------+--------+ |Descrptr| Byte count |
+   * |code= 16| = 6 | +--------+--------+--------+ +--------+--------+--------+ | Marker | Marker | Marker | | 8
+   * bits | 8 bits | 8 bits | +--------+--------+--------+ +--------+--------+--------+ | Marker | Marker |
+   * Marker | | 8 bits | 8 bits | 8 bits | +--------+--------+--------+
+   */
+  /**
+   * Transfer Mode
+   */
+  private TransferMode mode;
+
+  /**
+   * Structure Mode
+   */
+  private TransferStructure structure;
+
+  /**
+   * Ftp Data Block
+   */
+  private DataBlock dataBlock;
+
+  /**
+   * Last byte for STREAM+RECORD
+   */
+  private int lastbyte;
+
+  /**
+   * if in Z mode
+   */
+<span class="nc" id="L106">  private ZlibCodec zlibCodec = new ZlibCodec();</span>
+
+  /**
+   * Is the underlying DataNetworkHandler ready to receive block
+   */
+<span class="nc" id="L111">  private final AtomicBoolean isReady = new AtomicBoolean(false);</span>
+
+  /**
+   * Blocking step between DataNetworkHandler and this Codec in order to wait
+   * that the DataNetworkHandler is
+   * ready
+   */
+<span class="nc" id="L118">  private final WaarpFuture codecLocked = new WaarpFuture();</span>
+
+  /**
+   * @param mode
+   * @param structure
+   */
+  public FtpDataModeCodec(final TransferMode mode,
+<span class="nc" id="L125">                          final TransferStructure structure) {</span>
+<span class="nc" id="L126">    this.mode = mode;</span>
+<span class="nc" id="L127">    this.structure = structure;</span>
+<span class="nc" id="L128">  }</span>
+
+  /**
+   * Inform the Codec that DataNetworkHandler is ready (called from
+   * DataNetworkHandler after setCorrectCodec).
+   */
+  public final void setCodecReady() {
+<span class="nc" id="L135">    codecLocked.setSuccess();</span>
+<span class="nc" id="L136">  }</span>
+
+  protected final DataBlock decodeRecordStandard(final ByteBuf buf,
+                                                 final int length) {
+<span class="nc" id="L140">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (lastbyte == 0xFF) {</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (readByteForDataBlock(buf, newbuf)) {</span>
+<span class="nc" id="L143">        lastbyte = 0;</span>
+      }
+    }
+    try {
+<span class="nc bnc" id="L147" title="All 2 branches missed.">      while (buf.readableBytes() &gt; 0) {</span>
+<span class="nc" id="L148">        lastbyte = buf.readUnsignedByte();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (lastbyte == 0xFF) {</span>
+<span class="nc" id="L150">          readByteForDataBlock(buf, newbuf);</span>
+        } else {
+<span class="nc" id="L152">          newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+        }
+<span class="nc" id="L154">        lastbyte = 0;</span>
+      }
+<span class="nc" id="L156">    } catch (final IndexOutOfBoundsException e) {</span>
+      // End of read
+<span class="nc" id="L158">    }</span>
+<span class="nc" id="L159">    dataBlock.setBlock(newbuf);</span>
+<span class="nc" id="L160">    return dataBlock;</span>
+  }
+
+  private boolean readByteForDataBlock(final ByteBuf buf,
+                                       final ByteBuf newbuf) {
+<span class="nc" id="L165">    final int nextbyte = buf.readUnsignedByte();</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (nextbyte == 0xFF) {</span>
+<span class="nc" id="L167">      newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+<span class="nc" id="L168">      return false;</span>
+    } else {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">      if (nextbyte == 1) {</span>
+<span class="nc" id="L171">        dataBlock.setEOR(true);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">      } else if (nextbyte == 2) {</span>
+<span class="nc" id="L173">        dataBlock.setEOF(true);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      } else if (nextbyte == 3) {</span>
+<span class="nc" id="L175">        dataBlock.setEOR(true);</span>
+<span class="nc" id="L176">        dataBlock.setEOF(true);</span>
+      }
+<span class="nc" id="L178">      return true;</span>
+    }
+  }
+
+  protected final DataBlock decodeRecord(final ByteBuf buf, final int length) {
+    final FtpSeekAheadData sad;
+    try {
+<span class="nc" id="L185">      sad = new FtpSeekAheadData(buf);</span>
+<span class="nc" id="L186">    } catch (final SeekAheadNoBackArrayException e1) {</span>
+<span class="nc" id="L187">      return decodeRecordStandard(buf, length);</span>
+<span class="nc" id="L188">    }</span>
+<span class="nc" id="L189">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">    if (lastbyte == 0xFF) {</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">      if (readBytesFromSad(sad, newbuf)) {</span>
+<span class="nc" id="L192">        lastbyte = 0;</span>
+      }
+    }
+    try {
+<span class="nc bnc" id="L196" title="All 2 branches missed.">      while (sad.pos &lt; sad.limit) {</span>
+<span class="nc" id="L197">        lastbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (lastbyte == 0xFF) {</span>
+<span class="nc" id="L199">          readBytesFromSad(sad, newbuf);</span>
+        } else {
+<span class="nc" id="L201">          newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+        }
+<span class="nc" id="L203">        lastbyte = 0;</span>
+      }
+<span class="nc" id="L205">    } catch (final IndexOutOfBoundsException e) {</span>
+      // End of read
+<span class="nc" id="L207">    }</span>
+<span class="nc" id="L208">    sad.setReadPosition(0);</span>
+<span class="nc" id="L209">    dataBlock.setBlock(newbuf);</span>
+<span class="nc" id="L210">    return dataBlock;</span>
+  }
+
+  private boolean readBytesFromSad(final FtpSeekAheadData sad,
+                                   final ByteBuf newbuf) {
+<span class="nc" id="L215">    final int nextbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (nextbyte == 0xFF) {</span>
+<span class="nc" id="L217">      newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+<span class="nc" id="L218">      return false;</span>
+    } else {
+<span class="nc bnc" id="L220" title="All 2 branches missed.">      if (nextbyte == 1) {</span>
+<span class="nc" id="L221">        dataBlock.setEOR(true);</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">      } else if (nextbyte == 2) {</span>
+<span class="nc" id="L223">        dataBlock.setEOF(true);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      } else if (nextbyte == 3) {</span>
+<span class="nc" id="L225">        dataBlock.setEOR(true);</span>
+<span class="nc" id="L226">        dataBlock.setEOF(true);</span>
+      }
+<span class="nc" id="L228">      return true;</span>
+    }
+  }
+
+  private void checkCodecUnlocked() throws InterruptedException {
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (!isReady.get()) {</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">      for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB; i++) {</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (!codecLocked.awaitOrInterruptible(</span>
+            FtpInternalConfiguration.RETRYINMS)) {
+<span class="nc" id="L237">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
+        } else {
+          break;
+        }
+      }
+<span class="nc bnc" id="L242" title="All 2 branches missed.">      if (!codecLocked.awaitOrInterruptible(</span>
+          FtpInternalConfiguration.RETRYINMS)) {
+<span class="nc" id="L244">        Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
+        // Force Codec Ready
+<span class="nc" id="L246">        setCodecReady();</span>
+      }
+<span class="nc" id="L248">      isReady.set(true);</span>
+    }
+<span class="nc" id="L250">  }</span>
+
+  @Override
+  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
+                        final List&lt;Object&gt; out) throws Exception {
+    // First test if the connection is fully ready (block might be
+    // transferred by client before connection is ready)
+<span class="nc" id="L257">    checkCodecUnlocked();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (buf.readableBytes() == 0) {</span>
+<span class="nc" id="L259">      return;</span>
+    }
+    // If STREAM Mode, no task to do, just next filter
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
+<span class="nc" id="L263">      dataBlock = new DataBlock();</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">      if (structure != TransferStructure.RECORD) {</span>
+<span class="nc" id="L265">        final ByteBuf newbuf = buf.slice();</span>
+<span class="nc" id="L266">        buf.readerIndex(buf.readableBytes());</span>
+<span class="nc" id="L267">        WaarpNettyUtil.retain(newbuf);</span>
+<span class="nc" id="L268">        dataBlock.setBlock(newbuf);</span>
+<span class="nc" id="L269">        out.add(dataBlock);</span>
+<span class="nc" id="L270">        return;</span>
+      }
+      // Except if RECORD Structure!
+<span class="nc" id="L273">      final int length = buf.readableBytes();</span>
+<span class="nc" id="L274">      out.add(decodeRecord(buf, length));</span>
+<span class="nc" id="L275">      return;</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
+      // Now we are in BLOCK Mode
+      // Make sure if the length field was received.
+<span class="nc bnc" id="L279" title="All 2 branches missed.">      if (buf.readableBytes() &lt; 3) {</span>
+        // The length field was not received yet - return null.
+        // This method will be invoked again when more packets are
+        // received and appended to the buffer.
+<span class="nc" id="L283">        return;</span>
+      }
+
+      // The length field is in the buffer.
+
+      // Mark the current buffer position before reading the length field
+      // because the whole frame might not be in the buffer yet.
+      // We will reset the buffer position to the marked position if
+      // there's not enough bytes in the buffer.
+<span class="nc" id="L292">      buf.markReaderIndex();</span>
+
+<span class="nc bnc" id="L294" title="All 2 branches missed.">      if (dataBlock == null) {</span>
+<span class="nc" id="L295">        dataBlock = new DataBlock();</span>
+      }
+      // Read the descriptor
+<span class="nc" id="L298">      dataBlock.setDescriptor(buf.readByte());</span>
+
+      // Read the length field.
+<span class="nc" id="L301">      final byte upper = buf.readByte();</span>
+<span class="nc" id="L302">      final byte lower = buf.readByte();</span>
+<span class="nc" id="L303">      dataBlock.setByteCount(upper, lower);</span>
+
+      // Make sure if there's enough bytes in the buffer.
+<span class="nc bnc" id="L306" title="All 2 branches missed.">      if (buf.readableBytes() &lt; dataBlock.getByteCount()) {</span>
+        // The whole bytes were not received yet - return null.
+        // This method will be invoked again when more packets are
+        // received and appended to the buffer.
+
+        // Reset to the marked position to read the length field again
+        // next time.
+<span class="nc" id="L313">        buf.resetReaderIndex();</span>
+
+<span class="nc" id="L315">        return;</span>
+      }
+<span class="nc bnc" id="L317" title="All 2 branches missed.">      if (dataBlock.getByteCount() &gt; 0) {</span>
+        // There's enough bytes in the buffer. Read it.
+<span class="nc" id="L319">        dataBlock.setBlock(buf.readBytes(dataBlock.getByteCount()));</span>
+      }
+<span class="nc" id="L321">      final DataBlock returnDataBlock = dataBlock;</span>
+      // Free the datablock for next frame
+<span class="nc" id="L323">      dataBlock = null;</span>
+      // Successfully decoded a frame. Return the decoded frame.
+<span class="nc" id="L325">      out.add(returnDataBlock);</span>
+<span class="nc" id="L326">      return;</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">    } else if (mode == TransferMode.ZLIB) {</span>
+<span class="nc" id="L328">      dataBlock = new DataBlock();</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">      if (structure != TransferStructure.RECORD) {</span>
+<span class="nc" id="L330">        zlibCodec.writeForDecompression(buf);</span>
+<span class="nc" id="L331">        dataBlock.setBlock(zlibCodec.readCodec());</span>
+<span class="nc" id="L332">        out.add(dataBlock);</span>
+<span class="nc" id="L333">        return;</span>
+      }
+      // Except if RECORD Structure!
+<span class="nc" id="L336">      throw new InvalidArgumentException(</span>
+<span class="nc" id="L337">          &quot;Mode unimplemented: &quot; + mode.name() + &quot; with &quot; + structure.name());</span>
+    }
+    // Type unimplemented
+<span class="nc" id="L340">    throw new InvalidArgumentException(&quot;Mode unimplemented: &quot; + mode.name());</span>
+  }
+
+  @Override
+  protected void decodeLast(final ChannelHandlerContext ctx, final ByteBuf in,
+                            final List&lt;Object&gt; out) throws Exception {
+<span class="nc bnc" id="L346" title="All 2 branches missed.">    if (mode == TransferMode.ZLIB) {</span>
+<span class="nc" id="L347">      final byte[] bytes = zlibCodec.finishCodec();</span>
+<span class="nc bnc" id="L348" title="All 4 branches missed.">      if (bytes != null &amp;&amp; bytes.length != 0) {</span>
+<span class="nc" id="L349">        dataBlock = new DataBlock();</span>
+<span class="nc" id="L350">        dataBlock.setBlock(bytes);</span>
+<span class="nc" id="L351">        dataBlock.setEOF(true);</span>
+<span class="nc" id="L352">        out.add(dataBlock);</span>
+      }
+    }
+<span class="nc" id="L355">  }</span>
+
+  protected final ByteBuf encodeRecord(final DataBlock msg,
+                                       final byte[] buffer) {
+<span class="nc" id="L359">    final int size = msg.getByteCount();</span>
+<span class="nc" id="L360">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.ioBuffer(size);</span>
+    int newbyte;
+    try {
+<span class="nc" id="L363">      int pos = 0;</span>
+<span class="nc" id="L364">      final int limit = buffer.length;</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">      while (pos &lt; limit) {</span>
+<span class="nc" id="L366">        newbyte = buffer[pos++] &amp; 0xFF;</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">        if (newbyte == 0xFF) {</span>
+<span class="nc" id="L368">          newbuf.writeByte((byte) 0xFF);</span>
+        }
+<span class="nc" id="L370">        newbuf.writeByte((byte) (newbyte &amp; 0xFF));</span>
+      }
+<span class="nc" id="L372">    } catch (final IndexOutOfBoundsException e) {</span>
+      // end of read
+<span class="nc" id="L374">    }</span>
+<span class="nc" id="L375">    int value = 0;</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">    if (msg.isEOF()) {</span>
+<span class="nc" id="L377">      value += 2;</span>
+    }
+<span class="nc bnc" id="L379" title="All 2 branches missed.">    if (msg.isEOR()) {</span>
+<span class="nc" id="L380">      value += 1;</span>
+    }
+<span class="nc bnc" id="L382" title="All 2 branches missed.">    if (value &gt; 0) {</span>
+<span class="nc" id="L383">      newbuf.writeByte((byte) 0xFF);</span>
+<span class="nc" id="L384">      newbuf.writeByte((byte) (value &amp; 0xFF));</span>
+    }
+<span class="nc" id="L386">    msg.clear();</span>
+<span class="nc" id="L387">    return newbuf;</span>
+  }
+
+  /**
+   * Encode a DataBlock in the correct format for Mode
+   *
+   * @param msg
+   *
+   * @return the ByteBuf or null when the last block is already done
+   *
+   * @throws InvalidArgumentException
+   */
+  protected final ByteBuf encode(final DataBlock msg)
+      throws InvalidArgumentException {
+<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (msg.isCleared()) {</span>
+<span class="nc" id="L402">      return null;</span>
+    }
+<span class="nc" id="L404">    final byte[] bytes = msg.getByteBlock();</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
+      // If record structure, special attention
+<span class="nc bnc" id="L407" title="All 2 branches missed.">      if (structure == TransferStructure.RECORD) {</span>
+<span class="nc" id="L408">        return encodeRecord(msg, bytes);</span>
+      }
+<span class="nc" id="L410">      msg.clear();</span>
+<span class="nc" id="L411">      return WaarpNettyUtil.wrappedBuffer(bytes);</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
+<span class="nc" id="L413">      int length = msg.getByteCount();</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">      final int size = length &gt; 0xFFFF? 0xFFFF + 3 : length + 3;</span>
+<span class="nc" id="L415">      final ByteBuf newbuf = ByteBufAllocator.DEFAULT.ioBuffer(size, size);</span>
+<span class="nc" id="L416">      final byte[] header = { 0, 0, 0 };</span>
+      // Is there any data left
+<span class="nc bnc" id="L418" title="All 2 branches missed.">      if (length == 0) {</span>
+        // It could be an empty block for EOR or EOF
+<span class="nc bnc" id="L420" title="All 4 branches missed.">        if (msg.isEOF() || msg.isEOR()) {</span>
+<span class="nc" id="L421">          header[0] = msg.getDescriptor();</span>
+<span class="nc" id="L422">          header[1] = 0;</span>
+<span class="nc" id="L423">          header[2] = 0;</span>
+<span class="nc" id="L424">          newbuf.writeBytes(header);</span>
+          // Next call will be the last one
+<span class="nc" id="L426">          msg.clear();</span>
+          // return the last block
+<span class="nc" id="L428">          return newbuf;</span>
+        }
+        // This was the very last call
+<span class="nc" id="L431">        msg.clear();</span>
+        // return the end of encode
+<span class="nc" id="L433">        return null;</span>
+      }
+      // Is this a Restart so only Markers
+<span class="nc bnc" id="L436" title="All 2 branches missed.">      if (msg.isRESTART()) {</span>
+<span class="nc" id="L437">        header[0] = msg.getDescriptor();</span>
+<span class="nc" id="L438">        header[1] = msg.getByteCountUpper();</span>
+<span class="nc" id="L439">        header[2] = msg.getByteCountLower();</span>
+<span class="nc" id="L440">        newbuf.writeBytes(header);</span>
+<span class="nc" id="L441">        newbuf.writeBytes(msg.getByteMarkers());</span>
+        // Next call will be the last one
+<span class="nc" id="L443">        msg.clear();</span>
+        // return the last block
+<span class="nc" id="L445">        return newbuf;</span>
+      }
+      // Work on sub block, ignoring descriptor since it is not the last
+      // one
+<span class="nc bnc" id="L449" title="All 2 branches missed.">      if (length &gt; 0xFFFF) {</span>
+<span class="nc" id="L450">        header[0] = 0;</span>
+<span class="nc" id="L451">        header[1] = (byte) 0xFF;</span>
+<span class="nc" id="L452">        header[2] = (byte) 0xFF;</span>
+<span class="nc" id="L453">        newbuf.writeBytes(header);</span>
+        // Now take the first 0xFFFF bytes from buffer
+<span class="nc" id="L455">        newbuf.writeBytes(bytes, msg.getOffset(), 0xFFFF);</span>
+<span class="nc" id="L456">        msg.addOffset(0xFFFF);</span>
+<span class="nc" id="L457">        length -= 0xFFFF;</span>
+<span class="nc" id="L458">        msg.setByteCount(length);</span>
+        // return the sub block
+<span class="nc" id="L460">        return newbuf;</span>
+      }
+      // Last final block, using the descriptor
+<span class="nc" id="L463">      header[0] = msg.getDescriptor();</span>
+<span class="nc" id="L464">      header[1] = msg.getByteCountUpper();</span>
+<span class="nc" id="L465">      header[2] = msg.getByteCountLower();</span>
+<span class="nc" id="L466">      newbuf.writeBytes(header);</span>
+      // real data
+<span class="nc" id="L468">      newbuf.writeBytes(bytes, msg.getOffset(), length);</span>
+      // Next call will be the last one
+<span class="nc" id="L470">      msg.clear();</span>
+      // return the last block
+<span class="nc" id="L472">      return newbuf;</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">    } else if (mode == TransferMode.ZLIB) {</span>
+      // If record structure, special attention
+<span class="nc bnc" id="L475" title="All 2 branches missed.">      if (structure == TransferStructure.RECORD) {</span>
+<span class="nc" id="L476">        throw new InvalidArgumentException(</span>
+<span class="nc" id="L477">            &quot;Mode unimplemented: &quot; + mode.name() + &quot; with &quot; + structure.name());</span>
+      }
+<span class="nc" id="L479">      final boolean last = msg.isEOF();</span>
+<span class="nc" id="L480">      msg.clear();</span>
+      try {
+<span class="nc" id="L482">        zlibCodec.writeForCompression(bytes);</span>
+<span class="nc" id="L483">      } catch (final IOException e) {</span>
+<span class="nc" id="L484">        throw new InvalidArgumentException(e.getMessage());</span>
+<span class="nc" id="L485">      }</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">      if (last) {</span>
+        try {
+<span class="nc" id="L488">          return WaarpNettyUtil.wrappedBuffer(zlibCodec.finishCodec());</span>
+<span class="nc" id="L489">        } catch (final IOException e) {</span>
+<span class="nc" id="L490">          throw new InvalidArgumentException(e.getMessage());</span>
+        }
+      }
+<span class="nc" id="L493">      return WaarpNettyUtil.wrappedBuffer(zlibCodec.readCodec());</span>
+    } else {
+      // Mode unimplemented
+<span class="nc" id="L496">      throw new InvalidArgumentException(&quot;Mode unimplemented: &quot; + mode.name());</span>
+    }
+  }
+
+  /**
+   * @return the mode
+   */
+  public final TransferMode getMode() {
+<span class="nc" id="L504">    return mode;</span>
+  }
+
+  /**
+   * @param mode the mode to set
+   */
+  public final void setMode(final TransferMode mode) {
+<span class="nc" id="L511">    this.mode = mode;</span>
+    try {
+<span class="nc" id="L513">      zlibCodec.finishCodec();</span>
+<span class="nc" id="L514">    } catch (final IOException e) {</span>
+<span class="nc" id="L515">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L516">    }</span>
+<span class="nc" id="L517">  }</span>
+
+  /**
+   * @return the structure
+   */
+  public final TransferStructure getStructure() {
+<span class="nc" id="L523">    return structure;</span>
+  }
+
+  /**
+   * @param structure the structure to set
+   */
+  public final void setStructure(final TransferStructure structure) {
+<span class="nc" id="L530">    this.structure = structure;</span>
+<span class="nc" id="L531">  }</span>
+
+  @Override
+  protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
+                        final ByteBuf out) throws Exception {
+    // First test if the connection is fully ready (block might be
+    // transferred by client before connection is ready)
+<span class="nc" id="L538">    checkCodecUnlocked();</span>
+<span class="nc" id="L539">    ByteBuf next = encode(msg);</span>
+    // Could be splitten in several block
+<span class="nc bnc" id="L541" title="All 2 branches missed.">    while (next != null) {</span>
+<span class="nc" id="L542">      out.writeBytes(next);</span>
+<span class="nc" id="L543">      WaarpNettyUtil.release(next);</span>
+<span class="nc" id="L544">      next = encode(msg);</span>
+    }
+<span class="nc" id="L546">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

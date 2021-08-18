@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ErrorPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">ErrorPacket.java</span></div><h1>ErrorPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * Error Message class for packet
+ * &lt;p&gt;
+ * 2 strings+1 error code: sheader,smiddle,code
+ */
+public class ErrorPacket extends AbstractLocalPacket {
+  public static final int IGNORECODE = 0;
+
+  public static final int CLOSECODE = 1;
+
+  public static final int FORWARDCODE = 2;
+
+  public static final int FORWARDCLOSECODE = 3;
+
+  private final String sheader;
+
+  private final String smiddle;
+
+  private final int code;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new ErrorPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static ErrorPacket createFromBuffer(final int headerLength,
+                                             final int middleLength,
+                                             final int endLength,
+                                             final ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L64">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="nc" id="L65">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="nc" id="L67">      buf.readBytes(bheader);</span>
+    }
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="nc" id="L70">      buf.readBytes(bmiddle);</span>
+    }
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (endLength != 4) {</span>
+<span class="nc" id="L73">      throw new OpenR66ProtocolPacketException(&quot;Packet not correct&quot;);</span>
+    }
+<span class="nc" id="L75">    return new ErrorPacket(new String(bheader, WaarpStringUtils.UTF8),</span>
+                           new String(bmiddle, WaarpStringUtils.UTF8),
+<span class="nc" id="L77">                           buf.readInt());</span>
+  }
+
+  /**
+   * @param header
+   * @param middle
+   * @param code
+   */
+<span class="nc" id="L85">  public ErrorPacket(final String header, final String middle, final int code) {</span>
+<span class="nc" id="L86">    sheader = header;</span>
+<span class="nc" id="L87">    smiddle = middle;</span>
+<span class="nc" id="L88">    this.code = code;</span>
+<span class="nc" id="L89">  }</span>
+
+  @Override
+  public final boolean hasGlobalBuffer() {
+<span class="nc" id="L93">    return true;</span>
+  }
+
+  @Override
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">    final byte[] headerBytes =</span>
+<span class="nc" id="L100">        sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;</span>
+<span class="nc" id="L101">    final int headerSize = headerBytes.length;</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    final byte[] middleBytes =</span>
+<span class="nc" id="L103">        smiddle != null? smiddle.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;</span>
+<span class="nc" id="L104">    final int middleSize = middleBytes.length;</span>
+<span class="nc" id="L105">    final int endSize = 4;</span>
+<span class="nc" id="L106">    final int globalSize =</span>
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+<span class="nc" id="L108">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L109">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
+<span class="nc" id="L110">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (sheader != null) {</span>
+<span class="nc" id="L112">      header.writeBytes(headerBytes);</span>
+    }
+<span class="nc" id="L114">    offset += headerSize;</span>
+<span class="nc" id="L115">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (smiddle != null) {</span>
+<span class="nc" id="L117">      middle.writeBytes(middleBytes);</span>
+    }
+<span class="nc" id="L119">    offset += middleSize;</span>
+<span class="nc" id="L120">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="nc" id="L121">    end.writeInt(code);</span>
+<span class="nc" id="L122">  }</span>
+
+  @Override
+  public final String toString() {
+<span class="nc" id="L126">    return &quot;ErrorPacket:(&quot; + code + ':' + smiddle + &quot;) &quot; + sheader;</span>
+  }
+
+  @Override
+  public final byte getType() {
+<span class="nc" id="L131">    return LocalPacketFactory.ERRORPACKET;</span>
+  }
+
+  /**
+   * @return the sheader
+   */
+  public final String getSheader() {
+<span class="nc" id="L138">    return sheader;</span>
+  }
+
+  /**
+   * @return the smiddle
+   */
+  public final String getSmiddle() {
+<span class="nc" id="L145">    return smiddle;</span>
+  }
+
+  /**
+   * @return the code
+   */
+  public final int getCode() {
+<span class="nc" id="L152">    return code;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

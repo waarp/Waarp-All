@@ -24,13 +24,12 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.localhandler.ServerActions;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 
@@ -39,7 +38,7 @@ import static org.waarp.common.database.DbConstant.*;
 /**
  * Server local configuration export to files
  */
-<span class="nc" id="L42">public class ServerExportConfiguration {</span>
+<span class="nc" id="L41">public class ServerExportConfiguration {</span>
   /**
    * Internal Logger
    */
@@ -50,77 +49,67 @@ import static org.waarp.common.database.DbConstant.*;
    *     export
    */
   public static void main(final String[] args) {
-<span class="nc" id="L53">    WaarpLoggerFactory</span>
-<span class="nc" id="L54">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L55" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L56">      logger = WaarpLoggerFactory.getLogger(ServerExportConfiguration.class);</span>
+<span class="nc" id="L52">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L54" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L55">      logger = WaarpLoggerFactory.getLogger(ServerExportConfiguration.class);</span>
     }
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
-<span class="nc" id="L59">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
+<span class="nc" id="L58">      SysErrLogger.FAKE_LOGGER.syserr(</span>
           &quot;Need configuration file and the directory &quot; + &quot;where to &quot; +
           &quot;export&quot;);
-<span class="nc" id="L62">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L61">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L62">      return;</span>
     }
     try {
-<span class="nc" id="L65">      if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">          .setConfigurationServerMinimalFromXml(Configuration.configuration,</span>
-                                                args[0])) {
-<span class="nc" id="L68">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (admin != null) {</span>
-<span class="nc" id="L70">          admin.close();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">      if (!FileBasedConfiguration.setConfigurationServerMinimalFromXml(</span>
+          Configuration.configuration, args[0])) {
+<span class="nc" id="L67">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L69">          admin.close();</span>
         }
-<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L73">          return;</span>
-        }
-<span class="nc" id="L75">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L76">        System.exit(1);//NOSONAR</span>
-<span class="nc" id="L77">        return;</span>
+<span class="nc" id="L71">        WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L72">        return;</span>
       }
-<span class="nc" id="L79">      final String directory = args[1];</span>
-<span class="nc" id="L80">      final String hostname = Configuration.configuration.getHostId();</span>
-<span class="nc" id="L81">      logger.info(&quot;Start of Export&quot;);</span>
-<span class="nc" id="L82">      final File dir = new File(directory);</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">      if (!dir.isDirectory()) {</span>
-<span class="nc" id="L84">        dir.mkdirs();//NOSONAR</span>
+<span class="nc" id="L74">      final String directory = args[1];</span>
+<span class="nc" id="L75">      final String hostname = Configuration.configuration.getHostId();</span>
+<span class="nc" id="L76">      logger.info(&quot;Start of Export&quot;);</span>
+<span class="nc" id="L77">      final File dir = new File(directory);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">      if (!dir.isDirectory()) {</span>
+<span class="nc" id="L79">        dir.mkdirs();//NOSONAR</span>
       }
-<span class="nc" id="L86">      final String[] filenames = ServerActions</span>
-<span class="nc" id="L87">          .staticConfigExport(dir.getAbsolutePath(), true, true, true, true,</span>
-                              true);
-<span class="nc bnc" id="L89" title="All 2 branches missed.">      for (final String string : filenames) {</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (string != null) {</span>
-<span class="nc" id="L91">          logger.info(&quot;Export: {}&quot;, string);</span>
+<span class="nc" id="L81">      final String[] filenames =</span>
+<span class="nc" id="L82">          ServerActions.staticConfigExport(dir.getAbsolutePath(), true, true,</span>
+                                           true, true, true);
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      for (final String string : filenames) {</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (string != null) {</span>
+<span class="nc" id="L86">          logger.info(&quot;Export: {}&quot;, string);</span>
         }
       }
-<span class="nc" id="L94">      final String filename =</span>
-<span class="nc" id="L95">          dir.getAbsolutePath() + File.separator + hostname +</span>
+<span class="nc" id="L89">      final String filename =</span>
+<span class="nc" id="L90">          dir.getAbsolutePath() + File.separator + hostname +</span>
           &quot;_Runners.run.xml&quot;;
       try {
-<span class="nc" id="L98">        DbTaskRunner.writeXMLWriter(filename);</span>
-<span class="nc" id="L99">      } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L93">        DbTaskRunner.writeXMLWriter(filename);</span>
+<span class="nc" id="L94">      } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L95">        logger.error(&quot;Error&quot;, e1);</span>
+<span class="nc" id="L96">        admin.close();</span>
+<span class="nc" id="L97">        WaarpSystemUtil.systemExit(2);</span>
+<span class="nc" id="L98">        return;</span>
+<span class="nc" id="L99">      } catch (final OpenR66ProtocolBusinessException e1) {</span>
 <span class="nc" id="L100">        logger.error(&quot;Error&quot;, e1);</span>
 <span class="nc" id="L101">        admin.close();</span>
-<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L103">          return;</span>
-        }
-<span class="nc" id="L105">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L106">        System.exit(2);//NOSONAR</span>
-<span class="nc" id="L107">      } catch (final OpenR66ProtocolBusinessException e1) {</span>
-<span class="nc" id="L108">        logger.error(&quot;Error&quot;, e1);</span>
-<span class="nc" id="L109">        admin.close();</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L111">          return;</span>
-        }
-<span class="nc" id="L113">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L114">        System.exit(2);//NOSONAR</span>
-<span class="nc" id="L115">      }</span>
-<span class="nc" id="L116">      logger.info(&quot;End of Export&quot;);</span>
+<span class="nc" id="L102">        WaarpSystemUtil.systemExit(2);</span>
+<span class="nc" id="L103">        return;</span>
+<span class="nc" id="L104">      }</span>
+<span class="nc" id="L105">      logger.info(&quot;End of Export&quot;);</span>
     } finally {
-<span class="nc bnc" id="L118" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L119">        admin.close();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L108">        admin.close();</span>
       }
-<span class="nc" id="L121">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L110">      WaarpSystemUtil.systemExit(0);</span>
     }
-<span class="nc" id="L123">  }</span>
+<span class="nc" id="L112">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

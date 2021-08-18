@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractExecTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">AbstractExecTask.java</span></div><h1>AbstractExecTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.regex.Pattern;
+
+/**
+ * Execute an external command
+ * &lt;p&gt;
+ * It provides some common functionalities.
+ */
+public abstract class AbstractExecTask extends AbstractTask {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L52">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L53">      WaarpLoggerFactory.getLogger(AbstractExecTask.class);</span>
+<span class="nc" id="L54">  private static final Pattern COMPILE_REPLACE_ALL =</span>
+<span class="nc" id="L55">      Pattern.compile(&quot;#([A-Z]+)#&quot;);</span>
+
+  /**
+   * Constructor
+   *
+   * @param type
+   * @param delay
+   * @param argRule
+   * @param session
+   */
+  AbstractExecTask(final TaskType type, final int delay, final String argRule,
+                   final String argTransfer, final R66Session session) {
+<span class="nc" id="L67">    super(type, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L68">  }</span>
+
+  /**
+   * Generates a Command line object from rule and transfer data
+   *
+   * @param line the command to process as a string
+   */
+  protected final CommandLine buildCommandLine(final String line) {
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (line.contains(NOWAIT)) {</span>
+<span class="nc" id="L77">      waitForValidation = false;</span>
+    }
+<span class="nc bnc" id="L79" title="All 2 branches missed.">    if (line.contains(LOCALEXEC)) {</span>
+<span class="nc" id="L80">      useLocalExec = true;</span>
+    }
+
+<span class="nc" id="L83">    final String replacedLine =</span>
+<span class="nc" id="L84">        COMPILE_REPLACE_ALL.matcher(line).replaceAll(&quot;\\${$1}&quot;);</span>
+
+<span class="nc" id="L86">    final CommandLine commandLine =</span>
+<span class="nc" id="L87">        CommandLine.parse(replacedLine, getSubstitutionMap());</span>
+
+<span class="nc" id="L89">    final File exec = new File(commandLine.getExecutable());</span>
+<span class="nc bnc" id="L90" title="All 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
+<span class="nc" id="L91">      logger.error(&quot;Exec command is not executable: &quot; + line);</span>
+<span class="nc" id="L92">      final R66Result result =</span>
+          new R66Result(session, false, ErrorCode.CommandNotFound,
+<span class="nc" id="L94">                        session.getRunner());</span>
+<span class="nc" id="L95">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L96">      futureCompletion.cancel();</span>
+<span class="nc" id="L97">      return null;</span>
+    }
+
+<span class="nc" id="L100">    return commandLine;</span>
+  }
+
+  /**
+   * For External command execution
+   */
+  static class PrepareCommandExec {
+    private final AbstractExecTask abstractTask;
+    private final boolean noOutput;
+    private final boolean waitForValidation;
+    private final String finalname;
+    private boolean myResult;
+    private CommandLine commandLine;
+    private DefaultExecutor defaultExecutor;
+    private PipedInputStream inputStream;
+    private PipedOutputStream outputStream;
+    private PumpStreamHandler pumpStreamHandler;
+    private ExecuteWatchdog watchdog;
+
+    PrepareCommandExec(final AbstractExecTask abstractTask,
+                       final String finalname, final boolean noOutput,
+<span class="nc" id="L121">                       final boolean waitForValidation) {</span>
+<span class="nc" id="L122">      this.abstractTask = abstractTask;</span>
+<span class="nc" id="L123">      this.finalname = finalname;</span>
+<span class="nc" id="L124">      this.noOutput = noOutput;</span>
+<span class="nc" id="L125">      this.waitForValidation = waitForValidation;</span>
+<span class="nc" id="L126">    }</span>
+
+    final boolean isError() {
+<span class="nc" id="L129">      return myResult;</span>
+    }
+
+    public final CommandLine getCommandLine() {
+<span class="nc" id="L133">      return commandLine;</span>
+    }
+
+    public final DefaultExecutor getDefaultExecutor() {
+<span class="nc" id="L137">      return defaultExecutor;</span>
+    }
+
+    public final PipedInputStream getInputStream() {
+<span class="nc" id="L141">      return inputStream;</span>
+    }
+
+    public final PipedOutputStream getOutputStream() {
+<span class="nc" id="L145">      return outputStream;</span>
+    }
+
+    public final PumpStreamHandler getPumpStreamHandler() {
+<span class="nc" id="L149">      return pumpStreamHandler;</span>
+    }
+
+    public final ExecuteWatchdog getWatchdog() {
+<span class="nc" id="L153">      return watchdog;</span>
+    }
+
+    public final PrepareCommandExec invoke() {
+<span class="nc" id="L157">      commandLine = abstractTask.buildCommandLine(finalname);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (commandLine == null) {</span>
+<span class="nc" id="L159">        myResult = true;</span>
+<span class="nc" id="L160">        return this;</span>
+      }
+
+<span class="nc" id="L163">      defaultExecutor = new DefaultExecutor();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      if (noOutput) {</span>
+<span class="nc" id="L165">        pumpStreamHandler = new PumpStreamHandler(null, null);</span>
+      } else {
+<span class="nc" id="L167">        inputStream = new PipedInputStream();</span>
+<span class="nc" id="L168">        outputStream = null;</span>
+        try {
+<span class="nc" id="L170">          outputStream = new PipedOutputStream(inputStream);</span>
+<span class="nc" id="L171">        } catch (final IOException e1) {</span>
+<span class="nc" id="L172">          FileUtils.close(inputStream);</span>
+<span class="nc" id="L173">          logger.error(</span>
+<span class="nc" id="L174">              &quot;Exception: &quot; + e1.getMessage() + &quot; Exec in error with &quot; +</span>
+<span class="nc" id="L175">              commandLine + &quot;: {}&quot;, e1.getMessage());</span>
+<span class="nc" id="L176">          abstractTask.futureCompletion.setFailure(e1);</span>
+<span class="nc" id="L177">          myResult = true;</span>
+<span class="nc" id="L178">          return this;</span>
+<span class="nc" id="L179">        }</span>
+<span class="nc" id="L180">        pumpStreamHandler = new PumpStreamHandler(outputStream, null);</span>
+      }
+<span class="nc" id="L182">      defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
+<span class="nc" id="L183">      final int[] correctValues = { 0, 1 };</span>
+<span class="nc" id="L184">      defaultExecutor.setExitValues(correctValues);</span>
+<span class="nc" id="L185">      watchdog = null;</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">      if (abstractTask.delay &gt; 0 &amp;&amp; waitForValidation) {</span>
+<span class="nc" id="L187">        watchdog = new ExecuteWatchdog(abstractTask.delay);</span>
+<span class="nc" id="L188">        defaultExecutor.setWatchdog(watchdog);</span>
+      }
+<span class="nc" id="L190">      myResult = false;</span>
+<span class="nc" id="L191">      return this;</span>
+    }
+  }
+
+  /**
+   * For External command execution
+   */
+  static class ExecuteCommand {
+    private final AbstractExecTask abstractExecTask;
+    private final CommandLine commandLine;
+    private final DefaultExecutor defaultExecutor;
+    private final PipedInputStream inputStream;
+    private final PipedOutputStream outputStream;
+    private final PumpStreamHandler pumpStreamHandler;
+    private final Thread thread;
+    private boolean myResult;
+    private int status;
+
+    ExecuteCommand(final AbstractExecTask abstractExecTask,
+                   final CommandLine commandLine,
+                   final DefaultExecutor defaultExecutor,
+                   final PipedInputStream inputStream,
+                   final PipedOutputStream outputStream,
+                   final PumpStreamHandler pumpStreamHandler,
+<span class="nc" id="L215">                   final Thread thread) {</span>
+<span class="nc" id="L216">      this.abstractExecTask = abstractExecTask;</span>
+<span class="nc" id="L217">      this.commandLine = commandLine;</span>
+<span class="nc" id="L218">      this.defaultExecutor = defaultExecutor;</span>
+<span class="nc" id="L219">      this.inputStream = inputStream;</span>
+<span class="nc" id="L220">      this.outputStream = outputStream;</span>
+<span class="nc" id="L221">      this.pumpStreamHandler = pumpStreamHandler;</span>
+<span class="nc" id="L222">      this.thread = thread;</span>
+<span class="nc" id="L223">    }</span>
+
+    final boolean isError() {
+<span class="nc" id="L226">      return myResult;</span>
+    }
+
+    public final int getStatus() {
+<span class="nc" id="L230">      return status;</span>
+    }
+
+    public final ExecuteCommand invoke() {
+<span class="nc" id="L234">      status = -1;</span>
+      try {
+<span class="nc" id="L236">        status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L237">      } catch (final ExecuteException e) {</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        if (e.getExitValue() == -559038737) {</span>
+          // Cannot run immediately so retry once
+          try {
+<span class="nc" id="L241">            Thread.sleep(Configuration.RETRYINMS);</span>
+<span class="nc" id="L242">          } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L243">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L244">          }</span>
+          try {
+<span class="nc" id="L246">            status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L247">          } catch (final ExecuteException e1) {</span>
+<span class="nc" id="L248">            closeAllForExecution(true);</span>
+<span class="nc" id="L249">            abstractExecTask.finalizeFromError(thread, status, commandLine, e1);</span>
+<span class="nc" id="L250">            myResult = true;</span>
+<span class="nc" id="L251">            return this;</span>
+<span class="nc" id="L252">          } catch (final IOException e1) {</span>
+<span class="nc" id="L253">            closeAllForExecution(true);</span>
+<span class="nc" id="L254">            logger.error(</span>
+<span class="nc" id="L255">                &quot;IOException: &quot; + e.getMessage() + &quot; . Exec in error with &quot; +</span>
+                commandLine);
+<span class="nc" id="L257">            abstractExecTask.futureCompletion.setFailure(e);</span>
+<span class="nc" id="L258">            myResult = true;</span>
+<span class="nc" id="L259">            return this;</span>
+<span class="nc" id="L260">          }</span>
+        } else {
+<span class="nc" id="L262">          closeAllForExecution(true);</span>
+<span class="nc" id="L263">          abstractExecTask.finalizeFromError(thread, status, commandLine, e);</span>
+<span class="nc" id="L264">          myResult = true;</span>
+<span class="nc" id="L265">          return this;</span>
+        }
+<span class="nc" id="L267">      } catch (final IOException e) {</span>
+<span class="nc" id="L268">        closeAllForExecution(true);</span>
+<span class="nc" id="L269">        logger.error(</span>
+<span class="nc" id="L270">            &quot;IOException: &quot; + e.getMessage() + &quot; . Exec in error with &quot; +</span>
+            commandLine);
+<span class="nc" id="L272">        abstractExecTask.futureCompletion.setFailure(e);</span>
+<span class="nc" id="L273">        myResult = true;</span>
+<span class="nc" id="L274">        return this;</span>
+<span class="nc" id="L275">      }</span>
+<span class="nc" id="L276">      closeAllForExecution(false);</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">      if (thread != null) {</span>
+        try {
+<span class="nc bnc" id="L279" title="All 2 branches missed.">          if (abstractExecTask.delay &gt; 0) {</span>
+<span class="nc" id="L280">            thread.join(abstractExecTask.delay);</span>
+          } else {
+<span class="nc" id="L282">            thread.join();</span>
+          }
+<span class="nc" id="L284">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L285">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L286">          FileUtils.close(inputStream);</span>
+<span class="nc" id="L287">          Thread.currentThread().interrupt();</span>
+<span class="nc" id="L288">        }</span>
+      }
+<span class="nc" id="L290">      FileUtils.close(inputStream);</span>
+<span class="nc" id="L291">      myResult = false;</span>
+<span class="nc" id="L292">      return this;</span>
+    }
+
+    private void closeAllForExecution(final boolean interrupt) {
+<span class="nc" id="L296">      FileUtils.close(outputStream);</span>
+<span class="nc bnc" id="L297" title="All 4 branches missed.">      if (interrupt &amp;&amp; thread != null) {</span>
+<span class="nc" id="L298">        thread.interrupt();</span>
+      }
+<span class="nc" id="L300">      FileUtils.close(inputStream);</span>
+      try {
+<span class="nc" id="L302">        pumpStreamHandler.stop();</span>
+<span class="nc" id="L303">      } catch (final IOException ignored) {</span>
+        // nothing
+<span class="nc" id="L305">      }</span>
+<span class="nc" id="L306">    }</span>
+  }
+
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
+<span class="nc" id="L311">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc" id="L312">                 &quot; returns &quot; + e.getMessage());</span>
+<span class="nc" id="L313">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L314">        &quot;&lt;STATUS&gt;&quot; + status + &quot;&lt;/STATUS&gt;&lt;ERROR&gt;&quot; + e.getMessage() + &quot;&lt;/ERROR&gt;&quot;);</span>
+<span class="nc" id="L315">    futureCompletion.setFailure(exc);</span>
+<span class="nc" id="L316">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

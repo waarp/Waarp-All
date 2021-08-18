@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>JavaExecutor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.exec</a> &gt; <span class="el_source">JavaExecutor.java</span></div><h1>JavaExecutor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.ftp.exec;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.common.utility.WaarpThreadFactory;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+/**
+ *
+ */
+public class JavaExecutor extends AbstractExecutor {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L45">      WaarpLoggerFactory.getLogger(JavaExecutor.class);</span>
+  private final String[] args;
+  private final WaarpFuture futureCompletion;
+  private final long delay;
+
+  /**
+   * @param command
+   * @param delay
+   * @param futureCompletion
+   */
+  public JavaExecutor(final String command, final long delay,
+<span class="nc" id="L56">                      final WaarpFuture futureCompletion) {</span>
+<span class="nc" id="L57">    args = BLANK.split(command);</span>
+<span class="nc" id="L58">    this.futureCompletion = futureCompletion;</span>
+<span class="nc" id="L59">    this.delay = delay;</span>
+<span class="nc" id="L60">  }</span>
+
+  @Override
+  public final void run() throws CommandAbstractException {
+<span class="nc" id="L64">    final String className = args[0];</span>
+    try {
+<span class="nc" id="L66">      ParametersChecker.checkSanityString(className);</span>
+<span class="nc" id="L67">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L68">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L69">      logger.error(</span>
+<span class="nc" id="L70">          &quot;Status: &quot; + e.getMessage() + &quot;\n\t Exec in error with &quot; + className);</span>
+<span class="nc" id="L71">      throw new Reply421Exception(&quot;Pre Exec command is not correctly executed&quot;);</span>
+<span class="nc" id="L72">    }</span>
+    final GatewayRunnable runnable;
+    try {
+<span class="nc" id="L75">      runnable =</span>
+<span class="nc" id="L76">          (GatewayRunnable) WaarpSystemUtil.newInstance(className);//NOSONAR</span>
+<span class="nc" id="L77">    } catch (final Exception e) {</span>
+<span class="nc" id="L78">      logger.error(&quot;ExecJava command is not available: &quot; + className + &quot;: {}&quot;,</span>
+<span class="nc" id="L79">                   e.getMessage());</span>
+<span class="nc" id="L80">      throw new Reply421Exception(&quot;Pre Exec command is not executable&quot;);</span>
+<span class="nc" id="L81">    }</span>
+<span class="nc" id="L82">    runnable.setArgs(true, useLocalExec, (int) delay, args);</span>
+<span class="nc" id="L83">    logger.debug(&quot;{} {}&quot;, className, runnable.getClass().getName());</span>
+<span class="nc" id="L84">    int status = -1;</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    if (delay &lt;= 0) {</span>
+<span class="nc" id="L86">      runnable.run();</span>
+<span class="nc" id="L87">      status = runnable.getFinalStatus();</span>
+    } else {
+<span class="nc" id="L89">      final ExecutorService executorService = Executors.newSingleThreadExecutor(</span>
+          new WaarpThreadFactory(&quot;JavaExecutor&quot;));
+<span class="nc" id="L91">      executorService.execute(runnable);</span>
+      try {
+<span class="nc" id="L93">        Thread.yield();</span>
+<span class="nc" id="L94">        executorService.shutdown();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (delay &gt; 100) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">          if (!executorService.awaitTermination(delay, TimeUnit.MILLISECONDS)) {</span>
+<span class="nc" id="L97">            executorService.shutdownNow();</span>
+<span class="nc" id="L98">            logger.error(&quot;Exec is in Time Out&quot;);</span>
+<span class="nc" id="L99">            status = -1;</span>
+          } else {
+<span class="nc" id="L101">            status = runnable.getFinalStatus();</span>
+          }
+        } else {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">          while (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {</span>
+            // nothing
+          }
+<span class="nc" id="L107">          status = runnable.getFinalStatus();</span>
+        }
+<span class="nc" id="L109">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L110">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L111">        logger.error(&quot;Status: &quot; + e.getMessage() + &quot;\n\t Exec in error with &quot; +</span>
+                     runnable);
+<span class="nc" id="L113">        throw new Reply421Exception(</span>
+            &quot;Pre Exec command is not correctly executed&quot;);
+<span class="nc" id="L115">      }</span>
+    }
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (status == 0) {</span>
+<span class="nc" id="L118">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L119">      logger.info(&quot;Exec OK with {}&quot;, runnable);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L121">      logger.warn(&quot;Exec in warning with &quot; + runnable);</span>
+<span class="nc" id="L122">      futureCompletion.setSuccess();</span>
+    } else {
+<span class="nc" id="L124">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + runnable);</span>
+<span class="nc" id="L125">      throw new Reply421Exception(&quot;Pre command executed in error&quot;);</span>
+    }
+<span class="nc" id="L127">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

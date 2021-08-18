@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DoubleFastBlockCompressor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Core</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdsafe</a> &gt; <span class="el_source">DoubleFastBlockCompressor.java</span></div><h1>DoubleFastBlockCompressor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdsafe;
+
+import static org.waarp.compress.zstdsafe.Constants.*;
+import static org.waarp.compress.zstdsafe.UnsafeUtil.*;
+
+<span class="nc" id="L39">class DoubleFastBlockCompressor implements BlockCompressor {</span>
+  private static final int MIN_MATCH = 3;
+  private static final int SEARCH_STRENGTH = 8;
+  private static final int REP_MOVE = Constants.REPEATED_OFFSET_COUNT - 1;
+
+  public int compressBlock(final byte[] inputBase, final int inputAddress,
+                           final int inputSize, final SequenceStore output,
+                           final BlockCompressionState state,
+                           final RepeatedOffsets offsets,
+                           final CompressionParameters parameters) {
+<span class="nc" id="L49">    final int matchSearchLength = Math.max(parameters.getSearchLength(), 4);</span>
+
+    // Offsets in hash tables are relative to baseAddress. Hash tables can be reused across calls to compressBlock as long as
+    // baseAddress is kept constant.
+    // We don't want to generate sequences that point before the current window limit, so we &quot;filter&quot; out all results from looking up in the hash tables
+    // beyond that point.
+<span class="nc" id="L55">    final int baseAddress = state.getBaseAddress();</span>
+<span class="nc" id="L56">    final int windowBaseAddress = baseAddress + state.getWindowBaseOffset();</span>
+
+<span class="nc" id="L58">    final int[] longHashTable = state.hashTable;</span>
+<span class="nc" id="L59">    final int longHashBits = parameters.getHashLog();</span>
+
+<span class="nc" id="L61">    final int[] shortHashTable = state.chainTable;</span>
+<span class="nc" id="L62">    final int shortHashBits = parameters.getChainLog();</span>
+
+<span class="nc" id="L64">    final int inputEnd = inputAddress + inputSize;</span>
+<span class="nc" id="L65">    final int inputLimit = inputEnd -</span>
+                           SIZE_OF_LONG; // We read a long at a time for computing the hashes
+
+<span class="nc" id="L68">    int input = inputAddress;</span>
+<span class="nc" id="L69">    int anchor = inputAddress;</span>
+
+<span class="nc" id="L71">    int offset1 = offsets.getOffset0();</span>
+<span class="nc" id="L72">    int offset2 = offsets.getOffset1();</span>
+
+<span class="nc" id="L74">    int savedOffset = 0;</span>
+
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (input - windowBaseAddress == 0) {</span>
+<span class="nc" id="L77">      input++;</span>
+    }
+<span class="nc" id="L79">    final int maxRep = input - windowBaseAddress;</span>
+
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (offset2 &gt; maxRep) {</span>
+<span class="nc" id="L82">      savedOffset = offset2;</span>
+<span class="nc" id="L83">      offset2 = 0;</span>
+    }
+
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (offset1 &gt; maxRep) {</span>
+<span class="nc" id="L87">      savedOffset = offset1;</span>
+<span class="nc" id="L88">      offset1 = 0;</span>
+    }
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    while (input &lt;</span>
+           inputLimit) {   // &lt; instead of &lt;=, because repcode check at (input+1)
+<span class="nc" id="L93">      final int shortHash =</span>
+<span class="nc" id="L94">          hash(inputBase, input, shortHashBits, matchSearchLength);</span>
+<span class="nc" id="L95">      int shortMatchAddress = baseAddress + shortHashTable[shortHash];</span>
+
+<span class="nc" id="L97">      final int longHash = hash8(getLong(inputBase, input), longHashBits);</span>
+<span class="nc" id="L98">      int longMatchAddress = baseAddress + longHashTable[longHash];</span>
+
+      // update hash tables
+<span class="nc" id="L101">      final int current = input - baseAddress;</span>
+<span class="nc" id="L102">      longHashTable[longHash] = current;</span>
+<span class="nc" id="L103">      shortHashTable[shortHash] = current;</span>
+
+      int matchLength;
+      final int offset;
+
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (offset1 &gt; 0 &amp;&amp; getInt(inputBase, input + 1 - offset1) ==</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">                         getInt(inputBase, input + 1)) {</span>
+        // found a repeated sequence of at least 4 bytes, separated by offset1
+<span class="nc" id="L111">        matchLength = count(inputBase, input + 1 + SIZE_OF_INT, inputEnd,</span>
+                            input + 1 + SIZE_OF_INT - offset1) + SIZE_OF_INT;
+<span class="nc" id="L113">        input++;</span>
+<span class="nc" id="L114">        output.storeSequence(inputBase, anchor, input - anchor, 0,</span>
+                             matchLength - MIN_MATCH);
+      } else {
+        // check prefix long match
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (longMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            getLong(inputBase, longMatchAddress) == getLong(inputBase, input)) {</span>
+<span class="nc" id="L120">          matchLength = count(inputBase, input + SIZE_OF_LONG, inputEnd,</span>
+                              longMatchAddress + SIZE_OF_LONG) + SIZE_OF_LONG;
+<span class="nc" id="L122">          offset = input - longMatchAddress;</span>
+<span class="nc bnc" id="L123" title="All 6 branches missed.">          while (input &gt; anchor &amp;&amp; longMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+                 inputBase[input - 1] == inputBase[longMatchAddress - 1]) {
+<span class="nc" id="L125">            input--;</span>
+<span class="nc" id="L126">            longMatchAddress--;</span>
+<span class="nc" id="L127">            matchLength++;</span>
+          }
+        } else {
+          // check prefix short match
+<span class="nc bnc" id="L131" title="All 2 branches missed.">          if (shortMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="nc" id="L132">              getInt(inputBase, shortMatchAddress) ==</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">              getInt(inputBase, input)) {</span>
+<span class="nc" id="L134">            final int nextOffsetHash =</span>
+<span class="nc" id="L135">                hash8(getLong(inputBase, input + 1), longHashBits);</span>
+<span class="nc" id="L136">            int nextOffsetMatchAddress =</span>
+                baseAddress + longHashTable[nextOffsetHash];
+<span class="nc" id="L138">            longHashTable[nextOffsetHash] = current + 1;</span>
+
+            // check prefix long +1 match
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            if (nextOffsetMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="nc" id="L142">                getLong(inputBase, nextOffsetMatchAddress) ==</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                getLong(inputBase, input + 1)) {</span>
+<span class="nc" id="L144">              matchLength = count(inputBase, input + 1 + SIZE_OF_LONG, inputEnd,</span>
+                                  nextOffsetMatchAddress + SIZE_OF_LONG) +
+                            SIZE_OF_LONG;
+<span class="nc" id="L147">              input++;</span>
+<span class="nc" id="L148">              offset = input - nextOffsetMatchAddress;</span>
+<span class="nc bnc" id="L149" title="All 6 branches missed.">              while (input &gt; anchor &amp;&amp;</span>
+                     nextOffsetMatchAddress &gt; windowBaseAddress &amp;&amp;
+                     inputBase[input - 1] ==
+                     inputBase[nextOffsetMatchAddress - 1]) {
+<span class="nc" id="L153">                input--;</span>
+<span class="nc" id="L154">                nextOffsetMatchAddress--;</span>
+<span class="nc" id="L155">                matchLength++;</span>
+              }
+            } else {
+              // if no long +1 match, explore the short match we found
+<span class="nc" id="L159">              matchLength = count(inputBase, input + SIZE_OF_INT, inputEnd,</span>
+                                  shortMatchAddress + SIZE_OF_INT) +
+                            SIZE_OF_INT;
+<span class="nc" id="L162">              offset = input - shortMatchAddress;</span>
+<span class="nc bnc" id="L163" title="All 6 branches missed.">              while (input &gt; anchor &amp;&amp; shortMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+                     inputBase[input - 1] == inputBase[shortMatchAddress - 1]) {
+<span class="nc" id="L165">                input--;</span>
+<span class="nc" id="L166">                shortMatchAddress--;</span>
+<span class="nc" id="L167">                matchLength++;</span>
+              }
+            }
+<span class="nc" id="L170">          } else {</span>
+<span class="nc" id="L171">            input += ((input - anchor) &gt;&gt; SEARCH_STRENGTH) + 1;</span>
+<span class="nc" id="L172">            continue;</span>
+          }
+        }
+
+<span class="nc" id="L176">        offset2 = offset1;</span>
+<span class="nc" id="L177">        offset1 = offset;</span>
+
+<span class="nc" id="L179">        output.storeSequence(inputBase, anchor, input - anchor,</span>
+                             offset + REP_MOVE, matchLength - MIN_MATCH);
+      }
+
+<span class="nc" id="L183">      input += matchLength;</span>
+<span class="nc" id="L184">      anchor = input;</span>
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (input &lt;= inputLimit) {</span>
+        // Fill Table
+<span class="nc" id="L188">        longHashTable[hash8(getLong(inputBase, baseAddress + current + 2),</span>
+                            longHashBits)] = current + 2;
+<span class="nc" id="L190">        shortHashTable[hash(inputBase, baseAddress + current + 2, shortHashBits,</span>
+                            matchSearchLength)] = current + 2;
+
+<span class="nc" id="L193">        longHashTable[hash8(getLong(inputBase, input - 2), longHashBits)] =</span>
+            input - 2 - baseAddress;
+<span class="nc" id="L195">        shortHashTable[hash(inputBase, input - 2, shortHashBits,</span>
+                            matchSearchLength)] = input - 2 - baseAddress;
+
+<span class="nc bnc" id="L198" title="All 4 branches missed.">        while (input &lt;= inputLimit &amp;&amp; offset2 &gt; 0 &amp;&amp;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">               getInt(inputBase, input) == getInt(inputBase, input - offset2)) {</span>
+<span class="nc" id="L200">          final int repetitionLength =</span>
+<span class="nc" id="L201">              count(inputBase, input + SIZE_OF_INT, inputEnd,</span>
+                    input + SIZE_OF_INT - offset2) + SIZE_OF_INT;
+
+          // swap offset2 &lt;=&gt; offset1
+<span class="nc" id="L205">          final int temp = offset2;</span>
+<span class="nc" id="L206">          offset2 = offset1;</span>
+<span class="nc" id="L207">          offset1 = temp;</span>
+
+<span class="nc" id="L209">          shortHashTable[hash(inputBase, input, shortHashBits,</span>
+                              matchSearchLength)] = input - baseAddress;
+<span class="nc" id="L211">          longHashTable[hash8(getLong(inputBase, input), longHashBits)] =</span>
+              input - baseAddress;
+
+<span class="nc" id="L214">          output.storeSequence(inputBase, anchor, 0, 0,</span>
+                               repetitionLength - MIN_MATCH);
+
+<span class="nc" id="L217">          input += repetitionLength;</span>
+<span class="nc" id="L218">          anchor = input;</span>
+<span class="nc" id="L219">        }</span>
+      }
+<span class="nc" id="L221">    }</span>
+
+    // save reps for next block
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    offsets.saveOffset0(offset1 != 0? offset1 : savedOffset);</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    offsets.saveOffset1(offset2 != 0? offset2 : savedOffset);</span>
+
+    // return the last literals size
+<span class="nc" id="L228">    return inputEnd - anchor;</span>
+  }
+
+  // TODO: same as LZ4RawCompressor.count
+
+  /**
+   * matchAddress must be &lt; inputAddress
+   */
+  public static int count(final byte[] inputBase, final int inputAddress,
+                          final int inputLimit, final int matchAddress) {
+<span class="nc" id="L238">    int input = inputAddress;</span>
+<span class="nc" id="L239">    int match = matchAddress;</span>
+
+<span class="nc" id="L241">    final int remaining = inputLimit - inputAddress;</span>
+
+    // first, compare long at a time
+<span class="nc" id="L244">    int count = 0;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">    while (count &lt; remaining - (SIZE_OF_LONG - 1)) {</span>
+<span class="nc" id="L246">      final long diff = getLong(inputBase, match) ^ getLong(inputBase, input);</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (diff != 0) {</span>
+<span class="nc" id="L248">        return count + (Long.numberOfTrailingZeros(diff) &gt;&gt; 3);</span>
+      }
+
+<span class="nc" id="L251">      count += SIZE_OF_LONG;</span>
+<span class="nc" id="L252">      input += SIZE_OF_LONG;</span>
+<span class="nc" id="L253">      match += SIZE_OF_LONG;</span>
+<span class="nc" id="L254">    }</span>
+
+<span class="nc bnc" id="L256" title="All 4 branches missed.">    while (count &lt; remaining &amp;&amp; inputBase[match] == inputBase[input]) {</span>
+<span class="nc" id="L257">      count++;</span>
+<span class="nc" id="L258">      input++;</span>
+<span class="nc" id="L259">      match++;</span>
+    }
+
+<span class="nc" id="L262">    return count;</span>
+  }
+
+  private static int hash(final byte[] inputBase, final int inputAddress,
+                          final int bits, final int matchSearchLength) {
+<span class="nc bnc" id="L267" title="All 5 branches missed.">    switch (matchSearchLength) {</span>
+      case 8:
+<span class="nc" id="L269">        return hash8(getLong(inputBase, inputAddress), bits);</span>
+      case 7:
+<span class="nc" id="L271">        return hash7(getLong(inputBase, inputAddress), bits);</span>
+      case 6:
+<span class="nc" id="L273">        return hash6(getLong(inputBase, inputAddress), bits);</span>
+      case 5:
+<span class="nc" id="L275">        return hash5(getLong(inputBase, inputAddress), bits);</span>
+      default:
+<span class="nc" id="L277">        return hash4(getInt(inputBase, inputAddress), bits);</span>
+    }
+  }
+
+  private static final int PRIME_4_BYTES = 0x9E3779B1;
+  private static final long PRIME_5_BYTES = 0xCF1BBCDCBBL;
+  private static final long PRIME_6_BYTES = 0xCF1BBCDCBF9BL;
+  private static final long PRIME_7_BYTES = 0xCF1BBCDCBFA563L;
+  private static final long PRIME_8_BYTES = 0xCF1BBCDCB7A56463L;
+
+  private static int hash4(final int value, final int bits) {
+<span class="nc" id="L288">    return (value * PRIME_4_BYTES) &gt;&gt;&gt; (Integer.SIZE - bits);</span>
+  }
+
+  private static int hash5(final long value, final int bits) {
+<span class="nc" id="L292">    return (int) (((value &lt;&lt; (Long.SIZE - 40)) * PRIME_5_BYTES) &gt;&gt;&gt;</span>
+                  (Long.SIZE - bits));
+  }
+
+  private static int hash6(final long value, final int bits) {
+<span class="nc" id="L297">    return (int) (((value &lt;&lt; (Long.SIZE - 48)) * PRIME_6_BYTES) &gt;&gt;&gt;</span>
+                  (Long.SIZE - bits));
+  }
+
+  private static int hash7(final long value, final int bits) {
+<span class="nc" id="L302">    return (int) (((value &lt;&lt; (Long.SIZE - 56)) * PRIME_7_BYTES) &gt;&gt;&gt;</span>
+                  (Long.SIZE - bits));
+  }
+
+  private static int hash8(final long value, final int bits) {
+<span class="nc" id="L307">    return (int) ((value * PRIME_8_BYTES) &gt;&gt;&gt; (Long.SIZE - bits));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

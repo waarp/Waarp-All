@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SpooledInformTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">SpooledInformTask.java</span></div><h1>SpooledInformTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.filemonitor.FileMonitor.FileItem;
+import org.waarp.common.filemonitor.FileMonitor.FileMonitorInformation;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.client.SpooledDirectoryTransfer;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Set;
+import java.util.TreeMap;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Java Task for SpooledDirectory information to the Waarp Server
+ */
+<span class="nc" id="L53">public class SpooledInformTask extends AbstractExecJavaTask {</span>
+
+  private static final String TD_TD = &quot;&lt;/TD&gt;&lt;TD&gt;&quot;;
+
+  private static final String TH_TH = &quot;&lt;/TH&gt;&lt;TH&gt;&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L62">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L63">      WaarpLoggerFactory.getLogger(SpooledInformTask.class);</span>
+
+<span class="nc" id="L65">  static final TreeMap&lt;String, SpooledInformation&gt; spooledInformationMap =</span>
+      new TreeMap&lt;String, SpooledInformation&gt;();
+
+  public static class SpooledInformation {
+    public final String host;
+    public FileMonitorInformation fileMonitorInformation;
+<span class="nc" id="L71">    public Date lastUpdate = new Date();</span>
+
+    /**
+     * @param host
+     * @param fileMonitorInformation
+     */
+    private SpooledInformation(final String host,
+<span class="nc" id="L78">                               final FileMonitorInformation fileMonitorInformation) {</span>
+<span class="nc" id="L79">      this.host = host;</span>
+<span class="nc" id="L80">      this.fileMonitorInformation = fileMonitorInformation;</span>
+<span class="nc" id="L81">    }</span>
+  }
+
+  @Override
+  public final void run() {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+      // Business Request to validate?
+<span class="nc" id="L88">      String validated = SpooledDirectoryTransfer.PARTIALOK;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (isToValidate) {</span>
+        try {
+<span class="nc" id="L91">          final FileMonitorInformation fileMonitorInformation =</span>
+<span class="nc" id="L92">              JsonHandler.mapper.readValue(fullarg,</span>
+                                           FileMonitorInformation.class);
+<span class="nc" id="L94">          logger.info(</span>
+<span class="nc" id="L95">              &quot;Receive SpooledInform of size: &quot; + fullarg.length() + &quot; (&quot; +</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">              fileMonitorInformation.fileItems.size() + &quot;, &quot; +</span>
+              (fileMonitorInformation.removedFileItems != null?
+<span class="nc" id="L98">                  fileMonitorInformation.removedFileItems.size() : -1) + ')');</span>
+<span class="nc" id="L99">          final String host = session.getAuth().getUser();</span>
+<span class="nc" id="L100">          synchronized (spooledInformationMap) {</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if (fileMonitorInformation.removedFileItems == null ||</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">                fileMonitorInformation.removedFileItems.isEmpty()) {</span>
+<span class="nc" id="L103">              final SpooledInformation old =</span>
+<span class="nc" id="L104">                  spooledInformationMap.put(fileMonitorInformation.name,</span>
+                                            new SpooledInformation(host,
+                                                                   fileMonitorInformation));
+<span class="nc bnc" id="L107" title="All 4 branches missed.">              if (old != null &amp;&amp; old.fileMonitorInformation != null) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">                if (old.fileMonitorInformation.directories != null) {</span>
+<span class="nc" id="L109">                  old.fileMonitorInformation.directories.clear();</span>
+                }
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                if (old.fileMonitorInformation.fileItems != null) {</span>
+<span class="nc" id="L112">                  old.fileMonitorInformation.fileItems.clear();</span>
+                }
+<span class="nc" id="L114">                old.fileMonitorInformation = null;</span>
+              }
+<span class="nc" id="L116">            } else {</span>
+              // partial update
+<span class="nc" id="L118">              final SpooledInformation update =</span>
+<span class="nc" id="L119">                  spooledInformationMap.get(fileMonitorInformation.name);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">              if (update == null) {</span>
+                // Issue since update is not existing so full update is needed next time
+<span class="nc" id="L122">                spooledInformationMap.put(fileMonitorInformation.name,</span>
+                                          new SpooledInformation(host,
+                                                                 fileMonitorInformation));
+<span class="nc" id="L125">                validated = SpooledDirectoryTransfer.NEEDFULL;</span>
+              } else {
+<span class="nc bnc" id="L127" title="All 2 branches missed.">                for (final String item : fileMonitorInformation.removedFileItems) {</span>
+<span class="nc" id="L128">                  update.fileMonitorInformation.fileItems.remove(item);</span>
+<span class="nc" id="L129">                }</span>
+<span class="nc" id="L130">                update.fileMonitorInformation.fileItems.putAll(</span>
+                    fileMonitorInformation.fileItems);
+<span class="nc" id="L132">                update.lastUpdate = new Date();</span>
+              }
+            }
+<span class="nc" id="L135">          }</span>
+<span class="nc" id="L136">        } catch (final JsonParseException e1) {</span>
+<span class="nc" id="L137">          logger.warn(&quot;Cannot parse SpooledInformation: &quot; + fullarg + ' ' +</span>
+<span class="nc" id="L138">                      e1.getMessage());</span>
+<span class="nc" id="L139">        } catch (final JsonMappingException e1) {</span>
+<span class="nc" id="L140">          logger.warn(&quot;Cannot parse SpooledInformation: &quot; + fullarg + ' ' +</span>
+<span class="nc" id="L141">                      e1.getMessage());</span>
+<span class="nc" id="L142">        } catch (final IOException e1) {</span>
+<span class="nc" id="L143">          logger.warn(&quot;Cannot parse SpooledInformation: &quot; + e1.getMessage());</span>
+<span class="nc" id="L144">        }</span>
+<span class="nc" id="L145">        final BusinessRequestPacket packet =</span>
+<span class="nc" id="L146">            new BusinessRequestPacket(getClass().getName() + &quot; informed&quot;, 0);</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (!validate(packet)) {</span>
+          // No Validation therefore send the new packet back
+          try {
+<span class="nc" id="L150">            ChannelUtils.writeAbstractLocalPacket(</span>
+<span class="nc" id="L151">                session.getLocalChannelReference(), packet, true);</span>
+<span class="nc" id="L152">          } catch (final OpenR66ProtocolPacketException ignored) {</span>
+            // nothing
+<span class="nc" id="L154">          }</span>
+        }
+<span class="nc" id="L156">        status = 0;</span>
+      }
+<span class="nc" id="L158">      finalValidate(validated);</span>
+<span class="nc" id="L159">    } else {</span>
+      // unallowed
+<span class="nc" id="L161">      logger.warn(&quot;SpooledInformTask not allowed as Java Task: &quot; + fullarg);</span>
+<span class="nc" id="L162">      invalid();</span>
+    }
+<span class="nc" id="L164">  }</span>
+
+  /**
+   * @param detailed
+   * @param status 1 for ok, -1 for ko, 0 for all
+   * @param uri
+   *
+   * @return the StringBuilder containing the HTML format as a Table of the
+   *     current Spooled information
+   */
+  public static StringBuilder buildSpooledTable(final boolean detailed,
+                                                final int status,
+                                                final String uri) {
+<span class="nc" id="L177">    final StringBuilder builder = beginSpooledTable(detailed, uri);</span>
+    // get current information
+<span class="nc" id="L179">    synchronized (spooledInformationMap) {</span>
+<span class="nc" id="L180">      final Set&lt;String&gt; names = spooledInformationMap.keySet();</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">      for (final String name : names) {</span>
+        // per Name
+<span class="nc" id="L183">        buildSpooledTableElement(detailed, status, builder, name);</span>
+<span class="nc" id="L184">      }</span>
+<span class="nc" id="L185">    }</span>
+<span class="nc" id="L186">    endSpooledTable(builder);</span>
+<span class="nc" id="L187">    return builder;</span>
+  }
+
+  /**
+   * @param name
+   * @param uri
+   *
+   * @return the StringBuilder containing the HTML format as a Table of the
+   *     current Spooled information
+   */
+  public static StringBuilder buildSpooledUniqueTable(final String uri,
+                                                      final String name) {
+<span class="nc" id="L199">    final StringBuilder builder = beginSpooledTable(false, uri);</span>
+    // get current information
+<span class="nc" id="L201">    synchronized (spooledInformationMap) {</span>
+      // per Name
+<span class="nc" id="L203">      final SpooledInformation inform =</span>
+<span class="nc" id="L204">          buildSpooledTableElement(false, 0, builder, name);</span>
+<span class="nc" id="L205">      endSpooledTable(builder);</span>
+<span class="nc" id="L206">      builder.append(&quot;&lt;BR&gt;&quot;);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">      if (inform != null) {</span>
+<span class="nc" id="L208">        buildSpooledTableFiles(builder, inform);</span>
+      }
+<span class="nc" id="L210">    }</span>
+<span class="nc" id="L211">    return builder;</span>
+  }
+
+  /**
+   * @param builder
+   */
+  private static void endSpooledTable(final StringBuilder builder) {
+<span class="nc" id="L218">    builder.append(&quot;&lt;/TBODY&gt;&lt;/TABLE&gt;&lt;/small&gt;&quot;);</span>
+<span class="nc" id="L219">  }</span>
+
+  /**
+   * @param detailed
+   * @param uri
+   *
+   * @return the associated StringBuilder as temporary result
+   */
+  private static StringBuilder beginSpooledTable(final boolean detailed,
+                                                 final String uri) {
+<span class="nc" id="L229">    final StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L230">    builder.append(</span>
+        &quot;&lt;small&gt;&lt;TABLE class='table table-condensed table-bordered' BORDER=1&gt;&lt;CAPTION&gt;&lt;A HREF=&quot;);
+<span class="nc" id="L232">    builder.append(uri);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (detailed) {</span>
+<span class="nc" id="L234">      builder.append(</span>
+<span class="nc" id="L235">          Messages.getString(&quot;SpooledInformTask.TitleDetailed&quot;)); //$NON-NLS-1$</span>
+    } else {
+<span class="nc" id="L237">      builder.append(</span>
+<span class="nc" id="L238">          Messages.getString(&quot;SpooledInformTask.TitleNormal&quot;)); //$NON-NLS-1$</span>
+    }
+    // title first
+<span class="nc" id="L241">    builder.append(&quot;&lt;THEAD&gt;&lt;TR&gt;&lt;TH&gt;&quot;)</span>
+<span class="nc" id="L242">           .append(Messages.getString(&quot;SpooledInformTask.0&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L243">           .append(TH_TH)</span>
+<span class="nc" id="L244">           .append(Messages.getString(&quot;SpooledInformTask.1&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L245">           .append(TH_TH)</span>
+<span class="nc" id="L246">           .append(Messages.getString(&quot;SpooledInformTask.2&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L247">           .append(TH_TH)</span>
+<span class="nc" id="L248">           .append(Messages.getString(&quot;SpooledInformTask.3&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L249">           .append(TH_TH)</span>
+<span class="nc" id="L250">           .append(Messages.getString(&quot;SpooledInformTask.4&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L251">           .append(TH_TH)</span>
+<span class="nc" id="L252">           .append(Messages.getString(&quot;SpooledInformTask.5&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L253">           .append(TH_TH)</span>
+<span class="nc" id="L254">           .append(Messages.getString(&quot;SpooledInformTask.6&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L255">           .append(TH_TH)</span>
+<span class="nc" id="L256">           .append(Messages.getString(&quot;SpooledInformTask.7&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L257">           .append(TH_TH)</span>
+<span class="nc" id="L258">           .append(Messages.getString(&quot;SpooledInformTask.8&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L259">           .append(TH_TH)</span>
+<span class="nc" id="L260">           .append(Messages.getString(&quot;SpooledInformTask.9&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L261">           .append(&quot;&lt;/TH&gt;&lt;/TR&gt;&lt;/THEAD&gt;&lt;TBODY&gt;&quot;);</span>
+<span class="nc" id="L262">    return builder;</span>
+  }
+
+  /**
+   * @param detailed
+   * @param status
+   * @param builder
+   * @param name
+   */
+  private static SpooledInformation buildSpooledTableElement(
+      final boolean detailed, final int status, final StringBuilder builder,
+      final String name) {
+<span class="nc" id="L274">    final SpooledInformation inform = spooledInformationMap.get(name);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">    if (inform == null) {</span>
+<span class="nc" id="L276">      return null;</span>
+    }
+<span class="nc" id="L278">    final long time = inform.lastUpdate.getTime() +</span>
+<span class="nc" id="L279">                      Configuration.configuration.getTimeoutCon();</span>
+<span class="nc" id="L280">    final long curtime = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">    if (time + Configuration.configuration.getTimeoutCon() &lt; curtime) {</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">      if (status &gt; 0) {</span>
+<span class="nc" id="L283">        return inform;</span>
+      }
+    } else {
+<span class="nc bnc" id="L286" title="All 2 branches missed.">      if (status &lt; 0) {</span>
+<span class="nc" id="L287">        return inform;</span>
+      }
+    }
+<span class="nc" id="L290">    builder.append(&quot;&lt;TR&gt;&lt;TH&gt;&quot;).append(name.replace(',', ' '))</span>
+<span class="nc" id="L291">           .append(&quot;&lt;/TH&gt;&lt;TD&gt;&quot;).append(inform.host).append(&quot;&lt;/TD&gt;&quot;);</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">    if (time + Configuration.configuration.getTimeoutCon() &lt; curtime) {</span>
+<span class="nc" id="L293">      builder.append(&quot;&lt;TD bgcolor=Red&gt;&quot;);</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">    } else if (time &lt; curtime) {</span>
+<span class="nc" id="L295">      builder.append(&quot;&lt;TD bgcolor=Orange&gt;&quot;);</span>
+    } else {
+<span class="nc" id="L297">      builder.append(&quot;&lt;TD bgcolor=LightGreen&gt;&quot;);</span>
+    }
+<span class="nc" id="L299">    final DateFormat dateFormat =</span>
+<span class="nc" id="L300">        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG);</span>
+<span class="nc" id="L301">    builder.append(dateFormat.format(inform.lastUpdate)).append(&quot;&lt;/TD&gt;&quot;);</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">    if (inform.fileMonitorInformation != null) {</span>
+<span class="nc" id="L303">      builder.append(</span>
+<span class="nc" id="L304">                 Messages.getString(&quot;SpooledInformTask.AllOk&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L305">             .append(inform.fileMonitorInformation.globalok).append(</span>
+<span class="nc" id="L306">                 Messages.getString(&quot;SpooledInformTask.AllError&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L307">             .append(inform.fileMonitorInformation.globalerror).append(</span>
+<span class="nc" id="L308">                 Messages.getString(&quot;SpooledInformTask.TodayOk&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L309">             .append(inform.fileMonitorInformation.todayok).append(</span>
+<span class="nc" id="L310">                 Messages.getString(&quot;SpooledInformTask.TodayError&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L311">             .append(inform.fileMonitorInformation.todayerror).append(TD_TD)</span>
+<span class="nc" id="L312">             .append(inform.fileMonitorInformation.elapseTime).append(TD_TD)</span>
+<span class="nc" id="L313">             .append(inform.fileMonitorInformation.stopFile).append(TD_TD)</span>
+<span class="nc" id="L314">             .append(inform.fileMonitorInformation.statusFile).append(TD_TD)</span>
+<span class="nc" id="L315">             .append(inform.fileMonitorInformation.scanSubDir).append(&quot;&lt;/TD&gt;&quot;);</span>
+<span class="nc" id="L316">      final StringBuilder dirs =</span>
+          new StringBuilder(&quot;&lt;ul class='list-unstyled'&gt;&quot;);
+<span class="nc bnc" id="L318" title="All 2 branches missed.">      for (final File dir : inform.fileMonitorInformation.directories) {</span>
+<span class="nc" id="L319">        dirs.append(&quot;&lt;li&gt;&quot;).append(dir).append(&quot;&lt;/li&gt;&quot;);</span>
+<span class="nc" id="L320">      }</span>
+<span class="nc" id="L321">      dirs.append(&quot;&lt;/ul&gt;&quot;);</span>
+<span class="nc" id="L322">      builder.append(&quot;&lt;TD&gt;&quot;).append(dirs).append(TD_TD);</span>
+<span class="nc bnc" id="L323" title="All 4 branches missed.">      if (detailed &amp;&amp; inform.fileMonitorInformation.fileItems != null) {</span>
+<span class="nc" id="L324">        buildSpooledTableFiles(builder, inform);</span>
+      } else {
+        // simply print number of files
+<span class="nc bnc" id="L327" title="All 2 branches missed.">        if (inform.fileMonitorInformation.fileItems != null) {</span>
+<span class="nc" id="L328">          builder.append(inform.fileMonitorInformation.fileItems.size());</span>
+        } else {
+<span class="nc" id="L330">          builder.append(0);</span>
+        }
+        // Form GET to ensure encoding
+<span class="nc" id="L333">        builder.append(</span>
+                   &quot;&lt;FORM class='form-inline' name='DETAIL' method='GET' action='/SpooledDetailed.html'&gt;&lt;input type=hidden name='name' value='&quot;)
+<span class="nc" id="L335">               .append(name).append(</span>
+                   &quot;'/&gt;&lt;INPUT type='submit' class='btn btn-info btn-sm' value='DETAIL'/&gt;&lt;/FORM&gt;&quot;);
+      }
+    }
+<span class="nc" id="L339">    builder.append(&quot;&lt;/TD&gt;&lt;/TR&gt;&quot;);</span>
+<span class="nc" id="L340">    return inform;</span>
+  }
+
+  /**
+   * @param builder
+   * @param inform
+   */
+  private static void buildSpooledTableFiles(final StringBuilder builder,
+                                             final SpooledInformation inform) {
+<span class="nc" id="L349">    builder.append(</span>
+               &quot;&lt;small&gt;&lt;TABLE class='table table-condensed table-bordered' BORDER=1&gt;&lt;THEAD&gt;&lt;TR&gt;&lt;TH&gt;&quot;) //$NON-NLS-1$
+<span class="nc" id="L351">           .append(Messages.getString(&quot;SpooledInformTask.10&quot;)).append(TH_TH)</span>
+<span class="nc" id="L352">           .append(Messages.getString(&quot;SpooledInformTask.11&quot;)) //$NON-NLS-2$</span>
+<span class="nc" id="L353">           .append(TH_TH)</span>
+<span class="nc" id="L354">           .append(Messages.getString(&quot;SpooledInformTask.12&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L355">           .append(TH_TH)</span>
+<span class="nc" id="L356">           .append(Messages.getString(&quot;SpooledInformTask.13&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L357">           .append(TH_TH)</span>
+<span class="nc" id="L358">           .append(Messages.getString(&quot;SpooledInformTask.14&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L359">           .append(TH_TH)</span>
+<span class="nc" id="L360">           .append(Messages.getString(&quot;SpooledInformTask.15&quot;)) //$NON-NLS-1$</span>
+<span class="nc" id="L361">           .append(&quot;&lt;/TH&gt;&lt;/TR&gt;&lt;/THEAD&gt;&lt;TBODY&gt;&quot;);</span>
+<span class="nc" id="L362">    final DateFormat dateFormat =</span>
+<span class="nc" id="L363">        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG);</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">    for (final FileItem fileItem : inform.fileMonitorInformation.fileItems.values()) {</span>
+<span class="nc" id="L365">      builder.append(&quot;&lt;TR&gt;&lt;TD&gt;&quot;).append(fileItem.file).append(TD_TD);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">      if (fileItem.hash != null) {</span>
+<span class="nc" id="L367">        builder.append(FilesystemBasedDigest.getHex(fileItem.hash));</span>
+      }
+<span class="nc" id="L369">      builder.append(TD_TD);</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">      if (fileItem.lastTime &gt; 0) {</span>
+<span class="nc" id="L371">        builder.append(dateFormat.format(new Date(fileItem.lastTime)));</span>
+      }
+<span class="nc" id="L373">      builder.append(TD_TD);</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">      if (fileItem.timeUsed &gt; 0) {</span>
+<span class="nc" id="L375">        builder.append(dateFormat.format(new Date(fileItem.timeUsed)));</span>
+      }
+<span class="nc" id="L377">      builder.append(TD_TD).append(fileItem.used).append(TD_TD)</span>
+<span class="nc" id="L378">             .append(fileItem.specialId).append(&quot;&lt;/TD&gt;&lt;/TR&gt;&quot;);</span>
+<span class="nc" id="L379">    }</span>
+<span class="nc" id="L380">    builder.append(&quot;&lt;/TBODY&gt;&lt;/TABLE&gt;&lt;/small&gt;&quot;);</span>
+<span class="nc" id="L381">  }</span>
+
+  /**
+   * @param detailed
+   * @param status 1 for ok, -1 for ko, 0 for all
+   * @param uri
+   *
+   * @return the String containing the JSON format of the current Spooled
+   *     information
+   */
+  public static String buildSpooledJson(final boolean detailed,
+                                        final int status, final String uri) {
+<span class="nc" id="L393">    final ArrayNode array = JsonHandler.createArrayNode();</span>
+    // get current information
+<span class="nc" id="L395">    synchronized (spooledInformationMap) {</span>
+<span class="nc" id="L396">      final Set&lt;String&gt; names = spooledInformationMap.keySet();</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">      for (final String name : names) {</span>
+        // per Name
+<span class="nc" id="L399">        buildSpooledJsonElement(detailed, status, array, name, false);</span>
+<span class="nc" id="L400">      }</span>
+<span class="nc" id="L401">    }</span>
+<span class="nc" id="L402">    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(array));</span>
+  }
+
+  /**
+   * @param name
+   * @param uri
+   *
+   * @return the String containing the JSON format of the current Spooled
+   *     information
+   */
+  public static String buildSpooledUniqueJson(final String uri,
+                                              final String name) {
+<span class="nc" id="L414">    final ArrayNode array = JsonHandler.createArrayNode();</span>
+    // get current information
+<span class="nc" id="L416">    synchronized (spooledInformationMap) {</span>
+      // per Name
+<span class="nc" id="L418">      buildSpooledJsonElement(true, 0, array, name, false);</span>
+<span class="nc" id="L419">    }</span>
+<span class="nc" id="L420">    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(array));</span>
+  }
+
+  /**
+   * For REST V2 service
+   *
+   * @param status if 0, get all Spooled, 1 active ones, -1 inactive ones
+   * @param name if null or empty, will get all Spooled
+   *
+   * @return the total number of valid &quot;Entries&quot; from request arguments of
+   *     SpooledInformation
+   */
+  public static int getSpooledJsonEntriesNumber(final int status,
+                                                final String name) {
+<span class="nc" id="L434">    int nb = 0;</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(name)) {</span>
+<span class="nc" id="L436">      synchronized (spooledInformationMap) {</span>
+<span class="nc" id="L437">        final Set&lt;String&gt; names = spooledInformationMap.keySet();</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">        for (final String nameInternal : names) {</span>
+          // per Name
+<span class="nc bnc" id="L440" title="All 2 branches missed.">          if (checkValidEntrySpooled(status, nameInternal) != null) {</span>
+<span class="nc" id="L441">            nb++;</span>
+          }
+<span class="nc" id="L443">        }</span>
+<span class="nc" id="L444">      }</span>
+    } else {
+<span class="nc" id="L446">      synchronized (spooledInformationMap) {</span>
+        // per Name
+<span class="nc bnc" id="L448" title="All 2 branches missed.">        nb = checkValidEntrySpooled(status, name) != null? 1 : 0;</span>
+<span class="nc" id="L449">      }</span>
+    }
+<span class="nc" id="L451">    return nb;</span>
+  }
+
+  /**
+   * For REST V2 service
+   *
+   * @param array the ArrayNode to fill with the results
+   * @param status if 0, get all Spooled, 1 active ones, -1 inactive ones
+   * @param name if null or empty, will get all Spooled
+   *
+   * @return the total number of &quot;files&quot; from request arguments of
+   *     SpooledInformation
+   */
+  public static int buildSpooledJson(final ArrayNode array, final int status,
+                                     final String name) {
+<span class="nc" id="L466">    int nb = 0;</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(name)) {</span>
+<span class="nc" id="L468">      synchronized (spooledInformationMap) {</span>
+<span class="nc" id="L469">        final Set&lt;String&gt; names = spooledInformationMap.keySet();</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">        for (final String nameInternal : names) {</span>
+          // per Name
+<span class="nc" id="L472">          nb +=</span>
+<span class="nc" id="L473">              buildSpooledJsonElement(true, status, array, nameInternal, true);</span>
+<span class="nc" id="L474">        }</span>
+<span class="nc" id="L475">      }</span>
+    } else {
+<span class="nc" id="L477">      synchronized (spooledInformationMap) {</span>
+        // per Name
+<span class="nc" id="L479">        nb += buildSpooledJsonElement(true, status, array, name, true);</span>
+<span class="nc" id="L480">      }</span>
+    }
+<span class="nc" id="L482">    return nb;</span>
+  }
+
+  /**
+   * Check if this entry is valid according to status and time
+   *
+   * @param status
+   * @param name
+   *
+   * @return the SpooledInformation if OK, else null
+   */
+  private static SpooledInformation checkValidEntrySpooled(final int status,
+                                                           final String name) {
+<span class="nc" id="L495">    final SpooledInformation inform = spooledInformationMap.get(name);</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">    if (inform == null) {</span>
+<span class="nc" id="L497">      return null;</span>
+    }
+<span class="nc" id="L499">    final long time = inform.lastUpdate.getTime() +</span>
+<span class="nc" id="L500">                      Configuration.configuration.getTimeoutCon();</span>
+<span class="nc" id="L501">    final long curtime = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">    if (status != 0) {</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">      if (time + Configuration.configuration.getTimeoutCon() &lt; curtime) {</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">        if (status &lt; 0) {</span>
+<span class="nc" id="L505">          return null;</span>
+        }
+<span class="nc bnc" id="L507" title="All 2 branches missed.">      } else if (status &gt; 0) {</span>
+<span class="nc" id="L508">        return null;</span>
+      }
+    }
+<span class="nc" id="L511">    return inform;</span>
+  }
+
+  /**
+   * @param detailed
+   * @param status
+   * @param array
+   * @param name
+   * @param strict
+   *
+   * @return number of files within
+   */
+  private static int buildSpooledJsonElement(final boolean detailed,
+                                             final int status,
+                                             final ArrayNode array,
+                                             final String name,
+                                             final boolean strict) {
+<span class="nc" id="L528">    final SpooledInformation inform = checkValidEntrySpooled(status, name);</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">    if (inform == null) {</span>
+<span class="nc" id="L530">      return 0;</span>
+    }
+<span class="nc" id="L532">    final long time = inform.lastUpdate.getTime() +</span>
+<span class="nc" id="L533">                      Configuration.configuration.getTimeoutCon();</span>
+<span class="nc" id="L534">    final long curtime = System.currentTimeMillis();</span>
+<span class="nc" id="L535">    int nb = 0;</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">    if (array == null) {</span>
+<span class="nc bnc" id="L537" title="All 4 branches missed.">      if (inform.fileMonitorInformation != null &amp;&amp;</span>
+          inform.fileMonitorInformation.fileItems != null) {
+<span class="nc" id="L539">        nb = inform.fileMonitorInformation.fileItems.size();</span>
+      }
+    } else {
+<span class="nc" id="L542">      final ObjectNode elt = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L543">      elt.put(&quot;NAME&quot;, name.replace(',', ' '));</span>
+<span class="nc" id="L544">      elt.put(&quot;HOST&quot;, inform.host);</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">      if (strict) {</span>
+<span class="nc" id="L546">        elt.put(&quot;LAST_UPDATE&quot;, inform.lastUpdate.getTime());</span>
+      } else {
+        final String val;
+<span class="nc bnc" id="L549" title="All 2 branches missed.">        if (time + Configuration.configuration.getTimeoutCon() &lt; curtime) {</span>
+<span class="nc" id="L550">          val = &quot;bg-danger&quot;;</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">        } else if (time &lt; curtime) {</span>
+<span class="nc" id="L552">          val = &quot;bg-warning&quot;;</span>
+        } else {
+<span class="nc" id="L554">          val = &quot;bg-success&quot;;</span>
+        }
+<span class="nc" id="L556">        elt.put(&quot;LAST_UPDATE&quot;, val + ' ' + inform.lastUpdate.getTime());</span>
+      }
+<span class="nc bnc" id="L558" title="All 2 branches missed.">      if (inform.fileMonitorInformation != null) {</span>
+<span class="nc" id="L559">        elt.put(&quot;GLOBALOK&quot;, inform.fileMonitorInformation.globalok.get());</span>
+<span class="nc" id="L560">        elt.put(&quot;GLOBALERROR&quot;, inform.fileMonitorInformation.globalerror.get());</span>
+<span class="nc" id="L561">        elt.put(&quot;TODAYOK&quot;, inform.fileMonitorInformation.todayok.get());</span>
+<span class="nc" id="L562">        elt.put(&quot;TODAYERROR&quot;, inform.fileMonitorInformation.todayerror.get());</span>
+<span class="nc" id="L563">        elt.put(&quot;INTERVAL&quot;, inform.fileMonitorInformation.elapseTime);</span>
+<span class="nc" id="L564">        elt.put(&quot;STOPFILE&quot;, inform.fileMonitorInformation.stopFile.getPath());</span>
+<span class="nc" id="L565">        elt.put(&quot;STATUSFILE&quot;,</span>
+<span class="nc" id="L566">                inform.fileMonitorInformation.statusFile.getPath());</span>
+<span class="nc" id="L567">        elt.put(&quot;SUBDIRS&quot;, inform.fileMonitorInformation.scanSubDir);</span>
+<span class="nc" id="L568">        final StringBuilder dirs = new StringBuilder();</span>
+<span class="nc" id="L569">        final StringBuilder dirs2 = new StringBuilder();</span>
+<span class="nc" id="L570">        int i = 0;</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">        for (final File dir : inform.fileMonitorInformation.directories) {</span>
+<span class="nc" id="L572">          i++;</span>
+<span class="nc" id="L573">          dirs.append(dir).append('(').append(i).append(&quot;) &quot;);</span>
+<span class="nc" id="L574">          dirs2.append(dir).append(' ');</span>
+<span class="nc" id="L575">        }</span>
+<span class="nc" id="L576">        elt.put(&quot;DIRECTORIES&quot;, dirs.toString());</span>
+<span class="nc bnc" id="L577" title="All 4 branches missed.">        if (detailed &amp;&amp; inform.fileMonitorInformation.fileItems != null) {</span>
+<span class="nc" id="L578">          buildSpooledJsonFiles(elt, inform, dirs2.toString().split(&quot; &quot;),</span>
+                                strict);
+        } else {
+          // simply print number of files
+<span class="nc bnc" id="L582" title="All 2 branches missed.">          if (inform.fileMonitorInformation.fileItems != null) {</span>
+<span class="nc" id="L583">            elt.putArray(&quot;FILES&quot;)</span>
+<span class="nc" id="L584">               .add(inform.fileMonitorInformation.fileItems.size());</span>
+          } else {
+<span class="nc" id="L586">            elt.putArray(&quot;FILES&quot;).add(0);</span>
+          }
+        }
+<span class="nc" id="L589">        nb = inform.fileMonitorInformation.fileItems.size();</span>
+      }
+<span class="nc" id="L591">      array.add(elt);</span>
+    }
+<span class="nc" id="L593">    return nb;</span>
+  }
+
+  /**
+   * @param node
+   * @param inform
+   * @param dirs
+   */
+  private static void buildSpooledJsonFiles(final ObjectNode node,
+                                            final SpooledInformation inform,
+                                            final String[] dirs,
+                                            final boolean strict) {
+<span class="nc" id="L605">    final ArrayNode array = node.putArray(&quot;FILES&quot;);</span>
+<span class="nc bnc" id="L606" title="All 2 branches missed.">    if (inform.fileMonitorInformation.fileItems.isEmpty()) {</span>
+<span class="nc" id="L607">      array.add(0);</span>
+<span class="nc" id="L608">      return;</span>
+    }
+<span class="nc bnc" id="L610" title="All 2 branches missed.">    if (!strict) {</span>
+<span class="nc" id="L611">      final ArrayNode header = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L612">      header.add(&quot;FILE&quot;);</span>
+<span class="nc" id="L613">      header.add(&quot;HASH&quot;);</span>
+<span class="nc" id="L614">      header.add(&quot;LASTTIME&quot;);</span>
+<span class="nc" id="L615">      header.add(&quot;USEDTIME&quot;);</span>
+<span class="nc" id="L616">      header.add(&quot;USED&quot;);</span>
+<span class="nc" id="L617">      header.add(&quot;ID&quot;);</span>
+<span class="nc" id="L618">      array.add(header);</span>
+    }
+<span class="nc bnc" id="L620" title="All 2 branches missed.">    for (final FileItem fileItem : inform.fileMonitorInformation.fileItems.values()) {</span>
+<span class="nc" id="L621">      final ObjectNode elt = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L622">      int i = 0;</span>
+<span class="nc" id="L623">      String path = fileItem.file.getPath();</span>
+<span class="nc bnc" id="L624" title="All 2 branches missed.">      final String sep = path.lastIndexOf('/') &gt;= 0? &quot;/&quot; : &quot;\\&quot;;</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">      for (final String dir : dirs) {</span>
+<span class="nc" id="L626">        i++;</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">        if (path.startsWith(dir + sep)) {</span>
+<span class="nc" id="L628">          path = &quot;(&quot; + i + ')' + path.substring(dir.length());</span>
+<span class="nc" id="L629">          break;</span>
+        }
+      }
+<span class="nc" id="L632">      elt.put(&quot;FILE&quot;, path);</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">      if (fileItem.hash != null) {</span>
+<span class="nc" id="L634">        elt.put(&quot;HASH&quot;, FilesystemBasedDigest.getHex(fileItem.hash));</span>
+      } else {
+<span class="nc" id="L636">        elt.putNull(&quot;HASH&quot;);</span>
+      }
+<span class="nc bnc" id="L638" title="All 2 branches missed.">      if (fileItem.lastTime &gt; 0) {</span>
+<span class="nc" id="L639">        elt.put(&quot;LASTTIME&quot;, fileItem.lastTime);</span>
+      } else {
+<span class="nc" id="L641">        elt.putNull(&quot;LASTTIME&quot;);</span>
+      }
+<span class="nc bnc" id="L643" title="All 2 branches missed.">      if (fileItem.timeUsed &gt; 0) {</span>
+<span class="nc" id="L644">        elt.put(&quot;USEDTIME&quot;, fileItem.timeUsed);</span>
+      } else {
+<span class="nc" id="L646">        elt.putNull(&quot;USEDTIME&quot;);</span>
+      }
+<span class="nc" id="L648">      elt.put(&quot;USED&quot;, fileItem.used);</span>
+<span class="nc bnc" id="L649" title="All 2 branches missed.">      if (fileItem.specialId == ILLEGALVALUE) {</span>
+<span class="nc" id="L650">        elt.put(&quot;ID&quot;, &quot;&quot;);</span>
+      } else {
+<span class="nc" id="L652">        elt.put(&quot;ID&quot;, Long.toString(fileItem.specialId));</span>
+      }
+<span class="nc" id="L654">      array.add(elt);</span>
+<span class="nc" id="L655">    }</span>
+<span class="nc" id="L656">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

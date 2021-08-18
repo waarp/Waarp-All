@@ -78,7 +78,7 @@ public class DbConnectionPool {
 <span class="nc" id="L78">    }</span>
 
     @Override
-    public boolean equals(final Object o) {
+    public final boolean equals(final Object o) {
 <span class="nc bnc" id="L82" title="All 2 branches missed.">      if (this == o) {</span>
 <span class="nc" id="L83">        return true;</span>
       }
@@ -92,7 +92,7 @@ public class DbConnectionPool {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
 <span class="nc" id="L96">      return pooledCon.hashCode();</span>
     }
   }
@@ -237,7 +237,7 @@ public class DbConnectionPool {
 <span class="nc" id="L237">      semaphore = new Semaphore(maxConnections, true);</span>
     }
 <span class="nc" id="L239">    recycledConnections = new ArrayDeque&lt;Con&gt;();</span>
-<span class="nc" id="L240">    poolConnectionEventListener = new PoolConnectionEventListener();</span>
+<span class="nc" id="L240">    poolConnectionEventListener = new PoolConnectionEventListener(this);</span>
 <span class="nc" id="L241">  }</span>
 
   public synchronized void resetPoolDataSource(
@@ -248,21 +248,21 @@ public class DbConnectionPool {
   /**
    * @return the max number of connections
    */
-  public int getMaxConnections() {
+  public final int getMaxConnections() {
 <span class="nc" id="L252">    return maxConnections;</span>
   }
 
   /**
    * @return the Login Timeout in second
    */
-  public long getLoginTimeout() {
+  public final long getLoginTimeout() {
 <span class="nc" id="L259">    return timeout;</span>
   }
 
   /**
    * @return the Force Close Timeout in ms
    */
-  public long getTimeoutForceClose() {
+  public final long getTimeoutForceClose() {
 <span class="nc" id="L266">    return TIME_OUT_FORCE_CLOSE;</span>
   }
 
@@ -425,20 +425,27 @@ public class DbConnectionPool {
     }
 <span class="nc" id="L426">  }</span>
 
-<span class="nc" id="L428">  private class PoolConnectionEventListener implements ConnectionEventListener {</span>
-    @Override
-    public void connectionClosed(final ConnectionEvent event) {
-<span class="nc" id="L431">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
-<span class="nc" id="L432">      pconn.removeConnectionEventListener(this);</span>
-<span class="nc" id="L433">      recycleConnection(pconn);</span>
+  private static class PoolConnectionEventListener
+      implements ConnectionEventListener {
+    private final DbConnectionPool pool;
+
+<span class="nc" id="L432">    private PoolConnectionEventListener(final DbConnectionPool pool) {</span>
+<span class="nc" id="L433">      this.pool = pool;</span>
 <span class="nc" id="L434">    }</span>
 
     @Override
-    public void connectionErrorOccurred(final ConnectionEvent event) {
+    public final void connectionClosed(final ConnectionEvent event) {
 <span class="nc" id="L438">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
 <span class="nc" id="L439">      pconn.removeConnectionEventListener(this);</span>
-<span class="nc" id="L440">      disposeConnection(pconn);</span>
+<span class="nc" id="L440">      pool.recycleConnection(pconn);</span>
 <span class="nc" id="L441">    }</span>
+
+    @Override
+    public final void connectionErrorOccurred(final ConnectionEvent event) {
+<span class="nc" id="L445">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
+<span class="nc" id="L446">      pconn.removeConnectionEventListener(this);</span>
+<span class="nc" id="L447">      pool.disposeConnection(pconn);</span>
+<span class="nc" id="L448">    }</span>
   }
 
   /**
@@ -451,7 +458,7 @@ public class DbConnectionPool {
    * @return the number of active connections.
    */
   public synchronized int getActiveConnections() {
-<span class="nc" id="L454">    return activeConnections;</span>
+<span class="nc" id="L461">    return activeConnections;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

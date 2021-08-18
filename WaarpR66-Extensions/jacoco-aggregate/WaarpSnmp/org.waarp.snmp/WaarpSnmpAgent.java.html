@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpSnmpAgent.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpSnmp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.snmp</a> &gt; <span class="el_source">WaarpSnmpAgent.java</span></div><h1>WaarpSnmpAgent.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.snmp;
+
+import org.snmp4j.TransportMapping;
+import org.snmp4j.agent.BaseAgent;
+import org.snmp4j.agent.CommandProcessor;
+import org.snmp4j.agent.DuplicateRegistrationException;
+import org.snmp4j.agent.MOGroup;
+import org.snmp4j.agent.mo.snmp.RowStatus;
+import org.snmp4j.agent.mo.snmp.SNMPv2MIB;
+import org.snmp4j.agent.mo.snmp.SnmpCommunityMIB;
+import org.snmp4j.agent.mo.snmp.SnmpCommunityMIB.SnmpCommunityEntryRow;
+import org.snmp4j.agent.mo.snmp.SnmpNotificationMIB;
+import org.snmp4j.agent.mo.snmp.SnmpTargetMIB;
+import org.snmp4j.agent.mo.snmp.StorageType;
+import org.snmp4j.agent.mo.snmp.VacmMIB;
+import org.snmp4j.agent.security.MutableVACM;
+import org.snmp4j.mp.MPv3;
+import org.snmp4j.mp.MessageProcessingModel;
+import org.snmp4j.mp.SnmpConstants;
+import org.snmp4j.security.SecurityLevel;
+import org.snmp4j.security.SecurityModel;
+import org.snmp4j.security.USM;
+import org.snmp4j.security.UsmUser;
+import org.snmp4j.smi.Address;
+import org.snmp4j.smi.GenericAddress;
+import org.snmp4j.smi.Integer32;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.Variable;
+import org.snmp4j.smi.VariableBinding;
+import org.snmp4j.transport.TransportMappings;
+import org.snmp4j.util.ThreadPool;
+import org.snmp4j.util.WorkerPool;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.snmp.SnmpConfiguration.TargetElement;
+import org.waarp.snmp.interf.WaarpInterfaceMib;
+import org.waarp.snmp.interf.WaarpInterfaceMib.TrapLevel;
+import org.waarp.snmp.interf.WaarpInterfaceMonitor;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * This Agent contains some functionalities for running a version 2c and 3 of
+ * SNMP agent.
+ */
+public class WaarpSnmpAgent extends BaseAgent {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L73">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L74">      WaarpLoggerFactory.getLogger(WaarpSnmpAgent.class);</span>
+
+<span class="nc" id="L76">  private String[] address = { SnmpConfiguration.DEFAULTADDRESS };</span>
+
+  private final boolean isFilterAccessEnabled;
+
+<span class="nc" id="L80">  private boolean useTrap = true;</span>
+
+  private int trapLevel;
+
+  private final List&lt;UsmUser&gt; listUsmUser;
+
+  private final List&lt;TargetElement&gt; listTargetElements;
+
+  private final boolean hasV2;
+
+  private final boolean hasV3;
+
+<span class="nc" id="L92">  private final long systemTimeStart = System.currentTimeMillis();</span>
+
+  private final WorkerPool workerPool;
+  /**
+   * The associated monitor with this Agent
+   */
+  private WaarpInterfaceMonitor monitor;
+  /**
+   * The associated MIB with this Agent
+   */
+  private WaarpInterfaceMib mib;
+
+  /**
+   * @param configurationFile XML format
+   * @param monitor the associated monitor
+   * @param mib the associated MIB
+   *
+   * @throws IllegalArgumentException
+   */
+  public WaarpSnmpAgent(final File configurationFile,
+                        final WaarpInterfaceMonitor monitor,
+                        final WaarpInterfaceMib mib)
+      throws IllegalArgumentException {
+    /*
+     * Creates a base agent with boot-counter, config file, and a CommandProcessor for processing SNMP requests.
+     *
+     * Parameters:
+     *
+     * These files does not exist and are not used but has to be specified. Read snmp4j docs for more info
+     *
+     * &quot;bootCounterFile&quot; - a file with serialized boot-counter information (read/write). If the file does not
+     * exist it is created on shutdown of the agent.
+     *
+     * &quot;configFile&quot; - a file with serialized configuration information (read/write). If the file does not exist it
+     * is created on shutdown of the agent.
+     *
+     * &quot;commandProcessor&quot; - the CommandProcessor instance that handles the SNMP requests.
+     */
+<span class="nc" id="L130">    super(new File(configurationFile.getParentFile(), &quot;dummyConf.agent&quot;),</span>
+<span class="nc" id="L131">          new File(configurationFile.getParentFile(), &quot;dummyBootCounter.agent&quot;),</span>
+<span class="nc" id="L132">          new CommandProcessor(new OctetString(MPv3.createLocalEngineID())));</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (!SnmpConfiguration.setConfigurationFromXml(configurationFile)) {</span>
+<span class="nc" id="L134">      throw new IllegalArgumentException(&quot;Cannot load configuration&quot;);</span>
+    }
+<span class="nc" id="L136">    address = SnmpConfiguration.address;</span>
+<span class="nc" id="L137">    final int nbThread = SnmpConfiguration.nbThread;</span>
+<span class="nc" id="L138">    isFilterAccessEnabled = SnmpConfiguration.isFilterAccessEnabled;</span>
+<span class="nc" id="L139">    useTrap = SnmpConfiguration.isUsingTrap;</span>
+<span class="nc" id="L140">    setTrapLevel(SnmpConfiguration.trapLevel);</span>
+<span class="nc" id="L141">    listUsmUser = SnmpConfiguration.listUsmUser;</span>
+<span class="nc" id="L142">    listTargetElements = SnmpConfiguration.listTargetElements;</span>
+<span class="nc" id="L143">    hasV2 = SnmpConfiguration.hasV2;</span>
+<span class="nc" id="L144">    hasV3 = SnmpConfiguration.hasV3;</span>
+
+<span class="nc" id="L146">    logger.debug(&quot;SNMP Configuration loaded: {}:{}&quot;, address[0], nbThread);</span>
+<span class="nc" id="L147">    workerPool = ThreadPool.create(&quot;SnmpRequestPool&quot;, nbThread);</span>
+<span class="nc" id="L148">    agent.setWorkerPool(workerPool);</span>
+<span class="nc" id="L149">    setMonitor(monitor);</span>
+<span class="nc" id="L150">    getMonitor().setAgent(this);</span>
+<span class="nc" id="L151">    setMib(mib);</span>
+<span class="nc" id="L152">    getMib().setAgent(this);</span>
+<span class="nc" id="L153">  }</span>
+
+  /**
+   * @return the monitor
+   */
+  public final WaarpInterfaceMonitor getMonitor() {
+<span class="nc" id="L159">    return monitor;</span>
+  }
+
+  /**
+   * @return the mib
+   */
+  public final WaarpInterfaceMib getMib() {
+<span class="nc" id="L166">    return mib;</span>
+  }
+
+  /**
+   * @return the uptime in ms
+   */
+  public final long getUptime() {
+<span class="nc" id="L173">    return getSnmpv2MIB().getUpTime().toMilliseconds();</span>
+  }
+
+  /**
+   * @return the uptime but in System time in ms
+   */
+  public final long getUptimeSystemTime() {
+<span class="nc" id="L180">    return systemTimeStart;</span>
+  }
+
+  /**
+   * Register additional managed objects at the agent's server.
+   */
+  @Override
+  protected final void registerManagedObjects() {
+<span class="nc" id="L188">    logger.debug(&quot;Registers&quot;);</span>
+    try {
+<span class="nc" id="L190">      getMib().registerMOs(server, null);</span>
+<span class="nc" id="L191">    } catch (final DuplicateRegistrationException e) {</span>
+<span class="nc" id="L192">      logger.error(&quot;Cannot register Mib&quot;, e);</span>
+<span class="nc" id="L193">    }</span>
+<span class="nc" id="L194">  }</span>
+
+  /**
+   * Unregister the basic MIB modules from the agent's MOServer.
+   */
+  @Override
+  protected final void unregisterManagedObjects() {
+<span class="nc" id="L201">    logger.debug(&quot;Unregisters&quot;);</span>
+<span class="nc" id="L202">    getMib().unregisterMOs(server, null);</span>
+<span class="nc" id="L203">  }</span>
+
+  /**
+   * @param moGroup
+   */
+  public final void unregisterManagedObject(final MOGroup moGroup) {
+<span class="nc" id="L209">    logger.debug(&quot;Unregister {}&quot;, moGroup);</span>
+<span class="nc" id="L210">    moGroup.unregisterMOs(server, getContext(moGroup));</span>
+<span class="nc" id="L211">  }</span>
+
+  /**
+   * Adds all the necessary initial users to the USM. Only applicable to SNMP
+   * V3
+   */
+  @Override
+  protected final void addUsmUser(final USM usm) {
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    for (final UsmUser userlist : listUsmUser) {</span>
+<span class="nc" id="L220">      logger.debug(&quot;User: {}&quot;, userlist);</span>
+<span class="nc" id="L221">      usm.addUser(userlist.getSecurityName(), usm.getLocalEngineID(), userlist);</span>
+<span class="nc" id="L222">    }</span>
+<span class="nc" id="L223">    final UsmUser usernotify =</span>
+        new UsmUser(new OctetString(SnmpConfiguration.V3NOTIFY), null, null,
+                    null, null);
+<span class="nc" id="L226">    usm.addUser(usernotify.getSecurityName(), null, usernotify);</span>
+<span class="nc" id="L227">  }</span>
+
+  /**
+   * Adds initial notification targets and filters.
+   */
+  @Override
+  protected final void addNotificationTargets(final SnmpTargetMIB targetMIB,
+                                              final SnmpNotificationMIB notificationMIB) {
+<span class="nc" id="L235">    targetMIB.addDefaultTDomains();</span>
+
+<span class="nc bnc" id="L237" title="All 2 branches missed.">    for (final TargetElement element : listTargetElements) {</span>
+<span class="nc" id="L238">      logger.debug(&quot;AddTarget: {}&quot;, element);</span>
+<span class="nc" id="L239">      targetMIB.addTargetAddress(element.name, element.transportDomain,</span>
+                                 element.address, element.timeout,
+                                 element.retries, element.tagList,
+                                 element.params, element.storageType);
+<span class="nc" id="L243">    }</span>
+    /*
+     * Example
+     *
+     * targetMIB.addTargetAddress(new OctetString(&quot;notificationV2c&quot;), TransportDomains.transportDomainUdpIpv4, new
+     * OctetString(new UdpAddress(&quot;127.0.0.1/162&quot;).getValue()), 200, 1, new OctetString(&quot;notify&quot;), new
+     * OctetString(&quot;v2c&quot;), StorageType.permanent); targetMIB.addTargetAddress(new OctetString(&quot;notificationV3&quot;),
+     * TransportDomains.transportDomainUdpIpv4, new OctetString(new UdpAddress(&quot;127.0.0.1/1162&quot;).getValue()), 200,
+     * 1, new OctetString(&quot;notify&quot;), new OctetString(&quot;v3notify&quot;), StorageType.permanent);
+     */
+<span class="nc" id="L253">    logger.debug(&quot;HasV2: {} HasV3: {}&quot;, hasV2, hasV3);</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    if (hasV2) {</span>
+<span class="nc" id="L255">      targetMIB.addTargetParams(new OctetString(SnmpConfiguration.V2C),</span>
+                                MessageProcessingModel.MPv2c,
+                                SecurityModel.SECURITY_MODEL_SNMPv2c,
+                                new OctetString(&quot;cpublic&quot;),
+                                SecurityLevel.AUTH_PRIV, StorageType.permanent);
+    }
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    if (hasV3) {</span>
+<span class="nc" id="L262">      targetMIB.addTargetParams(new OctetString(SnmpConfiguration.V3NOTIFY),</span>
+                                MessageProcessingModel.MPv3,
+                                SecurityModel.SECURITY_MODEL_USM,
+                                new OctetString(&quot;v3notify&quot;),
+                                SecurityLevel.NOAUTH_NOPRIV,
+                                StorageType.permanent);
+    }
+<span class="nc" id="L269">    int trapOrInform = SnmpNotificationMIB.SnmpNotifyTypeEnum.inform;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">    if (useTrap) {</span>
+<span class="nc" id="L271">      trapOrInform = SnmpNotificationMIB.SnmpNotifyTypeEnum.trap;</span>
+    }
+<span class="nc" id="L273">    notificationMIB.addNotifyEntry(new OctetString(&quot;default&quot;),</span>
+                                   new OctetString(SnmpConfiguration.NOTIFY),
+                                   trapOrInform, StorageType.permanent);
+<span class="nc" id="L276">  }</span>
+
+  /**
+   * Minimal View based Access Control
+   * &lt;p&gt;
+   * http://www.faqs.org/rfcs/rfc2575.html
+   */
+  @Override
+  protected final void addViews(final VacmMIB vacm) {
+<span class="nc" id="L285">    vacm.addGroup(SecurityModel.SECURITY_MODEL_SNMPv1,</span>
+                  new OctetString(&quot;cpublic&quot;), new OctetString(&quot;v1v2group&quot;),
+                  StorageType.nonVolatile);
+<span class="nc" id="L288">    vacm.addGroup(SecurityModel.SECURITY_MODEL_SNMPv2c,</span>
+                  new OctetString(&quot;cpublic&quot;), new OctetString(&quot;v1v2group&quot;),
+                  StorageType.nonVolatile);
+<span class="nc" id="L291">    vacm.addGroup(SecurityModel.SECURITY_MODEL_USM, new OctetString(&quot;v3notify&quot;),</span>
+                  new OctetString(&quot;v3group&quot;), StorageType.nonVolatile);
+
+<span class="nc bnc" id="L294" title="All 2 branches missed.">    for (final UsmUser user : listUsmUser) {</span>
+<span class="nc" id="L295">      logger.debug(&quot;Groups: {} Restricted? {}&quot;, user.getSecurityName(),</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">                   user.getPrivacyProtocol() == null);</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">      if (user.getPrivacyProtocol() == null) {</span>
+<span class="nc" id="L298">        vacm.addGroup(SecurityModel.SECURITY_MODEL_USM,</span>
+<span class="nc" id="L299">                      new OctetString(user.getSecurityName()),</span>
+                      new OctetString(&quot;v3restricted&quot;), StorageType.nonVolatile);
+      } else {
+<span class="nc" id="L302">        vacm.addGroup(SecurityModel.SECURITY_MODEL_USM,</span>
+<span class="nc" id="L303">                      new OctetString(user.getSecurityName()),</span>
+                      new OctetString(&quot;v3group&quot;), StorageType.nonVolatile);
+      }
+<span class="nc" id="L306">    }</span>
+
+<span class="nc" id="L308">    vacm.addAccess(new OctetString(&quot;v1v2group&quot;), new OctetString(&quot;public&quot;),</span>
+                   SecurityModel.SECURITY_MODEL_ANY,
+                   SecurityLevel.NOAUTH_NOPRIV, MutableVACM.VACM_MATCH_EXACT,
+                   new OctetString(&quot;fullReadView&quot;),
+                   new OctetString(&quot;fullWriteView&quot;),
+                   new OctetString(&quot;fullNotifyView&quot;), StorageType.nonVolatile);
+<span class="nc" id="L314">    vacm.addAccess(new OctetString(&quot;v3group&quot;), new OctetString(),</span>
+                   SecurityModel.SECURITY_MODEL_USM, SecurityLevel.AUTH_PRIV,
+                   MutableVACM.VACM_MATCH_EXACT,
+                   new OctetString(&quot;fullReadView&quot;),
+                   new OctetString(&quot;fullWriteView&quot;),
+                   new OctetString(&quot;fullNotifyView&quot;), StorageType.nonVolatile);
+<span class="nc" id="L320">    vacm.addAccess(new OctetString(&quot;v3restricted&quot;), new OctetString(),</span>
+                   SecurityModel.SECURITY_MODEL_USM,
+                   SecurityLevel.NOAUTH_NOPRIV, MutableVACM.VACM_MATCH_EXACT,
+                   new OctetString(&quot;restrictedReadView&quot;),
+                   new OctetString(&quot;restrictedWriteView&quot;),
+                   new OctetString(&quot;restrictedNotifyView&quot;),
+                   StorageType.nonVolatile);
+
+<span class="nc" id="L328">    vacm.addViewTreeFamily(new OctetString(&quot;fullReadView&quot;), new OID(&quot;1.3&quot;),</span>
+                           new OctetString(), VacmMIB.vacmViewIncluded,
+                           StorageType.nonVolatile);
+<span class="nc" id="L331">    vacm.addViewTreeFamily(new OctetString(&quot;fullWriteView&quot;), new OID(&quot;1.3&quot;),</span>
+                           new OctetString(), VacmMIB.vacmViewIncluded,
+                           StorageType.nonVolatile);
+<span class="nc" id="L334">    vacm.addViewTreeFamily(new OctetString(&quot;fullNotifyView&quot;), new OID(&quot;1.3&quot;),</span>
+                           new OctetString(), VacmMIB.vacmViewIncluded,
+                           StorageType.nonVolatile);
+
+<span class="nc" id="L338">    vacm.addViewTreeFamily(new OctetString(&quot;restrictedReadView&quot;),</span>
+                           new OID(&quot;1.3.6.1.2&quot;), new OctetString(),
+                           VacmMIB.vacmViewIncluded, StorageType.nonVolatile);
+<span class="nc" id="L341">    vacm.addViewTreeFamily(new OctetString(&quot;restrictedWriteView&quot;),</span>
+                           new OID(&quot;1.3.6.1.2.1&quot;), new OctetString(),
+                           VacmMIB.vacmViewIncluded, StorageType.nonVolatile);
+<span class="nc" id="L344">    vacm.addViewTreeFamily(new OctetString(&quot;restrictedNotifyView&quot;),</span>
+                           new OID(&quot;1.3.6.1.2&quot;), new OctetString(),
+                           VacmMIB.vacmViewIncluded, StorageType.nonVolatile);
+<span class="nc" id="L347">    vacm.addViewTreeFamily(new OctetString(&quot;restrictedNotifyView&quot;),</span>
+                           new OID(&quot;1.3.6.1.6.3.1&quot;), new OctetString(),
+                           VacmMIB.vacmViewIncluded, StorageType.nonVolatile);
+<span class="nc" id="L350">  }</span>
+
+  /**
+   * The table of community strings configured in the SNMP engine's Local
+   * Configuration Datastore (LCD).
+   * &lt;p&gt;
+   * We only configure one, &quot;public&quot;.
+   */
+  @Override
+  protected final void addCommunities(final SnmpCommunityMIB communityMIB) {
+<span class="nc" id="L360">    final Variable[] com2sec = {</span>
+        new OctetString(&quot;public&quot;), // community name
+        new OctetString(&quot;cpublic&quot;), // security name
+<span class="nc" id="L363">        getAgent().getContextEngineID(), // local engine ID</span>
+        new OctetString(&quot;public&quot;), // default context name
+        new OctetString(), // transport tag
+        new Integer32(StorageType.nonVolatile), // storage type
+        new Integer32(RowStatus.active) // row status
+    };
+<span class="nc" id="L369">    final SnmpCommunityEntryRow row = communityMIB.getSnmpCommunityEntry()</span>
+<span class="nc" id="L370">                                                  .createRow(new OctetString(</span>
+<span class="nc" id="L371">                                                      &quot;public2public&quot;).toSubIndex(</span>
+                                                      true), com2sec);
+<span class="nc" id="L373">    communityMIB.getSnmpCommunityEntry().addRow(row);</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">    if (isFilterAccessEnabled) {</span>
+<span class="nc" id="L375">      snmpCommunityMIB.setSourceAddressFiltering(true);</span>
+    }
+<span class="nc" id="L377">  }</span>
+
+  @Override
+  protected final void initTransportMappings() throws IOException {
+<span class="nc" id="L381">    final TransportMapping&lt;?&gt;[] testMappings =</span>
+        new TransportMapping[address.length];
+<span class="nc" id="L383">    int nb = 0;</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">    for (final String addres : address) {</span>
+<span class="nc" id="L385">      final Address addr = GenericAddress.parse(addres);</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">      if (addr != null) {</span>
+<span class="nc" id="L387">        logger.info(&quot;SNMP Agent InitTransport: {} {}&quot;,</span>
+<span class="nc" id="L388">                    addr.getClass().getSimpleName(), addr);</span>
+        final TransportMapping&lt;?&gt; tm;
+        try {
+<span class="nc" id="L391">          tm = TransportMappings.getInstance().createTransportMapping(addr);</span>
+<span class="nc" id="L392">        } catch (final RuntimeException e) {</span>
+<span class="nc" id="L393">          continue;</span>
+<span class="nc" id="L394">        }</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">        if (tm != null) {</span>
+<span class="nc" id="L396">          testMappings[nb] = tm;</span>
+<span class="nc" id="L397">          nb++;</span>
+        }
+      }
+    }
+<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (nb &gt; 0) {</span>
+<span class="nc" id="L402">      transportMappings = new TransportMapping&lt;?&gt;[nb];</span>
+<span class="nc" id="L403">      System.arraycopy(testMappings, 0, transportMappings, 0, nb);</span>
+    } else {
+<span class="nc" id="L405">      transportMappings = null;</span>
+<span class="nc" id="L406">      throw new IOException(&quot;No address to connect&quot;);</span>
+    }
+<span class="nc" id="L408">  }</span>
+
+  /**
+   * Start method invokes some initialization methods needed to start the
+   * agent
+   *
+   * @throws IOException
+   */
+  public final void start() throws IOException {
+<span class="nc" id="L417">    logger.debug(&quot;WaarpSnmpAgent starting: {} 1 on {}&quot;, address[0],</span>
+<span class="nc" id="L418">                 address.length);</span>
+    try {
+<span class="nc" id="L420">      init();</span>
+<span class="nc" id="L421">    } catch (final IOException e) {</span>
+<span class="nc" id="L422">      logger.warn(&quot;Error while SNMP starts &quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L423">      throw e;</span>
+<span class="nc" id="L424">    }</span>
+<span class="nc" id="L425">    addShutdownHook();</span>
+<span class="nc" id="L426">    getServer().addContext(new OctetString(&quot;public&quot;));</span>
+<span class="nc" id="L427">    finishInit();</span>
+<span class="nc" id="L428">    run();</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (TrapLevel.StartStop.isLevelValid(getTrapLevel())) {</span>
+<span class="nc" id="L430">      sendColdStartNotification();</span>
+    }
+<span class="nc" id="L432">  }</span>
+
+  @Override
+  protected final void sendColdStartNotification() {
+<span class="nc" id="L436">    logger.debug(&quot;ColdStartNotification: {}&quot;,</span>
+<span class="nc" id="L437">                 getMib().getBaseOidStartOrShutdown());</span>
+<span class="nc" id="L438">    final SNMPv2MIB snmpv2 = getMib().getSNMPv2MIB();</span>
+<span class="nc" id="L439">    notificationOriginator.notify(new OctetString(&quot;public&quot;),</span>
+                                  SnmpConstants.coldStart,
+                                  new VariableBinding[] {
+                                      new VariableBinding(
+<span class="nc" id="L443">                                          getMib().getBaseOidStartOrShutdown(),</span>
+                                          new OctetString(&quot;Startup Service&quot;)),
+                                      new VariableBinding(
+                                          SnmpConstants.sysDescr,
+<span class="nc" id="L447">                                          snmpv2.getDescr()),</span>
+                                      new VariableBinding(
+                                          SnmpConstants.sysObjectID,
+<span class="nc" id="L450">                                          snmpv2.getObjectID()),</span>
+                                      new VariableBinding(
+                                          SnmpConstants.sysContact,
+<span class="nc" id="L453">                                          snmpv2.getContact()),</span>
+                                      new VariableBinding(SnmpConstants.sysName,
+<span class="nc" id="L455">                                                          snmpv2.getName()),</span>
+                                      new VariableBinding(
+                                          SnmpConstants.sysLocation,
+<span class="nc" id="L458">                                          snmpv2.getLocation())</span>
+                                  });
+<span class="nc" id="L460">  }</span>
+
+  /**
+   * Send a Notification just before Shutdown the SNMP service.
+   */
+  protected final void sendShutdownNotification() {
+<span class="nc bnc" id="L466" title="All 4 branches missed.">    if (getMib() == null || notificationOriginator == null) {</span>
+<span class="nc" id="L467">      return;</span>
+    }
+<span class="nc" id="L469">    final SNMPv2MIB snmpv2 = getMib().getSNMPv2MIB();</span>
+<span class="nc" id="L470">    notificationOriginator.notify(new OctetString(&quot;public&quot;),</span>
+                                  SnmpConstants.linkDown,
+                                  new VariableBinding[] {
+                                      new VariableBinding(
+<span class="nc" id="L474">                                          getMib().getBaseOidStartOrShutdown(),</span>
+                                          new OctetString(&quot;Shutdown Service&quot;)),
+                                      new VariableBinding(
+                                          SnmpConstants.sysDescr,
+<span class="nc" id="L478">                                          snmpv2.getDescr()),</span>
+                                      new VariableBinding(
+                                          SnmpConstants.sysObjectID,
+<span class="nc" id="L481">                                          snmpv2.getObjectID()),</span>
+                                      new VariableBinding(
+                                          SnmpConstants.sysContact,
+<span class="nc" id="L484">                                          snmpv2.getContact()),</span>
+                                      new VariableBinding(SnmpConstants.sysName,
+<span class="nc" id="L486">                                                          snmpv2.getName()),</span>
+                                      new VariableBinding(
+                                          SnmpConstants.sysLocation,
+<span class="nc" id="L489">                                          snmpv2.getLocation())</span>
+                                  });
+    try {
+<span class="nc" id="L492">      Thread.sleep(100);</span>
+<span class="nc" id="L493">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L494">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L495">    }</span>
+<span class="nc" id="L496">  }</span>
+
+  @Override
+  public final void stop() {
+<span class="nc" id="L500">    logger.info(&quot;Stopping SNMP support&quot;);</span>
+<span class="nc bnc" id="L501" title="All 2 branches missed.">    if (TrapLevel.StartStop.isLevelValid(getTrapLevel())) {</span>
+<span class="nc" id="L502">      sendShutdownNotification();</span>
+    }
+<span class="nc bnc" id="L504" title="All 2 branches missed.">    if (session != null) {</span>
+<span class="nc" id="L505">      super.stop();</span>
+    }
+<span class="nc bnc" id="L507" title="All 2 branches missed.">    if (getMonitor() != null) {</span>
+<span class="nc" id="L508">      getMonitor().releaseResources();</span>
+      try {
+<span class="nc" id="L510">        Thread.sleep(100);</span>
+<span class="nc" id="L511">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L512">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L513">      }</span>
+<span class="nc bnc" id="L514" title="All 2 branches missed.">      if (workerPool != null) {</span>
+<span class="nc" id="L515">        workerPool.cancel();</span>
+      }
+    }
+<span class="nc" id="L518">  }</span>
+
+  /**
+   * @return the trapLevel
+   */
+  public final int getTrapLevel() {
+<span class="nc" id="L524">    return trapLevel;</span>
+  }
+
+  /**
+   * @param trapLevel the trapLevel to set
+   */
+  public final void setTrapLevel(final int trapLevel) {
+<span class="nc" id="L531">    this.trapLevel = trapLevel;</span>
+<span class="nc" id="L532">  }</span>
+
+  /**
+   * @param monitor the monitor to set
+   */
+  private void setMonitor(final WaarpInterfaceMonitor monitor) {
+<span class="nc" id="L538">    this.monitor = monitor;</span>
+<span class="nc" id="L539">  }</span>
+
+  /**
+   * @param mib the mib to set
+   */
+  private void setMib(final WaarpInterfaceMib mib) {
+<span class="nc" id="L545">    this.mib = mib;</span>
+<span class="nc" id="L546">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

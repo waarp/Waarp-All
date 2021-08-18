@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpActionLogger.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.control</a> &gt; <span class="el_source">WaarpActionLogger.java</span></div><h1>WaarpActionLogger.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.gateway.ftp.control;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.core.command.FtpCommandCode;
+import org.waarp.ftp.core.control.BusinessHandler;
+import org.waarp.ftp.core.data.FtpTransfer;
+import org.waarp.ftp.core.exception.FtpNoFileException;
+import org.waarp.ftp.core.session.FtpSession;
+import org.waarp.gateway.ftp.config.FileBasedConfiguration;
+import org.waarp.gateway.ftp.database.data.DbTransferLog;
+
+/**
+ * Class to help to log any actions through the interface of Waarp
+ */
+public final class WaarpActionLogger {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(WaarpActionLogger.class);</span>
+
+  private WaarpActionLogger() {
+  }
+
+  /**
+   * Log the action
+   *
+   * @param ftpSession
+   * @param message
+   * @param file
+   * @param handler
+   */
+  public static long logCreate(final DbSession ftpSession, final String message,
+                               final String file,
+                               final BusinessHandler handler) {
+<span class="nc" id="L63">    final FtpSession session = handler.getFtpSession();</span>
+<span class="nc" id="L64">    final String sessionContexte = session.toString();</span>
+<span class="nc" id="L65">    logger.info(&quot;{} {}&quot;, message, sessionContexte);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (ftpSession != null) {</span>
+<span class="nc" id="L67">      final FtpCommandCode code = session.getCurrentCommand().getCode();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">      if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {</span>
+<span class="nc" id="L69">        final boolean isSender = FtpCommandCode.isRetrLikeCommand(code);</span>
+        try {
+          // Insert new one
+<span class="nc" id="L72">          final DbTransferLog log =</span>
+<span class="nc" id="L73">              new DbTransferLog(ftpSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L74">                                session.getAuth().getAccount(),</span>
+                                DbConstant.ILLEGALVALUE, isSender, file,
+<span class="nc" id="L76">                                code.name(),</span>
+                                ReplyCode.REPLY_000_SPECIAL_NOSTATUS, message,
+                                UpdatedInfo.TOSUBMIT);
+<span class="nc" id="L79">          logger.debug(&quot;Create FS: {}&quot;, log);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">          if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=</span>
+              null) {
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (isSender) {</span>
+<span class="nc" id="L83">              FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L84">                                                           .updateLastOutBand();</span>
+            } else {
+<span class="nc" id="L86">              FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L87">                                                           .updateLastInBound();</span>
+            }
+          }
+<span class="nc" id="L90">          return log.getSpecialId();</span>
+<span class="nc" id="L91">        } catch (final WaarpDatabaseException e1) {</span>
+          // Do nothing
+        }
+      }
+    }
+<span class="nc" id="L96">    return DbConstant.ILLEGALVALUE;</span>
+  }
+
+  /**
+   * Log the action
+   *
+   * @param ftpSession
+   * @param specialId
+   * @param message
+   * @param handler
+   * @param rcode
+   * @param info
+   */
+  public static long logAction(final DbSession ftpSession, final long specialId,
+                               final String message,
+                               final BusinessHandler handler,
+                               final ReplyCode rcode, final UpdatedInfo info) {
+<span class="nc" id="L113">    final FtpSession session = handler.getFtpSession();</span>
+<span class="nc" id="L114">    final String sessionContexte = session.toString();</span>
+<span class="nc" id="L115">    logger.info(&quot;{} {}&quot;, message, sessionContexte);</span>
+<span class="nc bnc" id="L116" title="All 4 branches missed.">    if (ftpSession != null &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {</span>
+<span class="nc" id="L117">      final FtpCommandCode code = session.getCurrentCommand().getCode();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">      if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {</span>
+        try {
+          // Try load
+<span class="nc" id="L121">          final DbTransferLog log =</span>
+<span class="nc" id="L122">              new DbTransferLog(ftpSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L123">                                session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L124">          log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L125">          log.setInfotransf(message);</span>
+<span class="nc" id="L126">          log.setReplyCodeExecutionStatus(rcode);</span>
+<span class="nc" id="L127">          log.update();</span>
+<span class="nc" id="L128">          logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L129">          return log.getSpecialId();</span>
+<span class="nc" id="L130">        } catch (final WaarpDatabaseException e) {</span>
+          // Do nothing
+<span class="nc" id="L132">        }</span>
+      } else {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=</span>
+            null) {
+<span class="nc" id="L136">          FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L137">                                                       .updateCodeNoTransfer(</span>
+                                                           rcode);
+        }
+      }
+<span class="nc" id="L141">    } else {</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=</span>
+          null) {
+<span class="nc" id="L144">        FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L145">                                                     .updateCodeNoTransfer(</span>
+                                                         rcode);
+      }
+    }
+<span class="nc" id="L149">    return specialId;</span>
+  }
+
+  /**
+   * Log the action in error
+   *
+   * @param ftpSession
+   * @param specialId
+   * @param transfer
+   * @param message
+   * @param rcode
+   * @param handler
+   */
+  public static void logErrorAction(final DbSession ftpSession,
+                                    final long specialId,
+                                    final FtpTransfer transfer,
+                                    final String message, final ReplyCode rcode,
+                                    final BusinessHandler handler) {
+<span class="nc" id="L167">    final FtpSession session = handler.getFtpSession();</span>
+<span class="nc" id="L168">    final String sessionContexte = session.toString();</span>
+<span class="nc" id="L169">    logger.error(rcode.getCode() + &quot;:&quot; + message + ' ' + sessionContexte);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L171">      logger.debug(&quot;Log&quot;, new Exception(&quot;Log&quot;));</span>
+    }
+<span class="nc bnc" id="L173" title="All 4 branches missed.">    if (ftpSession != null &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {</span>
+<span class="nc" id="L174">      final FtpCommandCode code = session.getCurrentCommand().getCode();</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">      if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {</span>
+<span class="nc" id="L176">        String file = null;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (transfer != null) {</span>
+          try {
+<span class="nc" id="L179">            file = transfer.getFtpFile().getFile();</span>
+<span class="nc" id="L180">          } catch (final CommandAbstractException ignored) {</span>
+            // nothing
+<span class="nc" id="L182">          } catch (final FtpNoFileException ignored) {</span>
+            // nothing
+<span class="nc" id="L184">          }</span>
+        }
+<span class="nc" id="L186">        final UpdatedInfo info = UpdatedInfo.INERROR;</span>
+        try {
+          // Try load
+<span class="nc" id="L189">          final DbTransferLog log =</span>
+<span class="nc" id="L190">              new DbTransferLog(ftpSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L191">                                session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L192">          log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L193">          log.setInfotransf(message);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">          if (rcode.getCode() &lt; 400) {</span>
+<span class="nc" id="L195">            log.setReplyCodeExecutionStatus(</span>
+                ReplyCode.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED);
+          } else {
+<span class="nc" id="L198">            log.setReplyCodeExecutionStatus(rcode);</span>
+          }
+<span class="nc bnc" id="L200" title="All 2 branches missed.">          if (file != null) {</span>
+<span class="nc" id="L201">            log.setFilename(file);</span>
+          }
+<span class="nc" id="L203">          log.update();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">          if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=</span>
+              null) {
+<span class="nc" id="L206">            FileBasedConfiguration.fileBasedConfiguration.getFtpMib()</span>
+<span class="nc" id="L207">                                                         .notifyInfoTask(</span>
+                                                             message, log);
+          }
+<span class="nc" id="L210">          logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L211">        } catch (final WaarpDatabaseException e) {</span>
+          // Do nothing
+<span class="nc" id="L213">        }</span>
+<span class="nc" id="L214">      } else {</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=</span>
+            null) {
+<span class="nc" id="L217">          FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L218">                                                       .updateCodeNoTransfer(</span>
+                                                           rcode);
+        }
+<span class="nc bnc" id="L221" title="All 4 branches missed.">        if (rcode != ReplyCode.REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN &amp;&amp;</span>
+            rcode != ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN) {
+<span class="nc bnc" id="L223" title="All 2 branches missed.">          if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=</span>
+              null) {
+<span class="nc" id="L225">            FileBasedConfiguration.fileBasedConfiguration.getFtpMib()</span>
+<span class="nc" id="L226">                                                         .notifyWarning(</span>
+<span class="nc" id="L227">                                                             rcode.getMesg(),</span>
+                                                             message);
+          }
+        }
+      }
+<span class="nc" id="L232">    } else {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=</span>
+          null) {
+<span class="nc" id="L235">        FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L236">                                                     .updateCodeNoTransfer(</span>
+                                                         rcode);
+      }
+<span class="nc bnc" id="L239" title="All 4 branches missed.">      if (rcode != ReplyCode.REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN &amp;&amp;</span>
+          rcode != ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN) {
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() != null) {</span>
+<span class="nc" id="L242">          FileBasedConfiguration.fileBasedConfiguration.getFtpMib()</span>
+<span class="nc" id="L243">                                                       .notifyWarning(</span>
+<span class="nc" id="L244">                                                           rcode.getMesg(),</span>
+                                                           message);
+        }
+      }
+    }
+<span class="nc" id="L249">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

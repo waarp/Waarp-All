@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FseTableReader.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdsafe</a> &gt; <span class="el_source">FseTableReader.java</span></div><h1>FseTableReader.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdsafe;
+
+import static org.waarp.compress.zstdsafe.FiniteStateEntropy.*;
+import static org.waarp.compress.zstdsafe.UnsafeUtil.*;
+import static org.waarp.compress.zstdsafe.Util.*;
+
+<span class="nc" id="L40">class FseTableReader {</span>
+<span class="nc" id="L41">  private final short[] nextSymbol = new short[MAX_SYMBOL + 1];</span>
+<span class="nc" id="L42">  private final short[] normalizedCounters = new short[MAX_SYMBOL + 1];</span>
+
+  public int readFseTable(final FiniteStateEntropy.Table table,
+                          final byte[] inputBase, final int inputAddress,
+                          final int inputLimit, int maxSymbol,
+                          final int maxTableLog) {
+    // read table headers
+<span class="nc" id="L49">    int input = inputAddress;</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">    verify(inputLimit - inputAddress &gt;= 4, input, &quot;Not enough input bytes&quot;);</span>
+
+    int threshold;
+<span class="nc" id="L53">    int symbolNumber = 0;</span>
+<span class="nc" id="L54">    boolean previousIsZero = false;</span>
+
+<span class="nc" id="L56">    int bitStream = getInt(inputBase, input);</span>
+
+<span class="nc" id="L58">    final int tableLog = (bitStream &amp; 0xF) + MIN_TABLE_LOG;</span>
+
+<span class="nc" id="L60">    int numberOfBits = tableLog + 1;</span>
+<span class="nc" id="L61">    bitStream &gt;&gt;&gt;= 4;</span>
+<span class="nc" id="L62">    int bitCount = 4;</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    verify(tableLog &lt;= maxTableLog, input,</span>
+           &quot;FSE table size exceeds maximum allowed size&quot;);
+
+<span class="nc" id="L67">    int remaining = (1 &lt;&lt; tableLog) + 1;</span>
+<span class="nc" id="L68">    threshold = 1 &lt;&lt; tableLog;</span>
+
+<span class="nc bnc" id="L70" title="All 4 branches missed.">    while (remaining &gt; 1 &amp;&amp; symbolNumber &lt;= maxSymbol) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (previousIsZero) {</span>
+<span class="nc" id="L72">        int n0 = symbolNumber;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        while ((bitStream &amp; 0xFFFF) == 0xFFFF) {</span>
+<span class="nc" id="L74">          n0 += 24;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">          if (input &lt; inputLimit - 5) {</span>
+<span class="nc" id="L76">            input += 2;</span>
+<span class="nc" id="L77">            bitStream = (getInt(inputBase, input) &gt;&gt;&gt; bitCount);</span>
+          } else {
+            // end of bit stream
+<span class="nc" id="L80">            bitStream &gt;&gt;&gt;= 16;</span>
+<span class="nc" id="L81">            bitCount += 16;</span>
+          }
+        }
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        while ((bitStream &amp; 3) == 3) {</span>
+<span class="nc" id="L85">          n0 += 3;</span>
+<span class="nc" id="L86">          bitStream &gt;&gt;&gt;= 2;</span>
+<span class="nc" id="L87">          bitCount += 2;</span>
+        }
+<span class="nc" id="L89">        n0 += bitStream &amp; 3;</span>
+<span class="nc" id="L90">        bitCount += 2;</span>
+
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        verify(n0 &lt;= maxSymbol, input, &quot;Symbol larger than max value&quot;);</span>
+
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        while (symbolNumber &lt; n0) {</span>
+<span class="nc" id="L95">          normalizedCounters[symbolNumber++] = 0;</span>
+        }
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        if ((input &lt;= inputLimit - 7) ||</span>
+            (input + (bitCount &gt;&gt;&gt; 3) &lt;= inputLimit - 4)) {
+<span class="nc" id="L99">          input += bitCount &gt;&gt;&gt; 3;</span>
+<span class="nc" id="L100">          bitCount &amp;= 7;</span>
+<span class="nc" id="L101">          bitStream = getInt(inputBase, input) &gt;&gt;&gt; bitCount;</span>
+        } else {
+<span class="nc" id="L103">          bitStream &gt;&gt;&gt;= 2;</span>
+        }
+      }
+
+<span class="nc" id="L107">      final short max = (short) ((2 * threshold - 1) - remaining);</span>
+      short count;
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">      if ((bitStream &amp; (threshold - 1)) &lt; max) {</span>
+<span class="nc" id="L111">        count = (short) (bitStream &amp; (threshold - 1));</span>
+<span class="nc" id="L112">        bitCount += numberOfBits - 1;</span>
+      } else {
+<span class="nc" id="L114">        count = (short) (bitStream &amp; (2 * threshold - 1));</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (count &gt;= threshold) {</span>
+<span class="nc" id="L116">          count -= max;</span>
+        }
+<span class="nc" id="L118">        bitCount += numberOfBits;</span>
+      }
+<span class="nc" id="L120">      count--;  // extra accuracy</span>
+
+<span class="nc" id="L122">      remaining -= Math.abs(count);</span>
+<span class="nc" id="L123">      normalizedCounters[symbolNumber++] = count;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">      previousIsZero = count == 0;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      while (remaining &lt; threshold) {</span>
+<span class="nc" id="L126">        numberOfBits--;</span>
+<span class="nc" id="L127">        threshold &gt;&gt;&gt;= 1;</span>
+      }
+
+<span class="nc bnc" id="L130" title="All 4 branches missed.">      if ((input &lt;= inputLimit - 7) ||</span>
+          (input + (bitCount &gt;&gt; 3) &lt;= inputLimit - 4)) {
+<span class="nc" id="L132">        input += bitCount &gt;&gt;&gt; 3;</span>
+<span class="nc" id="L133">        bitCount &amp;= 7;</span>
+      } else {
+<span class="nc" id="L135">        bitCount -= 8 * (inputLimit - 4 - input);</span>
+<span class="nc" id="L136">        input = inputLimit - 4;</span>
+      }
+<span class="nc" id="L138">      bitStream = getInt(inputBase, input) &gt;&gt;&gt; (bitCount &amp; 31);</span>
+<span class="nc" id="L139">    }</span>
+
+<span class="nc bnc" id="L141" title="All 4 branches missed.">    verify(remaining == 1 &amp;&amp; bitCount &lt;= 32, input, &quot;Input is corrupted&quot;);</span>
+
+<span class="nc" id="L143">    maxSymbol = symbolNumber - 1;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">    verify(maxSymbol &lt;= MAX_SYMBOL, input,</span>
+           &quot;Max symbol value too large (too many symbols for FSE)&quot;);
+
+<span class="nc" id="L147">    input += (bitCount + 7) &gt;&gt; 3;</span>
+
+    // populate decoding table
+<span class="nc" id="L150">    final int symbolCount = maxSymbol + 1;</span>
+<span class="nc" id="L151">    final int tableSize = 1 &lt;&lt; tableLog;</span>
+<span class="nc" id="L152">    int highThreshold = tableSize - 1;</span>
+
+<span class="nc" id="L154">    table.log2Size = tableLog;</span>
+
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    for (byte symbol = 0; symbol &lt; symbolCount; symbol++) {</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">      if (normalizedCounters[symbol] == -1) {</span>
+<span class="nc" id="L158">        table.symbol[highThreshold--] = symbol;</span>
+<span class="nc" id="L159">        nextSymbol[symbol] = 1;</span>
+      } else {
+<span class="nc" id="L161">        nextSymbol[symbol] = normalizedCounters[symbol];</span>
+      }
+    }
+
+<span class="nc" id="L165">    final int position =</span>
+<span class="nc" id="L166">        FseCompressionTable.spreadSymbols(normalizedCounters, maxSymbol,</span>
+                                          tableSize, highThreshold,
+                                          table.symbol);
+
+    // position must reach all cells once, otherwise normalizedCounter is incorrect
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    verify(position == 0, input, &quot;Input is corrupted&quot;);</span>
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    for (int i = 0; i &lt; tableSize; i++) {</span>
+<span class="nc" id="L174">      final byte symbol = table.symbol[i];</span>
+<span class="nc" id="L175">      final short nextState = nextSymbol[symbol]++;</span>
+<span class="nc" id="L176">      table.numberOfBits[i] = (byte) (tableLog - highestBit(nextState));</span>
+<span class="nc" id="L177">      table.newState[i] =</span>
+          (short) ((nextState &lt;&lt; table.numberOfBits[i]) - tableSize);
+    }
+
+<span class="nc" id="L181">    return input - inputAddress;</span>
+  }
+
+  public static void initializeRleTable(final FiniteStateEntropy.Table table,
+                                        final byte value) {
+<span class="nc" id="L186">    table.log2Size = 0;</span>
+<span class="nc" id="L187">    table.symbol[0] = value;</span>
+<span class="nc" id="L188">    table.newState[0] = 0;</span>
+<span class="nc" id="L189">    table.numberOfBits[0] = 0;</span>
+<span class="nc" id="L190">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

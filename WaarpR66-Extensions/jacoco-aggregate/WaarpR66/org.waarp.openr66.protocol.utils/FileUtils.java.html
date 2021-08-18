@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FileUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.utils</a> &gt; <span class="el_source">FileUtils.java</span></div><h1>FileUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.utils;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.filesystem.R66File;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
+/**
+ * File Utils
+ */
+public final class FileUtils {
+
+<span class="nc" id="L39">  private static final byte[] EMPTY_ARRAY = {};</span>
+
+  private FileUtils() {
+  }
+
+  /**
+   * Change or create the R66File associated with the context
+   *
+   * @param logger
+   * @param session
+   * @param filenameSrc new filename
+   * @param isPreStart
+   * @param isSender
+   * @param isThrough
+   * @param file old R66File if any (might be null)
+   *
+   * @return the R66File
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public static R66File getFile(final WaarpLogger logger,
+                                final R66Session session,
+                                final String filenameSrc,
+                                final boolean isPreStart,
+                                final boolean isSender, final boolean isThrough,
+                                R66File file)
+      throws OpenR66RunnerErrorException {
+    String filename;
+<span class="nc" id="L67">    logger.debug(&quot;PreStart: {}&quot;, isPreStart);</span>
+<span class="nc" id="L68">    logger.debug(&quot;Dir is: {}&quot;, session.getDir().getFullPath());</span>
+<span class="nc" id="L69">    logger.debug(&quot;File is: {}&quot;, filenameSrc);</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (isPreStart) {</span>
+<span class="nc" id="L71">      filename = AbstractDir.normalizePath(filenameSrc);</span>
+<span class="nc" id="L72">      filename = AbstractDir.pathFromURI(filename);</span>
+<span class="nc" id="L73">      logger.debug(&quot;File becomes: {}&quot;, filename);</span>
+    } else {
+<span class="nc" id="L75">      filename = filenameSrc;</span>
+    }
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (isSender) {</span>
+      try {
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (file == null) {</span>
+          try {
+<span class="nc" id="L81">            file = (R66File) session.getDir().setFile(filename, false);</span>
+<span class="nc" id="L82">          } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L83">            logger.warn(&quot;File not placed in normal directory&quot; + &quot; : {}&quot;,</span>
+<span class="nc" id="L84">                        e.getMessage());</span>
+            // file is not under normal base directory, so is external
+            // File should already exist but can be using special code ('*?')
+<span class="nc" id="L87">            file = session.getDir().setFileNoCheck(filename);</span>
+<span class="nc" id="L88">          }</span>
+        }
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (isThrough) {</span>
+          // no test on file since it does not really exist
+<span class="nc" id="L92">          logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        } else if (!file.canRead()) {</span>
+<span class="nc" id="L94">          logger.debug(</span>
+              &quot;File {} cannot be read, so try external from &quot; + filename, file);
+          // file is not under normal base directory, so is external
+          // File should already exist but cannot use special code ('*?')
+<span class="nc" id="L98">          final R66File file2 =</span>
+<span class="nc" id="L99">              new R66File(session, session.getDir(), filename);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">          if (!file2.canRead()) {</span>
+<span class="nc" id="L101">            throw new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L102">                &quot;File cannot be read: &quot; + file.getTrueFile().getAbsolutePath());</span>
+          }
+<span class="nc" id="L104">          file = file2;</span>
+        }
+<span class="nc" id="L106">      } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L107">        throw new OpenR66RunnerErrorException(e);</span>
+<span class="nc" id="L108">      }</span>
+    } else {
+      // not sender so file is just registered as is but no test of existence
+<span class="nc" id="L111">      file = new R66File(session, session.getDir(), filename);</span>
+    }
+<span class="nc" id="L113">    return file;</span>
+  }
+
+  /**
+   * @param buffer
+   * @param size
+   * @param algo for packet only
+   * @param digestGlobal
+   *
+   * @return the hash from the given Buffer
+   */
+  public static byte[] getHash(final byte[] buffer, final int size,
+                               final DigestAlgo algo,
+                               final FilesystemBasedDigest digestGlobal) {
+<span class="nc bnc" id="L127" title="All 4 branches missed.">    if (buffer == null || size == 0) {</span>
+<span class="nc" id="L128">      return EMPTY_ARRAY;</span>
+    }
+    final byte[] newkey;
+    try {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (digestGlobal == null) {</span>
+<span class="nc" id="L133">        newkey = FilesystemBasedDigest.getHash(buffer, size, algo);</span>
+      } else {
+<span class="nc" id="L135">        final FilesystemBasedDigest digestPacket =</span>
+            new FilesystemBasedDigest(algo);
+<span class="nc" id="L137">        digestPacket.Update(buffer, 0, size);</span>
+<span class="nc" id="L138">        newkey = digestPacket.Final();</span>
+<span class="nc" id="L139">        digestGlobal.Update(buffer, 0, size);</span>
+      }
+<span class="nc" id="L141">    } catch (final IOException e) {</span>
+<span class="nc" id="L142">      return EMPTY_ARRAY;</span>
+<span class="nc" id="L143">    } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L144">      return EMPTY_ARRAY;</span>
+<span class="nc" id="L145">    }</span>
+<span class="nc" id="L146">    return newkey;</span>
+  }
+
+  /**
+   * Compute global hash and local hash (if possible)
+   *
+   * @param digestGlobal
+   * @param digestLocal
+   * @param buffer
+   * @param size size of the buffer
+   */
+  public static void computeGlobalHash(final FilesystemBasedDigest digestGlobal,
+                                       final FilesystemBasedDigest digestLocal,
+                                       final byte[] buffer, final int size) {
+<span class="nc bnc" id="L160" title="All 4 branches missed.">    if (buffer == null || size == 0) {</span>
+<span class="nc" id="L161">      return;</span>
+    }
+<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (digestGlobal != null) {</span>
+<span class="nc" id="L164">      digestGlobal.Update(buffer, 0, size);</span>
+    }
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (digestLocal != null) {</span>
+<span class="nc" id="L167">      digestLocal.Update(buffer, 0, size);</span>
+    }
+<span class="nc" id="L169">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

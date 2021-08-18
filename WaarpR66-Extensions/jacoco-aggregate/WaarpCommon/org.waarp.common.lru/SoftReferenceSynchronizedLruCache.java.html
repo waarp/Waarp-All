@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SoftReferenceSynchronizedLruCache.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.lru</a> &gt; <span class="el_source">SoftReferenceSynchronizedLruCache.java</span></div><h1>SoftReferenceSynchronizedLruCache.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.lru;
+
+/**
+ * Modification of SynchronizedLruCache which uses SoftReference to store values
+ *
+ * @author Damian Momot
+ */
+public class SoftReferenceSynchronizedLruCache&lt;K, V&gt;
+    extends SynchronizedLruCache&lt;K, V&gt; {
+
+  public SoftReferenceSynchronizedLruCache(final int capacity, final long ttl,
+                                           final int initialCapacity,
+                                           final float loadFactor) {
+<span class="nc" id="L33">    super(capacity, ttl, initialCapacity, loadFactor);</span>
+<span class="nc" id="L34">  }</span>
+
+  public SoftReferenceSynchronizedLruCache(final int capacity, final long ttl,
+                                           final int initialCapacity) {
+<span class="nc" id="L38">    super(capacity, ttl, initialCapacity);</span>
+<span class="nc" id="L39">  }</span>
+
+  public SoftReferenceSynchronizedLruCache(final int capacity, final long ttl) {
+<span class="nc" id="L42">    super(capacity, ttl);</span>
+<span class="nc" id="L43">  }</span>
+
+  @Override
+  protected final InterfaceLruCacheEntry&lt;V&gt; createEntry(final V value,
+                                                        final long ttl) {
+<span class="nc" id="L48">    return new SoftReferenceCacheEntry&lt;V&gt;(value, ttl);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

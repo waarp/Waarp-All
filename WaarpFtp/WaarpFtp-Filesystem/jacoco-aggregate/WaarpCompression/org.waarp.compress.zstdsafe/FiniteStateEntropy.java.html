@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FiniteStateEntropy.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Filesystem</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdsafe</a> &gt; <span class="el_source">FiniteStateEntropy.java</span></div><h1>FiniteStateEntropy.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdsafe;
+
+import static org.waarp.compress.zstdsafe.BitInputStream.*;
+import static org.waarp.compress.zstdsafe.Constants.*;
+import static org.waarp.compress.zstdsafe.UnsafeUtil.*;
+import static org.waarp.compress.zstdsafe.Util.*;
+
+class FiniteStateEntropy {
+  public static final int MAX_SYMBOL = 255;
+  public static final int MAX_TABLE_LOG = 12;
+  public static final int MIN_TABLE_LOG = 5;
+
+<span class="nc" id="L46">  private static final int[] REST_TO_BEAT =</span>
+      new int[] { 0, 473195, 504333, 520860, 550000, 700000, 750000, 830000 };
+  private static final short UNASSIGNED = -2;
+  public static final String OUTPUT_BUFFER_TOO_SMALL =
+      &quot;Output buffer too small&quot;;
+
+  private FiniteStateEntropy() {
+  }
+
+  public static int decompress(final FiniteStateEntropy.Table table,
+                               final byte[] inputBase, final int inputAddress,
+                               final int inputLimit,
+                               final byte[] outputBuffer) {
+<span class="nc" id="L59">    final int outputAddress = 0;</span>
+<span class="nc" id="L60">    final int outputLimit = outputAddress + outputBuffer.length;</span>
+
+<span class="nc" id="L62">    int output = outputAddress;</span>
+
+    // initialize bit stream
+<span class="nc" id="L65">    final BitInputStream.Initializer initializer =</span>
+        new BitInputStream.Initializer(inputBase, inputAddress, inputLimit);
+<span class="nc" id="L67">    initializer.initialize();</span>
+<span class="nc" id="L68">    int bitsConsumed = initializer.getBitsConsumed();</span>
+<span class="nc" id="L69">    int currentAddress = initializer.getCurrentAddress();</span>
+<span class="nc" id="L70">    long bits = initializer.getBits();</span>
+
+    // initialize first FSE stream
+<span class="nc" id="L73">    int state1 = (int) peekBits(bitsConsumed, bits, table.log2Size);</span>
+<span class="nc" id="L74">    bitsConsumed += table.log2Size;</span>
+
+<span class="nc" id="L76">    BitInputStream.Loader loader =</span>
+        new BitInputStream.Loader(inputBase, inputAddress, currentAddress, bits,
+                                  bitsConsumed);
+<span class="nc" id="L79">    loader.load();</span>
+<span class="nc" id="L80">    bits = loader.getBits();</span>
+<span class="nc" id="L81">    bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L82">    currentAddress = loader.getCurrentAddress();</span>
+
+    // initialize second FSE stream
+<span class="nc" id="L85">    int state2 = (int) peekBits(bitsConsumed, bits, table.log2Size);</span>
+<span class="nc" id="L86">    bitsConsumed += table.log2Size;</span>
+
+<span class="nc" id="L88">    loader =</span>
+        new BitInputStream.Loader(inputBase, inputAddress, currentAddress, bits,
+                                  bitsConsumed);
+<span class="nc" id="L91">    loader.load();</span>
+<span class="nc" id="L92">    bits = loader.getBits();</span>
+<span class="nc" id="L93">    bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L94">    currentAddress = loader.getCurrentAddress();</span>
+
+<span class="nc" id="L96">    final byte[] symbols = table.symbol;</span>
+<span class="nc" id="L97">    final byte[] numbersOfBits = table.numberOfBits;</span>
+<span class="nc" id="L98">    final int[] newStates = table.newState;</span>
+
+    // decode 4 symbols per loop
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    while (output &lt;= outputLimit - 4) {</span>
+      int numberOfBits;
+
+<span class="nc" id="L104">      outputBuffer[output] = symbols[state1];</span>
+<span class="nc" id="L105">      numberOfBits = numbersOfBits[state1];</span>
+<span class="nc" id="L106">      state1 = (int) (newStates[state1] +</span>
+<span class="nc" id="L107">                      peekBits(bitsConsumed, bits, numberOfBits));</span>
+<span class="nc" id="L108">      bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L110">      outputBuffer[output + 1] = symbols[state2];</span>
+<span class="nc" id="L111">      numberOfBits = numbersOfBits[state2];</span>
+<span class="nc" id="L112">      state2 = (int) (newStates[state2] +</span>
+<span class="nc" id="L113">                      peekBits(bitsConsumed, bits, numberOfBits));</span>
+<span class="nc" id="L114">      bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L116">      outputBuffer[output + 2] = symbols[state1];</span>
+<span class="nc" id="L117">      numberOfBits = numbersOfBits[state1];</span>
+<span class="nc" id="L118">      state1 = (int) (newStates[state1] +</span>
+<span class="nc" id="L119">                      peekBits(bitsConsumed, bits, numberOfBits));</span>
+<span class="nc" id="L120">      bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L122">      outputBuffer[output + 3] = symbols[state2];</span>
+<span class="nc" id="L123">      numberOfBits = numbersOfBits[state2];</span>
+<span class="nc" id="L124">      state2 = (int) (newStates[state2] +</span>
+<span class="nc" id="L125">                      peekBits(bitsConsumed, bits, numberOfBits));</span>
+<span class="nc" id="L126">      bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L128">      output += SIZE_OF_INT;</span>
+
+<span class="nc" id="L130">      loader =</span>
+          new BitInputStream.Loader(inputBase, inputAddress, currentAddress,
+                                    bits, bitsConsumed);
+<span class="nc" id="L133">      final boolean done = loader.load();</span>
+<span class="nc" id="L134">      bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L135">      bits = loader.getBits();</span>
+<span class="nc" id="L136">      currentAddress = loader.getCurrentAddress();</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L138">        break;</span>
+      }
+<span class="nc" id="L140">    }</span>
+
+    while (true) {
+<span class="nc bnc" id="L143" title="All 2 branches missed.">      verify(output &lt;= outputLimit - 2, inputAddress,</span>
+             &quot;Output buffer is too small&quot;);
+<span class="nc" id="L145">      outputBuffer[output++] = symbols[state1];</span>
+<span class="nc" id="L146">      final int numberOfBits = numbersOfBits[state1];</span>
+<span class="nc" id="L147">      state1 = (int) (newStates[state1] +</span>
+<span class="nc" id="L148">                      peekBits(bitsConsumed, bits, numberOfBits));</span>
+<span class="nc" id="L149">      bitsConsumed += numberOfBits;</span>
+
+<span class="nc" id="L151">      loader =</span>
+          new BitInputStream.Loader(inputBase, inputAddress, currentAddress,
+                                    bits, bitsConsumed);
+<span class="nc" id="L154">      loader.load();</span>
+<span class="nc" id="L155">      bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L156">      bits = loader.getBits();</span>
+<span class="nc" id="L157">      currentAddress = loader.getCurrentAddress();</span>
+
+<span class="nc bnc" id="L159" title="All 2 branches missed.">      if (loader.isOverflow()) {</span>
+<span class="nc" id="L160">        outputBuffer[output++] = symbols[state2];</span>
+<span class="nc" id="L161">        break;</span>
+      }
+
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      verify(output &lt;= outputLimit - 2, inputAddress,</span>
+             &quot;Output buffer is too small&quot;);
+<span class="nc" id="L166">      outputBuffer[output++] = symbols[state2];</span>
+<span class="nc" id="L167">      final int numberOfBits1 = numbersOfBits[state2];</span>
+<span class="nc" id="L168">      state2 = (int) (newStates[state2] +</span>
+<span class="nc" id="L169">                      peekBits(bitsConsumed, bits, numberOfBits1));</span>
+<span class="nc" id="L170">      bitsConsumed += numberOfBits1;</span>
+
+<span class="nc" id="L172">      loader =</span>
+          new BitInputStream.Loader(inputBase, inputAddress, currentAddress,
+                                    bits, bitsConsumed);
+<span class="nc" id="L175">      loader.load();</span>
+<span class="nc" id="L176">      bitsConsumed = loader.getBitsConsumed();</span>
+<span class="nc" id="L177">      bits = loader.getBits();</span>
+<span class="nc" id="L178">      currentAddress = loader.getCurrentAddress();</span>
+
+<span class="nc bnc" id="L180" title="All 2 branches missed.">      if (loader.isOverflow()) {</span>
+<span class="nc" id="L181">        outputBuffer[output++] = symbols[state1];</span>
+<span class="nc" id="L182">        break;</span>
+      }
+<span class="nc" id="L184">    }</span>
+
+<span class="nc" id="L186">    return output - outputAddress;</span>
+  }
+
+  public static int compress(final byte[] outputBase, final int outputAddress,
+                             final int outputSize, final byte[] input,
+                             final int inputSize,
+                             final FseCompressionTable table) {
+<span class="nc" id="L193">    return compress(outputBase, outputAddress, outputSize, input, 0, inputSize,</span>
+                    table);
+  }
+
+  public static int compress(final byte[] outputBase, final int outputAddress,
+                             final int outputSize, final byte[] inputBase,
+                             final int inputAddress, int inputSize,
+                             final FseCompressionTable table) {
+<span class="nc bnc" id="L201" title="All 2 branches missed.">    checkArgument(outputSize &gt;= SIZE_OF_LONG, OUTPUT_BUFFER_TOO_SMALL);</span>
+
+<span class="nc" id="L203">    int input = inputAddress + inputSize;</span>
+
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (inputSize &lt;= 2) {</span>
+<span class="nc" id="L206">      return 0;</span>
+    }
+
+<span class="nc" id="L209">    final BitOutputStream stream =</span>
+        new BitOutputStream(outputBase, outputAddress, outputSize);
+
+    int state1;
+    int state2;
+
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    if ((inputSize &amp; 1) != 0) {</span>
+<span class="nc" id="L216">      input--;</span>
+<span class="nc" id="L217">      state1 = table.begin(inputBase[input]);</span>
+
+<span class="nc" id="L219">      input--;</span>
+<span class="nc" id="L220">      state2 = table.begin(inputBase[input]);</span>
+
+<span class="nc" id="L222">      input--;</span>
+<span class="nc" id="L223">      state1 = table.encode(stream, state1, inputBase[input]);</span>
+
+<span class="nc" id="L225">      stream.flush();</span>
+    } else {
+<span class="nc" id="L227">      input--;</span>
+<span class="nc" id="L228">      state2 = table.begin(inputBase[input]);</span>
+
+<span class="nc" id="L230">      input--;</span>
+<span class="nc" id="L231">      state1 = table.begin(inputBase[input]);</span>
+    }
+
+    // join to mod 4
+<span class="nc" id="L235">    inputSize -= 2;</span>
+
+<span class="nc bnc" id="L237" title="All 2 branches missed.">    if ((inputSize &amp; 2) != 0) {  /* test bit 2 */</span>
+<span class="nc" id="L238">      input--;</span>
+<span class="nc" id="L239">      state2 = table.encode(stream, state2, inputBase[input]);</span>
+
+<span class="nc" id="L241">      input--;</span>
+<span class="nc" id="L242">      state1 = table.encode(stream, state1, inputBase[input]);</span>
+
+<span class="nc" id="L244">      stream.flush();</span>
+    }
+
+    // 2 or 4 encoding per loop
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    while (input &gt; inputAddress) {</span>
+<span class="nc" id="L249">      input--;</span>
+<span class="nc" id="L250">      state2 = table.encode(stream, state2, inputBase[input]);</span>
+
+<span class="nc" id="L252">      input--;</span>
+<span class="nc" id="L253">      state1 = table.encode(stream, state1, inputBase[input]);</span>
+
+<span class="nc" id="L255">      input--;</span>
+<span class="nc" id="L256">      state2 = table.encode(stream, state2, inputBase[input]);</span>
+
+<span class="nc" id="L258">      input--;</span>
+<span class="nc" id="L259">      state1 = table.encode(stream, state1, inputBase[input]);</span>
+
+<span class="nc" id="L261">      stream.flush();</span>
+    }
+
+<span class="nc" id="L264">    table.finish(stream, state2);</span>
+<span class="nc" id="L265">    table.finish(stream, state1);</span>
+
+<span class="nc" id="L267">    return stream.close();</span>
+  }
+
+  public static int optimalTableLog(final int maxTableLog, final int inputSize,
+                                    final int maxSymbol) {
+<span class="nc bnc" id="L272" title="All 2 branches missed.">    if (inputSize &lt;= 1) {</span>
+<span class="nc" id="L273">      throw new IllegalArgumentException(); // not supported. Use RLE instead</span>
+    }
+
+<span class="nc" id="L276">    int result = maxTableLog;</span>
+
+<span class="nc" id="L278">    result = Math.min(result, Util.highestBit((inputSize - 1)) -</span>
+                              2); // we may be able to reduce accuracy if input is small
+
+    // Need a minimum to safely represent all symbol values
+<span class="nc" id="L282">    result = Math.max(result, Util.minTableLog(inputSize, maxSymbol));</span>
+
+<span class="nc" id="L284">    result = Math.max(result, MIN_TABLE_LOG);</span>
+<span class="nc" id="L285">    result = Math.min(result, MAX_TABLE_LOG);</span>
+
+<span class="nc" id="L287">    return result;</span>
+  }
+
+  public static void normalizeCounts(final short[] normalizedCounts,
+                                     final int tableLog, final int[] counts,
+                                     final int total, final int maxSymbol) {
+<span class="nc bnc" id="L293" title="All 2 branches missed.">    checkArgument(tableLog &gt;= MIN_TABLE_LOG, &quot;Unsupported FSE table size&quot;);</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">    checkArgument(tableLog &lt;= MAX_TABLE_LOG, &quot;FSE table size too large&quot;);</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">    checkArgument(tableLog &gt;= Util.minTableLog(total, maxSymbol),</span>
+                  &quot;FSE table size too small&quot;);
+
+<span class="nc" id="L298">    final int scale = 62 - tableLog;</span>
+<span class="nc" id="L299">    final long step = (1L &lt;&lt; 62) / total;</span>
+<span class="nc" id="L300">    final long vstep = 1L &lt;&lt; (scale - 20);</span>
+
+<span class="nc" id="L302">    int stillToDistribute = 1 &lt;&lt; tableLog;</span>
+
+<span class="nc" id="L304">    int largest = 0;</span>
+<span class="nc" id="L305">    short largestProbability = 0;</span>
+<span class="nc" id="L306">    final int lowThreshold = total &gt;&gt;&gt; tableLog;</span>
+
+<span class="nc bnc" id="L308" title="All 2 branches missed.">    for (int symbol = 0; symbol &lt;= maxSymbol; symbol++) {</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">      if (counts[symbol] == total) {</span>
+<span class="nc" id="L310">        throw new IllegalArgumentException(); // TODO: should have been RLE-compressed by upper layers</span>
+      }
+<span class="nc bnc" id="L312" title="All 2 branches missed.">      if (counts[symbol] == 0) {</span>
+<span class="nc" id="L313">        normalizedCounts[symbol] = 0;</span>
+<span class="nc" id="L314">        continue;</span>
+      }
+<span class="nc bnc" id="L316" title="All 2 branches missed.">      if (counts[symbol] &lt;= lowThreshold) {</span>
+<span class="nc" id="L317">        normalizedCounts[symbol] = -1;</span>
+<span class="nc" id="L318">        stillToDistribute--;</span>
+      } else {
+<span class="nc" id="L320">        short probability = (short) ((counts[symbol] * step) &gt;&gt;&gt; scale);</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        if (probability &lt; 8) {</span>
+<span class="nc" id="L322">          final long restToBeat = vstep * REST_TO_BEAT[probability];</span>
+<span class="nc" id="L323">          final long delta =</span>
+              counts[symbol] * step - (((long) probability) &lt;&lt; scale);
+<span class="nc bnc" id="L325" title="All 2 branches missed.">          if (delta &gt; restToBeat) {</span>
+<span class="nc" id="L326">            probability++;</span>
+          }
+        }
+<span class="nc bnc" id="L329" title="All 2 branches missed.">        if (probability &gt; largestProbability) {</span>
+<span class="nc" id="L330">          largestProbability = probability;</span>
+<span class="nc" id="L331">          largest = symbol;</span>
+        }
+<span class="nc" id="L333">        normalizedCounts[symbol] = probability;</span>
+<span class="nc" id="L334">        stillToDistribute -= probability;</span>
+      }
+    }
+
+<span class="nc bnc" id="L338" title="All 2 branches missed.">    if (-stillToDistribute &gt;= (normalizedCounts[largest] &gt;&gt;&gt; 1)) {</span>
+      // corner case. Need another normalization method
+      // TODO size_t const errorCode = FSE_normalizeM2(normalizedCounter, tableLog, count, total, maxSymbolValue);
+<span class="nc" id="L341">      normalizeCounts2(normalizedCounts, tableLog, counts, total, maxSymbol);</span>
+    } else {
+<span class="nc" id="L343">      normalizedCounts[largest] += (short) stillToDistribute;</span>
+    }
+
+<span class="nc" id="L346">  }</span>
+
+  private static void normalizeCounts2(final short[] normalizedCounts,
+                                       final int tableLog, final int[] counts,
+                                       int total, final int maxSymbol) {
+<span class="nc" id="L351">    int distributed = 0;</span>
+
+<span class="nc" id="L353">    final int lowThreshold = total &gt;&gt;&gt;</span>
+                             tableLog; // minimum count below which frequency in the normalized table is &quot;too small&quot; (~ &lt; 1)
+<span class="nc" id="L355">    int lowOne = (total * 3) &gt;&gt;&gt; (tableLog +</span>
+                                  1); // 1.5 * lowThreshold. If count in (lowThreshold, lowOne] =&gt; assign frequency 1
+
+<span class="nc bnc" id="L358" title="All 2 branches missed.">    for (int i = 0; i &lt;= maxSymbol; i++) {</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">      if (counts[i] == 0) {</span>
+<span class="nc" id="L360">        normalizedCounts[i] = 0;</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">      } else if (counts[i] &lt;= lowThreshold) {</span>
+<span class="nc" id="L362">        normalizedCounts[i] = -1;</span>
+<span class="nc" id="L363">        distributed++;</span>
+<span class="nc" id="L364">        total -= counts[i];</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">      } else if (counts[i] &lt;= lowOne) {</span>
+<span class="nc" id="L366">        normalizedCounts[i] = 1;</span>
+<span class="nc" id="L367">        distributed++;</span>
+<span class="nc" id="L368">        total -= counts[i];</span>
+      } else {
+<span class="nc" id="L370">        normalizedCounts[i] = UNASSIGNED;</span>
+      }
+    }
+
+<span class="nc" id="L374">    final int normalizationFactor = 1 &lt;&lt; tableLog;</span>
+<span class="nc" id="L375">    int toDistribute = normalizationFactor - distributed;</span>
+
+<span class="nc bnc" id="L377" title="All 2 branches missed.">    if ((total / toDistribute) &gt; lowOne) {</span>
+      /* risk of rounding to zero */
+<span class="nc" id="L379">      lowOne = ((total * 3) / (toDistribute * 2));</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">      for (int i = 0; i &lt;= maxSymbol; i++) {</span>
+<span class="nc bnc" id="L381" title="All 4 branches missed.">        if ((normalizedCounts[i] == UNASSIGNED) &amp;&amp; (counts[i] &lt;= lowOne)) {</span>
+<span class="nc" id="L382">          normalizedCounts[i] = 1;</span>
+<span class="nc" id="L383">          distributed++;</span>
+<span class="nc" id="L384">          total -= counts[i];</span>
+        }
+      }
+<span class="nc" id="L387">      toDistribute = normalizationFactor - distributed;</span>
+    }
+
+<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (distributed == maxSymbol + 1) {</span>
+      // all values are pretty poor;
+      // probably incompressible data (should have already been detected);
+      // find max, then give all remaining points to max
+<span class="nc" id="L394">      int maxValue = 0;</span>
+<span class="nc" id="L395">      int maxCount = 0;</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">      for (int i = 0; i &lt;= maxSymbol; i++) {</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">        if (counts[i] &gt; maxCount) {</span>
+<span class="nc" id="L398">          maxValue = i;</span>
+<span class="nc" id="L399">          maxCount = counts[i];</span>
+        }
+      }
+<span class="nc" id="L402">      normalizedCounts[maxValue] += (short) toDistribute;</span>
+<span class="nc" id="L403">      return;</span>
+    }
+
+<span class="nc bnc" id="L406" title="All 2 branches missed.">    if (total == 0) {</span>
+      // all of the symbols were low enough for the lowOne or lowThreshold
+<span class="nc bnc" id="L408" title="All 2 branches missed.">      for (int i = 0; toDistribute &gt; 0; i = (i + 1) % (maxSymbol + 1)) {</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (normalizedCounts[i] &gt; 0) {</span>
+<span class="nc" id="L410">          toDistribute--;</span>
+<span class="nc" id="L411">          normalizedCounts[i]++;</span>
+        }
+      }
+<span class="nc" id="L414">      return;</span>
+    }
+
+    // TODO: simplify/document this code
+<span class="nc" id="L418">    final long vStepLog = 62 - tableLog;</span>
+<span class="nc" id="L419">    final long mid = (1L &lt;&lt; (vStepLog - 1)) - 1;</span>
+<span class="nc" id="L420">    final long rStep = (((1L &lt;&lt; vStepLog) * toDistribute) + mid) /</span>
+                       total;   /* scale on remaining */
+<span class="nc" id="L422">    long tmpTotal = mid;</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">    for (int i = 0; i &lt;= maxSymbol; i++) {</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">      if (normalizedCounts[i] == UNASSIGNED) {</span>
+<span class="nc" id="L425">        final long end = tmpTotal + (counts[i] * rStep);</span>
+<span class="nc" id="L426">        final int sStart = (int) (tmpTotal &gt;&gt;&gt; vStepLog);</span>
+<span class="nc" id="L427">        final int sEnd = (int) (end &gt;&gt;&gt; vStepLog);</span>
+<span class="nc" id="L428">        final int weight = sEnd - sStart;</span>
+
+<span class="nc bnc" id="L430" title="All 2 branches missed.">        if (weight &lt; 1) {</span>
+<span class="nc" id="L431">          throw new AssertionError();</span>
+        }
+<span class="nc" id="L433">        normalizedCounts[i] = (short) weight;</span>
+<span class="nc" id="L434">        tmpTotal = end;</span>
+      }
+    }
+
+<span class="nc" id="L438">  }</span>
+
+  public static int writeNormalizedCounts(final byte[] outputBase,
+                                          final int outputAddress,
+                                          final int outputSize,
+                                          final short[] normalizedCounts,
+                                          final int maxSymbol,
+                                          final int tableLog) {
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    checkArgument(tableLog &lt;= MAX_TABLE_LOG, &quot;FSE table too large&quot;);</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">    checkArgument(tableLog &gt;= MIN_TABLE_LOG, &quot;FSE table too small&quot;);</span>
+
+<span class="nc" id="L449">    int output = outputAddress;</span>
+<span class="nc" id="L450">    final int outputLimit = outputAddress + outputSize;</span>
+
+<span class="nc" id="L452">    final int tableSize = 1 &lt;&lt; tableLog;</span>
+
+<span class="nc" id="L454">    int bitCount = 0;</span>
+
+    // encode table size
+<span class="nc" id="L457">    int bitStream = (tableLog - MIN_TABLE_LOG);</span>
+<span class="nc" id="L458">    bitCount += 4;</span>
+
+<span class="nc" id="L460">    int remaining = tableSize + 1; // +1 for extra accuracy</span>
+<span class="nc" id="L461">    int threshold = tableSize;</span>
+<span class="nc" id="L462">    int tableBitCount = tableLog + 1;</span>
+
+<span class="nc" id="L464">    int symbol = 0;</span>
+
+<span class="nc" id="L466">    boolean previousIs0 = false;</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">    while (remaining &gt; 1) {</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">      if (previousIs0) {</span>
+        // From RFC 8478, section 4.1.1:
+        //   When a symbol has a probability of zero, it is followed by a 2-bit
+        //   repeat flag.  This repeat flag tells how many probabilities of zeroes
+        //   follow the current one.  It provides a number ranging from 0 to 3.
+        //   If it is a 3, another 2-bit repeat flag follows, and so on.
+<span class="nc" id="L474">        int start = symbol;</span>
+
+        // find run of symbols with count 0
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        while (normalizedCounts[symbol] == 0) {</span>
+<span class="nc" id="L478">          symbol++;</span>
+        }
+
+        // encode in batches if 8 repeat sequences in one shot (representing 24 symbols total)
+<span class="nc bnc" id="L482" title="All 2 branches missed.">        while (symbol &gt;= start + 24) {</span>
+<span class="nc" id="L483">          start += 24;</span>
+<span class="nc" id="L484">          bitStream |= (0xFFFF &lt;&lt; bitCount);</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">          checkArgument(output + SIZE_OF_SHORT &lt;= outputLimit,</span>
+                        OUTPUT_BUFFER_TOO_SMALL);
+
+<span class="nc" id="L488">          putShort(outputBase, output, (short) bitStream);</span>
+<span class="nc" id="L489">          output += SIZE_OF_SHORT;</span>
+
+          // flush now, so no need to increase bitCount by 16
+<span class="nc" id="L492">          bitStream &gt;&gt;&gt;= Short.SIZE;</span>
+        }
+
+        // encode remaining in batches of 3 symbols
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        while (symbol &gt;= start + 3) {</span>
+<span class="nc" id="L497">          start += 3;</span>
+<span class="nc" id="L498">          bitStream |= 0x3 &lt;&lt; bitCount;</span>
+<span class="nc" id="L499">          bitCount += 2;</span>
+        }
+
+        // encode tail
+<span class="nc" id="L503">        bitStream |= (symbol - start) &lt;&lt; bitCount;</span>
+<span class="nc" id="L504">        bitCount += 2;</span>
+
+        // flush bitstream if necessary
+<span class="nc bnc" id="L507" title="All 2 branches missed.">        if (bitCount &gt; 16) {</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">          checkArgument(output + SIZE_OF_SHORT &lt;= outputLimit,</span>
+                        OUTPUT_BUFFER_TOO_SMALL);
+
+<span class="nc" id="L511">          putShort(outputBase, output, (short) bitStream);</span>
+<span class="nc" id="L512">          output += SIZE_OF_SHORT;</span>
+
+<span class="nc" id="L514">          bitStream &gt;&gt;&gt;= Short.SIZE;</span>
+<span class="nc" id="L515">          bitCount -= Short.SIZE;</span>
+        }
+      }
+
+<span class="nc" id="L519">      int count = normalizedCounts[symbol++];</span>
+<span class="nc" id="L520">      final int max = (2 * threshold - 1) - remaining;</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">      remaining -= count &lt; 0? -count : count;</span>
+<span class="nc" id="L522">      count++;   /* +1 for extra accuracy */</span>
+<span class="nc bnc" id="L523" title="All 2 branches missed.">      if (count &gt;= threshold) {</span>
+<span class="nc" id="L524">        count += max;</span>
+      }
+<span class="nc" id="L526">      bitStream |= count &lt;&lt; bitCount;</span>
+<span class="nc" id="L527">      bitCount += tableBitCount;</span>
+<span class="nc bnc" id="L528" title="All 2 branches missed.">      bitCount -= (count &lt; max? 1 : 0);</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">      previousIs0 = (count == 1);</span>
+
+<span class="nc bnc" id="L531" title="All 2 branches missed.">      if (remaining &lt; 1) {</span>
+<span class="nc" id="L532">        throw new AssertionError();</span>
+      }
+
+<span class="nc bnc" id="L535" title="All 2 branches missed.">      while (remaining &lt; threshold) {</span>
+<span class="nc" id="L536">        tableBitCount--;</span>
+<span class="nc" id="L537">        threshold &gt;&gt;= 1;</span>
+      }
+
+      // flush bitstream if necessary
+<span class="nc bnc" id="L541" title="All 2 branches missed.">      if (bitCount &gt; 16) {</span>
+<span class="nc bnc" id="L542" title="All 2 branches missed.">        checkArgument(output + SIZE_OF_SHORT &lt;= outputLimit,</span>
+                      OUTPUT_BUFFER_TOO_SMALL);
+
+<span class="nc" id="L545">        putShort(outputBase, output, (short) bitStream);</span>
+<span class="nc" id="L546">        output += SIZE_OF_SHORT;</span>
+
+<span class="nc" id="L548">        bitStream &gt;&gt;&gt;= Short.SIZE;</span>
+<span class="nc" id="L549">        bitCount -= Short.SIZE;</span>
+      }
+<span class="nc" id="L551">    }</span>
+
+    // flush remaining bitstream
+<span class="nc bnc" id="L554" title="All 2 branches missed.">    checkArgument(output + SIZE_OF_SHORT &lt;= outputLimit,</span>
+                  OUTPUT_BUFFER_TOO_SMALL);
+<span class="nc" id="L556">    putShort(outputBase, output, (short) bitStream);</span>
+<span class="nc" id="L557">    output += (bitCount + 7) / 8;</span>
+
+<span class="nc bnc" id="L559" title="All 2 branches missed.">    checkArgument(symbol &lt;= maxSymbol + 1, &quot;Error&quot;); // TODO</span>
+
+<span class="nc" id="L561">    return output - outputAddress;</span>
+  }
+
+  public static final class Table {
+    int log2Size;
+    final int[] newState;
+    final byte[] symbol;
+    final byte[] numberOfBits;
+
+<span class="nc" id="L570">    public Table(final int log2Capacity) {</span>
+<span class="nc" id="L571">      final int capacity = 1 &lt;&lt; log2Capacity;</span>
+<span class="nc" id="L572">      newState = new int[capacity];</span>
+<span class="nc" id="L573">      symbol = new byte[capacity];</span>
+<span class="nc" id="L574">      numberOfBits = new byte[capacity];</span>
+<span class="nc" id="L575">    }</span>
+
+    public Table(final int log2Size, final int[] newState, final byte[] symbol,
+<span class="nc" id="L578">                 final byte[] numberOfBits) {</span>
+<span class="nc" id="L579">      final int size = 1 &lt;&lt; log2Size;</span>
+<span class="nc bnc" id="L580" title="All 6 branches missed.">      if (newState.length != size || symbol.length != size ||</span>
+          numberOfBits.length != size) {
+<span class="nc" id="L582">        throw new IllegalArgumentException(</span>
+            &quot;Expected arrays to match provided size&quot;);
+      }
+
+<span class="nc" id="L586">      this.log2Size = log2Size;</span>
+<span class="nc" id="L587">      this.newState = newState;</span>
+<span class="nc" id="L588">      this.symbol = symbol;</span>
+<span class="nc" id="L589">      this.numberOfBits = numberOfBits;</span>
+<span class="nc" id="L590">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

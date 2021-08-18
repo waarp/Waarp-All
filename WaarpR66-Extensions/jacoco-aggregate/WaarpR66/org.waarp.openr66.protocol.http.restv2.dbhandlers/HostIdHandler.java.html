@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HostIdHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.dbhandlers</a> &gt; <span class="el_source">HostIdHandler.java</span></div><h1>HostIdHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.dbhandlers;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.cdap.http.HttpResponder;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.TransferDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.data.DbTaskRunner.Columns;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.http.restv2.converters.HostConverter;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+import static javax.ws.rs.core.MediaType.*;
+import static org.waarp.common.role.RoleDefault.ROLE.HOST;
+import static org.waarp.common.role.RoleDefault.ROLE.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * This is the {@link AbstractRestDbHandler} handling all requests made on the
+ * single host REST entry point.
+ */
+@Path(HOST_ID_HANDLER_URI)
+public class HostIdHandler extends AbstractRestDbHandler {
+
+  /**
+   * The content of the 'Allow' header sent when an 'OPTIONS' request is made
+   * on the handler.
+   */
+  private static final HttpHeaders OPTIONS_HEADERS;
+
+  static {
+<span class="nc" id="L73">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="nc" id="L74">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L75">    allow.add(HttpMethod.GET);</span>
+<span class="nc" id="L76">    allow.add(HttpMethod.PUT);</span>
+<span class="nc" id="L77">    allow.add(HttpMethod.DELETE);</span>
+<span class="nc" id="L78">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L79">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="nc" id="L80">  }</span>
+
+  /**
+   * Initializes the handler with the given CRUD mask.
+   *
+   * @param crud the CRUD mask for this handler
+   */
+  public HostIdHandler(final byte crud) {
+<span class="nc" id="L88">    super(crud);</span>
+<span class="nc" id="L89">  }</span>
+
+  /**
+   * Method called to retrieve a host entry from the database with the id in
+   * the request URI.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param id the requested host's name
+   */
+  @GET
+  @Consumes(WILDCARD)
+  @RequiredRole(READONLY)
+  public final void getHost(final HttpRequest request,
+                            final HttpResponder responder,
+                            @PathParam(URI_ID) final String id) {
+<span class="nc" id="L106">    checkSanity(id);</span>
+<span class="nc" id="L107">    HostDAO hostDAO = null;</span>
+    try {
+<span class="nc" id="L109">      hostDAO = DAO_FACTORY.getHostDAO(true);</span>
+<span class="nc" id="L110">      final Host host = hostDAO.select(id);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (host == null) {</span>
+<span class="nc" id="L112">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L113">        return;</span>
+      }
+<span class="nc" id="L115">      final ObjectNode responseObject = HostConverter.hostToNode(host);</span>
+<span class="nc" id="L116">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L117">      responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L118">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L119">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L120">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L121">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L123">      DAOFactory.closeDAO(hostDAO);</span>
+    }
+<span class="nc" id="L125">  }</span>
+
+  /**
+   * Method called to update the host entry with the given id. The entry is
+   * replaced by the one in the request's
+   * body.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param id the requested host's name
+   */
+  @PUT
+  @Consumes(APPLICATION_JSON)
+  @RequiredRole(HOST)
+  public final void updateHost(final HttpRequest request,
+                               final HttpResponder responder,
+                               @PathParam(URI_ID) final String id) {
+<span class="nc" id="L143">    checkSanity(id);</span>
+<span class="nc" id="L144">    HostDAO hostDAO = null;</span>
+    try {
+<span class="nc" id="L146">      hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="nc" id="L147">      final Host oldHost = hostDAO.select(id);</span>
+
+<span class="nc bnc" id="L149" title="All 2 branches missed.">      if (oldHost == null) {</span>
+<span class="nc" id="L150">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L151">        return;</span>
+      }
+
+<span class="nc" id="L154">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L155">      checkSanity(requestObject);</span>
+<span class="nc" id="L156">      final Host newHost =</span>
+<span class="nc" id="L157">          HostConverter.nodeToUpdatedHost(requestObject, oldHost);</span>
+
+<span class="nc" id="L159">      hostDAO.update(newHost);</span>
+
+<span class="nc" id="L161">      final ObjectNode responseObject = HostConverter.hostToNode(newHost);</span>
+<span class="nc" id="L162">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L163">      responder.sendJson(CREATED, responseText);</span>
+
+<span class="nc" id="L165">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L166">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L167">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L168">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L170">      DAOFactory.closeDAO(hostDAO);</span>
+    }
+<span class="nc" id="L172">  }</span>
+
+  /**
+   * Method called to delete a host entry from the database.
+   * Note that if the host is used in any related Transfers, or if the host
+   * is the current host, the delete
+   * cannot be achieved and NOT_FOUND will be returned.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param id the requested host's name
+   */
+  @DELETE
+  @Consumes(WILDCARD)
+  @RequiredRole(HOST)
+  public final void deleteHost(final HttpRequest request,
+                               final HttpResponder responder,
+                               @PathParam(URI_ID) final String id) {
+<span class="nc" id="L191">    checkSanity(id);</span>
+<span class="nc" id="L192">    HostDAO hostDAO = null;</span>
+    try {
+<span class="nc" id="L194">      hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="nc" id="L195">      final Host host = hostDAO.select(id);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">      if (host == null) {</span>
+<span class="nc" id="L197">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        if (Configuration.configuration.getHostId().equals(id) ||</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            Configuration.configuration.getHostSslId().equals(id)) {</span>
+<span class="nc" id="L201">          responder.sendStatus(NOT_FOUND);</span>
+        } else {
+<span class="nc" id="L203">          TransferDAO transferDAO = null;</span>
+          try {
+<span class="nc" id="L205">            transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L206">            final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc" id="L207">            Filter filter = new Filter(Columns.REQUESTED.name(), &quot;=&quot;, id);</span>
+<span class="nc" id="L208">            filters.add(filter);</span>
+<span class="nc" id="L209">            long nb = transferDAO.count(filters);</span>
+<span class="nc" id="L210">            filters.clear();</span>
+<span class="nc" id="L211">            filter = new Filter(Columns.REQUESTER.name(), &quot;=&quot;, id);</span>
+<span class="nc" id="L212">            filters.add(filter);</span>
+<span class="nc" id="L213">            nb += transferDAO.count(filters);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">            if (nb &gt; 0) {</span>
+<span class="nc" id="L215">              responder.sendStatus(NOT_FOUND);</span>
+            }
+<span class="nc" id="L217">          } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L218">            throw new InternalServerErrorException(e);</span>
+          } finally {
+<span class="nc" id="L220">            DAOFactory.closeDAO(transferDAO);</span>
+          }
+        }
+<span class="nc" id="L223">        hostDAO.delete(host);</span>
+<span class="nc" id="L224">        responder.sendStatus(NO_CONTENT);</span>
+      }
+<span class="nc" id="L226">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L227">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L228">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L229">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L231">      DAOFactory.closeDAO(hostDAO);</span>
+    }
+<span class="nc" id="L233">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on this entry
+   * point. The HTTP methods are sent as
+   * an array in the reply's headers.
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param id the requested host's name
+   */
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder,
+                            @PathParam(URI_ID) final String id) {
+<span class="nc" id="L251">    checkSanity(id);</span>
+<span class="nc" id="L252">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L253">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

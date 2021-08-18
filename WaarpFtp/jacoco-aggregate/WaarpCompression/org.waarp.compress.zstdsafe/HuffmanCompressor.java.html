@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HuffmanCompressor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCompression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdsafe</a> &gt; <span class="el_source">HuffmanCompressor.java</span></div><h1>HuffmanCompressor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdsafe;
+
+import static org.waarp.compress.zstdsafe.Constants.*;
+import static org.waarp.compress.zstdsafe.UnsafeUtil.*;
+
+class HuffmanCompressor {
+  private HuffmanCompressor() {
+  }
+
+  public static int compress4streams(final byte[] outputBase,
+                                     final int outputAddress,
+                                     final int outputSize,
+                                     final byte[] inputBase,
+                                     final int inputAddress,
+                                     final int inputSize,
+                                     final HuffmanCompressionTable table) {
+<span class="nc" id="L50">    int input = inputAddress;</span>
+<span class="nc" id="L51">    final int inputLimit = inputAddress + inputSize;</span>
+<span class="nc" id="L52">    int output = outputAddress;</span>
+<span class="nc" id="L53">    final int outputLimit = outputAddress + outputSize;</span>
+
+<span class="nc" id="L55">    final int segmentSize = (inputSize + 3) / 4;</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (outputSize &lt;</span>
+        6 /* jump table */ + 1 /* first stream */ + 1 /* second stream */ +
+        1 /* third stream */ +
+        8 /* 8 bytes minimum needed by the bitstream encoder */) {
+<span class="nc" id="L61">      return 0; // minimum space to compress successfully</span>
+    }
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (inputSize &lt;= 6 + 1 + 1 + 1) { // jump table + one byte per stream</span>
+<span class="nc" id="L65">      return 0;  // no saving possible: input too small</span>
+    }
+
+<span class="nc" id="L68">    output += SIZE_OF_SHORT + SIZE_OF_SHORT + SIZE_OF_SHORT; // jump table</span>
+
+    int compressedSize;
+
+    // first segment
+<span class="nc" id="L73">    compressedSize =</span>
+<span class="nc" id="L74">        compressSingleStream(outputBase, output, outputLimit - output,</span>
+                             inputBase, input, segmentSize, table);
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (compressedSize == 0) {</span>
+<span class="nc" id="L77">      return 0;</span>
+    }
+<span class="nc" id="L79">    putShort(outputBase, outputAddress, (short) compressedSize);</span>
+<span class="nc" id="L80">    output += compressedSize;</span>
+<span class="nc" id="L81">    input += segmentSize;</span>
+
+    // second segment
+<span class="nc" id="L84">    compressedSize =</span>
+<span class="nc" id="L85">        compressSingleStream(outputBase, output, outputLimit - output,</span>
+                             inputBase, input, segmentSize, table);
+<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (compressedSize == 0) {</span>
+<span class="nc" id="L88">      return 0;</span>
+    }
+<span class="nc" id="L90">    putShort(outputBase, outputAddress + SIZE_OF_SHORT, (short) compressedSize);</span>
+<span class="nc" id="L91">    output += compressedSize;</span>
+<span class="nc" id="L92">    input += segmentSize;</span>
+
+    // third segment
+<span class="nc" id="L95">    compressedSize =</span>
+<span class="nc" id="L96">        compressSingleStream(outputBase, output, outputLimit - output,</span>
+                             inputBase, input, segmentSize, table);
+<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (compressedSize == 0) {</span>
+<span class="nc" id="L99">      return 0;</span>
+    }
+<span class="nc" id="L101">    putShort(outputBase, outputAddress + SIZE_OF_SHORT + SIZE_OF_SHORT,</span>
+             (short) compressedSize);
+<span class="nc" id="L103">    output += compressedSize;</span>
+<span class="nc" id="L104">    input += segmentSize;</span>
+
+    // fourth segment
+<span class="nc" id="L107">    compressedSize =</span>
+<span class="nc" id="L108">        compressSingleStream(outputBase, output, outputLimit - output,</span>
+                             inputBase, input, inputLimit - input, table);
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    if (compressedSize == 0) {</span>
+<span class="nc" id="L111">      return 0;</span>
+    }
+<span class="nc" id="L113">    output += compressedSize;</span>
+
+<span class="nc" id="L115">    return output - outputAddress;</span>
+  }
+
+  public static int compressSingleStream(final byte[] outputBase,
+                                         final int outputAddress,
+                                         final int outputSize,
+                                         final byte[] inputBase,
+                                         final int inputAddress,
+                                         final int inputSize,
+                                         final HuffmanCompressionTable table) {
+<span class="nc" id="L125">    final BitOutputStream bitstream =</span>
+        new BitOutputStream(outputBase, outputAddress, outputSize);
+
+<span class="nc" id="L128">    int n = inputSize &amp; ~3; // join to mod 4</span>
+
+<span class="nc bnc" id="L130" title="All 4 branches missed.">    switch (inputSize &amp; 3) {</span>
+      case 3:
+<span class="nc" id="L132">        table.encodeSymbol(bitstream, inputBase[inputAddress + n + 2] &amp; 0xFF);</span>
+        // fall-through
+      case 2:
+<span class="nc" id="L135">        table.encodeSymbol(bitstream, inputBase[inputAddress + n + 1] &amp; 0xFF);</span>
+        // fall-through
+      case 1:
+<span class="nc" id="L138">        table.encodeSymbol(bitstream, inputBase[inputAddress + n] &amp; 0xFF);</span>
+<span class="nc" id="L139">        bitstream.flush();</span>
+        // fall-through
+      case 0: /* fall-through */
+      default:
+        break;
+    }
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    for (; n &gt; 0; n -= 4) {  // note: n &amp; 3 == 0 at this stage</span>
+<span class="nc" id="L147">      table.encodeSymbol(bitstream, inputBase[inputAddress + n - 1] &amp; 0xFF);</span>
+<span class="nc" id="L148">      table.encodeSymbol(bitstream, inputBase[inputAddress + n - 2] &amp; 0xFF);</span>
+<span class="nc" id="L149">      table.encodeSymbol(bitstream, inputBase[inputAddress + n - 3] &amp; 0xFF);</span>
+<span class="nc" id="L150">      table.encodeSymbol(bitstream, inputBase[inputAddress + n - 4] &amp; 0xFF);</span>
+<span class="nc" id="L151">      bitstream.flush();</span>
+    }
+
+<span class="nc" id="L154">    return bitstream.close();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

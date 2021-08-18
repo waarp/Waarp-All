@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpLoggerFactory.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.logging</a> &gt; <span class="el_source">WaarpLoggerFactory.java</span></div><h1>WaarpLoggerFactory.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2012 The Netty Project
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the &quot;License&quot;); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+package org.waarp.common.logging;
+
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.JdkLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
+import org.waarp.common.utility.SystemPropertyUtil;
+
+/**
+ * Creates an {@link WaarpLogger} or changes the default factory
+ * implementation.
+ * This factory allows you to
+ * choose what logging framework Waarp should use. The default factory is
+ * {@link
+ * WaarpSlf4JLoggerFactory}. If
+ * SLF4J is not available, {@link WaarpSlf4JLoggerFactory} is used. If Log4J is
+ * not available,
+ * {@link WaarpJdkLoggerFactory} is used. You can change it to your preferred
+ * logging framework before other
+ * Waarp classes are loaded:
+ *
+ * &lt;pre&gt;
+ * {@link WaarpLoggerFactory}.setDefaultFactory(new {@link WaarpSlf4JLoggerFactory}());
+ * &lt;/pre&gt;
+ * &lt;p&gt;
+ * Please note that the new default factory is effective only for the classes
+ * which were loaded after the
+ * default factory is changed. Therefore, {@link #setDefaultFactory(WaarpLoggerFactory)}
+ * should be called as
+ * early as possible and shouldn't be called more than once.
+ */
+public abstract class WaarpLoggerFactory {
+  private static volatile WaarpLoggerFactory defaultFactory;
+  protected static WaarpLogLevel currentLevel;
+<span class="nc" id="L66">  static String localName = null;</span>
+
+  static {
+<span class="nc" id="L69">    SystemPropertyUtil.isFileEncodingCorrect();</span>
+<span class="nc" id="L70">    final String name = WaarpLoggerFactory.class.getName();</span>
+    WaarpLoggerFactory f;
+    try {
+<span class="nc" id="L73">      f = new WaarpSlf4JLoggerFactory(true);//NOSONAR</span>
+<span class="nc" id="L74">      f.newInstance(name)</span>
+<span class="nc" id="L75">       .debug(&quot;Using Logback (SLF4J) as the default logging framework&quot;);</span>
+<span class="nc" id="L76">      defaultFactory = f;</span>
+<span class="nc" id="L77">    } catch (final Throwable t1) {</span>
+<span class="nc" id="L78">      f = new WaarpJdkLoggerFactory(null);//NOSONAR</span>
+<span class="nc" id="L79">      f.newInstance(name)</span>
+<span class="nc" id="L80">       .debug(&quot;Using java.util.logging as the default logging framework&quot;, t1);</span>
+<span class="nc" id="L81">    }</span>
+
+<span class="nc" id="L83">    defaultFactory = f;</span>
+<span class="nc" id="L84">  }</span>
+
+  /**
+   * Returns the default factory. The initial default factory is {@link
+   * WaarpJdkLoggerFactory}.
+   *
+   * @return the current default Factory
+   */
+  public static WaarpLoggerFactory getDefaultFactory() {
+<span class="nc" id="L93">    return defaultFactory;</span>
+  }
+
+  /**
+   * Changes the default factory if not already the same type, or just change
+   * the level
+   *
+   * @param factory
+   */
+  public static void setDefaultFactoryIfNotSame(
+      final WaarpLoggerFactory factory) {
+<span class="nc" id="L104">    final WaarpLoggerFactory current = getDefaultFactory();</span>
+<span class="nc bnc" id="L105" title="All 4 branches missed.">    if (current != null &amp;&amp; current.getClass() == factory.getClass()) {</span>
+<span class="nc" id="L106">      current.seLevelSpecific(factory.getLevelSpecific());</span>
+    } else {
+<span class="nc" id="L108">      setDefaultFactory(factory);</span>
+    }
+<span class="nc" id="L110">  }</span>
+
+  /**
+   * Changes the default factory.
+   *
+   * @param factory
+   */
+  public static void setDefaultFactory(final WaarpLoggerFactory factory) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (factory == null) {</span>
+<span class="nc" id="L119">      throw new IllegalArgumentException(&quot;defaultFactory&quot;);</span>
+    }
+<span class="nc" id="L121">    WaarpLoggerFactory.defaultFactory = factory;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (factory instanceof WaarpJdkLoggerFactory) {</span>
+<span class="nc" id="L123">      InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    } else if (factory instanceof WaarpSlf4JLoggerFactory) {</span>
+<span class="nc" id="L125">      InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);</span>
+    }
+<span class="nc" id="L127">    factory.seLevelSpecific(factory.getLevelSpecific());</span>
+<span class="nc" id="L128">  }</span>
+
+  /**
+   * Creates a new logger instance with the name of the specified class.
+   *
+   * @param clazz
+   *
+   * @return the logger instance
+   */
+  public static WaarpLogger getInstance(final Class&lt;?&gt; clazz) {
+<span class="nc" id="L138">    return getInstance(clazz.getName());</span>
+  }
+
+  /**
+   * Creates a new logger instance with the specified name.
+   *
+   * @param name
+   *
+   * @return the logger instance
+   */
+  public static WaarpLogger getInstance(final String name) {
+<span class="nc" id="L149">    return getDefaultFactory().newInstance(name);</span>
+  }
+
+  /**
+   * Creates a new logger instance with the name of the specified class.
+   *
+   * @param clazz
+   *
+   * @return the logger instance
+   */
+  public static WaarpLogger getLogger(final Class&lt;?&gt; clazz) {
+<span class="nc" id="L160">    return getInstance(clazz.getName());</span>
+  }
+
+  /**
+   * Creates a new logger instance with the specified name.
+   *
+   * @param name
+   *
+   * @return the logger instance
+   */
+  public static WaarpLogger getLogger(final String name) {
+<span class="nc" id="L171">    return getDefaultFactory().newInstance(name);</span>
+  }
+
+  /**
+   * @param level
+   */
+  public static void setLogLevel(final WaarpLogLevel level) {
+<span class="nc" id="L178">    setInternalLogLevel(level);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (currentLevel != null) {</span>
+<span class="nc" id="L180">      getDefaultFactory().seLevelSpecific(currentLevel);</span>
+    }
+<span class="nc" id="L182">  }</span>
+
+  public static WaarpLogLevel getLogLevel() {
+<span class="nc" id="L185">    return currentLevel;</span>
+  }
+
+  protected static synchronized void setInternalLogLevel(
+      final WaarpLogLevel level) {
+<span class="nc bnc" id="L190" title="All 2 branches missed.">    if (level != null) {</span>
+<span class="nc" id="L191">      currentLevel = level;</span>
+    }
+<span class="nc" id="L193">  }</span>
+
+  /**
+   * @param level
+   */
+<span class="nc" id="L198">  protected WaarpLoggerFactory(final WaarpLogLevel level) {</span>
+<span class="nc" id="L199">    setInternalLogLevel(level);</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">    if (currentLevel == null) {</span>
+<span class="nc" id="L201">      setInternalLogLevel(getLevelSpecific());</span>
+    }
+<span class="nc" id="L203">  }</span>
+
+  /**
+   * @param localNameNew if set, will be added to each line of log
+   */
+  public static void setLocalName(final String localNameNew) {
+<span class="nc" id="L209">    localName = localNameNew;</span>
+<span class="nc" id="L210">  }</span>
+
+  /**
+   * @return should return the current Level for the specific implementation
+   */
+  protected abstract WaarpLogLevel getLevelSpecific();
+
+  /**
+   * Set the level for the specific implementation
+   *
+   * @param level
+   */
+  protected abstract void seLevelSpecific(WaarpLogLevel level);
+
+  /**
+   * Creates a new logger instance with the specified name.
+   */
+  protected abstract WaarpLogger newInstance(String name);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

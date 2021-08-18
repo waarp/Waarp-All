@@ -59,8 +59,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
   /**
    * Internal Logger
    */
-<span class="fc" id="L62">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L63">      WaarpLoggerFactory.getLogger(DataNetworkHandler.class);</span>
+<span class="nc" id="L62">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L63">      WaarpLoggerFactory.getLogger(DataNetworkHandler.class);</span>
 
   /**
    * Business Data Handler
@@ -95,7 +95,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
   /**
    * The associated FtpTransfer
    */
-  private volatile FtpTransfer ftpTransfer;
+  private FtpTransfer ftpTransfer;
 
   /**
    * Constructor from DataBusinessHandler
@@ -106,12 +106,12 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
    */
   public DataNetworkHandler(final FtpConfiguration configuration,
                             final DataBusinessHandler handler,
-<span class="fc" id="L109">                            final boolean active) {</span>
-<span class="fc" id="L110">    this.configuration = configuration;</span>
-<span class="fc" id="L111">    dataBusinessHandler = handler;</span>
-<span class="fc" id="L112">    dataBusinessHandler.setDataNetworkHandler(this);</span>
-<span class="fc" id="L113">    isActive = active;</span>
-<span class="fc" id="L114">  }</span>
+<span class="nc" id="L109">                            final boolean active) {</span>
+<span class="nc" id="L110">    this.configuration = configuration;</span>
+<span class="nc" id="L111">    dataBusinessHandler = handler;</span>
+<span class="nc" id="L112">    dataBusinessHandler.setDataNetworkHandler(this);</span>
+<span class="nc" id="L113">    isActive = active;</span>
+<span class="nc" id="L114">  }</span>
 
   /**
    * @return the dataBusinessHandler
@@ -120,23 +120,23 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
    */
   public DataBusinessHandler getDataBusinessHandler()
       throws FtpNoConnectionException {
-<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (dataBusinessHandler == null) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    if (dataBusinessHandler == null) {</span>
 <span class="nc" id="L124">      throw new FtpNoConnectionException(&quot;No Data Connection active&quot;);</span>
     }
-<span class="fc" id="L126">    return dataBusinessHandler;</span>
+<span class="nc" id="L126">    return dataBusinessHandler;</span>
   }
 
   /**
    * @return the session
    */
-  public FtpSession getFtpSession() {
-<span class="fc" id="L133">    return session;</span>
+  public final FtpSession getFtpSession() {
+<span class="nc" id="L133">    return session;</span>
   }
 
   /**
    * @return the NetworkHandler associated with the control connection
    */
-  public NetworkHandler getNetworkHandler() {
+  public final NetworkHandler getNetworkHandler() {
 <span class="nc" id="L140">    return session.getBusinessHandler().getNetworkHandler();</span>
   }
 
@@ -148,146 +148,147 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    logger.debug(&quot;Data Channel closed with a session ? {}&quot;, session != null);</span>
-<span class="pc bpc" id="L152" title="1 of 2 branches missed.">    if (session != null) {</span>
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">      if (!session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB; i++) {</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    logger.debug(&quot;Data Channel closed with a session ? {}&quot;, session != null);</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (session != null) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">      if (!session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB * 10; i++) {</span>
 <span class="nc" id="L155">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
 <span class="nc bnc" id="L156" title="All 2 branches missed.">          if (session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
 <span class="nc" id="L157">            break;</span>
           }
         }
       }
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">      if (session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
-<span class="fc" id="L162">        session.getDataConn().getFtpTransferControl().setPreEndOfTransfer();</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
+<span class="nc" id="L162">        session.getDataConn().getFtpTransferControl().setPreEndOfTransfer();</span>
       } else {
 <span class="nc" id="L164">        session.getDataConn().getFtpTransferControl()</span>
 <span class="nc" id="L165">               .setTransferAbortedFromInternal(true);</span>
       }
-<span class="fc" id="L167">      session.getDataConn().unbindPassive();</span>
       try {
-<span class="fc" id="L169">        getDataBusinessHandler().executeChannelClosed();</span>
+<span class="nc" id="L168">        getDataBusinessHandler().executeChannelClosed();</span>
         // release file and other permanent objects
-<span class="fc" id="L171">        getDataBusinessHandler().clear();</span>
-<span class="nc" id="L172">      } catch (final FtpNoConnectionException ignored) {</span>
+<span class="nc" id="L170">        getDataBusinessHandler().clear();</span>
+<span class="nc" id="L171">      } catch (final FtpNoConnectionException ignored) {</span>
         // nothing
-<span class="fc" id="L174">      }</span>
-<span class="fc" id="L175">      dataBusinessHandler = null;</span>
-<span class="fc" id="L176">      channelPipeline = null;</span>
-<span class="fc" id="L177">      dataChannel = null;</span>
+<span class="nc" id="L173">      }</span>
+<span class="nc" id="L174">      session.getDataConn().unbindData();</span>
+<span class="nc" id="L175">      dataBusinessHandler = null;</span>
+<span class="nc" id="L176">      channelPipeline = null;</span>
+<span class="nc" id="L177">      dataChannel = null;</span>
     }
-<span class="fc" id="L179">    super.channelInactive(ctx);</span>
-<span class="fc" id="L180">  }</span>
+<span class="nc" id="L179">    super.channelInactive(ctx);</span>
+<span class="nc" id="L180">  }</span>
 
-  protected void setSession(final Channel channel) {
-    // First get the ftpSession from inetaddresses
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">    for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB; i++) {</span>
-<span class="fc" id="L185">      session = configuration.getFtpSession(channel, isActive);</span>
-<span class="pc bpc" id="L186" title="1 of 2 branches missed.">      if (session == null) {</span>
-<span class="nc" id="L187">        logger.warn(&quot;Session not found at try &quot; + i);</span>
-        try {
-<span class="nc" id="L189">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
-<span class="nc" id="L190">        } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L191">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L192">          break;</span>
-<span class="nc" id="L193">        }</span>
-      } else {
-        break;
-      }
+  protected final void setSession(final Channel channel) {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">    if (session != null) {</span>
+<span class="nc" id="L184">      return;</span>
     }
-<span class="pc bpc" id="L198" title="1 of 2 branches missed.">    if (session == null) {</span>
+    // First get the ftpSession from inetaddresses
+<span class="nc" id="L187">    session = configuration.getFtpSession(channel, isActive);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (session == null) {</span>
       // Not found !!!
-<span class="nc" id="L200">      logger.error(&quot;Session not found!&quot;);</span>
-<span class="nc" id="L201">      WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      logger.error(&quot;Session not found for {}!&quot;, isActive? &quot;Active&quot; : &quot;Passive&quot;);</span>
+<span class="nc" id="L191">      WaarpSslUtility.closingSslChannel(channel);</span>
       // Problem: control connection could not be directly informed!!!
       // Only timeout will occur
     }
-<span class="fc" id="L205">  }</span>
+<span class="nc" id="L195">  }</span>
 
   /**
    * Initialize the Handler.
    */
   @Override
   public void channelActive(final ChannelHandlerContext ctx) {
-<span class="fc" id="L212">    final Channel channel = ctx.channel();</span>
-<span class="fc" id="L213">    channel.config().setAutoRead(false);</span>
-<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    if (session == null) {</span>
-<span class="fc" id="L215">      setSession(channel);</span>
+<span class="nc" id="L202">    final Channel channel = ctx.channel();</span>
+<span class="nc" id="L203">    channel.config().setAutoRead(false);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc" id="L205">      setSession(channel);</span>
     }
-<span class="fc" id="L217">    logger.debug(&quot;Data Channel opened as {}&quot;, channel);</span>
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">    if (session == null) {</span>
-<span class="nc" id="L219">      logger</span>
-<span class="nc" id="L220">          .debug(&quot;DataChannel immediately closed since no session is assigned&quot;);</span>
-<span class="nc" id="L221">      WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L222">      return;</span>
+<span class="nc" id="L207">    logger.debug(&quot;Data Channel opened as {}&quot;, channel);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc" id="L209">      logger.debug(</span>
+          &quot;DataChannel immediately closed since no session is assigned&quot;);
+<span class="nc" id="L211">      WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L212">      return;</span>
     }
-<span class="fc" id="L224">    channelPipeline = ctx.pipeline();</span>
-<span class="fc" id="L225">    dataChannel = channel;</span>
-<span class="fc" id="L226">    dataBusinessHandler.setFtpSession(getFtpSession());</span>
-<span class="fc" id="L227">    FtpChannelUtils.addDataChannel(channel, session.getConfiguration());</span>
-<span class="fc" id="L228">    logger.debug(&quot;DataChannel connected: {}&quot;, session.getReplyCode());</span>
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    if (session.getReplyCode().getCode() &gt;= 400) {</span>
+<span class="nc" id="L214">    channelPipeline = ctx.pipeline();</span>
+<span class="nc" id="L215">    dataChannel = channel;</span>
+<span class="nc" id="L216">    dataBusinessHandler.setFtpSession(getFtpSession());</span>
+<span class="nc" id="L217">    FtpChannelUtils.addDataChannel(channel, session.getConfiguration());</span>
+<span class="nc" id="L218">    logger.debug(&quot;DataChannel connected: {}&quot;, session.getReplyCode());</span>
+<span class="nc bnc" id="L219" title="All 4 branches missed.">    if (session.getCurrentCommand() != null &amp;&amp; session.getReplyCode() != null &amp;&amp;</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        session.getReplyCode().getCode() &gt;= 400) {</span>
       // shall not be except if an error early occurs
-<span class="nc bnc" id="L231" title="All 2 branches missed.">      switch (session.getCurrentCommand().getCode()) {</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">      switch (session.getCurrentCommand().getCode()) {</span>
         case RETR:
         case APPE:
         case STOR:
         case STOU:
           // close the data channel immediately
-<span class="nc" id="L237">          logger.info(</span>
+<span class="nc" id="L228">          logger.info(</span>
               &quot;DataChannel immediately closed since {} is not ok at startup&quot;,
-<span class="nc" id="L239">              session.getCurrentCommand().getCode());</span>
-<span class="nc" id="L240">          WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L241">          return;</span>
+<span class="nc" id="L230">              session.getCurrentCommand().getCode());</span>
+<span class="nc" id="L231">          WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L232">          session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L233">                 .setOpenedDataChannel(null, this);</span>
+<span class="nc" id="L234">          return;</span>
         default:
           break;
       }
     }
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">    if (isStillAlive()) {</span>
-<span class="fc" id="L247">      setCorrectCodec();</span>
-<span class="fc" id="L248">      unlockModeCodec();</span>
-<span class="fc" id="L249">      session.getDataConn().getFtpTransferControl()</span>
-<span class="fc" id="L250">             .setOpenedDataChannel(channel, this);</span>
-<span class="fc" id="L251">      logger.debug(&quot;DataChannel fully configured&quot;);</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (isStillAlive()) {</span>
+      try {
+<span class="nc" id="L241">        setCorrectCodec();</span>
+<span class="nc" id="L242">      } catch (final FtpNoConnectionException e) {</span>
+<span class="nc" id="L243">        logger.error(e.getMessage());</span>
+<span class="nc" id="L244">      }</span>
+<span class="nc" id="L245">      unlockModeCodec();</span>
+<span class="nc" id="L246">      session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L247">             .setOpenedDataChannel(channel, this);</span>
+<span class="nc" id="L248">      logger.debug(&quot;DataChannel fully configured&quot;);</span>
     } else {
       // Cannot continue
-<span class="nc" id="L254">      logger.info(&quot;Connected but no more alive so will disconnect&quot;);</span>
-<span class="nc" id="L255">      session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L256">             .setOpenedDataChannel(null, this);</span>
+<span class="nc" id="L251">      logger.info(&quot;Connected but no more alive so will disconnect&quot;);</span>
+<span class="nc" id="L252">      session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L253">             .setOpenedDataChannel(null, this);</span>
     }
-<span class="fc" id="L258">  }</span>
+<span class="nc" id="L255">  }</span>
 
   /**
    * Set the CODEC according to the mode. Must be called after each call of
    * MODE, STRU or TYPE
    */
-  public void setCorrectCodec() {
-<span class="fc" id="L265">    final FtpDataModeCodec modeCodec =</span>
-<span class="fc" id="L266">        (FtpDataModeCodec) channelPipeline.get(FtpDataInitializer.CODEC_MODE);</span>
-<span class="fc" id="L267">    final FtpDataTypeCodec typeCodec =</span>
-<span class="fc" id="L268">        (FtpDataTypeCodec) channelPipeline.get(FtpDataInitializer.CODEC_TYPE);</span>
-<span class="fc" id="L269">    final FtpDataStructureCodec structureCodec =</span>
-        (FtpDataStructureCodec) channelPipeline
-<span class="fc" id="L271">            .get(FtpDataInitializer.CODEC_STRUCTURE);</span>
-<span class="pc bpc" id="L272" title="3 of 6 branches missed.">    if (modeCodec == null || typeCodec == null || structureCodec == null) {</span>
-<span class="nc" id="L273">      return;</span>
+  public final void setCorrectCodec() throws FtpNoConnectionException {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    if (channelPipeline == null) {</span>
+<span class="nc" id="L263">      logger.error(&quot;No channelPipeline defined while session is &quot;, session);</span>
+<span class="nc" id="L264">      throw new FtpNoConnectionException(&quot;No Data socket opened&quot;);</span>
     }
-<span class="fc" id="L275">    modeCodec.setMode(session.getDataConn().getMode());</span>
-<span class="fc" id="L276">    modeCodec.setStructure(session.getDataConn().getStructure());</span>
-<span class="fc" id="L277">    typeCodec.setFullType(session.getDataConn().getType(),</span>
-<span class="fc" id="L278">                          session.getDataConn().getSubType());</span>
-<span class="fc" id="L279">    structureCodec.setStructure(session.getDataConn().getStructure());</span>
-<span class="fc" id="L280">    logger.debug(&quot;codec setup&quot;);</span>
-<span class="fc" id="L281">  }</span>
+<span class="nc" id="L266">    final FtpDataModeCodec modeCodec =</span>
+<span class="nc" id="L267">        (FtpDataModeCodec) channelPipeline.get(FtpDataInitializer.CODEC_MODE);</span>
+<span class="nc" id="L268">    final FtpDataTypeCodec typeCodec =</span>
+<span class="nc" id="L269">        (FtpDataTypeCodec) channelPipeline.get(FtpDataInitializer.CODEC_TYPE);</span>
+<span class="nc" id="L270">    final FtpDataStructureCodec structureCodec =</span>
+<span class="nc" id="L271">        (FtpDataStructureCodec) channelPipeline.get(</span>
+            FtpDataInitializer.CODEC_STRUCTURE);
+<span class="nc bnc" id="L273" title="All 6 branches missed.">    if (modeCodec == null || typeCodec == null || structureCodec == null) {</span>
+<span class="nc" id="L274">      return;</span>
+    }
+<span class="nc" id="L276">    modeCodec.setMode(session.getDataConn().getMode());</span>
+<span class="nc" id="L277">    modeCodec.setStructure(session.getDataConn().getStructure());</span>
+<span class="nc" id="L278">    typeCodec.setFullType(session.getDataConn().getType(),</span>
+<span class="nc" id="L279">                          session.getDataConn().getSubType());</span>
+<span class="nc" id="L280">    structureCodec.setStructure(session.getDataConn().getStructure());</span>
+<span class="nc" id="L281">    logger.debug(&quot;codec setup&quot;);</span>
+<span class="nc" id="L282">  }</span>
 
   /**
    * Unlock the Mode Codec from openConnection of {@link FtpTransferControl}
    */
-  public void unlockModeCodec() {
-<span class="fc" id="L287">    final FtpDataModeCodec modeCodec =</span>
-<span class="fc" id="L288">        (FtpDataModeCodec) channelPipeline.get(FtpDataInitializer.CODEC_MODE);</span>
-<span class="fc" id="L289">    modeCodec.setCodecReady();</span>
-<span class="fc" id="L290">  }</span>
+  public final void unlockModeCodec() {
+<span class="nc" id="L288">    final FtpDataModeCodec modeCodec =</span>
+<span class="nc" id="L289">        (FtpDataModeCodec) channelPipeline.get(FtpDataInitializer.CODEC_MODE);</span>
+<span class="nc" id="L290">    modeCodec.setCodecReady();</span>
+<span class="nc" id="L291">  }</span>
 
   /**
    * Default exception task: close the current connection after calling
@@ -296,120 +297,120 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-<span class="nc bnc" id="L299" title="All 2 branches missed.">    if (session == null) {</span>
-<span class="nc" id="L300">      logger.info(&quot;Error without any session active {}&quot;, cause);</span>
-<span class="nc" id="L301">      return;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc" id="L301">      logger.info(&quot;Error without any session active {}&quot;, cause);</span>
+<span class="nc" id="L302">      return;</span>
     }
-<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (cause instanceof ConnectException) {</span>
-<span class="nc" id="L304">      final ConnectException e2 = (ConnectException) cause;</span>
-<span class="nc" id="L305">      logger.warn(&quot;Connection impossible since {}&quot;, e2.getMessage());</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">    } else if (cause instanceof ChannelException) {</span>
-<span class="nc" id="L307">      final ChannelException e2 = (ChannelException) cause;</span>
-<span class="nc" id="L308">      logger.warn(&quot;Connection (example: timeout) impossible since {}&quot;,</span>
-<span class="nc" id="L309">                  e2.getMessage());</span>
-<span class="nc bnc" id="L310" title="All 2 branches missed.">    } else if (cause instanceof ClosedChannelException) {</span>
-<span class="nc" id="L311">      logger.debug(&quot;Connection closed before end&quot;);</span>
-<span class="nc bnc" id="L312" title="All 2 branches missed.">    } else if (cause instanceof InvalidArgumentException) {</span>
-<span class="nc" id="L313">      final InvalidArgumentException e2 = (InvalidArgumentException) cause;</span>
-<span class="nc" id="L314">      logger.warn(&quot;Bad configuration in Codec in {}&quot;, e2.getMessage());</span>
-<span class="nc bnc" id="L315" title="All 2 branches missed.">    } else if (cause instanceof NullPointerException) {</span>
-<span class="nc" id="L316">      final NullPointerException e2 = (NullPointerException) cause;</span>
-<span class="nc" id="L317">      logger.warn(&quot;Null pointer Exception&quot;, e2);</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">    if (cause instanceof ConnectException) {</span>
+<span class="nc" id="L305">      final ConnectException e2 = (ConnectException) cause;</span>
+<span class="nc" id="L306">      logger.warn(&quot;Connection impossible since {}&quot;, e2.getMessage());</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">    } else if (cause instanceof ChannelException) {</span>
+<span class="nc" id="L308">      final ChannelException e2 = (ChannelException) cause;</span>
+<span class="nc" id="L309">      logger.warn(&quot;Connection (example: timeout) impossible since {}&quot;,</span>
+<span class="nc" id="L310">                  e2.getMessage());</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">    } else if (cause instanceof ClosedChannelException) {</span>
+<span class="nc" id="L312">      logger.debug(&quot;Connection closed before end&quot;);</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">    } else if (cause instanceof InvalidArgumentException) {</span>
+<span class="nc" id="L314">      final InvalidArgumentException e2 = (InvalidArgumentException) cause;</span>
+<span class="nc" id="L315">      logger.warn(&quot;Bad configuration in Codec in {}&quot;, e2.getMessage());</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">    } else if (cause instanceof NullPointerException) {</span>
+<span class="nc" id="L317">      final NullPointerException e2 = (NullPointerException) cause;</span>
+<span class="nc" id="L318">      logger.warn(&quot;Null pointer Exception&quot;, e2);</span>
       try {
-<span class="nc bnc" id="L319" title="All 2 branches missed.">        if (dataBusinessHandler != null) {</span>
-<span class="nc" id="L320">          dataBusinessHandler.exceptionLocalCaught(cause);</span>
-<span class="nc bnc" id="L321" title="All 2 branches missed.">          if (session.getDataConn() != null &amp;&amp;</span>
-<span class="nc bnc" id="L322" title="All 2 branches missed.">              session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
-<span class="nc" id="L323">            session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L324">                   .setTransferAbortedFromInternal(true);</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (dataBusinessHandler != null) {</span>
+<span class="nc" id="L321">          dataBusinessHandler.exceptionLocalCaught(cause);</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">          if (session.getDataConn() != null &amp;&amp;</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">              session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
+<span class="nc" id="L324">            session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L325">                   .setTransferAbortedFromInternal(true);</span>
           }
         }
-<span class="nc" id="L327">      } catch (final NullPointerException ignored) {</span>
+<span class="nc" id="L328">      } catch (final NullPointerException ignored) {</span>
         // nothing
-<span class="nc" id="L329">      }</span>
-<span class="nc" id="L330">      return;</span>
-<span class="nc bnc" id="L331" title="All 2 branches missed.">    } else if (cause instanceof CancelledKeyException) {</span>
-<span class="nc" id="L332">      final CancelledKeyException e2 = (CancelledKeyException) cause;</span>
-<span class="nc" id="L333">      logger.warn(&quot;Connection aborted since {}&quot;, e2.getMessage());</span>
+<span class="nc" id="L330">      }</span>
+<span class="nc" id="L331">      return;</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">    } else if (cause instanceof CancelledKeyException) {</span>
+<span class="nc" id="L333">      final CancelledKeyException e2 = (CancelledKeyException) cause;</span>
+<span class="nc" id="L334">      logger.warn(&quot;Connection aborted since {}&quot;, e2.getMessage());</span>
       // XXX TODO FIXME is it really what we should do ?
       // No action
-<span class="nc" id="L336">      return;</span>
-<span class="nc bnc" id="L337" title="All 2 branches missed.">    } else if (cause instanceof IOException) {</span>
-<span class="nc" id="L338">      final IOException e2 = (IOException) cause;</span>
-<span class="nc" id="L339">      logger.warn(&quot;Connection aborted since {}&quot;, e2.getMessage());</span>
-<span class="nc bnc" id="L340" title="All 2 branches missed.">    } else if (cause instanceof NotYetConnectedException) {</span>
-<span class="nc" id="L341">      final NotYetConnectedException e2 = (NotYetConnectedException) cause;</span>
-<span class="nc" id="L342">      logger.debug(&quot;Ignore this exception {}&quot;, e2.getMessage());</span>
-<span class="nc" id="L343">      return;</span>
-<span class="nc bnc" id="L344" title="All 2 branches missed.">    } else if (cause instanceof BindException) {</span>
-<span class="nc" id="L345">      final BindException e2 = (BindException) cause;</span>
-<span class="nc" id="L346">      logger.warn(&quot;Address already in use {}&quot;, e2.getMessage());</span>
-<span class="nc" id="L347">    } else {</span>
-<span class="nc" id="L348">      logger.warn(&quot;Unexpected exception from Outband: {}&quot;, cause.getMessage(),</span>
+<span class="nc" id="L337">      return;</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">    } else if (cause instanceof IOException) {</span>
+<span class="nc" id="L339">      final IOException e2 = (IOException) cause;</span>
+<span class="nc" id="L340">      logger.warn(&quot;Connection aborted since {}&quot;, e2.getMessage());</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">    } else if (cause instanceof NotYetConnectedException) {</span>
+<span class="nc" id="L342">      final NotYetConnectedException e2 = (NotYetConnectedException) cause;</span>
+<span class="nc" id="L343">      logger.debug(&quot;Ignore this exception {}&quot;, e2.getMessage());</span>
+<span class="nc" id="L344">      return;</span>
+<span class="nc bnc" id="L345" title="All 2 branches missed.">    } else if (cause instanceof BindException) {</span>
+<span class="nc" id="L346">      final BindException e2 = (BindException) cause;</span>
+<span class="nc" id="L347">      logger.warn(&quot;Address already in use {}&quot;, e2.getMessage());</span>
+<span class="nc" id="L348">    } else {</span>
+<span class="nc" id="L349">      logger.warn(&quot;Unexpected exception from Outband: {}&quot;, cause.getMessage(),</span>
                   cause);
     }
-<span class="nc bnc" id="L351" title="All 2 branches missed.">    if (dataBusinessHandler != null) {</span>
-<span class="nc" id="L352">      dataBusinessHandler.exceptionLocalCaught(cause);</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    if (dataBusinessHandler != null) {</span>
+<span class="nc" id="L353">      dataBusinessHandler.exceptionLocalCaught(cause);</span>
     }
-<span class="nc bnc" id="L354" title="All 2 branches missed.">    if (session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
-<span class="nc" id="L355">      session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L356">             .setTransferAbortedFromInternal(true);</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">    if (session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
+<span class="nc" id="L356">      session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L357">             .setTransferAbortedFromInternal(true);</span>
     }
-<span class="nc" id="L358">  }</span>
+<span class="nc" id="L359">  }</span>
 
-  public void setFtpTransfer(final FtpTransfer ftpTransfer) {
-<span class="fc" id="L361">    this.ftpTransfer = ftpTransfer;</span>
-<span class="fc" id="L362">  }</span>
+  public final synchronized void setFtpTransfer(final FtpTransfer ftpTransfer) {
+<span class="nc" id="L362">    this.ftpTransfer = ftpTransfer;</span>
+<span class="nc" id="L363">  }</span>
 
   /**
    * Act as needed according to the receive DataBlock message
    */
   @Override
-  public void channelRead0(final ChannelHandlerContext ctx,
-                           final DataBlock dataBlock) {
-<span class="pc bpc" id="L370" title="1 of 2 branches missed.">    if (ftpTransfer == null) {</span>
-<span class="nc bnc" id="L371" title="All 2 branches missed.">      for (int i = 0; i &lt; 10; i++) {</span>
+  public synchronized void channelRead0(final ChannelHandlerContext ctx,
+                                        final DataBlock dataBlock) {
+<span class="nc bnc" id="L371" title="All 2 branches missed.">    if (ftpTransfer == null) {</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">      for (int i = 0; i &lt; 20; i++) {</span>
         try {
-<span class="nc" id="L373">          ftpTransfer = session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L374">                               .getExecutingFtpTransfer();</span>
-<span class="nc bnc" id="L375" title="All 2 branches missed.">          if (ftpTransfer != null) {</span>
-<span class="nc" id="L376">            break;</span>
+<span class="nc" id="L374">          ftpTransfer = session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L375">                               .getExecutingFtpTransfer();</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">          if (ftpTransfer != null) {</span>
+<span class="nc" id="L377">            break;</span>
           }
-<span class="nc" id="L378">        } catch (final FtpNoTransferException e) {</span>
+<span class="nc" id="L379">        } catch (final FtpNoTransferException e) {</span>
           try {
-<span class="nc" id="L380">            Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);</span>
-<span class="nc" id="L381">          } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L382">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L383">            break;</span>
-<span class="nc" id="L384">          }</span>
-<span class="nc" id="L385">        }</span>
+<span class="nc" id="L381">            Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);//NOSONAR</span>
+<span class="nc" id="L382">          } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L383">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L384">            break;</span>
+<span class="nc" id="L385">          }</span>
+<span class="nc" id="L386">        }</span>
       }
-<span class="nc bnc" id="L387" title="All 2 branches missed.">      if (ftpTransfer == null) {</span>
-<span class="nc" id="L388">        logger.info(&quot;No ExecutionFtpTransfer found&quot;);</span>
-<span class="nc" id="L389">        session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L390">               .setTransferAbortedFromInternal(true);</span>
-<span class="nc" id="L391">        return;</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">      if (ftpTransfer == null) {</span>
+<span class="nc" id="L389">        logger.info(&quot;No ExecutionFtpTransfer found&quot;);</span>
+<span class="nc" id="L390">        session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L391">               .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L392">        return;</span>
       }
     }
-<span class="pc bpc" id="L394" title="1 of 2 branches missed.">    if (isStillAlive()) {</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">    if (isStillAlive()) {</span>
       try {
-<span class="fc" id="L396">        ftpTransfer.getFtpFile().writeDataBlock(dataBlock);</span>
-<span class="nc" id="L397">      } catch (final FtpNoFileException e1) {</span>
-<span class="nc" id="L398">        logger.debug(e1);</span>
-<span class="nc" id="L399">        session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L400">               .setTransferAbortedFromInternal(true);</span>
-<span class="nc" id="L401">      } catch (final FileTransferException e1) {</span>
-<span class="nc" id="L402">        logger.debug(e1);</span>
-<span class="nc" id="L403">        session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L404">               .setTransferAbortedFromInternal(true);</span>
-<span class="pc" id="L405">      }</span>
+<span class="nc" id="L397">        ftpTransfer.getFtpFile().writeDataBlock(dataBlock);</span>
+<span class="nc" id="L398">      } catch (final FtpNoFileException e1) {</span>
+<span class="nc" id="L399">        logger.warn(e1);</span>
+<span class="nc" id="L400">        session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L401">               .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L402">      } catch (final FileTransferException e1) {</span>
+<span class="nc" id="L403">        logger.warn(&quot;File Transfer Exception: {}&quot;, e1.getMessage());</span>
+<span class="nc" id="L404">        session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L405">               .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L406">      }</span>
     } else {
       // Shutdown
-<span class="nc" id="L408">      session.getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L409">             .setTransferAbortedFromInternal(true);</span>
-<span class="nc" id="L410">      WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L409">      session.getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L410">             .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L411">      WaarpSslUtility.closingSslChannel(ctx.channel());</span>
     }
-<span class="fc" id="L412">  }</span>
+<span class="nc" id="L413">  }</span>
 
   /**
    * Write a simple message (like LIST) and wait for it
@@ -418,18 +419,18 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
    *
    * @return True if the message is correctly written
    */
-  public boolean writeMessage(final String message) {
-<span class="fc" id="L422">    final DataBlock dataBlock = new DataBlock();</span>
-<span class="fc" id="L423">    dataBlock.setEOF(true);</span>
-<span class="fc" id="L424">    dataBlock.setBlock(message.getBytes(WaarpStringUtils.UTF8));</span>
+  public final boolean writeMessage(final String message) {
+<span class="nc" id="L423">    final DataBlock dataBlock = new DataBlock();</span>
+<span class="nc" id="L424">    dataBlock.setEOF(true);</span>
+<span class="nc" id="L425">    dataBlock.setBlock(message.getBytes(WaarpStringUtils.UTF8));</span>
     final ChannelFuture future;
-<span class="pc bpc" id="L426" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L427">      logger.debug(&quot;Will write: {}&quot;, message);</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L428">      logger.debug(&quot;Will write: {}&quot;, message);</span>
     }
-<span class="fc" id="L429">    future = dataChannel.writeAndFlush(dataBlock);</span>
-<span class="fc" id="L430">    WaarpNettyUtil.awaitOrInterrupted(future);</span>
-<span class="fc" id="L431">    logger.debug(&quot;Write result: {} {}&quot;, future.isSuccess(), future.cause());</span>
-<span class="fc" id="L432">    return future.isSuccess();</span>
+<span class="nc" id="L430">    future = dataChannel.writeAndFlush(dataBlock);</span>
+<span class="nc" id="L431">    WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="nc" id="L432">    logger.debug(&quot;Write result: {} {}&quot;, future.isSuccess(), future.cause());</span>
+<span class="nc" id="L433">    return future.isSuccess();</span>
   }
 
   /**
@@ -440,11 +441,11 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
    *     down
    */
   private boolean isStillAlive() {
-<span class="pc bpc" id="L443" title="1 of 2 branches missed.">    if (session.getConfiguration().isShutdown()) {</span>
-<span class="nc" id="L444">      session.setExitErrorCode(&quot;Service is going down: disconnect&quot;);</span>
-<span class="nc" id="L445">      return false;</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    if (session.getConfiguration().isShutdown()) {</span>
+<span class="nc" id="L445">      session.setExitErrorCode(&quot;Service is going down: disconnect&quot;);</span>
+<span class="nc" id="L446">      return false;</span>
     }
-<span class="fc" id="L447">    return true;</span>
+<span class="nc" id="L448">    return true;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

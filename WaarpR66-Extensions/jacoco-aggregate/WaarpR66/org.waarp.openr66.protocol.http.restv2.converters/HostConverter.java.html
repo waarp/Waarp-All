@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HostConverter.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.converters</a> &gt; <span class="el_source">HostConverter.java</span></div><h1>HostConverter.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.converters;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+
+import javax.ws.rs.InternalServerErrorException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static org.waarp.common.file.FileUtils.*;
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.HostFields.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
+
+/**
+ * A collection of utility methods to convert {@link Host} objects to their
+ * corresponding {@link ObjectNode}
+ * and vice-versa.
+ */
+public final class HostConverter {
+
+  /**
+   * Makes the default constructor of this utility class inaccessible.
+   */
+<span class="nc" id="L56">  private HostConverter() throws InstantiationException {</span>
+<span class="nc" id="L57">    throw new InstantiationException(</span>
+<span class="nc" id="L58">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ########################### INNER CLASSES ################################
+
+  /**
+   * Represents all the possible ways to sort a list of host objects.
+   */
+<span class="nc" id="L66">  public enum Order {</span>
+    /**
+     * By hostID, in ascending order.
+     */
+<span class="nc" id="L70">    ascId(new Comparator&lt;Host&gt;() {</span>
+      @Override
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L73">        return t1.getHostid().compareTo(t2.getHostid());</span>
+      }
+    }),
+    /**
+     * By hostID, in descending order.
+     */
+<span class="nc" id="L79">    descId(new Comparator&lt;Host&gt;() {</span>
+      @Override
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L82">        return -t1.getHostid().compareTo(t2.getHostid());//NOSONAR</span>
+      }
+    }),
+    /**
+     * By address, in ascending order.
+     */
+<span class="nc" id="L88">    ascAddress(new Comparator&lt;Host&gt;() {</span>
+      @Override
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L91">        return t1.getAddress().compareTo(t2.getAddress());//NOSONAR</span>
+      }
+    }),
+    /**
+     * By address, in descending order.
+     */
+<span class="nc" id="L97">    descAddress(new Comparator&lt;Host&gt;() {</span>
+      @Override
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L100">        return -t1.getAddress().compareTo(t2.getAddress());//NOSONAR</span>
+      }
+    });
+
+    /**
+     * The comparator used to sort the list of RestHost objects.
+     */
+    public final Comparator&lt;Host&gt; comparator;
+
+<span class="nc" id="L109">    Order(final Comparator&lt;Host&gt; comparator) {</span>
+<span class="nc" id="L110">      this.comparator = comparator;</span>
+<span class="nc" id="L111">    }</span>
+  }
+
+  // ########################### PUBLIC METHODS ###############################
+
+  /**
+   * Converts the given {@link Host} object into an {@link ObjectNode}.
+   *
+   * @param host the host to convert
+   *
+   * @return the converted ObjectNode
+   */
+  public static ObjectNode hostToNode(final Host host) {
+<span class="nc" id="L124">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L125">    node.put(HOST_NAME, host.getHostid());</span>
+<span class="nc" id="L126">    node.put(ADDRESS, host.getAddress());</span>
+<span class="nc" id="L127">    node.put(PORT, host.getPort());</span>
+<span class="nc" id="L128">    node.put(PASSWORD, host.getHostkey());</span>
+<span class="nc" id="L129">    node.put(IS_SSL, host.isSSL());</span>
+<span class="nc" id="L130">    node.put(IS_CLIENT, host.isClient());</span>
+<span class="nc" id="L131">    node.put(IS_ADMIN, host.isAdmin());</span>
+<span class="nc" id="L132">    node.put(IS_ACTIVE, host.isActive());</span>
+<span class="nc" id="L133">    node.put(IS_PROXY, host.isProxified());</span>
+
+<span class="nc" id="L135">    return node;</span>
+  }
+
+  /**
+   * Converts the given {@link ObjectNode} into a {@link Host} object.
+   *
+   * @param object the ObjectNode to convert
+   *
+   * @return the corresponding Host object
+   *
+   * @throws RestErrorException if the given ObjectNode does not
+   *     represent a Host object
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static Host nodeToNewHost(final ObjectNode object) {
+<span class="nc" id="L151">    Host emptyHost = null;</span>
+    try {
+<span class="nc" id="L153">      emptyHost =</span>
+          new Host(null, null, -1, null, false, false, false, false, true);
+<span class="nc" id="L155">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L156">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L157">    }</span>
+
+<span class="nc" id="L159">    return nodeToUpdatedHost(object, emptyHost);</span>
+  }
+
+  /**
+   * Returns the given {@link Host} object updated with the values defined in
+   * the {@link ObjectNode} parameter.
+   * All fields missing in the JSON object will stay unchanged in the updated
+   * host entry.
+   *
+   * @param object the ObjectNode to convert.
+   * @param oldHost the host entry to update.
+   *
+   * @return the updated host entry
+   *
+   * @throws RestErrorException if the given ObjectNode does not
+   *     represent a Host object
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static Host nodeToUpdatedHost(final ObjectNode object,
+                                       final Host oldHost) {
+
+<span class="nc" id="L181">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+
+<span class="nc" id="L183">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
+<span class="nc" id="L185">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L186">      final String name = field.getKey();</span>
+<span class="nc" id="L187">      final JsonNode value = field.getValue();</span>
+
+<span class="nc bnc" id="L189" title="All 2 branches missed.">      if (name.equalsIgnoreCase(HOST_NAME)) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">          if (oldHost.getHostid() == null) {</span>
+<span class="nc" id="L192">            oldHost.setHostid(value.asText());</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">          } else if (!oldHost.getHostid().equals(value.asText())) {</span>
+<span class="nc" id="L194">            errors.add(FIELD_NOT_ALLOWED(HOST_NAME));</span>
+          }
+        } else {
+<span class="nc" id="L197">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L199" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ADDRESS)) {</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L201">          oldHost.setAddress(value.asText());</span>
+        } else {
+<span class="nc" id="L203">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L205" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(PORT)) {</span>
+<span class="nc bnc" id="L206" title="All 4 branches missed.">        if (value.canConvertToInt() &amp;&amp; value.asInt() &gt;= 0 &amp;&amp;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            value.asInt() &lt; ZERO_COPY_CHUNK_SIZE) {</span>
+<span class="nc" id="L208">          oldHost.setPort(value.asInt());</span>
+        } else {
+<span class="nc" id="L210">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L212" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(PASSWORD)) {</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L214">          oldHost.setHostkey(encryptPassword(value.asText()));</span>
+        } else {
+<span class="nc" id="L216">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L218" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_SSL)) {</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L220">          oldHost.setSSL(value.asBoolean());</span>
+        } else {
+<span class="nc" id="L222">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_CLIENT)) {</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L226">          oldHost.setClient(value.asBoolean());</span>
+        } else {
+<span class="nc" id="L228">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L230" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_ADMIN)) {</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L232">          oldHost.setAdmin(value.asBoolean());</span>
+        } else {
+<span class="nc" id="L234">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_ACTIVE)) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L238">          oldHost.setActive(value.asBoolean());</span>
+        } else {
+<span class="nc" id="L240">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L242" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_PROXY)) {</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L244">          oldHost.setProxified(value.asBoolean());</span>
+        } else {
+<span class="nc" id="L246">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+      } else {
+<span class="nc" id="L249">        errors.add(UNKNOWN_FIELD(name));</span>
+      }
+<span class="nc" id="L251">    }</span>
+
+<span class="nc" id="L253">    errors.addAll(checkRequiredFields(oldHost));</span>
+
+<span class="nc bnc" id="L255" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L256">      return oldHost;</span>
+    } else {
+<span class="nc" id="L258">      throw new RestErrorException(errors);</span>
+    }
+  }
+
+  // ########################## PRIVATE METHODS ###############################
+
+  /**
+   * Encrypts the given password String using the server's cryptographic key.
+   *
+   * @param password the password to encrypt
+   *
+   * @return the encrypted password
+   *
+   * @throws InternalServerErrorException If an error occurred when
+   *     encrypting the password.
+   */
+  private static byte[] encryptPassword(final String password) {
+    try {
+<span class="nc" id="L276">      return configuration.getCryptoKey().cryptToHex(password)</span>
+<span class="nc" id="L277">                          .getBytes(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L278">    } catch (final Exception e) {</span>
+<span class="nc" id="L279">      throw new InternalServerErrorException(</span>
+          &quot;Failed to encrypt the host password&quot;, e);
+    }
+  }
+
+  /**
+   * List all missing required fields. This method returns a list of {@link
+   * RestError} representing all the
+   * errors encountered when checking the given host's required fields. If all
+   * required fields have indeed been
+   * initialized, an empty list is returned.
+   *
+   * @param host the host entry to check
+   *
+   * @return the list of encountered errors
+   */
+  private static List&lt;RestError&gt; checkRequiredFields(final Host host) {
+<span class="nc" id="L296">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(host.getHostid())) {</span>
+<span class="nc" id="L298">      errors.add(MISSING_FIELD(HOST_NAME));</span>
+    }
+<span class="nc bnc" id="L300" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(host.getAddress())) {</span>
+<span class="nc" id="L301">      errors.add(MISSING_FIELD(ADDRESS));</span>
+    }
+<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (host.getPort() == -1) {</span>
+<span class="nc" id="L304">      errors.add(MISSING_FIELD(PORT));</span>
+    }
+<span class="nc bnc" id="L306" title="All 4 branches missed.">    if (host.getHostkey() == null || host.getHostkey().length == 0) {</span>
+<span class="nc" id="L307">      errors.add(MISSING_FIELD(PASSWORD));</span>
+    }
+
+<span class="nc" id="L310">    return errors;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

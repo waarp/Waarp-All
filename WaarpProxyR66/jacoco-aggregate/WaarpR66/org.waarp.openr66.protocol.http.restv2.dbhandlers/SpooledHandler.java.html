@@ -21,7 +21,6 @@
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.AbstractHttpHandler;
 import io.cdap.http.HttpResponder;
@@ -31,10 +30,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.task.SpooledInformTask;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -66,12 +67,12 @@ public class SpooledHandler extends AbstractRestDbHandler {
   private static final io.netty.handler.codec.http.HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="fc" id="L69">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="fc" id="L70">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="fc" id="L71">    allow.add(HttpMethod.GET);</span>
-<span class="fc" id="L72">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="fc" id="L73">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="fc" id="L74">  }</span>
+<span class="nc" id="L70">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="nc" id="L71">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L72">    allow.add(HttpMethod.GET);</span>
+<span class="nc" id="L73">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L74">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="nc" id="L75">  }</span>
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -79,8 +80,8 @@ public class SpooledHandler extends AbstractRestDbHandler {
    * @param crud the CRUD mask for this handler
    */
   public SpooledHandler(final byte crud) {
-<span class="fc" id="L82">    super(crud);</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L83">    super(crud);</span>
+<span class="nc" id="L84">  }</span>
 
   /**
    * Method called to obtain a list of FileMonitors entry matching the different
@@ -92,53 +93,75 @@ public class SpooledHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the request
    * @param nameStr the name of the FileMonitor or empty for all
-   * @param statusStr 0 or empty for all, 1 for active ones, 0 for inactive
+   * @param statusStr 0 or empty for all, 1 for active ones, -1 for inactive
    *     ones
+   * @param countOrder if true is specified, it turns out to be a &quot;count&quot;
+   *     request only of current files
    */
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterTransfer(final HttpRequest request,
-                             final HttpResponder responder,
-                             @QueryParam(&quot;name&quot;) @DefaultValue(&quot;&quot;)
-                             final String nameStr,
-                             @QueryParam(STATUS) @DefaultValue(&quot;&quot;)
-                             final String statusStr) {
-
-<span class="nc" id="L108">    final ArrayList&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+  public final void filterTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @QueryParam(&quot;name&quot;) @DefaultValue(&quot;&quot;)
+                                   final String nameStr,
+                                   @QueryParam(STATUS) @DefaultValue(&quot;&quot;)
+                                   final String statusStr,
+                                   @QueryParam(COUNT_ORDER) @DefaultValue(&quot;&quot;)
+                                   final String countOrder) {
+<span class="nc" id="L112">    checkSanity(nameStr, statusStr, countOrder);</span>
+<span class="nc" id="L113">    boolean count = false;</span>
+    try {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (ParametersChecker.isNotEmpty(countOrder) &amp;&amp;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">          RestUtils.stringToBoolean(countOrder)) {</span>
+<span class="nc" id="L117">        count = true;</span>
+      }
+<span class="nc" id="L119">    } catch (final Exception ignore) {</span>
+      // Ignore
+<span class="nc" id="L121">    }</span>
+<span class="nc" id="L122">    final ArrayList&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
     final String argName;
-<span class="nc bnc" id="L110" title="All 2 branches missed.">    if (nameStr.trim().isEmpty()) {</span>
-<span class="nc" id="L111">      argName = null;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (nameStr.trim().isEmpty()) {</span>
+<span class="nc" id="L125">      argName = null;</span>
     } else {
-<span class="nc" id="L113">      argName = nameStr.trim();</span>
+<span class="nc" id="L127">      argName = nameStr.trim();</span>
     }
     int argStatus;
-<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (statusStr.trim().isEmpty()) {</span>
-<span class="nc" id="L117">      argStatus = 0;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (statusStr.trim().isEmpty()) {</span>
+<span class="nc" id="L131">      argStatus = 0;</span>
     } else {
       try {
-<span class="nc" id="L120">        argStatus = Integer.parseInt(statusStr.trim());</span>
-<span class="nc" id="L121">      } catch (final NumberFormatException ignored) {</span>
-<span class="nc" id="L122">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="nc" id="L123">        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));</span>
-<span class="nc" id="L124">        argStatus = 0;</span>
-<span class="nc" id="L125">      }</span>
+<span class="nc" id="L134">        argStatus = Integer.parseInt(statusStr.trim());</span>
+<span class="nc" id="L135">      } catch (final NumberFormatException ignored) {</span>
+<span class="nc" id="L136">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L137">        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));</span>
+<span class="nc" id="L138">        argStatus = 0;</span>
+<span class="nc" id="L139">      }</span>
     }
-<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
-<span class="nc" id="L128">      throw new RestErrorException(errors);</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L142">      throw new RestErrorException(errors);</span>
     }
 
-<span class="nc" id="L131">    final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
-<span class="nc" id="L132">    final int nbFiles =</span>
-<span class="nc" id="L133">        SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);</span>
-<span class="nc" id="L134">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="nc" id="L135">    final ArrayNode resultList = responseObject.putArray(&quot;results&quot;);</span>
-<span class="nc" id="L136">    resultList.addAll(arrayNode);</span>
-<span class="nc" id="L137">    responseObject.put(&quot;totalResults&quot;, arrayNode.size());</span>
-<span class="nc" id="L138">    responseObject.put(&quot;totalSubResults&quot;, nbFiles);</span>
-<span class="nc" id="L139">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L140">    responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L141">  }</span>
+<span class="nc" id="L145">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (count) {</span>
+<span class="nc" id="L147">      final int nbFiles =</span>
+<span class="nc" id="L148">          SpooledInformTask.buildSpooledJson(null, argStatus, argName);</span>
+<span class="nc" id="L149">      final int nbEntries =</span>
+<span class="nc" id="L150">          SpooledInformTask.getSpooledJsonEntriesNumber(argStatus, argName);</span>
+<span class="nc" id="L151">      responseObject.put(&quot;totalResults&quot;, nbEntries);</span>
+<span class="nc" id="L152">      responseObject.put(&quot;totalSubResults&quot;, nbFiles);</span>
+<span class="nc" id="L153">    } else {</span>
+<span class="nc" id="L154">      final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L155">      final int nbFiles =</span>
+<span class="nc" id="L156">          SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);</span>
+<span class="nc" id="L157">      final ArrayNode resultList = responseObject.putArray(&quot;results&quot;);</span>
+<span class="nc" id="L158">      resultList.addAll(arrayNode);</span>
+<span class="nc" id="L159">      responseObject.put(&quot;totalResults&quot;, arrayNode.size());</span>
+<span class="nc" id="L160">      responseObject.put(&quot;totalSubResults&quot;, nbFiles);</span>
+    }
+<span class="nc" id="L162">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L163">    responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L164">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -152,9 +175,9 @@ public class SpooledHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
-<span class="nc" id="L157">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L158">  }</span>
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L180">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L181">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

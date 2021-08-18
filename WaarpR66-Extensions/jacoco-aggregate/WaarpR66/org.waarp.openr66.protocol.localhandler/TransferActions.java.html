@@ -1,0 +1,1497 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TransferActions.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler</a> &gt; <span class="el_source">TransferActions.java</span></div><h1>TransferActions.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.exception.FileTransferException;
+import org.waarp.common.file.DataBlock;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.commander.ClientRunner;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.task.AbstractTask;
+import org.waarp.openr66.context.task.TaskType;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
+import org.waarp.openr66.protocol.exception.OpenR66Exception;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryAlreadyFinishedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryStillRunningException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.localhandler.packet.DataPacket;
+import org.waarp.openr66.protocol.localhandler.packet.EndRequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.EndTransferPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
+import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.RequestJsonPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.FileUtils;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.security.NoSuchAlgorithmException;
+
+import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.context.R66FiniteDualStates.*;
+
+/**
+ * Class to implement actions related to real transfer: request initialization,
+ * data transfer, end of transfer
+ * and of request, changing filename or filesize.
+ */
+public class TransferActions extends ServerActions {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L81">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L82">      WaarpLoggerFactory.getLogger(TransferActions.class);</span>
+  public static final String RANK_SET = &quot;Rank set: {}&quot;;
+  public static final String RUNNER_BEFORE_ANY_ACTION =
+      &quot;Runner before any action: {} {}&quot;;
+
+<span class="nc" id="L87">  public TransferActions() {</span>
+    // nothing
+<span class="nc" id="L89">  }</span>
+
+  /**
+   * Finalize a request initialization in error
+   *
+   * @param code
+   * @param runner
+   * @param e1
+   * @param packet
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  private void endInitRequestInError(final ErrorCode code,
+                                     final DbTaskRunner runner,
+                                     final OpenR66Exception e1,
+                                     final RequestPacket packet)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    logger.error(&quot;TaskRunner initialisation in error: &quot; + code.getMesg() + ' ' +</span>
+                 session + &quot; {} runner {}&quot;,
+<span class="nc bnc" id="L108" title="All 2 branches missed.">                 e1 != null? e1.getMessage() : &quot;no exception&quot;,</span>
+<span class="nc" id="L109">                 runner != null? runner.toShortString() : &quot;no runner&quot;);</span>
+<span class="nc" id="L110">    logger.debug(&quot;DEBUG Full stack&quot;, e1);</span>
+<span class="nc" id="L111">    localChannelReference.invalidateRequest(</span>
+        new R66Result(e1, session, true, code, null));
+
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+      // / answer with a wrong request since runner is not set on remote host
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      if (runner != null) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (runner.isSender()) {</span>
+          // In case Wildcard was used
+<span class="nc" id="L119">          logger.debug(&quot;New FILENAME: {}&quot;, runner.getOriginalFilename());</span>
+<span class="nc" id="L120">          packet.setFilename(runner.getOriginalFilename());</span>
+<span class="nc" id="L121">          logger.debug(RANK_SET, runner.getRank());</span>
+<span class="nc" id="L122">          packet.setRank(runner.getRank());</span>
+        } else {
+<span class="nc" id="L124">          logger.debug(RANK_SET, runner.getRank());</span>
+<span class="nc" id="L125">          packet.setRank(runner.getRank());</span>
+        }
+      }
+<span class="nc" id="L128">      packet.validate();</span>
+<span class="nc" id="L129">      packet.setCode(code.code);</span>
+<span class="nc" id="L130">      session.newState(ERROR);</span>
+<span class="nc" id="L131">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+                                            false);
+    } else {
+<span class="nc" id="L134">      session.newState(ERROR);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      final ErrorPacket error = new ErrorPacket(</span>
+          &quot;TaskRunner initialisation in error: &quot; +
+<span class="nc" id="L137">          (e1 != null? e1.getMessage() : &quot;Unknown Error&quot;) + &quot; for &quot; + packet +</span>
+<span class="nc" id="L138">          &quot; since &quot; + code.getMesg(), code.getCode(),</span>
+          ErrorPacket.FORWARDCLOSECODE);
+<span class="nc" id="L140">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                            false);
+    }
+<span class="nc" id="L143">    session.setStatus(47);</span>
+<span class="nc" id="L144">    ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L145">  }</span>
+
+  /**
+   * Receive a request of Transfer
+   *
+   * @param packet
+   *
+   * @throws OpenR66ProtocolPacketException
+   * @throws OpenR66ProtocolBusinessException
+   * @throws OpenR66ProtocolSystemException
+   * @throws OpenR66RunnerErrorException
+   */
+  public final void request(RequestPacket packet)
+      throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
+             OpenR66ProtocolSystemException, OpenR66ProtocolBusinessException {
+<span class="nc" id="L160">    session.setStatus(99);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (!session.isAuthenticated()) {</span>
+<span class="nc" id="L162">      session.setStatus(48);</span>
+<span class="nc" id="L163">      throw new OpenR66ProtocolNotAuthenticatedException(</span>
+<span class="nc" id="L164">          Messages.getString(&quot;LocalServerHandler.3&quot;)); //$NON-NLS-1$</span>
+    }
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="nc" id="L167">      session.newState(REQUESTR);</span>
+    }
+    // XXX validLimit only on requested side
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (checkRequest(packet)) {</span>
+<span class="nc" id="L171">      return;</span>
+    }
+    final DbRule rule;
+    try {
+<span class="nc" id="L175">      rule = new DbRule(packet.getRulename());</span>
+<span class="nc" id="L176">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L177">      logger.info(&quot;Rule is unknown: {} {}&quot;, packet.getRulename(),</span>
+<span class="nc" id="L178">                  e.getMessage());</span>
+<span class="nc" id="L179">      session.setStatus(49);</span>
+<span class="nc" id="L180">      endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,</span>
+                            new OpenR66ProtocolBusinessException(
+<span class="nc" id="L182">                                Messages.getString(&quot;LocalServerHandler.9&quot;) +</span>
+                                //$NON-NLS-1$
+<span class="nc" id="L184">                                packet.getRulename()), packet);</span>
+<span class="nc" id="L185">      return;</span>
+<span class="nc" id="L186">    }</span>
+<span class="nc" id="L187">    packet = computeBlockSizeFromRequest(packet, rule);</span>
+    final DbTaskRunner runner;
+    // requested
+<span class="nc" id="L190">    final boolean isRetrieve = DbTaskRunner.getSenderByRequestPacket(packet);</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (packet.getSpecialId() != ILLEGALVALUE) {</span>
+<span class="nc" id="L192">      runner = getPreviousDbTaskRunnerFromRequest(packet, rule, isRetrieve);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">      if (runner == null) {</span>
+<span class="nc" id="L194">        return;</span>
+      }
+    } else {
+      // Very new request
+      // should not be the case (the requester should always set the id)
+<span class="nc" id="L199">      logger.error(&quot;NO TransferID specified: SHOULD NOT BE THE CASE&quot;);</span>
+      try {
+<span class="nc" id="L201">        runner = new DbTaskRunner(session, rule, isRetrieve, packet);</span>
+<span class="nc" id="L202">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L203">        session.setStatus(37);</span>
+<span class="nc" id="L204">        endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,</span>
+                              new OpenR66DatabaseGlobalException(e), packet);
+<span class="nc" id="L206">        return;</span>
+<span class="nc" id="L207">      }</span>
+<span class="nc" id="L208">      packet.setSpecialId(runner.getSpecialId());</span>
+    }
+<span class="nc" id="L210">    runner.setSender(isRetrieve);</span>
+<span class="nc" id="L211">    logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);</span>
+    // Check now if request is a valid one
+<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (packet.getCode() != ErrorCode.InitOk.code) {</span>
+<span class="nc" id="L214">      createErrorFromRequestInitKo(packet, runner);</span>
+<span class="nc" id="L215">      return;</span>
+    }
+    // Receiver can specify a rank different from database
+<span class="nc" id="L218">    setRankAtStartupFromRequest(packet, runner);</span>
+<span class="nc" id="L219">    runner.setBlocksize(packet.getBlocksize());</span>
+<span class="nc" id="L220">    logger.debug(&quot;Filesize: {}:{}&quot;, packet.getOriginalSize(),</span>
+<span class="nc" id="L221">                 runner.isSender());</span>
+<span class="nc" id="L222">    logger.debug(&quot;I am {} acting as sender {} while packet said {} and &quot; +</span>
+                 &quot;runner said {} and session said {} but will changed&quot;,
+<span class="nc" id="L224">                 Configuration.configuration.getHostId(), isRetrieve,</span>
+<span class="nc" id="L225">                 packet.isRetrieve(), runner.isSender(), session.isSender());</span>
+<span class="nc" id="L226">    logger.debug(</span>
+        &quot;COMPRESSION was {} and could become {} while remote &quot; + &quot;host said {}&quot;,
+<span class="nc" id="L228">        session.isCompressionEnabled(),</span>
+<span class="nc" id="L229">        AbstractTask.isCompressionRequested(runner.getFileInformation(),</span>
+                                            session),
+<span class="nc" id="L231">        localChannelReference.getPartner());</span>
+<span class="nc" id="L232">    session.setCompressionEnabled(</span>
+<span class="nc" id="L233">        AbstractTask.isCompressionRequested(runner.getFileInformation(),</span>
+                                            session));
+<span class="nc" id="L235">    runner.setBlockCompression(session.isCompressionEnabled());</span>
+    try {
+<span class="nc" id="L237">      runner.update();</span>
+<span class="nc" id="L238">    } catch (final WaarpDatabaseException ignored) {</span>
+      // Ignore
+<span class="nc" id="L240">    }</span>
+<span class="nc" id="L241">    boolean shouldInformBack = false;</span>
+    try {
+<span class="nc" id="L243">      session.setRunner(runner);</span>
+<span class="nc bnc" id="L244" title="All 6 branches missed.">      if (packet.isToValidate() &amp;&amp; isRetrieve &amp;&amp; session.isSender() == false) {</span>
+<span class="nc" id="L245">        logger.warn(&quot;isSend is True while requested is called on a {} mode&quot;,</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                    packet.isRetrieve()? &quot;Retrieve&quot; : &quot;Receive&quot;);</span>
+      }
+      // Fix to ensure that recv request are not trying to access to not chroot files
+<span class="nc bnc" id="L249" title="All 2 branches missed.">      session.startup(Configuration.configuration.isChrootChecked() &amp;&amp;</span>
+<span class="nc bnc" id="L250" title="All 4 branches missed.">                      packet.isToValidate() &amp;&amp; runner.isSender());</span>
+<span class="nc bnc" id="L251" title="All 4 branches missed.">      if (isRetrieve &amp;&amp; !runner.isSendThrough()) {</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (packet.getOriginalSize() != runner.getOriginalSize()) {</span>
+<span class="nc" id="L253">          packet.setOriginalSize(runner.getOriginalSize());</span>
+<span class="nc" id="L254">          shouldInformBack = true;</span>
+<span class="nc" id="L255">          logger.debug(&quot;Filesize2: {}:{}&quot;, packet.getOriginalSize(),</span>
+<span class="nc" id="L256">                       runner.isSender());</span>
+        }
+      }
+<span class="nc" id="L259">    } catch (final OpenR66RunnerErrorException e) {</span>
+      try {
+<span class="nc" id="L261">        runner.saveStatus();</span>
+<span class="nc" id="L262">      } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L263">        logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="nc" id="L264">      }</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (runner.getErrorInfo() == ErrorCode.InitOk ||</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">          runner.getErrorInfo() == ErrorCode.PreProcessingOk ||</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">          runner.getErrorInfo() == ErrorCode.TransferOk) {</span>
+<span class="nc" id="L268">        runner.setErrorExecutionStatus(ErrorCode.ExternalOp);</span>
+      }
+<span class="nc" id="L270">      logger.error(&quot;PreTask in error {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L271">      errorToSend(&quot;PreTask in error: &quot; + e.getMessage(), runner.getErrorInfo(),</span>
+                  38);
+<span class="nc" id="L273">      return;</span>
+<span class="nc" id="L274">    }</span>
+<span class="nc" id="L275">    setFileSizeFromRequest(packet, runner, shouldInformBack);</span>
+<span class="nc" id="L276">    session.setReady(true);</span>
+<span class="nc" id="L277">    Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L278">                               .setFromId(runner, localChannelReference);</span>
+
+    // Set read/write limit
+<span class="nc" id="L281">    final long remoteLimit = packet.getLimit();</span>
+<span class="nc" id="L282">    long localLimit = localChannelReference.getChannelLimit(runner.isSender());</span>
+    // Take the minimum speed
+<span class="nc bnc" id="L284" title="All 6 branches missed.">    if (localLimit &lt;= 0 || (remoteLimit &gt; 0 &amp;&amp; remoteLimit &lt; localLimit)) {</span>
+<span class="nc" id="L285">      localLimit = remoteLimit;</span>
+    }
+<span class="nc" id="L287">    localChannelReference.setChannelLimit(runner.isSender(), localLimit);</span>
+<span class="nc" id="L288">    packet.setLimit(localLimit);</span>
+
+<span class="nc" id="L290">    session.initializeDigest();</span>
+    // inform back
+<span class="nc" id="L292">    informBackFromRequest(packet, runner);</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">    if (!isRetrieve) {</span>
+<span class="nc" id="L294">      prepareGlobalDigests();</span>
+    }
+    // if retrieve =&gt; START the retrieve operation except if in Send Through mode
+<span class="nc" id="L297">    sendDataFromRequest(runner);</span>
+<span class="nc" id="L298">    session.setStatus(39);</span>
+<span class="nc" id="L299">  }</span>
+
+  private RequestPacket computeBlockSizeFromRequest(RequestPacket packet,
+                                                    final DbRule rule)
+      throws OpenR66ProtocolNotAuthenticatedException {
+<span class="nc" id="L304">    int blocksize = packet.getBlocksize();</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">      if (!rule.checkHostAllow(session.getAuth().getUser())) {</span>
+<span class="nc" id="L307">        session.setStatus(30);</span>
+<span class="nc" id="L308">        throw new OpenR66ProtocolNotAuthenticatedException(</span>
+<span class="nc" id="L309">            Messages.getString(&quot;LocalServerHandler.10&quot;)); //$NON-NLS-1$</span>
+      }
+      // Check if the blocksize is greater than local value
+<span class="nc bnc" id="L312" title="All 2 branches missed.">      if (Configuration.configuration.getBlockSize() &lt; blocksize) {</span>
+<span class="nc" id="L313">        logger.warn(&quot;Blocksize is greater than allowed {} &lt; {}&quot;,</span>
+<span class="nc" id="L314">                    Configuration.configuration.getBlockSize(), blocksize);</span>
+<span class="nc" id="L315">        blocksize = Configuration.configuration.getBlockSize();</span>
+<span class="nc" id="L316">        final String sep = localChannelReference.getPartner().getSeperator();</span>
+<span class="nc" id="L317">        packet = new RequestPacket(packet.getRulename(), packet.getMode(),</span>
+<span class="nc" id="L318">                                   packet.getFilename(), blocksize,</span>
+<span class="nc" id="L319">                                   packet.getRank(), packet.getSpecialId(),</span>
+<span class="nc" id="L320">                                   packet.getTransferInformation(),</span>
+<span class="nc" id="L321">                                   packet.getOriginalSize(), sep);</span>
+      }
+    }
+<span class="nc bnc" id="L324" title="All 2 branches missed.">    if (!RequestPacket.isCompatibleMode(rule.getMode(), packet.getMode())) {</span>
+      // not compatible Rule and mode in request
+<span class="nc" id="L326">      throw new OpenR66ProtocolNotAuthenticatedException(</span>
+<span class="nc" id="L327">          Messages.getString(&quot;LocalServerHandler.12&quot;) + rule.getMode() + &quot; vs &quot;</span>
+          //$NON-NLS-1$
+<span class="nc" id="L329">          + packet.getMode());</span>
+    }
+<span class="nc" id="L331">    session.setBlockSize(blocksize);</span>
+<span class="nc" id="L332">    return packet;</span>
+  }
+
+  private boolean checkRequest(final RequestPacket packet)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L337" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">      if (Configuration.configuration.isShutdown()) {</span>
+<span class="nc" id="L339">        logger.warn(Messages.getString(&quot;LocalServerHandler.7&quot;) //$NON-NLS-1$</span>
+<span class="nc" id="L340">                    + packet.getRulename() + &quot; from &quot; + session.getAuth());</span>
+<span class="nc" id="L341">        session.setStatus(100);</span>
+<span class="nc" id="L342">        endInitRequestInError(ErrorCode.ServerOverloaded, null,</span>
+                              new OpenR66ProtocolNotYetConnectionException(
+                                  &quot;All new Request blocked&quot;), packet);
+<span class="nc" id="L345">        session.setStatus(100);</span>
+<span class="nc" id="L346">        return true;</span>
+      }
+<span class="nc" id="L348">      if (Configuration.configuration.getConstraintLimitHandler()</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">                                     .checkConstraints()) {</span>
+<span class="nc" id="L350">        requestCheckConstraintsTrue(packet);</span>
+<span class="nc" id="L351">        return true;</span>
+      }
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    } else if (packet.getCode() == ErrorCode.ServerOverloaded.code) {</span>
+      // XXX unvalid limit on requested host received
+<span class="nc" id="L355">      logger.info(&quot;TaskRunner initialisation in error: {}&quot;,</span>
+<span class="nc" id="L356">                  ErrorCode.ServerOverloaded.getMesg());</span>
+<span class="nc" id="L357">      localChannelReference.invalidateRequest(</span>
+          new R66Result(null, session, true, ErrorCode.ServerOverloaded, null));
+<span class="nc" id="L359">      session.setStatus(101);</span>
+<span class="nc" id="L360">      ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L361">      return true;</span>
+    }
+<span class="nc" id="L363">    return false;</span>
+  }
+
+  private static void setRankAtStartupFromRequest(final RequestPacket packet,
+                                                  final DbTaskRunner runner) {
+<span class="nc bnc" id="L368" title="All 2 branches missed.">    if (runner.isSender()) {</span>
+<span class="nc" id="L369">      logger.debug(&quot;Rank was: {} -&gt; {}&quot;, runner.getRank(), packet.getRank());</span>
+<span class="nc" id="L370">      runner.setRankAtStartup(packet.getRank());</span>
+    } else {
+<span class="nc bnc" id="L372" title="All 2 branches missed.">      if (runner.getRank() &gt; packet.getRank()) {</span>
+<span class="nc" id="L373">        logger.debug(&quot;Recv Rank was: {} -&gt; {}&quot;, runner.getRank(),</span>
+<span class="nc" id="L374">                     packet.getRank());</span>
+        // if receiver, change only if current rank is upper proposed rank
+<span class="nc" id="L376">        runner.setRankAtStartup(packet.getRank());</span>
+      }
+<span class="nc bnc" id="L378" title="All 2 branches missed.">      if (packet.getOriginalSize() &gt; 0) {</span>
+<span class="nc" id="L379">        runner.setOriginalSize(packet.getOriginalSize());</span>
+      }
+    }
+<span class="nc" id="L382">  }</span>
+
+  private void setFileSizeFromRequest(final RequestPacket packet,
+                                      final DbTaskRunner runner,
+                                      boolean shouldInformBack)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L388">    logger.debug(&quot;Filesize: {}:{}&quot;, packet.getOriginalSize(),</span>
+<span class="nc" id="L389">                 runner.isSender());</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (!shouldInformBack) {</span>
+<span class="nc" id="L391">      shouldInformBack =</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">          !packet.getTransferInformation().equals(runner.getFileInformation());</span>
+    }
+<span class="nc bnc" id="L394" title="All 6 branches missed.">    if (runner.isFileMoved() &amp;&amp; runner.isSender() &amp;&amp; runner.isInTransfer() &amp;&amp;</span>
+<span class="nc bnc" id="L395" title="All 4 branches missed.">        runner.getRank() == 0 &amp;&amp; !packet.isToValidate()) {</span>
+      // File was moved during PreTask and very beginning of the transfer
+      // and the remote host has already received the request packet
+      // =&gt; Informs the receiver of the new name
+<span class="nc" id="L399">      sendFilenameFilesizeChanging(packet, runner,</span>
+                                   &quot;Will send a modification of filename due to pretask: &quot;,
+                                   &quot;Change Filename by Pre action on sender&quot;);
+<span class="nc bnc" id="L402" title="All 2 branches missed.">    } else if (!packet.getFilename().equals(runner.getOriginalFilename()) &amp;&amp;</span>
+<span class="nc bnc" id="L403" title="All 4 branches missed.">               runner.isSender() &amp;&amp; runner.isInTransfer() &amp;&amp;</span>
+<span class="nc bnc" id="L404" title="All 4 branches missed.">               runner.getRank() == 0 &amp;&amp; !packet.isToValidate()) {</span>
+      // File was modify at the very beginning (using wildcards)
+      // and the remote host has already received the request packet
+      // =&gt; Informs the receiver of the new name
+<span class="nc" id="L408">      sendFilenameFilesizeChanging(packet, runner,</span>
+                                   &quot;Will send a modification of filename due to wildcard: &quot;,
+                                   &quot;Change Filename by Wildcard on sender&quot;);
+<span class="nc bnc" id="L411" title="All 4 branches missed.">    } else if (runner.isSelfRequest() &amp;&amp; runner.isSender() &amp;&amp;</span>
+<span class="nc bnc" id="L412" title="All 4 branches missed.">               runner.isInTransfer() &amp;&amp; runner.getRank() == 0 &amp;&amp;</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">               !packet.isToValidate()) {</span>
+      // FIX SelfRequest
+      // File could be modified at the very beginning (using wildcards)
+      // and the remote host has already received the request packet
+      // =&gt; Informs the receiver of the new name
+<span class="nc" id="L418">      sendFilenameFilesizeChanging(packet, runner,</span>
+                                   &quot;Will send a modification of filename due to wildcard in SelfMode: &quot;,
+                                   &quot;Change Filename by Wildcard on sender in SelfMode&quot;);
+<span class="nc bnc" id="L421" title="All 4 branches missed.">    } else if (shouldInformBack &amp;&amp; !packet.isToValidate()) {</span>
+      // Was only (shouldInformBack)
+      // File length is now known, so inform back
+<span class="nc" id="L424">      sendFilenameFilesizeChanging(packet, runner,</span>
+                                   &quot;Will send a modification of filesize or fileInfo: &quot;,
+                                   &quot;Change Filesize / FileInfo on sender&quot;);
+    }
+<span class="nc" id="L428">  }</span>
+
+  private void informBackFromRequest(final RequestPacket packet,
+                                     final DbTaskRunner runner)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L433" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="nc bnc" id="L434" title="All 2 branches missed.">      if (Configuration.configuration.getMonitoring() != null) {</span>
+<span class="nc" id="L435">        Configuration.configuration.getMonitoring().lastInActiveTransfer =</span>
+<span class="nc" id="L436">            System.currentTimeMillis();</span>
+      }
+<span class="nc bnc" id="L438" title="All 2 branches missed.">      if (runner.isSender()) {</span>
+        // In case Wildcard was used
+<span class="nc" id="L440">        logger.debug(&quot;New FILENAME: {}&quot;, runner.getOriginalFilename());</span>
+<span class="nc" id="L441">        packet.setFilename(runner.getOriginalFilename());</span>
+<span class="nc" id="L442">        logger.debug(RANK_SET, runner.getRank());</span>
+<span class="nc" id="L443">        packet.setRank(runner.getRank());</span>
+      } else {
+<span class="nc" id="L445">        logger.debug(RANK_SET, runner.getRank());</span>
+<span class="nc" id="L446">        packet.setRank(runner.getRank());</span>
+      }
+<span class="nc" id="L448">      packet.validate();</span>
+<span class="nc" id="L449">      session.newState(REQUESTD);</span>
+<span class="nc" id="L450">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+                                            false);
+    } else {
+<span class="nc" id="L453">      session.newState(REQUESTD);</span>
+      // requester =&gt; might be a client
+      // Save the runner into the session and validate the request so begin transfer
+<span class="nc" id="L456">      session.getLocalChannelReference().getFutureRequest().setRunner(runner);</span>
+<span class="nc" id="L457">      localChannelReference.getFutureValidRequest().setSuccess();</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">      if (Configuration.configuration.getMonitoring() != null) {</span>
+<span class="nc" id="L459">        Configuration.configuration.getMonitoring().lastOutActiveTransfer =</span>
+<span class="nc" id="L460">            System.currentTimeMillis();</span>
+      }
+    }
+<span class="nc" id="L463">  }</span>
+
+  private void sendDataFromRequest(final DbTaskRunner runner) {
+<span class="nc" id="L466">    logger.debug(&quot;Try to send Data: isSender {} isSendThrough {}&quot;,</span>
+<span class="nc" id="L467">                 runner.isSender(), runner.isSendThrough());</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">    if (runner.isSender()) {</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">      if (runner.isSendThrough()) {</span>
+        // it is legal to send data from now
+<span class="nc" id="L471">        logger.debug(&quot;Now ready to continue with send through&quot;);</span>
+<span class="nc" id="L472">        localChannelReference.validateEndTransfer(</span>
+            new R66Result(session, false, ErrorCode.PreProcessingOk, runner));
+      } else {
+        // Automatically send data now
+<span class="nc" id="L476">        logger.debug(&quot;Now ready to continue with runRetrieve&quot;);</span>
+<span class="nc" id="L477">        NetworkTransaction.runRetrieve(session);</span>
+        try {
+<span class="nc" id="L479">          Thread.sleep(Configuration.RETRYINMS);</span>
+<span class="nc" id="L480">        } catch (final InterruptedException ignore) { //NOSONAR</span>
+<span class="nc" id="L481">          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="nc" id="L482">        }</span>
+      }
+    }
+<span class="nc" id="L485">  }</span>
+
+  private void createErrorFromRequestInitKo(final RequestPacket packet,
+                                            final DbTaskRunner runner)
+      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
+             OpenR66ProtocolBusinessException {
+    // not valid so create an error from there
+<span class="nc" id="L492">    final ErrorCode code =</span>
+<span class="nc" id="L493">        ErrorCode.getFromCode(String.valueOf(packet.getCode()));</span>
+<span class="nc" id="L494">    session.setBadRunner(runner, code);</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">    if (!runner.shallIgnoreSave()) {</span>
+<span class="nc" id="L496">      runner.saveStatus();</span>
+    }
+<span class="nc" id="L498">    session.newState(ERROR);</span>
+<span class="nc" id="L499">    logger.error(&quot;Bad runner at startup {} {}&quot;, packet, session);</span>
+<span class="nc" id="L500">    final ErrorPacket errorPacket =</span>
+<span class="nc" id="L501">        new ErrorPacket(code.getMesg(), code.getCode(),</span>
+                        ErrorPacket.FORWARDCLOSECODE);
+<span class="nc" id="L503">    errorMesg(errorPacket);</span>
+<span class="nc" id="L504">  }</span>
+
+  private DbTaskRunner getPreviousDbTaskRunnerFromRequest(
+      final RequestPacket packet, final DbRule rule, final boolean isRetrieve)
+      throws OpenR66ProtocolPacketException {
+    final DbTaskRunner runner;// Reload or create
+<span class="nc" id="L510">    final String requested = DbTaskRunner.getRequested(session, packet);</span>
+<span class="nc" id="L511">    final String requester = DbTaskRunner.getRequester(session, packet);</span>
+<span class="nc" id="L512">    logger.debug(&quot;DEBUG: {}:{}&quot;, packet.getSpecialId(), isRetrieve);</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+      // Id could be a creation or a reload
+      // Try reload
+<span class="nc" id="L516">      runner =</span>
+<span class="nc" id="L517">          reloadDbTaskRunner(packet, rule, isRetrieve, requested, requester);</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">      if (runner == null) {</span>
+<span class="nc" id="L519">        return null;</span>
+      }
+<span class="nc" id="L521">      final LocalChannelReference lcr =</span>
+<span class="nc" id="L522">          Configuration.configuration.getLocalTransaction().getFromRequest(</span>
+<span class="nc" id="L523">              requested + ' ' + requester + ' ' + packet.getSpecialId());</span>
+<span class="nc bnc" id="L524" title="All 2 branches missed.">      if (checkRunnerConsistency(packet, runner, lcr)) {</span>
+<span class="nc" id="L525">        return null;</span>
+      }
+
+<span class="nc bnc" id="L528" title="All 2 branches missed.">      if (runner.isAllDone()) {</span>
+        // truly an error since done
+<span class="nc" id="L530">        session.setStatus(31);</span>
+<span class="nc" id="L531">        endInitRequestInError(ErrorCode.QueryAlreadyFinished, runner,</span>
+                              new OpenR66ProtocolBusinessQueryAlreadyFinishedException(
+<span class="nc" id="L533">                                  Messages.getString(&quot;LocalServerHandler.13&quot;)</span>
+                                  //$NON-NLS-1$
+<span class="nc" id="L535">                                  + packet.getSpecialId()), packet);</span>
+<span class="nc" id="L536">        return null;</span>
+      }
+<span class="nc bnc" id="L538" title="All 2 branches missed.">      if (lcr != null) {</span>
+        // truly an error since still running
+<span class="nc" id="L540">        session.setStatus(32);</span>
+<span class="nc" id="L541">        endInitRequestInError(ErrorCode.QueryStillRunning, runner,</span>
+                              new OpenR66ProtocolBusinessQueryStillRunningException(
+<span class="nc" id="L543">                                  Messages.getString(&quot;LocalServerHandler.14&quot;)</span>
+                                  //$NON-NLS-1$
+<span class="nc" id="L545">                                  + packet.getSpecialId()), packet);</span>
+<span class="nc" id="L546">        return null;</span>
+      }
+<span class="nc" id="L548">      logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);</span>
+      // ok to restart
+      try {
+<span class="nc bnc" id="L551" title="All 2 branches missed.">        if (runner.restart(false)) {</span>
+<span class="nc" id="L552">          runner.saveStatus();</span>
+        }
+<span class="nc" id="L554">      } catch (final OpenR66RunnerErrorException ignored) {</span>
+        // nothing
+<span class="nc" id="L556">      }</span>
+      // Change the SpecialID! =&gt; could generate an error ?
+<span class="nc bnc" id="L558" title="All 2 branches missed.">      if (packet.getSpecialId() == ILLEGALVALUE) {</span>
+<span class="nc" id="L559">        packet.setSpecialId(runner.getSpecialId());</span>
+      }
+<span class="nc" id="L561">    } else {</span>
+      // Id should be a reload
+<span class="nc" id="L563">      runner = reloadDbTaskRunnerFromId(packet, rule, isRetrieve, requested,</span>
+                                        requester);
+    }
+<span class="nc" id="L566">    return runner;</span>
+  }
+
+  private boolean checkRunnerConsistency(final RequestPacket packet,
+                                         final DbTaskRunner runner,
+                                         final LocalChannelReference lcr) {
+    // Check correctness of packet received vs current LCR
+<span class="nc bnc" id="L573" title="All 2 branches missed.">    if (runner == null) {</span>
+<span class="nc" id="L574">      logger.info(&quot;Id is unknown: {}}&quot;, packet.getSpecialId());</span>
+<span class="nc" id="L575">      return true;</span>
+    }
+<span class="nc bnc" id="L577" title="All 4 branches missed.">    if (lcr != null &amp;&amp; localChannelReference != null &amp;&amp;</span>
+<span class="nc bnc" id="L578" title="All 2 branches missed.">        !runner.isSelfRequest() &amp;&amp;</span>
+<span class="nc bnc" id="L579" title="All 2 branches missed.">        (!lcr.getLocalId().equals(localChannelReference.getLocalId()) ||</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">         !lcr.getRemoteId().equals(localChannelReference.getRemoteId()))) {</span>
+<span class="nc" id="L581">      logger.warn(&quot;LocalChannelReference differs: {}\n\t {}\n\tWill while &quot; +</span>
+                  &quot;runner is AllDone: {}&quot;, localChannelReference, lcr,
+<span class="nc" id="L583">                  runner.isAllDone());</span>
+<span class="nc" id="L584">      logger.info(&quot;Id is unknown: {}}&quot;, packet.getSpecialId());</span>
+<span class="nc bnc" id="L585" title="All 2 branches missed.">      if (runner.isAllDone()) {</span>
+        try {
+<span class="nc" id="L587">          lcr.getServerHandler().tryFinalizeRequest(</span>
+<span class="nc" id="L588">              new R66Result(lcr.getSession(), false, ErrorCode.Internal,</span>
+                            runner));
+<span class="nc" id="L590">        } catch (final OpenR66RunnerErrorException ignore) {//NOSONAR</span>
+<span class="nc" id="L591">          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="nc" id="L592">        } catch (final OpenR66ProtocolSystemException ignore) {//NOSONAR</span>
+<span class="nc" id="L593">          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="nc" id="L594">        }</span>
+<span class="nc" id="L595">        lcr.close();</span>
+<span class="nc bnc" id="L596" title="All 2 branches missed.">        if (localChannelReference.getClientRunner() != null &amp;&amp;</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">            localChannelReference.getClientRunner().getTaskRunner() != null &amp;&amp;</span>
+<span class="nc" id="L598">            localChannelReference.getClientRunner().getTaskRunner()</span>
+<span class="nc bnc" id="L599" title="All 2 branches missed.">                                 .isAllDone()) {</span>
+<span class="nc" id="L600">          localChannelReference.close();</span>
+        }
+<span class="nc" id="L602">        return true;</span>
+      }
+<span class="nc" id="L604">      return false;</span>
+    }
+<span class="nc" id="L606">    return false;</span>
+  }
+
+  private DbTaskRunner reloadDbTaskRunnerFromId(final RequestPacket packet,
+                                                final DbRule rule,
+                                                final boolean isRetrieve,
+                                                final String requested,
+                                                final String requester)
+      throws OpenR66ProtocolPacketException {
+    DbTaskRunner runner;
+    try {
+<span class="nc" id="L617">      runner = new DbTaskRunner(session, rule, packet.getSpecialId(), requester,</span>
+                                requested);
+<span class="nc" id="L619">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L620" title="All 2 branches missed.">      if (localChannelReference.getDbSession() == null) {</span>
+        // Special case of no database client
+        try {
+<span class="nc" id="L623">          runner = new DbTaskRunner(session, rule, isRetrieve, packet);</span>
+<span class="nc" id="L624">          logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(),</span>
+                       runner);
+<span class="nc" id="L626">        } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L627">          session.setStatus(35);</span>
+<span class="nc" id="L628">          endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,</span>
+                                new OpenR66DatabaseGlobalException(e1), packet);
+<span class="nc" id="L630">          return null;</span>
+<span class="nc" id="L631">        }</span>
+      } else {
+<span class="nc" id="L633">        endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,</span>
+                              new OpenR66DatabaseGlobalException(e), packet);
+<span class="nc" id="L635">        session.setStatus(36);</span>
+<span class="nc" id="L636">        return null;</span>
+      }
+<span class="nc" id="L638">    }</span>
+<span class="nc" id="L639">    final LocalChannelReference lcr =</span>
+<span class="nc" id="L640">        Configuration.configuration.getLocalTransaction().getFromRequest(</span>
+<span class="nc" id="L641">            requested + ' ' + requester + ' ' + packet.getSpecialId());</span>
+<span class="nc bnc" id="L642" title="All 2 branches missed.">    if (checkRunnerConsistency(packet, runner, lcr)) {</span>
+<span class="nc" id="L643">      return null;</span>
+    }
+<span class="nc" id="L645">    runner.setSender(isRetrieve);</span>
+    // FIX check for SelfRequest
+<span class="nc bnc" id="L647" title="All 2 branches missed.">    if (runner.isSelfRequest()) {</span>
+<span class="nc" id="L648">      runner.setFilename(runner.getOriginalFilename());</span>
+    }
+<span class="nc bnc" id="L650" title="All 2 branches missed.">    if (!runner.isSender()) {</span>
+<span class="nc" id="L651">      logger.debug(&quot;New filename ? :{}&quot;, packet.getFilename());</span>
+<span class="nc" id="L652">      runner.setOriginalFilename(packet.getFilename());</span>
+<span class="nc bnc" id="L653" title="All 2 branches missed.">      if (runner.getRank() == 0) {</span>
+<span class="nc" id="L654">        runner.setFilename(packet.getFilename());</span>
+      }
+    }
+<span class="nc" id="L657">    logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);</span>
+    try {
+<span class="nc bnc" id="L659" title="All 4 branches missed.">      if (runner.restart(false) &amp;&amp; !runner.isSelfRequest()) {</span>
+<span class="nc" id="L660">        runner.saveStatus();</span>
+      }
+<span class="nc" id="L662">    } catch (final OpenR66RunnerErrorException ignored) {</span>
+      // nothing
+<span class="nc" id="L664">    }</span>
+<span class="nc" id="L665">    return runner;</span>
+  }
+
+  private DbTaskRunner reloadDbTaskRunner(final RequestPacket packet,
+                                          final DbRule rule,
+                                          final boolean isRetrieve,
+                                          final String requested,
+                                          final String requester)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L674">    DbTaskRunner runner = null;</span>
+    try {
+<span class="nc" id="L676">      runner = new DbTaskRunner(session, rule, packet.getSpecialId(), requester,</span>
+                                requested);
+      // Patch to prevent self request to be stored by sender
+<span class="nc" id="L679">      final boolean ignoreSave = runner.shallIgnoreSave();</span>
+<span class="nc" id="L680">      runner.setSender(isRetrieve);</span>
+<span class="nc" id="L681">      logger.debug(&quot;DEBUG: {}:{}:{}:{}&quot;, runner.getSpecialId(), ignoreSave,</span>
+<span class="nc" id="L682">                   runner.shallIgnoreSave(), isRetrieve);</span>
+<span class="nc bnc" id="L683" title="All 4 branches missed.">      if (ignoreSave &amp;&amp; !runner.shallIgnoreSave() &amp;&amp;</span>
+<span class="nc bnc" id="L684" title="All 2 branches missed.">          !runner.checkFromDbForSubmit()) {</span>
+        // Since status changed, it means that object should be created and not reloaded
+        // But in case of submit, item already exist so shall be loaded from database
+<span class="nc" id="L687">        throw new WaarpDatabaseNoDataException(</span>
+            &quot;False load, must reopen and create DbTaskRunner&quot;);
+      }
+<span class="nc" id="L690">    } catch (final WaarpDatabaseNoDataException e) {</span>
+      // Reception of request from requester host
+      try {
+<span class="nc" id="L693">        runner = new DbTaskRunner(session, rule, isRetrieve, packet);</span>
+<span class="nc" id="L694">        logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(),</span>
+                     runner);
+<span class="nc" id="L696">      } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L697">        session.setStatus(33);</span>
+<span class="nc" id="L698">        endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,</span>
+                              new OpenR66DatabaseGlobalException(e), packet);
+<span class="nc" id="L700">        return null;</span>
+<span class="nc" id="L701">      }</span>
+<span class="nc" id="L702">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L703">      session.setStatus(34);</span>
+<span class="nc" id="L704">      endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,</span>
+                            new OpenR66DatabaseGlobalException(e), packet);
+<span class="nc" id="L706">      return null;</span>
+<span class="nc" id="L707">    }</span>
+<span class="nc" id="L708">    return runner;</span>
+  }
+
+  private void requestCheckConstraintsTrue(final RequestPacket packet)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L713" title="All 2 branches missed.">    if (Configuration.configuration.getR66Mib() != null) {</span>
+<span class="nc" id="L714">      Configuration.configuration.getR66Mib().notifyOverloaded(</span>
+<span class="nc" id="L715">          &quot;Rule: &quot; + packet.getRulename() + &quot; from &quot; + session.getAuth(),</span>
+<span class="nc" id="L716">          Configuration.configuration.getConstraintLimitHandler().lastAlert);</span>
+    }
+<span class="nc" id="L718">    logger.warn(Messages.getString(&quot;LocalServerHandler.8&quot;) //$NON-NLS-1$</span>
+<span class="nc" id="L719">                + packet.getRulename() + &quot; while &quot; +</span>
+<span class="nc" id="L720">                Configuration.configuration.getConstraintLimitHandler().lastAlert +</span>
+<span class="nc" id="L721">                &quot; from &quot; + session.getAuth());</span>
+<span class="nc" id="L722">    session.setStatus(100);</span>
+<span class="nc" id="L723">    endInitRequestInError(ErrorCode.ServerOverloaded, null,</span>
+                          new OpenR66ProtocolNotYetConnectionException(
+                              &quot;Limit exceeded &quot; +
+<span class="nc" id="L726">                              Configuration.configuration.getConstraintLimitHandler().lastAlert),</span>
+                          packet);
+<span class="nc" id="L728">    session.setStatus(100);</span>
+<span class="nc" id="L729">  }</span>
+
+  /**
+   * Send a Filename/Filesize change to the partner
+   *
+   * @param packet
+   * @param runner
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  private void sendFilenameFilesizeChanging(final RequestPacket packet,
+                                            final DbTaskRunner runner,
+                                            final String debug,
+                                            final String info)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L744">    logger.debug(&quot;{}{}&quot;, debug, runner.getFilename());</span>
+<span class="nc" id="L745">    session.newState(VALID);</span>
+<span class="nc bnc" id="L746" title="All 2 branches missed.">    if (localChannelReference.getPartner().useJson()) {</span>
+<span class="nc" id="L747">      final RequestJsonPacket request = new RequestJsonPacket();</span>
+<span class="nc" id="L748">      request.setComment(info);</span>
+<span class="nc" id="L749">      request.setFilename(runner.getFilename());</span>
+<span class="nc" id="L750">      request.setFilesize(packet.getOriginalSize());</span>
+<span class="nc" id="L751">      final String infoTransfer = runner.getFileInformation();</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">      if (infoTransfer != null &amp;&amp;</span>
+<span class="nc bnc" id="L753" title="All 2 branches missed.">          !infoTransfer.equals(packet.getTransferInformation())) {</span>
+<span class="nc" id="L754">        request.setFileInfo(runner.getFileInformation());</span>
+      }
+<span class="nc" id="L756">      final JsonCommandPacket validPacket =</span>
+          new JsonCommandPacket(request, LocalPacketFactory.REQUESTPACKET);
+<span class="nc" id="L758">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, validPacket,</span>
+                                            false);
+<span class="nc" id="L760">    } else {</span>
+<span class="nc" id="L761">      final String infoTransfer = runner.getFileInformation();</span>
+      final ValidPacket validPacket;
+<span class="nc bnc" id="L763" title="All 2 branches missed.">      if (infoTransfer != null &amp;&amp;</span>
+<span class="nc bnc" id="L764" title="All 2 branches missed.">          !infoTransfer.equals(packet.getTransferInformation()) &amp;&amp;</span>
+<span class="nc bnc" id="L765" title="All 2 branches missed.">          localChannelReference.getPartner().changeFileInfoEnabled()) {</span>
+<span class="nc" id="L766">        validPacket = new ValidPacket(info, runner.getFilename() +</span>
+                                            PartnerConfiguration.BAR_SEPARATOR_FIELD +
+<span class="nc" id="L768">                                            packet.getOriginalSize() +</span>
+                                            PartnerConfiguration.BAR_SEPARATOR_FIELD +
+<span class="nc" id="L770">                                            packet.getTransferInformation(),</span>
+                                      LocalPacketFactory.REQUESTPACKET);
+      } else {
+<span class="nc" id="L773">        validPacket = new ValidPacket(info, runner.getFilename() +</span>
+                                            PartnerConfiguration.BAR_SEPARATOR_FIELD +
+<span class="nc" id="L775">                                            packet.getOriginalSize(),</span>
+                                      LocalPacketFactory.REQUESTPACKET);
+      }
+<span class="nc" id="L778">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, validPacket,</span>
+                                            false);
+    }
+<span class="nc" id="L781">  }</span>
+
+  /**
+   * Send an error
+   *
+   * @param message
+   * @param code
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  private void errorToSend(final String message, final ErrorCode code,
+                           final int status)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L794">    session.newState(ERROR);</span>
+    try {
+<span class="nc" id="L796">      session.setFinalizeTransfer(false, new R66Result(</span>
+          new OpenR66ProtocolPacketException(message), session, true, code,
+<span class="nc" id="L798">          session.getRunner()));</span>
+<span class="nc" id="L799">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L800">      localChannelReference.invalidateRequest(</span>
+<span class="nc" id="L801">          new R66Result(e1, session, true, code, session.getRunner()));</span>
+<span class="nc" id="L802">    } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L803">      localChannelReference.invalidateRequest(</span>
+<span class="nc" id="L804">          new R66Result(e1, session, true, code, session.getRunner()));</span>
+<span class="nc" id="L805">    }</span>
+<span class="nc" id="L806">    final ErrorPacket error =</span>
+<span class="nc" id="L807">        new ErrorPacket(message, code.getCode(), ErrorPacket.FORWARDCLOSECODE);</span>
+<span class="nc" id="L808">    ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, false);</span>
+<span class="nc" id="L809">    session.setStatus(status);</span>
+<span class="nc" id="L810">    ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L811">  }</span>
+
+  /**
+   * Receive a data block
+   *
+   * @param packet
+   *
+   * @throws OpenR66ProtocolNotAuthenticatedException
+   * @throws OpenR66ProtocolBusinessException
+   * @throws OpenR66ProtocolPacketException
+   */
+  public final void data(final DataPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolBusinessException, OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L825" title="All 2 branches missed.">    if (!session.isAuthenticated()) {</span>
+<span class="nc" id="L826">      logger.info(&quot;Not authenticated while Data received&quot;);</span>
+<span class="nc" id="L827">      packet.clear();</span>
+<span class="nc" id="L828">      throw new OpenR66ProtocolNotAuthenticatedException(</span>
+          &quot;Not authenticated while Data received&quot;);
+    }
+<span class="nc bnc" id="L831" title="All 2 branches missed.">    if (!session.isReady()) {</span>
+<span class="nc" id="L832">      logger.info(&quot;No request prepared&quot;);</span>
+<span class="nc" id="L833">      packet.clear();</span>
+<span class="nc" id="L834">      throw new OpenR66ProtocolBusinessException(&quot;No request prepared&quot;);</span>
+    }
+<span class="nc bnc" id="L836" title="All 2 branches missed.">    if (session.getRunner().isSender()) {</span>
+<span class="nc" id="L837">      logger.error(&quot;Not in receive MODE but receive a packet&quot;);</span>
+<span class="nc" id="L838">      packet.clear();</span>
+<span class="nc" id="L839">      throw new OpenR66ProtocolBusinessException(</span>
+          &quot;Not in receive MODE but receive a packet&quot;);
+    }
+<span class="nc bnc" id="L842" title="All 2 branches missed.">    if (!session.getRunner().continueTransfer()) {</span>
+<span class="nc" id="L843">      logger.debug(&quot;EndTransfer failed ? {}&quot;,</span>
+<span class="nc" id="L844">                   localChannelReference.getFutureEndTransfer().isFailed());</span>
+<span class="nc bnc" id="L845" title="All 2 branches missed.">      if (localChannelReference.getFutureEndTransfer().isFailed()) {</span>
+        // nothing to do since already done
+<span class="nc" id="L847">        session.setStatus(94);</span>
+<span class="nc" id="L848">        packet.clear();</span>
+<span class="nc" id="L849">        return;</span>
+      }
+<span class="nc" id="L851">      errorToSend(&quot;Transfer in error due previously aborted transmission&quot;,</span>
+                  ErrorCode.TransferError, 95);
+<span class="nc" id="L853">      packet.clear();</span>
+<span class="nc" id="L854">      return;</span>
+    }
+<span class="nc bnc" id="L856" title="All 2 branches missed.">    if (packet.getPacketRank() != session.getRunner().getRank()) {</span>
+<span class="nc" id="L857">      logger.info(&quot;Issue on rank: {}:{}&quot;, packet.getPacketRank(),</span>
+<span class="nc" id="L858">                  session.getRunner().getRank());</span>
+<span class="nc bnc" id="L859" title="All 2 branches missed.">      if (!session.addError()) {</span>
+        // cannot continue
+<span class="nc" id="L861">        logger.error(Messages.getString(&quot;LocalServerHandler.15&quot;) +</span>
+<span class="nc" id="L862">                     packet.getPacketRank() + &quot; : &quot; + //$NON-NLS-1$</span>
+<span class="nc" id="L863">                     session.getRunner().getRank() + &quot; from {}&quot;,</span>
+<span class="nc" id="L864">                     session.getRunner());</span>
+<span class="nc" id="L865">        errorToSend(</span>
+<span class="nc" id="L866">            &quot;Too much Bad Rank in transmission: &quot; + packet.getPacketRank(),</span>
+            ErrorCode.TransferError, 96);
+<span class="nc" id="L868">        packet.clear();</span>
+<span class="nc" id="L869">        return;</span>
+      }
+      // Fix the rank if possible
+<span class="nc bnc" id="L872" title="All 2 branches missed.">      if (packet.getPacketRank() &lt; session.getRunner().getRank()) {</span>
+<span class="nc" id="L873">        logger.info(&quot;Bad RANK: {} : {}&quot;, packet.getPacketRank(),</span>
+<span class="nc" id="L874">                    session.getRunner().getRank());</span>
+<span class="nc" id="L875">        session.getRunner().setRankAtStartup(packet.getPacketRank());</span>
+<span class="nc" id="L876">        session.getRestart().restartMarker(</span>
+<span class="nc" id="L877">            (long) session.getRunner().getBlocksize() *</span>
+<span class="nc" id="L878">            session.getRunner().getRank());</span>
+        try {
+<span class="nc" id="L880">          session.getFile().restartMarker(session.getRestart());</span>
+<span class="nc" id="L881">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L882">          logger.error(&quot;Bad RANK: &quot; + packet.getPacketRank() + &quot; : &quot; +</span>
+<span class="nc" id="L883">                       session.getRunner().getRank());</span>
+<span class="nc" id="L884">          errorToSend(&quot;Bad Rank in transmission even after retry: &quot; +</span>
+<span class="nc" id="L885">                      packet.getPacketRank(), ErrorCode.TransferError, 96);</span>
+<span class="nc" id="L886">          packet.clear();</span>
+<span class="nc" id="L887">          return;</span>
+<span class="nc" id="L888">        }</span>
+      } else {
+        // really bad
+<span class="nc" id="L891">        logger.error(&quot;Bad RANK: &quot; + packet.getPacketRank() + &quot; : &quot; +</span>
+<span class="nc" id="L892">                     session.getRunner().getRank());</span>
+<span class="nc" id="L893">        errorToSend(</span>
+<span class="nc" id="L894">            &quot;Bad Rank in transmission: &quot; + packet.getPacketRank() + &quot; &gt; &quot; +</span>
+<span class="nc" id="L895">            session.getRunner().getRank(), ErrorCode.TransferError, 20);</span>
+<span class="nc" id="L896">        packet.clear();</span>
+<span class="nc" id="L897">        return;</span>
+      }
+    }
+    // Check global size
+<span class="nc" id="L901">    final long originalSize = session.getRunner().getOriginalSize();</span>
+<span class="nc bnc" id="L902" title="All 2 branches missed.">    if (originalSize &gt; 0) {</span>
+<span class="nc" id="L903">      if ((long) session.getRunner().getBlocksize() *</span>
+<span class="nc bnc" id="L904" title="All 2 branches missed.">          (session.getRunner().getRank() - 1) &gt; originalSize) {</span>
+        // cannot continue
+<span class="nc" id="L906">        logger.error(Messages.getString(&quot;LocalServerHandler.16&quot;) +</span>
+<span class="nc" id="L907">                     packet.getPacketRank() + &quot; : &quot; + //$NON-NLS-1$</span>
+<span class="nc" id="L908">                     (originalSize / session.getRunner().getBlocksize() + 1) +</span>
+<span class="nc" id="L909">                     &quot; from {}&quot;, session.getRunner());</span>
+<span class="nc" id="L910">        errorToSend(&quot;Too much data transferred: &quot; + packet.getPacketRank(),</span>
+                    ErrorCode.TransferError, 96);
+<span class="nc" id="L912">        packet.clear();</span>
+<span class="nc" id="L913">        return;</span>
+      }
+    }
+    // if MD5 check MD5
+<span class="nc bnc" id="L917" title="All 2 branches missed.">    if (RequestPacket.isMD5Mode(session.getRunner().getMode())) {</span>
+<span class="nc" id="L918">      logger.debug(&quot;AlgoDigest: {}&quot;,</span>
+<span class="nc bnc" id="L919" title="All 2 branches missed.">                   (localChannelReference.getPartner() != null?</span>
+<span class="nc" id="L920">                       localChannelReference.getPartner().getDigestAlgo() :</span>
+                       &quot;usual algo&quot;));
+<span class="nc bnc" id="L922" title="All 2 branches missed.">      if (Configuration.configuration.isGlobalDigest()) {</span>
+        // Cumulate all three digests
+<span class="nc bnc" id="L924" title="All 2 branches missed.">        if (!packet.isKeyValid(session.getDigestBlock(), globalDigest,</span>
+                               localDigest)) {
+          // Wrong packet
+<span class="nc" id="L927">          logger.error(Messages.getString(&quot;LocalServerHandler.17&quot;), packet,</span>
+                       //$NON-NLS-1$
+<span class="nc" id="L929">                       localChannelReference.getPartner()</span>
+<span class="nc" id="L930">                                            .getDigestAlgo().algoName);</span>
+<span class="nc" id="L931">          errorToSend(&quot;Transfer in error due to bad Hash on data packet &quot; +</span>
+                      &quot;during multiple Digests (&quot; +
+<span class="nc" id="L933">                      localChannelReference.getPartner()</span>
+<span class="nc" id="L934">                                           .getDigestAlgo().algoName + ')',</span>
+                      ErrorCode.MD5Error, 21);
+<span class="nc" id="L936">          packet.clear();</span>
+<span class="nc" id="L937">          return;</span>
+        }
+        // Only Packet digest and maybe localDigest
+<span class="nc bnc" id="L940" title="All 2 branches missed.">      } else if (!packet.isKeyValid(session.getDigestBlock(), null,</span>
+                                    localDigest)) {
+        // Wrong packet
+<span class="nc" id="L943">        logger.error(Messages.getString(&quot;LocalServerHandler.17&quot;), packet,</span>
+                     //$NON-NLS-1$
+<span class="nc" id="L945">                     localChannelReference.getPartner()</span>
+<span class="nc" id="L946">                                          .getDigestAlgo().algoName);</span>
+<span class="nc" id="L947">        errorToSend(&quot;Transfer in error due to bad Hash on data packet (&quot; +</span>
+<span class="nc" id="L948">                    localChannelReference.getPartner()</span>
+<span class="nc" id="L949">                                         .getDigestAlgo().algoName + ')',</span>
+                    ErrorCode.MD5Error, 21);
+<span class="nc" id="L951">        packet.clear();</span>
+<span class="nc" id="L952">        return;</span>
+      }
+<span class="nc bnc" id="L954" title="All 2 branches missed.">    } else if (Configuration.configuration.isGlobalDigest()) {</span>
+      // Only Global digests
+<span class="nc" id="L956">      FileUtils.computeGlobalHash(globalDigest, localDigest, packet.getData(),</span>
+<span class="nc" id="L957">                                  packet.getLengthPacket());</span>
+    }
+<span class="nc bnc" id="L959" title="All 2 branches missed.">    if ((session.getRunner().isRecvThrough() ||</span>
+<span class="nc bnc" id="L960" title="All 2 branches missed.">         ClientRunner.isRecvHandlerJunit()) &amp;&amp;</span>
+<span class="nc bnc" id="L961" title="All 2 branches missed.">        localChannelReference.isRecvThroughMode()) {</span>
+      try {
+<span class="nc" id="L963">        localChannelReference.getRecvThroughHandler()</span>
+<span class="nc" id="L964">                             .writeBytes(packet.getData(),</span>
+<span class="nc" id="L965">                                         packet.getLengthPacket());</span>
+<span class="nc" id="L966">        session.getRunner().incrementRank();</span>
+<span class="nc bnc" id="L967" title="All 2 branches missed.">        if (packet.getPacketRank() % 100 == 1) {</span>
+<span class="nc" id="L968">          logger.debug(&quot;Good RANK: {} : {}&quot;, packet.getPacketRank(),</span>
+<span class="nc" id="L969">                       session.getRunner().getRank());</span>
+        }
+      } finally {
+<span class="nc" id="L972">        packet.clear();</span>
+<span class="nc" id="L973">      }</span>
+    } else {
+<span class="nc" id="L975">      final DataBlock dataBlock = new DataBlock();</span>
+<span class="nc" id="L976">      dataBlock.setBlock(packet.getData());</span>
+<span class="nc" id="L977">      dataBlock.setByteCount(packet.getLengthPacket());</span>
+      try {
+<span class="nc" id="L979">        session.getFile().writeDataBlock(dataBlock);</span>
+<span class="nc" id="L980">        session.getRunner().incrementRank();</span>
+<span class="nc bnc" id="L981" title="All 2 branches missed.">        if (packet.getPacketRank() % 100 == 1) {</span>
+<span class="nc" id="L982">          logger.debug(&quot;Good RANK: {} : {}&quot;, packet.getPacketRank(),</span>
+<span class="nc" id="L983">                       session.getRunner().getRank());</span>
+        }
+<span class="nc" id="L985">      } catch (final FileTransferException e) {</span>
+<span class="nc" id="L986">        errorToSend(&quot;Transfer in error&quot;, ErrorCode.TransferError, 22);</span>
+      } finally {
+<span class="nc" id="L988">        dataBlock.clear();</span>
+<span class="nc" id="L989">        packet.clear();</span>
+      }
+    }
+<span class="nc" id="L992">  }</span>
+
+  private void prepareGlobalDigests() {
+<span class="nc bnc" id="L995" title="All 2 branches missed.">    if (Configuration.configuration.isGlobalDigest()) {</span>
+<span class="nc bnc" id="L996" title="All 2 branches missed.">      if (globalDigest == null) {</span>
+        try {
+          // check if first block, since if not, digest will be only partial
+<span class="nc bnc" id="L999" title="All 2 branches missed.">          if (session.getRunner().getRank() &gt; 0) {</span>
+<span class="nc" id="L1000">            localChannelReference.setPartialHash();</span>
+          }
+<span class="nc bnc" id="L1002" title="All 2 branches missed.">          if (localChannelReference.getPartner() != null &amp;&amp;</span>
+<span class="nc bnc" id="L1003" title="All 2 branches missed.">              localChannelReference.getPartner().useFinalHash()) {</span>
+<span class="nc" id="L1004">            final DigestAlgo algo =</span>
+<span class="nc" id="L1005">                localChannelReference.getPartner().getDigestAlgo();</span>
+<span class="nc bnc" id="L1006" title="All 2 branches missed.">            if (algo != Configuration.configuration.getDigest()) {</span>
+<span class="nc" id="L1007">              globalDigest = new FilesystemBasedDigest(algo);</span>
+<span class="nc bnc" id="L1008" title="All 2 branches missed.">              if (Configuration.configuration.isLocalDigest() &amp;&amp;</span>
+<span class="nc bnc" id="L1009" title="All 2 branches missed.">                  !localChannelReference.isPartialHash()) {</span>
+<span class="nc" id="L1010">                localDigest = new FilesystemBasedDigest(</span>
+<span class="nc" id="L1011">                    Configuration.configuration.getDigest());</span>
+              }
+            }
+          }
+<span class="nc bnc" id="L1015" title="All 2 branches missed.">          if (globalDigest == null &amp;&amp;</span>
+<span class="nc bnc" id="L1016" title="All 2 branches missed.">              Configuration.configuration.isLocalDigest() &amp;&amp;</span>
+<span class="nc bnc" id="L1017" title="All 2 branches missed.">              !localChannelReference.isPartialHash()) {</span>
+<span class="nc" id="L1018">            globalDigest = new FilesystemBasedDigest(</span>
+<span class="nc" id="L1019">                Configuration.configuration.getDigest());</span>
+<span class="nc" id="L1020">            localDigest = null;</span>
+          }
+<span class="nc" id="L1022">        } catch (final NoSuchAlgorithmException ignored) {</span>
+          // nothing
+<span class="nc" id="L1024">        }</span>
+<span class="nc" id="L1025">        logger.debug(&quot;GlobalDigest: {} different? {}&quot;,</span>
+<span class="nc bnc" id="L1026" title="All 2 branches missed.">                     localChannelReference.getPartner().getDigestAlgo(),</span>
+<span class="nc" id="L1027">                     localDigest != null);</span>
+      }
+<span class="nc bnc" id="L1029" title="All 2 branches missed.">    } else if (Configuration.configuration.isLocalDigest()) {</span>
+      // check if first block, since if not, digest will be only partial
+<span class="nc bnc" id="L1031" title="All 2 branches missed.">      if (session.getRunner().getRank() &gt; 0) {</span>
+<span class="nc" id="L1032">        localChannelReference.setPartialHash();</span>
+      } else {
+        try {
+<span class="nc" id="L1035">          localDigest = new FilesystemBasedDigest(</span>
+<span class="nc" id="L1036">              Configuration.configuration.getDigest());</span>
+<span class="nc" id="L1037">        } catch (final NoSuchAlgorithmException ignored) {</span>
+          // nothing
+<span class="nc" id="L1039">        }</span>
+      }
+<span class="nc" id="L1041">      logger.debug(&quot;LocalDigest: {}&quot;, Configuration.configuration.getDigest());</span>
+    }
+<span class="nc" id="L1043">  }</span>
+
+  /**
+   * Receive an End of Transfer
+   *
+   * @param packet
+   *
+   * @throws OpenR66ProtocolNotAuthenticatedException
+   */
+  public final void endTransfer(final EndTransferPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException {
+<span class="nc bnc" id="L1054" title="All 2 branches missed.">    if (!session.isAuthenticated()) {</span>
+<span class="nc" id="L1055">      throw new OpenR66ProtocolNotAuthenticatedException(</span>
+          &quot;Not authenticated while EndTransfer received&quot;);
+    }
+    // Check end of transfer
+<span class="nc" id="L1059">    final long originalSize = session.getRunner().getOriginalSize();</span>
+<span class="nc" id="L1060">    logger.debug(&quot;OSize: {} isSender: {}&quot;, originalSize,</span>
+<span class="nc" id="L1061">                 session.getRunner().isSender());</span>
+    try {
+<span class="nc" id="L1063">      session.getFile().closeFile();</span>
+<span class="nc" id="L1064">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L1065">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L1066">    }</span>
+<span class="nc bnc" id="L1067" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+      // check if possible originalSize
+<span class="nc bnc" id="L1069" title="All 4 branches missed.">      if (originalSize &gt; 0 &amp;&amp; checkOriginalSize(originalSize)) {</span>
+<span class="nc" id="L1070">        return;</span>
+      }
+      // check if possible Global Digest
+<span class="nc bnc" id="L1073" title="All 2 branches missed.">      if (checkGlobalDigest(packet)) {</span>
+<span class="nc" id="L1074">        return;</span>
+      }
+<span class="nc" id="L1076">      session.newState(ENDTRANSFERS);</span>
+<span class="nc" id="L1077">      fromEndTransferSToTransferR(packet);</span>
+    } else {
+<span class="nc" id="L1079">      session.newState(ENDTRANSFERR);</span>
+      // Validation of end of transfer
+<span class="nc bnc" id="L1081" title="All 2 branches missed.">      if (!localChannelReference.getFutureRequest().isDone() &amp;&amp;</span>
+<span class="nc bnc" id="L1082" title="All 2 branches missed.">          endTransferR()) {</span>
+        // nothing
+      }
+    }
+<span class="nc" id="L1086">  }</span>
+
+  private void fromEndTransferSToTransferR(final EndTransferPacket packet) {
+<span class="nc bnc" id="L1089" title="All 2 branches missed.">    if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="nc" id="L1090">      session.newState(ENDTRANSFERR);</span>
+<span class="nc bnc" id="L1091" title="All 2 branches missed.">      if (endTransferR()) {</span>
+<span class="nc" id="L1092">        return;</span>
+      }
+      // Now can send validation
+<span class="nc" id="L1095">      packet.validate();</span>
+      try {
+<span class="nc" id="L1097">        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+                                              false);
+<span class="nc" id="L1099">      } catch (final OpenR66ProtocolPacketException e) {</span>
+        // ignore
+<span class="nc" id="L1101">      }</span>
+    } else {
+      // in error due to a previous status (like bad MD5)
+<span class="nc" id="L1104">      logger.error(Messages.getString(&quot;LocalServerHandler.20&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L1105">      session.setStatus(23);</span>
+<span class="nc" id="L1106">      localChannelReference.close();</span>
+    }
+<span class="nc" id="L1108">  }</span>
+
+  private boolean checkGlobalDigest(final EndTransferPacket packet) {
+<span class="nc" id="L1111">    final String hash = packet.getOptional();</span>
+<span class="nc" id="L1112">    logger.debug(&quot;GlobalDigest: {} different? {} remoteHash? {}&quot;,</span>
+<span class="nc bnc" id="L1113" title="All 2 branches missed.">                 localChannelReference.getPartner().getDigestAlgo(),</span>
+<span class="nc bnc" id="L1114" title="All 2 branches missed.">                 localDigest != null, hash != null);</span>
+<span class="nc bnc" id="L1115" title="All 4 branches missed.">    if (hash != null &amp;&amp; globalDigest != null) {</span>
+<span class="nc" id="L1116">      String localhash = FilesystemBasedDigest.getHex(globalDigest.Final());</span>
+<span class="nc" id="L1117">      globalDigest = null;</span>
+<span class="nc bnc" id="L1118" title="All 2 branches missed.">      if (!localhash.equalsIgnoreCase(hash)) {</span>
+        // bad global Hash
+<span class="nc" id="L1120">        logger.warn(&quot;Partner GlobalHash error: {}&quot;,</span>
+<span class="nc" id="L1121">                    localChannelReference.getPartner());</span>
+<span class="nc" id="L1122">        final R66Result result = new R66Result(new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L1123">            Messages.getString(&quot;LocalServerHandler.19&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L1124">            localChannelReference.getPartner().getDigestAlgo().algoName + ')'),</span>
+                                               session, true,
+                                               ErrorCode.MD5Error,
+<span class="nc" id="L1127">                                               session.getRunner());</span>
+        try {
+<span class="nc" id="L1129">          session.setFinalizeTransfer(false, result);</span>
+<span class="nc" id="L1130">        } catch (final OpenR66RunnerErrorException ignored) {</span>
+          // nothing
+<span class="nc" id="L1132">        } catch (final OpenR66ProtocolSystemException ignored) {</span>
+          // nothing
+<span class="nc" id="L1134">        }</span>
+<span class="nc" id="L1135">        final ErrorPacket error = new ErrorPacket(</span>
+            &quot;Global Hash in error, transfer in error and rank should be reset to 0 (using &quot; +
+<span class="nc" id="L1137">            localChannelReference.getPartner().getDigestAlgo().algoName + ')',</span>
+<span class="nc" id="L1138">            ErrorCode.MD5Error.getCode(), ErrorPacket.FORWARDCLOSECODE);</span>
+        try {
+<span class="nc" id="L1140">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                                false);
+<span class="nc" id="L1142">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L1144">        }</span>
+<span class="nc" id="L1145">        session.setStatus(23);</span>
+<span class="nc" id="L1146">        ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L1147">        localDigest = null;</span>
+<span class="nc" id="L1148">        globalDigest = null;</span>
+<span class="nc" id="L1149">        return true;</span>
+<span class="nc bnc" id="L1150" title="All 2 branches missed.">      } else if (Configuration.configuration.isLocalDigest()) {</span>
+<span class="nc bnc" id="L1151" title="All 2 branches missed.">        if (localDigest != null) {</span>
+<span class="nc" id="L1152">          localhash = FilesystemBasedDigest.getHex(localDigest.Final());</span>
+        }
+<span class="nc" id="L1154">        localChannelReference.setHashComputeDuringTransfer(localhash);</span>
+<span class="nc" id="L1155">        logger.debug(&quot;Global digest ok&quot;);</span>
+      }
+<span class="nc bnc" id="L1157" title="All 6 branches missed.">    } else if (Configuration.configuration.isLocalDigest() &amp;&amp;</span>
+               (globalDigest != null || localDigest != null)) {
+      final String localhash;
+<span class="nc bnc" id="L1160" title="All 2 branches missed.">      if (localDigest != null) {</span>
+<span class="nc" id="L1161">        localhash = FilesystemBasedDigest.getHex(localDigest.Final());</span>
+      } else {
+<span class="nc" id="L1163">        localhash = FilesystemBasedDigest.getHex(globalDigest.Final());</span>
+      }
+<span class="nc" id="L1165">      globalDigest = null;</span>
+<span class="nc" id="L1166">      localChannelReference.setHashComputeDuringTransfer(localhash);</span>
+    }
+<span class="nc" id="L1168">    localDigest = null;</span>
+<span class="nc" id="L1169">    globalDigest = null;</span>
+<span class="nc" id="L1170">    return false;</span>
+  }
+
+  private boolean checkOriginalSize(final long originalSize) {
+    try {
+<span class="nc bnc" id="L1175" title="All 2 branches missed.">      if (!session.getRunner().isRecvThrough() &amp;&amp;</span>
+<span class="nc bnc" id="L1176" title="All 2 branches missed.">          session.getFile().length() != originalSize ||</span>
+<span class="nc bnc" id="L1177" title="All 2 branches missed.">          session.getFile().length() == 0) {</span>
+<span class="nc" id="L1178">        final String sizesDiffer =</span>
+            &quot;: size differs from &quot; + originalSize + &quot; to &quot; +
+<span class="nc" id="L1180">            session.getFile().length() + &quot; at rank &quot; +</span>
+<span class="nc" id="L1181">            session.getRunner().getRank();</span>
+<span class="nc" id="L1182">        final R66Result result = new R66Result(new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L1183">            Messages.getString(&quot;LocalServerHandler.18&quot;) + sizesDiffer),//$NON</span>
+                                               // -NLS-1$
+                                               session, true,
+                                               ErrorCode.TransferError,
+<span class="nc" id="L1187">                                               session.getRunner());</span>
+        try {
+<span class="nc" id="L1189">          session.setFinalizeTransfer(false, result);</span>
+<span class="nc" id="L1190">        } catch (final OpenR66RunnerErrorException ignored) {</span>
+          // nothing
+<span class="nc" id="L1192">        } catch (final OpenR66ProtocolSystemException ignored) {</span>
+          // nothing
+<span class="nc" id="L1194">        }</span>
+<span class="nc" id="L1195">        final ErrorPacket error = new ErrorPacket(</span>
+            &quot;Final size in error, transfer in error and rank should be reset to 0&quot; +
+<span class="nc" id="L1197">            sizesDiffer, ErrorCode.TransferError.getCode(),</span>
+            ErrorPacket.FORWARDCLOSECODE);
+        try {
+<span class="nc" id="L1200">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                                false);
+<span class="nc" id="L1202">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L1204">        }</span>
+<span class="nc" id="L1205">        session.setStatus(23);</span>
+<span class="nc" id="L1206">        ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L1207">        return true;</span>
+      }
+<span class="nc" id="L1209">    } catch (final CommandAbstractException e) {</span>
+      // ignore
+<span class="nc" id="L1211">    }</span>
+<span class="nc" id="L1212">    return false;</span>
+  }
+
+  private void errorEndTransferR() {
+<span class="nc" id="L1216">    session.newState(ERROR);</span>
+    final ErrorPacket error;
+<span class="nc bnc" id="L1218" title="All 2 branches missed.">    if (localChannelReference.getFutureRequest().getResult() != null) {</span>
+<span class="nc" id="L1219">      final R66Result result =</span>
+<span class="nc" id="L1220">          localChannelReference.getFutureRequest().getResult();</span>
+<span class="nc" id="L1221">      error = new ErrorPacket(</span>
+<span class="nc" id="L1222">          &quot;Error while finalizing transfer: &quot; + result.getMessage(),</span>
+<span class="nc" id="L1223">          result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);</span>
+<span class="nc" id="L1224">    } else {</span>
+<span class="nc" id="L1225">      error = new ErrorPacket(&quot;Error while finalizing transfer&quot;,</span>
+<span class="nc" id="L1226">                              ErrorCode.FinalOp.getCode(),</span>
+                              ErrorPacket.FORWARDCLOSECODE);
+    }
+    try {
+<span class="nc" id="L1230">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                            false);
+<span class="nc" id="L1232">    } catch (final OpenR66ProtocolPacketException ignored) {</span>
+      // nothing
+<span class="nc" id="L1234">    }</span>
+<span class="nc" id="L1235">    session.setStatus(23);</span>
+<span class="nc" id="L1236">    ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L1237">  }</span>
+
+  private boolean endTransferR() {
+    // Finish with post Operation
+<span class="nc" id="L1241">    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,</span>
+<span class="nc" id="L1242">                                           session.getRunner());</span>
+    try {
+<span class="nc" id="L1244">      session.setFinalizeTransfer(true, result);</span>
+<span class="nc" id="L1245">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L1246">      errorEndTransferR();</span>
+<span class="nc" id="L1247">      return true;</span>
+<span class="nc" id="L1248">    } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L1249">      errorEndTransferR();</span>
+<span class="nc" id="L1250">      return true;</span>
+<span class="nc" id="L1251">    }</span>
+<span class="nc" id="L1252">    return false;</span>
+  }
+
+  /**
+   * Receive an End of Request
+   *
+   * @param packet
+   *
+   * @throws OpenR66RunnerErrorException
+   * @throws OpenR66ProtocolSystemException
+   * @throws OpenR66ProtocolNotAuthenticatedException
+   */
+  public final void endRequest(final EndRequestPacket packet) {
+    // Validate the last post action on a transfer from receiver remote host
+<span class="nc" id="L1266">    logger.info(&quot;Valid Request {} Packet {}&quot;, localChannelReference, packet);</span>
+<span class="nc" id="L1267">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="nc bnc" id="L1268" title="All 2 branches missed.">    logger.debug(&quot;Runner endRequest: {}&quot;, session.getRunner() != null);</span>
+<span class="nc bnc" id="L1269" title="All 2 branches missed.">    if (runner != null) {</span>
+<span class="nc" id="L1270">      runner.setAllDone();</span>
+      try {
+<span class="nc" id="L1272">        runner.saveStatus();</span>
+<span class="nc" id="L1273">      } catch (final OpenR66RunnerErrorException e) {</span>
+        // ignore
+<span class="nc" id="L1275">      }</span>
+<span class="nc" id="L1276">      runner.clean();</span>
+    }
+<span class="nc" id="L1278">    String optional = null;</span>
+<span class="nc bnc" id="L1279" title="All 2 branches missed.">    if (session.getExtendedProtocol()) {</span>
+<span class="nc" id="L1280">      optional = packet.getOptional();</span>
+    }
+<span class="nc bnc" id="L1282" title="All 2 branches missed.">    if (!localChannelReference.getFutureRequest().isDone()) {</span>
+      // end of request
+<span class="nc" id="L1284">      final R66Future transfer = localChannelReference.getFutureEndTransfer();</span>
+<span class="nc" id="L1285">      transfer.awaitOrInterruptible();</span>
+<span class="nc bnc" id="L1286" title="All 2 branches missed.">      if (transfer.isSuccess()) {</span>
+<span class="nc bnc" id="L1287" title="All 2 branches missed.">        if (session.getExtendedProtocol() &amp;&amp;</span>
+<span class="nc bnc" id="L1288" title="All 2 branches missed.">            session.getBusinessObject() != null) {</span>
+<span class="nc bnc" id="L1289" title="All 2 branches missed.">          if (session.getBusinessObject().getInfo(session) == null) {</span>
+<span class="nc" id="L1290">            session.getBusinessObject().setInfo(session, optional);</span>
+          } else {
+<span class="nc" id="L1292">            final String temp = session.getBusinessObject().getInfo(session);</span>
+<span class="nc" id="L1293">            session.getBusinessObject().setInfo(session, optional);</span>
+<span class="nc" id="L1294">            optional = temp;</span>
+<span class="nc" id="L1295">          }</span>
+<span class="nc bnc" id="L1296" title="All 2 branches missed.">        } else if (session.getExtendedProtocol() &amp;&amp;</span>
+<span class="nc bnc" id="L1297" title="All 4 branches missed.">                   transfer.getResult().getOther() == null &amp;&amp;</span>
+                   optional != null) {
+<span class="nc" id="L1299">          transfer.getResult().setOther(optional);</span>
+        }
+<span class="nc" id="L1301">        localChannelReference.validateRequest(transfer.getResult());</span>
+      }
+    }
+<span class="nc" id="L1304">    session.setStatus(1);</span>
+<span class="nc bnc" id="L1305" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="nc" id="L1306">      session.newState(ENDREQUESTS);</span>
+<span class="nc" id="L1307">      packet.validate();</span>
+<span class="nc bnc" id="L1308" title="All 2 branches missed.">      if (session.getExtendedProtocol()) {</span>
+<span class="nc" id="L1309">        packet.setOptional(optional);</span>
+      }
+<span class="nc" id="L1311">      session.newState(ENDREQUESTR);</span>
+      try {
+<span class="nc" id="L1313">        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+                                              false);
+<span class="nc" id="L1315">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // nothing
+<span class="nc" id="L1317">      }</span>
+    } else {
+<span class="nc bnc" id="L1319" title="All 2 branches missed.">      if (session.getState() != CLOSEDCHANNEL) {</span>
+<span class="nc" id="L1320">        session.newState(ENDREQUESTR);</span>
+      }
+    }
+<span class="nc bnc" id="L1323" title="All 2 branches missed.">    if (runner != null &amp;&amp;</span>
+<span class="nc bnc" id="L1324" title="All 4 branches missed.">        (runner.isRequestOnRequested() || runner.isSelfRequest())) {</span>
+<span class="nc" id="L1325">      ChannelCloseTimer.closeFutureTransaction(this);</span>
+    }
+<span class="nc" id="L1327">  }</span>
+
+  /**
+   * If newFileInfo is provided and different than current value
+   *
+   * @param newFileInfo
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public final void requestChangeFileInfo(final String newFileInfo)
+      throws OpenR66RunnerErrorException {
+<span class="nc" id="L1338">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="nc" id="L1339">    logger.debug(&quot;NewFileInfo {}&quot;, newFileInfo);</span>
+<span class="nc" id="L1340">    runner.setFileInformation(newFileInfo);</span>
+    try {
+<span class="nc" id="L1342">      runner.update();</span>
+<span class="nc" id="L1343">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1344">      runner.saveStatus();</span>
+<span class="nc" id="L1345">      runner.setErrorExecutionStatus(ErrorCode.ExternalOp);</span>
+<span class="nc" id="L1346">      session.newState(ERROR);</span>
+<span class="nc" id="L1347">      logger.error(&quot;File info changing in error {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1348">      final ErrorPacket error = new ErrorPacket(</span>
+<span class="nc" id="L1349">          &quot;File changing information in error: &quot; + e.getMessage(),</span>
+<span class="nc" id="L1350">          runner.getErrorInfo().getCode(), ErrorPacket.FORWARDCLOSECODE);</span>
+      try {
+<span class="nc" id="L1352">        ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                              false);
+<span class="nc" id="L1354">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // nothing
+<span class="nc" id="L1356">      }</span>
+      try {
+<span class="nc" id="L1358">        session.setFinalizeTransfer(false, new R66Result(</span>
+            new OpenR66RunnerErrorException(e), session, true,
+<span class="nc" id="L1360">            runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1361">      } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L1362">        localChannelReference.invalidateRequest(</span>
+            new R66Result(new OpenR66RunnerErrorException(e), session, true,
+<span class="nc" id="L1364">                          runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1365">      } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L1366">        localChannelReference.invalidateRequest(</span>
+            new R66Result(new OpenR66RunnerErrorException(e), session, true,
+<span class="nc" id="L1368">                          runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1369">      }</span>
+<span class="nc" id="L1370">      session.setStatus(97);</span>
+<span class="nc" id="L1371">      ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L1372">    }</span>
+<span class="nc" id="L1373">  }</span>
+
+  /**
+   * Change the filename and the filesize
+   *
+   * @param newfilename
+   * @param newSize
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public final void requestChangeNameSize(final String newfilename,
+                                          final long newSize)
+      throws OpenR66RunnerErrorException {
+<span class="nc" id="L1386">    session.newState(VALID);</span>
+<span class="nc" id="L1387">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="nc" id="L1388">    logger.debug(&quot;NewSize {} NewName {}&quot;, newSize, newfilename);</span>
+    // The filename or filesize from sender is changed due to PreTask so change it too in receiver
+    // comment, filename, filesize
+    // Close only if an error occurs!
+<span class="nc bnc" id="L1392" title="All 4 branches missed.">    if (runner != null &amp;&amp; newSize &gt; 0) {</span>
+<span class="nc" id="L1393">      runner.setOriginalSize(newSize);</span>
+      // Check if a CHKFILE task was supposedly needed to run
+<span class="nc bnc" id="L1395" title="All 2 branches missed.">      if (checkIfAnyTaskCheckFile(newfilename, newSize, runner)) {</span>
+<span class="nc" id="L1396">        return;</span>
+      }
+    }
+    // check if send is already on going
+<span class="nc bnc" id="L1400" title="All 4 branches missed.">    if (runner != null &amp;&amp; runner.getRank() &gt; 0) {</span>
+      // already started so not changing the filename
+      // Success: No write back at all
+<span class="nc" id="L1403">      return;</span>
+    }
+    // Pre execution was already done since this packet is only received once
+    // the request is already validated by the receiver
+    try {
+<span class="nc" id="L1408">      session.renameReceiverFile(newfilename);</span>
+<span class="nc" id="L1409">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc bnc" id="L1410" title="All 2 branches missed.">      if (runner != null) {</span>
+<span class="nc" id="L1411">        runner.saveStatus();</span>
+<span class="nc" id="L1412">        runner.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
+<span class="nc" id="L1413">        session.newState(ERROR);</span>
+<span class="nc" id="L1414">        logger.error(&quot;File renaming in error {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L1415">        final ErrorPacket error =</span>
+<span class="nc" id="L1416">            new ErrorPacket(&quot;File renaming in error: &quot; + e.getMessage(),</span>
+<span class="nc" id="L1417">                            runner.getErrorInfo().getCode(),</span>
+                            ErrorPacket.FORWARDCLOSECODE);
+        try {
+<span class="nc" id="L1420">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                                false);
+<span class="nc" id="L1422">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L1424">        }</span>
+        try {
+<span class="nc" id="L1426">          session.setFinalizeTransfer(false, new R66Result(e, session, true,</span>
+<span class="nc" id="L1427">                                                           runner.getErrorInfo(),</span>
+                                                           runner));
+<span class="nc" id="L1429">        } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L1430">          localChannelReference.invalidateRequest(</span>
+<span class="nc" id="L1431">              new R66Result(e, session, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1432">        } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L1433">          localChannelReference.invalidateRequest(</span>
+<span class="nc" id="L1434">              new R66Result(e, session, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1435">        }</span>
+      }
+<span class="nc" id="L1437">      session.setStatus(97);</span>
+<span class="nc" id="L1438">      ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L1439">    }</span>
+    // Success: No write back at all
+<span class="nc" id="L1441">  }</span>
+
+  private boolean checkIfAnyTaskCheckFile(final String newfilename,
+                                          final long newSize,
+                                          final DbTaskRunner runner)
+      throws OpenR66RunnerErrorException {
+<span class="nc" id="L1447">    final String[][] rpretasks = runner.getRule().getRpreTasksArray();</span>
+<span class="nc bnc" id="L1448" title="All 2 branches missed.">    if (rpretasks != null) {</span>
+<span class="nc bnc" id="L1449" title="All 2 branches missed.">      for (final String[] strings : rpretasks) {</span>
+<span class="nc" id="L1450">        final AbstractTask task = runner.getTask(strings, session);</span>
+<span class="nc bnc" id="L1451" title="All 2 branches missed.">        if (task.getType() == TaskType.CHKFILE) {</span>
+          // re run this in case
+<span class="nc" id="L1453">          task.run();</span>
+<span class="nc" id="L1454">          task.getFutureCompletion().awaitOrInterruptible();</span>
+<span class="nc bnc" id="L1455" title="All 2 branches missed.">          if (!task.getFutureCompletion().isSuccess()) {</span>
+            // not valid so create an error from there
+<span class="nc" id="L1457">            final ErrorCode code = ErrorCode.SizeNotAllowed;</span>
+<span class="nc" id="L1458">            runner.setErrorExecutionStatus(code);</span>
+<span class="nc" id="L1459">            runner.saveStatus();</span>
+<span class="nc" id="L1460">            session.setBadRunner(runner, code);</span>
+<span class="nc" id="L1461">            session.newState(ERROR);</span>
+<span class="nc" id="L1462">            logger.error(</span>
+                &quot;File length is not compatible with Rule or capacity {} {}&quot;,
+                newfilename + &quot; : &quot; + newSize, session);
+<span class="nc" id="L1465">            final ErrorPacket errorPacket = new ErrorPacket(</span>
+                &quot;File length is not compatible with Rule or capacity&quot;,
+<span class="nc" id="L1467">                code.getCode(), ErrorPacket.FORWARDCLOSECODE);</span>
+            try {
+<span class="nc" id="L1469">              ChannelUtils.writeAbstractLocalPacket(localChannelReference,</span>
+                                                    errorPacket, true);
+<span class="nc" id="L1471">            } catch (final OpenR66ProtocolPacketException ignored) {</span>
+              // nothing
+<span class="nc" id="L1473">            }</span>
+            try {
+<span class="nc" id="L1475">              session.setFinalizeTransfer(false, new R66Result(</span>
+<span class="nc" id="L1476">                  new OpenR66RunnerErrorException(errorPacket.getSheader()),</span>
+<span class="nc" id="L1477">                  session, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1478">            } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L1479">              localChannelReference.invalidateRequest(new R66Result(</span>
+<span class="nc" id="L1480">                  new OpenR66RunnerErrorException(errorPacket.getSheader()),</span>
+<span class="nc" id="L1481">                  session, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1482">            } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L1483">              localChannelReference.invalidateRequest(new R66Result(</span>
+<span class="nc" id="L1484">                  new OpenR66RunnerErrorException(errorPacket.getSheader()),</span>
+<span class="nc" id="L1485">                  session, true, runner.getErrorInfo(), runner));</span>
+<span class="nc" id="L1486">            }</span>
+<span class="nc" id="L1487">            session.setStatus(97);</span>
+<span class="nc" id="L1488">            ChannelCloseTimer.closeFutureTransaction(this);</span>
+<span class="nc" id="L1489">            return true;</span>
+          }
+        }
+      }
+    }
+<span class="nc" id="L1494">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

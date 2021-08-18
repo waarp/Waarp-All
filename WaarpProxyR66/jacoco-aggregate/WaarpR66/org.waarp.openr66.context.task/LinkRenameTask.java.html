@@ -40,9 +40,9 @@ public class LinkRenameTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(LinkRenameTask.class);</span>
-<span class="fc" id="L45">  private static final Pattern COMPILE = Pattern.compile(&quot; &quot;);</span>
+<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(LinkRenameTask.class);</span>
+<span class="nc" id="L45">  private static final Pattern COMPILE = Pattern.compile(&quot; &quot;);</span>
 
   /**
    * @param argRule
@@ -52,31 +52,31 @@ public class LinkRenameTask extends AbstractTask {
    */
   public LinkRenameTask(final String argRule, final int delay,
                         final String argTransfer, final R66Session session) {
-<span class="fc" id="L55">    super(TaskType.LINKRENAME, delay, argRule, argTransfer, session);</span>
-<span class="fc" id="L56">  }</span>
+<span class="nc" id="L55">    super(TaskType.LINKRENAME, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L56">  }</span>
 
   @Override
-  public void run() {
-<span class="fc" id="L60">    String finalname = argRule;</span>
-<span class="fc" id="L61">    finalname = getReplacedValue(finalname, COMPILE.split(argTransfer));</span>
-<span class="fc" id="L62">    logger.info(&quot;Move and Rename to {} with {}:{} and {}&quot;, finalname, argRule,</span>
+  public final void run() {
+<span class="nc" id="L60">    String finalname = argRule;</span>
+<span class="nc" id="L61">    finalname = getReplacedValue(finalname, COMPILE.split(argTransfer));</span>
+<span class="nc" id="L62">    logger.info(&quot;Move and Rename to {} with {}:{} and {}&quot;, finalname, argRule,</span>
                 argTransfer, session);
     // First try hard link
     // FIXME wait for NIO.2 in JDK7 to have such functions, in the meantime only move...
-<span class="fc" id="L66">    final File from = session.getFile().getTrueFile();</span>
-<span class="fc" id="L67">    final File to = new File(finalname);</span>
+<span class="nc" id="L66">    final File from = session.getFile().getTrueFile();</span>
+<span class="nc" id="L67">    final File to = new File(finalname);</span>
     try {
-<span class="fc" id="L69">      FileUtils.copy(from, to, false, false);</span>
+<span class="nc" id="L69">      FileUtils.copy(from, to, false, false);</span>
 <span class="nc" id="L70">    } catch (final Reply550Exception e1) {</span>
 <span class="nc" id="L71">      logger.error(</span>
           &quot;Copy and Rename to &quot; + finalname + &quot; with &quot; + argRule + ':' +
-          argTransfer + &quot; and &quot; + session, e1);
+<span class="nc" id="L73">          argTransfer + &quot; and &quot; + session + &quot;: {}&quot;, e1.getMessage());</span>
 <span class="nc" id="L74">      futureCompletion.setFailure(new OpenR66ProtocolSystemException(e1));</span>
 <span class="nc" id="L75">      return;</span>
-<span class="fc" id="L76">    }</span>
-<span class="fc" id="L77">    session.getRunner().setFileMoved(finalname, true);</span>
-<span class="fc" id="L78">    futureCompletion.setSuccess();</span>
-<span class="fc" id="L79">  }</span>
+<span class="nc" id="L76">    }</span>
+<span class="nc" id="L77">    session.getRunner().setFileMoved(finalname, true);</span>
+<span class="nc" id="L78">    futureCompletion.setSuccess();</span>
+<span class="nc" id="L79">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>CapacityLruLinkedHashMap.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.lru</a> &gt; <span class="el_source">CapacityLruLinkedHashMap.java</span></div><h1>CapacityLruLinkedHashMap.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.lru;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Capacity based LRU version of LinkedHashMap
+ *
+ * @author Damian Momot
+ */
+class CapacityLruLinkedHashMap&lt;K, V&gt; extends LinkedHashMap&lt;K, V&gt; {
+  /**
+   *
+   */
+  private static final long serialVersionUID = -5064888079959689619L;
+
+  private final int capacity;
+
+  /**
+   * Creates LRU LinkedHashMap
+   *
+   * @param capacity
+   * @param initialCapacity
+   * @param loadFactor
+   *
+   * @throws IllegalArgumentException if capacity is not positive
+   */
+  protected CapacityLruLinkedHashMap(final int capacity,
+                                     final int initialCapacity,
+                                     final float loadFactor) {
+<span class="nc" id="L50">    super(initialCapacity, loadFactor, true);</span>
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (capacity &lt;= 0) {</span>
+<span class="nc" id="L53">      throw new IllegalArgumentException(&quot;capacity must be positive&quot;);</span>
+    }
+
+<span class="nc" id="L56">    this.capacity = capacity;</span>
+<span class="nc" id="L57">  }</span>
+
+  @Override
+  protected final boolean removeEldestEntry(final Map.Entry&lt;K, V&gt; eldest) {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">    return size() &gt; capacity;</span>
+  }
+
+  /**
+   * Returns capacity of map
+   *
+   * @return
+   */
+  public final int getCapacity() {
+<span class="nc" id="L70">    return capacity;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

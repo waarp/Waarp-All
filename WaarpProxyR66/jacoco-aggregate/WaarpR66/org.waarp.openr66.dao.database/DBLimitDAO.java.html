@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.openr66.dao.LimitDAO;
 import org.waarp.openr66.pojo.Limit;
 import org.waarp.openr66.pojo.UpdatedInfo;
@@ -47,6 +48,7 @@ public class DBLimitDAO extends StatementExecutor&lt;Limit&gt; implements LimitD
   protected static final String SQL_DELETE =
       &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
   protected static final String SQL_EXIST =
       &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
@@ -67,78 +69,97 @@ public class DBLimitDAO extends StatementExecutor&lt;Limit&gt; implements LimitD
       PARAMETER;
 
   public DBLimitDAO(final Connection con) {
-<span class="fc" id="L70">    super(con);</span>
-<span class="fc" id="L71">  }</span>
+<span class="nc" id="L72">    super(con);</span>
+<span class="nc" id="L73">  }</span>
 
   @Override
-  protected String getId(final Limit e1) {
-<span class="fc" id="L75">    return e1.getHostid();</span>
+  protected final boolean isCachedEnable() {
+<span class="nc" id="L77">    return false;</span>
   }
 
   @Override
-  protected String getSelectRequest() {
-<span class="fc" id="L80">    return SQL_SELECT;</span>
+  protected final String getId(final Limit e1) {
+<span class="nc" id="L82">    return e1.getHostid();</span>
   }
 
   @Override
-  protected String getGetAllRequest() {
-<span class="fc" id="L85">    return SQL_GET_ALL;</span>
+  protected final String getSelectRequest() {
+<span class="nc" id="L87">    return SQL_SELECT;</span>
   }
 
   @Override
-  protected String getExistRequest() {
-<span class="fc" id="L90">    return SQL_EXIST;</span>
+  protected final String getGetAllRequest() {
+<span class="nc" id="L92">    return SQL_GET_ALL;</span>
   }
 
   @Override
-  protected Object[] getInsertValues(final Limit limit) {
-<span class="fc" id="L95">    return new Object[] {</span>
-<span class="fc" id="L96">        limit.getHostid(), limit.getReadGlobalLimit(),</span>
-<span class="fc" id="L97">        limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),</span>
-<span class="fc" id="L98">        limit.getWriteSessionLimit(), limit.getDelayLimit(),</span>
-<span class="fc" id="L99">        limit.getUpdatedInfo().ordinal()</span>
+  protected final String getCountRequest() {
+<span class="nc" id="L97">    return SQL_COUNT_ALL;</span>
+  }
+
+  @Override
+  protected final String getExistRequest() {
+<span class="nc" id="L102">    return SQL_EXIST;</span>
+  }
+
+  @Override
+  protected final Object[] getInsertValues(final Limit limit) {
+<span class="nc" id="L107">    return new Object[] {</span>
+<span class="nc" id="L108">        limit.getHostid(), limit.getReadGlobalLimit(),</span>
+<span class="nc" id="L109">        limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),</span>
+<span class="nc" id="L110">        limit.getWriteSessionLimit(), limit.getDelayLimit(),</span>
+<span class="nc" id="L111">        limit.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
-  protected String getInsertRequest() {
-<span class="fc" id="L105">    return SQL_INSERT;</span>
+  protected final String getInsertRequest() {
+<span class="nc" id="L117">    return SQL_INSERT;</span>
   }
 
   @Override
-  protected Object[] getUpdateValues(final Limit limit) {
-<span class="fc" id="L110">    return new Object[] {</span>
-<span class="fc" id="L111">        limit.getHostid(), limit.getReadGlobalLimit(),</span>
-<span class="fc" id="L112">        limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),</span>
-<span class="fc" id="L113">        limit.getWriteSessionLimit(), limit.getDelayLimit(),</span>
-<span class="fc" id="L114">        limit.getUpdatedInfo().ordinal(), limit.getHostid()</span>
+  protected final Object[] getUpdateValues(final Limit limit) {
+<span class="nc" id="L122">    return new Object[] {</span>
+<span class="nc" id="L123">        limit.getHostid(), limit.getReadGlobalLimit(),</span>
+<span class="nc" id="L124">        limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),</span>
+<span class="nc" id="L125">        limit.getWriteSessionLimit(), limit.getDelayLimit(),</span>
+<span class="nc" id="L126">        limit.getUpdatedInfo().ordinal(), limit.getHostid()</span>
     };
   }
 
   @Override
-  protected String getUpdateRequest() {
-<span class="fc" id="L120">    return SQL_UPDATE;</span>
+  protected final String getUpdateRequest() {
+<span class="nc" id="L132">    return SQL_UPDATE;</span>
   }
 
   @Override
-  protected String getDeleteRequest() {
-<span class="fc" id="L125">    return SQL_DELETE;</span>
+  protected final String getDeleteRequest() {
+<span class="nc" id="L137">    return SQL_DELETE;</span>
   }
 
   @Override
-  protected String getDeleteAllRequest() {
-<span class="fc" id="L130">    return SQL_DELETE_ALL;</span>
+  protected final String getDeleteAllRequest() {
+<span class="nc" id="L142">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
-  public Limit getFromResultSet(final ResultSet set) throws SQLException {
-<span class="fc" id="L135">    return new Limit(set.getString(HOSTID_FIELD),</span>
-<span class="fc" id="L136">                     set.getLong(DELAY_LIMIT_FIELD),</span>
-<span class="fc" id="L137">                     set.getLong(READ_GLOBAL_LIMIT_FIELD),</span>
-<span class="fc" id="L138">                     set.getLong(WRITE_GLOBAL_LIMIT_FIELD),</span>
-<span class="fc" id="L139">                     set.getLong(READ_SESSION_LIMIT_FIELD),</span>
-<span class="fc" id="L140">                     set.getLong(WRITE_SESSION_LIMIT_FIELD),</span>
-<span class="fc" id="L141">                     UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+  public final Limit getFromResultSet(final ResultSet set) throws SQLException {
+    try {
+<span class="nc" id="L148">      return new Limit(set.getString(HOSTID_FIELD),</span>
+<span class="nc" id="L149">                       set.getLong(DELAY_LIMIT_FIELD),</span>
+<span class="nc" id="L150">                       set.getLong(READ_GLOBAL_LIMIT_FIELD),</span>
+<span class="nc" id="L151">                       set.getLong(WRITE_GLOBAL_LIMIT_FIELD),</span>
+<span class="nc" id="L152">                       set.getLong(READ_SESSION_LIMIT_FIELD),</span>
+<span class="nc" id="L153">                       set.getLong(WRITE_SESSION_LIMIT_FIELD),</span>
+<span class="nc" id="L154">                       UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="nc" id="L155">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L156">      throw new SQLException(e);</span>
+    }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+<span class="nc" id="L162">    return false;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

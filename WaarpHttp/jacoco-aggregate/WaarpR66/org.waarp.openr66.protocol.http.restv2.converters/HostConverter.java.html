@@ -21,8 +21,12 @@
 package org.waarp.openr66.protocol.http.restv2.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
@@ -49,9 +53,9 @@ public final class HostConverter {
   /**
    * Makes the default constructor of this utility class inaccessible.
    */
-<span class="nc" id="L52">  private HostConverter() throws InstantiationException {</span>
-<span class="nc" id="L53">    throw new InstantiationException(</span>
-<span class="nc" id="L54">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+<span class="nc" id="L56">  private HostConverter() throws InstantiationException {</span>
+<span class="nc" id="L57">    throw new InstantiationException(</span>
+<span class="nc" id="L58">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
   }
 
   // ########################### INNER CLASSES ################################
@@ -59,41 +63,41 @@ public final class HostConverter {
   /**
    * Represents all the possible ways to sort a list of host objects.
    */
-<span class="fc" id="L62">  public enum Order {</span>
+<span class="nc" id="L66">  public enum Order {</span>
     /**
      * By hostID, in ascending order.
      */
-<span class="fc" id="L66">    ascId(new Comparator&lt;Host&gt;() {</span>
+<span class="nc" id="L70">    ascId(new Comparator&lt;Host&gt;() {</span>
       @Override
-      public int compare(final Host t1, final Host t2) {
-<span class="fc" id="L69">        return t1.getHostid().compareTo(t2.getHostid());</span>
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L73">        return t1.getHostid().compareTo(t2.getHostid());</span>
       }
     }),
     /**
      * By hostID, in descending order.
      */
-<span class="fc" id="L75">    descId(new Comparator&lt;Host&gt;() {</span>
+<span class="nc" id="L79">    descId(new Comparator&lt;Host&gt;() {</span>
       @Override
-      public int compare(final Host t1, final Host t2) {
-<span class="nc" id="L78">        return -t1.getHostid().compareTo(t2.getHostid());//NOSONAR</span>
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L82">        return -t1.getHostid().compareTo(t2.getHostid());//NOSONAR</span>
       }
     }),
     /**
      * By address, in ascending order.
      */
-<span class="fc" id="L84">    ascAddress(new Comparator&lt;Host&gt;() {</span>
+<span class="nc" id="L88">    ascAddress(new Comparator&lt;Host&gt;() {</span>
       @Override
-      public int compare(final Host t1, final Host t2) {
-<span class="nc" id="L87">        return t1.getAddress().compareTo(t2.getAddress());//NOSONAR</span>
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L91">        return t1.getAddress().compareTo(t2.getAddress());//NOSONAR</span>
       }
     }),
     /**
      * By address, in descending order.
      */
-<span class="fc" id="L93">    descAddress(new Comparator&lt;Host&gt;() {</span>
+<span class="nc" id="L97">    descAddress(new Comparator&lt;Host&gt;() {</span>
       @Override
-      public int compare(final Host t1, final Host t2) {
-<span class="nc" id="L96">        return -t1.getAddress().compareTo(t2.getAddress());//NOSONAR</span>
+      public final int compare(final Host t1, final Host t2) {
+<span class="nc" id="L100">        return -t1.getAddress().compareTo(t2.getAddress());//NOSONAR</span>
       }
     });
 
@@ -102,9 +106,9 @@ public final class HostConverter {
      */
     public final Comparator&lt;Host&gt; comparator;
 
-<span class="fc" id="L105">    Order(final Comparator&lt;Host&gt; comparator) {</span>
-<span class="fc" id="L106">      this.comparator = comparator;</span>
-<span class="fc" id="L107">    }</span>
+<span class="nc" id="L109">    Order(final Comparator&lt;Host&gt; comparator) {</span>
+<span class="nc" id="L110">      this.comparator = comparator;</span>
+<span class="nc" id="L111">    }</span>
   }
 
   // ########################### PUBLIC METHODS ###############################
@@ -117,18 +121,18 @@ public final class HostConverter {
    * @return the converted ObjectNode
    */
   public static ObjectNode hostToNode(final Host host) {
-<span class="fc" id="L120">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L121">    node.put(HOST_NAME, host.getHostid());</span>
-<span class="fc" id="L122">    node.put(ADDRESS, host.getAddress());</span>
-<span class="fc" id="L123">    node.put(PORT, host.getPort());</span>
-<span class="fc" id="L124">    node.put(PASSWORD, host.getHostkey());</span>
-<span class="fc" id="L125">    node.put(IS_SSL, host.isSSL());</span>
-<span class="fc" id="L126">    node.put(IS_CLIENT, host.isClient());</span>
-<span class="fc" id="L127">    node.put(IS_ADMIN, host.isAdmin());</span>
-<span class="fc" id="L128">    node.put(IS_ACTIVE, host.isActive());</span>
-<span class="fc" id="L129">    node.put(IS_PROXY, host.isProxified());</span>
+<span class="nc" id="L124">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L125">    node.put(HOST_NAME, host.getHostid());</span>
+<span class="nc" id="L126">    node.put(ADDRESS, host.getAddress());</span>
+<span class="nc" id="L127">    node.put(PORT, host.getPort());</span>
+<span class="nc" id="L128">    node.put(PASSWORD, host.getHostkey());</span>
+<span class="nc" id="L129">    node.put(IS_SSL, host.isSSL());</span>
+<span class="nc" id="L130">    node.put(IS_CLIENT, host.isClient());</span>
+<span class="nc" id="L131">    node.put(IS_ADMIN, host.isAdmin());</span>
+<span class="nc" id="L132">    node.put(IS_ACTIVE, host.isActive());</span>
+<span class="nc" id="L133">    node.put(IS_PROXY, host.isProxified());</span>
 
-<span class="fc" id="L131">    return node;</span>
+<span class="nc" id="L135">    return node;</span>
   }
 
   /**
@@ -144,10 +148,15 @@ public final class HostConverter {
    *     occurred
    */
   public static Host nodeToNewHost(final ObjectNode object) {
-<span class="nc" id="L147">    final Host emptyHost =</span>
-        new Host(null, null, -1, null, false, false, false, false, true);
+<span class="nc" id="L151">    Host emptyHost = null;</span>
+    try {
+<span class="nc" id="L153">      emptyHost =</span>
+          new Host(null, null, -1, null, false, false, false, false, true);
+<span class="nc" id="L155">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L156">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L157">    }</span>
 
-<span class="nc" id="L150">    return nodeToUpdatedHost(object, emptyHost);</span>
+<span class="nc" id="L159">    return nodeToUpdatedHost(object, emptyHost);</span>
   }
 
   /**
@@ -169,84 +178,84 @@ public final class HostConverter {
   public static Host nodeToUpdatedHost(final ObjectNode object,
                                        final Host oldHost) {
 
-<span class="nc" id="L172">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc" id="L181">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc" id="L174">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
-<span class="nc" id="L176">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
-<span class="nc" id="L177">      final String name = field.getKey();</span>
-<span class="nc" id="L178">      final JsonNode value = field.getValue();</span>
+<span class="nc" id="L183">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
+<span class="nc" id="L185">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L186">      final String name = field.getKey();</span>
+<span class="nc" id="L187">      final JsonNode value = field.getValue();</span>
 
-<span class="nc bnc" id="L180" title="All 2 branches missed.">      if (name.equalsIgnoreCase(HOST_NAME)) {</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">          if (oldHost.getHostid() == null) {</span>
-<span class="nc" id="L183">            oldHost.setHostid(value.asText());</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">          } else if (!oldHost.getHostid().equals(value.asText())) {</span>
-<span class="nc" id="L185">            errors.add(FIELD_NOT_ALLOWED(HOST_NAME));</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">      if (name.equalsIgnoreCase(HOST_NAME)) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">          if (oldHost.getHostid() == null) {</span>
+<span class="nc" id="L192">            oldHost.setHostid(value.asText());</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">          } else if (!oldHost.getHostid().equals(value.asText())) {</span>
+<span class="nc" id="L194">            errors.add(FIELD_NOT_ALLOWED(HOST_NAME));</span>
           }
         } else {
-<span class="nc" id="L188">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L197">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L190" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ADDRESS)) {</span>
-<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc" id="L192">          oldHost.setAddress(value.asText());</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ADDRESS)) {</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L201">          oldHost.setAddress(value.asText());</span>
         } else {
-<span class="nc" id="L194">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L203">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L196" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(PORT)) {</span>
-<span class="nc bnc" id="L197" title="All 4 branches missed.">        if (value.canConvertToInt() &amp;&amp; value.asInt() &gt;= 0 &amp;&amp;</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">            value.asInt() &lt; ZERO_COPY_CHUNK_SIZE) {</span>
-<span class="nc" id="L199">          oldHost.setPort(value.asInt());</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(PORT)) {</span>
+<span class="nc bnc" id="L206" title="All 4 branches missed.">        if (value.canConvertToInt() &amp;&amp; value.asInt() &gt;= 0 &amp;&amp;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            value.asInt() &lt; ZERO_COPY_CHUNK_SIZE) {</span>
+<span class="nc" id="L208">          oldHost.setPort(value.asInt());</span>
         } else {
-<span class="nc" id="L201">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L210">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L203" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(PASSWORD)) {</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc" id="L205">          oldHost.setHostkey(encryptPassword(value.asText()));</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(PASSWORD)) {</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L214">          oldHost.setHostkey(encryptPassword(value.asText()));</span>
         } else {
-<span class="nc" id="L207">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L216">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L209" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_SSL)) {</span>
-<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
-<span class="nc" id="L211">          oldHost.setSSL(value.asBoolean());</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_SSL)) {</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L220">          oldHost.setSSL(value.asBoolean());</span>
         } else {
-<span class="nc" id="L213">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L222">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L215" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_CLIENT)) {</span>
-<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
-<span class="nc" id="L217">          oldHost.setClient(value.asBoolean());</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_CLIENT)) {</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L226">          oldHost.setClient(value.asBoolean());</span>
         } else {
-<span class="nc" id="L219">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L228">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L221" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_ADMIN)) {</span>
-<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
-<span class="nc" id="L223">          oldHost.setAdmin(value.asBoolean());</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_ADMIN)) {</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L232">          oldHost.setAdmin(value.asBoolean());</span>
         } else {
-<span class="nc" id="L225">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L234">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L227" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_ACTIVE)) {</span>
-<span class="nc bnc" id="L228" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
-<span class="nc" id="L229">          oldHost.setActive(value.asBoolean());</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_ACTIVE)) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L238">          oldHost.setActive(value.asBoolean());</span>
         } else {
-<span class="nc" id="L231">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L240">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L233" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_PROXY)) {</span>
-<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
-<span class="nc" id="L235">          oldHost.setProxified(value.asBoolean());</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(IS_PROXY)) {</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (value.isBoolean()) {</span>
+<span class="nc" id="L244">          oldHost.setProxified(value.asBoolean());</span>
         } else {
-<span class="nc" id="L237">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L246">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
       } else {
-<span class="nc" id="L240">        errors.add(UNKNOWN_FIELD(name));</span>
+<span class="nc" id="L249">        errors.add(UNKNOWN_FIELD(name));</span>
       }
-<span class="nc" id="L242">    }</span>
+<span class="nc" id="L251">    }</span>
 
-<span class="nc" id="L244">    errors.addAll(checkRequiredFields(oldHost));</span>
+<span class="nc" id="L253">    errors.addAll(checkRequiredFields(oldHost));</span>
 
-<span class="nc bnc" id="L246" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
-<span class="nc" id="L247">      return oldHost;</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L256">      return oldHost;</span>
     } else {
-<span class="nc" id="L249">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L258">      throw new RestErrorException(errors);</span>
     }
   }
 
@@ -264,9 +273,10 @@ public final class HostConverter {
    */
   private static byte[] encryptPassword(final String password) {
     try {
-<span class="nc" id="L267">      return configuration.getCryptoKey().cryptToHex(password).getBytes();</span>
-<span class="nc" id="L268">    } catch (final Exception e) {</span>
-<span class="nc" id="L269">      throw new InternalServerErrorException(</span>
+<span class="nc" id="L276">      return configuration.getCryptoKey().cryptToHex(password)</span>
+<span class="nc" id="L277">                          .getBytes(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L278">    } catch (final Exception e) {</span>
+<span class="nc" id="L279">      throw new InternalServerErrorException(</span>
           &quot;Failed to encrypt the host password&quot;, e);
     }
   }
@@ -283,21 +293,21 @@ public final class HostConverter {
    * @return the list of encountered errors
    */
   private static List&lt;RestError&gt; checkRequiredFields(final Host host) {
-<span class="nc" id="L286">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
-<span class="nc bnc" id="L287" title="All 4 branches missed.">    if (host.getHostid() == null || host.getHostid().isEmpty()) {</span>
-<span class="nc" id="L288">      errors.add(MISSING_FIELD(HOST_NAME));</span>
+<span class="nc" id="L296">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(host.getHostid())) {</span>
+<span class="nc" id="L298">      errors.add(MISSING_FIELD(HOST_NAME));</span>
     }
-<span class="nc bnc" id="L290" title="All 4 branches missed.">    if (host.getAddress() == null || host.getAddress().isEmpty()) {</span>
-<span class="nc" id="L291">      errors.add(MISSING_FIELD(ADDRESS));</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(host.getAddress())) {</span>
+<span class="nc" id="L301">      errors.add(MISSING_FIELD(ADDRESS));</span>
     }
-<span class="nc bnc" id="L293" title="All 2 branches missed.">    if (host.getPort() == -1) {</span>
-<span class="nc" id="L294">      errors.add(MISSING_FIELD(PORT));</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (host.getPort() == -1) {</span>
+<span class="nc" id="L304">      errors.add(MISSING_FIELD(PORT));</span>
     }
-<span class="nc bnc" id="L296" title="All 4 branches missed.">    if (host.getHostkey() == null || host.getHostkey().length == 0) {</span>
-<span class="nc" id="L297">      errors.add(MISSING_FIELD(PASSWORD));</span>
+<span class="nc bnc" id="L306" title="All 4 branches missed.">    if (host.getHostkey() == null || host.getHostkey().length == 0) {</span>
+<span class="nc" id="L307">      errors.add(MISSING_FIELD(PASSWORD));</span>
     }
 
-<span class="nc" id="L300">    return errors;</span>
+<span class="nc" id="L310">    return errors;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

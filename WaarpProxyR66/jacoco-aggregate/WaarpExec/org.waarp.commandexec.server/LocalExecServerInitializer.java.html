@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LocalExecServerInitializer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpExec</a> &gt; <a href="index.source.html" class="el_package">org.waarp.commandexec.server</a> &gt; <span class="el_source">LocalExecServerInitializer.java</span></div><h1>LocalExecServerInitializer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.commandexec.server;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.waarp.commandexec.utils.LocalExecDefaultResult;
+
+/**
+ * Creates a newly configured {@link ChannelPipeline} for a new channel for
+ * LocalExecServer.
+ */
+public class LocalExecServerInitializer
+    extends ChannelInitializer&lt;SocketChannel&gt; {
+
+<span class="nc" id="L42">  private long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+  protected final EventExecutorGroup eventExecutorGroup;
+  private final ChannelGroup channelGroup;
+
+  /**
+   * Constructor with default delay
+   *
+   * @param eventExecutorGroup
+   */
+  public LocalExecServerInitializer(
+<span class="nc" id="L52">      final EventExecutorGroup eventExecutorGroup) {</span>
+<span class="nc" id="L53">    this.eventExecutorGroup = eventExecutorGroup;</span>
+<span class="nc" id="L54">    channelGroup =</span>
+<span class="nc" id="L55">        new DefaultChannelGroup(&quot;LocalExecServer&quot;, eventExecutorGroup.next());</span>
+<span class="nc" id="L56">  }</span>
+
+  /**
+   * Constructor with a specific default delay
+   *
+   * @param newdelay
+   * @param eventExecutorGroup
+   */
+  public LocalExecServerInitializer(final long newdelay,
+<span class="nc" id="L65">                                    final EventExecutorGroup eventExecutorGroup) {</span>
+<span class="nc" id="L66">    delay = newdelay;</span>
+<span class="nc" id="L67">    this.eventExecutorGroup = eventExecutorGroup;</span>
+<span class="nc" id="L68">    channelGroup =</span>
+<span class="nc" id="L69">        new DefaultChannelGroup(&quot;LocalExecServer&quot;, eventExecutorGroup.next());</span>
+<span class="nc" id="L70">  }</span>
+
+  @Override
+  public void initChannel(final SocketChannel ch) {
+    // Create a default pipeline implementation.
+<span class="nc" id="L75">    final ChannelPipeline pipeline = ch.pipeline();</span>
+
+    // Add the text line codec combination first,
+<span class="nc" id="L78">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192,</span>
+<span class="nc" id="L79">                                                              Delimiters.lineDelimiter()));</span>
+<span class="nc" id="L80">    pipeline.addLast(eventExecutorGroup, &quot;decoder&quot;, new StringDecoder());</span>
+<span class="nc" id="L81">    pipeline.addLast(eventExecutorGroup, &quot;encoder&quot;, new StringEncoder());</span>
+
+    // and then business logic.
+    // Could change it with a new fixed delay if necessary at construction
+<span class="nc" id="L85">    pipeline.addLast(eventExecutorGroup, &quot;handler&quot;,</span>
+                     new LocalExecServerHandler(this, delay));
+<span class="nc" id="L87">  }</span>
+
+  /**
+   * Add a channel to the ExecClient Group
+   *
+   * @param channel
+   */
+  public final void addChannel(final Channel channel) {
+<span class="nc" id="L95">    channelGroup.add(channel);</span>
+<span class="nc" id="L96">  }</span>
+
+  /**
+   * Release internal resources
+   */
+  public final void releaseResources() {
+<span class="nc" id="L102">    channelGroup.close();</span>
+<span class="nc" id="L103">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

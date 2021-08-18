@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>JvmProcessId.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.guid</a> &gt; <span class="el_source">JvmProcessId.java</span></div><h1>JvmProcessId.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.guid;
+
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.StringUtils;
+import org.waarp.common.utility.SystemPropertyUtil;
+
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+
+public final class JvmProcessId {
+  /**
+   * Definition for Machine Id replacing MAC address
+   */
+<span class="nc" id="L45">  private static final Pattern MACHINE_ID_PATTERN =</span>
+<span class="nc" id="L46">      Pattern.compile(&quot;^(?:[0-9a-fA-F][:-]?){6,8}$&quot;);</span>
+  private static final int MACHINE_ID_LEN = 6;
+  /**
+   * So MAX value on 3 bytes (64 system use 2^22 id)
+   */
+  private static final int MAX_PID = 4194304;
+  /**
+   * 2 bytes value maximum
+   */
+  static final int JVMPID;
+<span class="nc" id="L56">  private static final Object[] EMPTY_OBJECTS = new Object[0];</span>
+<span class="nc" id="L57">  private static final Class&lt;?&gt;[] EMPTY_CLASSES = new Class&lt;?&gt;[0];</span>
+  /**
+   * Try to get Mac Address but could be also changed dynamically
+   */
+  static byte[] mac;
+  static int macInt;
+
+  static {
+<span class="nc" id="L65">    JVMPID = jvmProcessId();</span>
+<span class="nc" id="L66">    mac = macAddress();</span>
+<span class="nc" id="L67">    macInt = macAddressAsInt();</span>
+<span class="nc" id="L68">  }</span>
+
+  private JvmProcessId() {
+  }
+
+
+  /**
+   * @return the JVM Process ID
+   */
+  public static int jvmProcessId() {
+    // Note: may fail in some JVM implementations
+    // something like '&lt;pid&gt;@&lt;hostname&gt;', at least in SUN / Oracle JVMs
+    try {
+<span class="nc" id="L81">      final ClassLoader loader = getSystemClassLoader();</span>
+      String value;
+<span class="nc" id="L83">      value =</span>
+<span class="nc" id="L84">          jvmProcessIdManagementFactory(loader, EMPTY_OBJECTS, EMPTY_CLASSES);</span>
+<span class="nc" id="L85">      final int atIndex = value.indexOf('@');</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">      if (atIndex &gt;= 0) {</span>
+<span class="nc" id="L87">        value = value.substring(0, atIndex);</span>
+      }
+<span class="nc" id="L89">      int processId = -1;</span>
+<span class="nc" id="L90">      processId = parseProcessId(processId, value);</span>
+<span class="nc bnc" id="L91" title="All 4 branches missed.">      if (processId &lt; 0 || processId &gt; MAX_PID) {</span>
+<span class="nc" id="L92">        processId = StringUtils.RANDOM.nextInt(MAX_PID + 1);</span>
+      }
+<span class="nc" id="L94">      return processId;</span>
+<span class="nc" id="L95">    } catch (final Throwable e) {//NOSONAR</span>
+<span class="nc" id="L96">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L97">      return StringUtils.RANDOM.nextInt(MAX_PID + 1);</span>
+    }
+  }
+
+  /**
+   * @return the mac address if possible, else random values
+   */
+  public static byte[] macAddress() {
+    try {
+<span class="nc" id="L106">      byte[] machineId = null;</span>
+<span class="nc" id="L107">      final String customMachineId =</span>
+<span class="nc" id="L108">          SystemPropertyUtil.get(&quot;org.waarp.machineId&quot;);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">      if (customMachineId != null &amp;&amp;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">          MACHINE_ID_PATTERN.matcher(customMachineId).matches()) {</span>
+<span class="nc" id="L111">        machineId = parseMachineId(customMachineId);</span>
+      }
+
+<span class="nc bnc" id="L114" title="All 2 branches missed.">      if (machineId == null) {</span>
+<span class="nc" id="L115">        machineId = defaultMachineId();</span>
+      }
+<span class="nc" id="L117">      return machineId;</span>
+<span class="nc" id="L118">    } catch (final Throwable e) {//NOSONAR</span>
+<span class="nc" id="L119">      return StringUtils.getRandom(MACHINE_ID_LEN);</span>
+    }
+  }
+
+  /**
+   * @return MAC address as int (truncated to 4 bytes instead of 6)
+   */
+  public static int macAddressAsInt() {
+<span class="nc" id="L127">    return (mac[3] &amp; 0xFF) &lt;&lt; 24 | (mac[2] &amp; 0xFF) &lt;&lt; 16 |</span>
+           (mac[1] &amp; 0xFF) &lt;&lt; 8 | mac[0] &amp; 0xFF;
+  }
+
+  /**
+   * Up to the 6 first bytes will be used. If Null or less than 6 bytes, extra
+   * bytes will be randomly generated.
+   *
+   * @param mac the MAC address in byte format (up to the 6 first
+   *     bytes will
+   *     be used)
+   */
+  public static synchronized void setMac(final byte[] mac) {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">    if (mac == null) {</span>
+<span class="nc" id="L141">      JvmProcessId.mac = StringUtils.getRandom(MACHINE_ID_LEN);</span>
+    } else {
+<span class="nc" id="L143">      JvmProcessId.mac = Arrays.copyOf(mac, MACHINE_ID_LEN);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">      for (int i = mac.length; i &lt; MACHINE_ID_LEN; i++) {</span>
+<span class="nc" id="L145">        JvmProcessId.mac[i] = (byte) StringUtils.RANDOM.nextInt(256);</span>
+      }
+    }
+<span class="nc" id="L148">    macInt = macAddressAsInt();</span>
+<span class="nc" id="L149">  }</span>
+
+  /**
+   * @return positive - current is better, 0 - cannot tell from MAC addr,
+   *     negative - candidate is better.
+   */
+  private static int compareAddresses(final byte[] current,
+                                      final byte[] candidate) {
+<span class="nc bnc" id="L157" title="All 2 branches missed.">    if (candidate == null) {</span>
+<span class="nc" id="L158">      return 1;</span>
+    }
+    // Must be EUI-48 or longer.
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (candidate.length &lt; 6) {</span>
+<span class="nc" id="L162">      return 1;</span>
+    }
+    // Must not be filled with only 0 and 1.
+<span class="nc" id="L165">    boolean onlyZeroAndOne = true;</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    for (final byte b : candidate) {</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">      if (b != 0 &amp;&amp; b != 1) {</span>
+<span class="nc" id="L168">        onlyZeroAndOne = false;</span>
+<span class="nc" id="L169">        break;</span>
+      }
+    }
+<span class="nc bnc" id="L172" title="All 2 branches missed.">    if (onlyZeroAndOne) {</span>
+<span class="nc" id="L173">      return 1;</span>
+    }
+    // Must not be a multicast address
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if ((candidate[0] &amp; 1) != 0) {</span>
+<span class="nc" id="L177">      return 1;</span>
+    }
+    // Prefer globally unique address.
+<span class="nc bnc" id="L180" title="All 2 branches missed.">    if ((current[0] &amp; 2) == 0) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">      if ((candidate[0] &amp; 2) == 0) {</span>
+        // Both current and candidate are globally unique addresses.
+<span class="nc" id="L183">        return 0;</span>
+      } else {
+        // Only current is globally unique.
+<span class="nc" id="L186">        return 1;</span>
+      }
+    } else {
+<span class="nc bnc" id="L189" title="All 2 branches missed.">      if ((candidate[0] &amp; 2) == 0) {</span>
+        // Only candidate is globally unique.
+<span class="nc" id="L191">        return -1;</span>
+      } else {
+        // Both current and candidate are non-unique.
+<span class="nc" id="L194">        return 0;</span>
+      }
+    }
+  }
+
+  /**
+   * @return positive - current is better, 0 - cannot tell, negative -
+   *     candidate
+   *     is better
+   */
+  private static int compareAddresses(final InetAddress current,
+                                      final InetAddress candidate) {
+<span class="nc" id="L206">    return scoreAddress(current) - scoreAddress(candidate);</span>
+  }
+
+  private static int scoreAddress(final InetAddress addr) {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">    if (addr.isAnyLocalAddress()) {</span>
+<span class="nc" id="L211">      return 0;</span>
+    }
+<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (addr.isMulticastAddress()) {</span>
+<span class="nc" id="L214">      return 1;</span>
+    }
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (addr.isLinkLocalAddress()) {</span>
+<span class="nc" id="L217">      return 2;</span>
+    }
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (addr.isSiteLocalAddress()) {</span>
+<span class="nc" id="L220">      return 3;</span>
+    }
+
+<span class="nc" id="L223">    return 4;</span>
+  }
+
+  // pulled from http://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id
+  private static ClassLoader getSystemClassLoader() {
+<span class="nc bnc" id="L228" title="All 2 branches missed.">    if (System.getSecurityManager() == null) {</span>
+<span class="nc" id="L229">      return ClassLoader.getSystemClassLoader();</span>
+    } else {
+<span class="nc" id="L231">      return AccessController.doPrivileged(new PrivilegedAction&lt;ClassLoader&gt;() {</span>
+        @Override
+        public ClassLoader run() {
+<span class="nc" id="L234">          return ClassLoader.getSystemClassLoader();</span>
+        }
+      });
+    }
+  }
+
+  /**
+   * @param oldProcessId
+   * @param customProcessId
+   *
+   * @return the processId
+   */
+  private static int parseProcessId(final int oldProcessId,
+                                    final String customProcessId) {
+<span class="nc" id="L248">    int processId = oldProcessId;</span>
+    try {
+<span class="nc" id="L250">      processId = Integer.parseInt(customProcessId);</span>
+<span class="nc" id="L251">    } catch (final NumberFormatException e) {</span>
+      // Malformed input.
+<span class="nc" id="L253">    }</span>
+<span class="nc bnc" id="L254" title="All 4 branches missed.">    if (processId &lt; 0 || processId &gt; MAX_PID) {</span>
+<span class="nc" id="L255">      processId = -1;</span>
+    }
+<span class="nc" id="L257">    return processId;</span>
+  }
+
+  /**
+   * @param loader
+   * @param emptyObjects
+   * @param emptyClasses
+   *
+   * @return the processId as String
+   */
+  private static String jvmProcessIdManagementFactory(final ClassLoader loader,
+                                                      final Object[] emptyObjects,
+                                                      final Class&lt;?&gt;[] emptyClasses) {
+    String value;
+    try {
+      // Invoke
+      // java.lang.management.ManagementFactory.getRuntimeMXBean().getName()
+<span class="nc" id="L274">      final Class&lt;?&gt; mgmtFactoryType =</span>
+<span class="nc" id="L275">          Class.forName(&quot;java.lang.management.ManagementFactory&quot;, true, loader);</span>
+<span class="nc" id="L276">      final Class&lt;?&gt; runtimeMxBeanType =</span>
+<span class="nc" id="L277">          Class.forName(&quot;java.lang.management.RuntimeMXBean&quot;, true, loader);</span>
+
+<span class="nc" id="L279">      final Method getRuntimeMXBean =</span>
+<span class="nc" id="L280">          mgmtFactoryType.getMethod(&quot;getRuntimeMXBean&quot;, emptyClasses);</span>
+<span class="nc" id="L281">      final Object bean = getRuntimeMXBean.invoke(null, emptyObjects);</span>
+<span class="nc" id="L282">      final Method getName =</span>
+<span class="nc" id="L283">          runtimeMxBeanType.getDeclaredMethod(&quot;getName&quot;, emptyClasses);</span>
+<span class="nc" id="L284">      value = (String) getName.invoke(bean, emptyObjects);</span>
+<span class="nc" id="L285">    } catch (final Exception e) {</span>
+<span class="nc" id="L286">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L287">          &quot;Unable to get PID, try another way: &quot; + e.getMessage());</span>
+
+      try {
+        // Invoke android.os.Process.myPid()
+<span class="nc" id="L291">        final Class&lt;?&gt; processType =</span>
+<span class="nc" id="L292">            Class.forName(&quot;android.os.Process&quot;, true, loader);</span>
+<span class="nc" id="L293">        final Method myPid = processType.getMethod(&quot;myPid&quot;, emptyClasses);</span>
+<span class="nc" id="L294">        value = myPid.invoke(null, emptyObjects).toString();</span>
+<span class="nc" id="L295">      } catch (final Exception e2) {</span>
+<span class="nc" id="L296">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L297">            &quot;Unable to get PID: &quot; + e2.getMessage());</span>
+<span class="nc" id="L298">        value = &quot;&quot;;</span>
+<span class="nc" id="L299">      }</span>
+<span class="nc" id="L300">    }</span>
+<span class="nc" id="L301">    return value;</span>
+  }
+
+  private static byte[] parseMachineId(String value) {
+    // Strip separators.
+<span class="nc" id="L306">    value = value.replaceAll(&quot;[:-]&quot;, &quot;&quot;);</span>
+
+<span class="nc" id="L308">    final byte[] machineId = new byte[MACHINE_ID_LEN];</span>
+<span class="nc bnc" id="L309" title="All 4 branches missed.">    for (int i = 0; i &lt; value.length() &amp;&amp; i &lt; MACHINE_ID_LEN; i += 2) {</span>
+<span class="nc" id="L310">      machineId[i] = (byte) Integer.parseInt(value.substring(i, i + 2), 16);</span>
+    }
+
+<span class="nc" id="L313">    return machineId;</span>
+  }
+
+  private static byte[] defaultMachineId() {
+    // Find the best MAC address available.
+<span class="nc" id="L318">    final byte[] notFound = { -1 };</span>
+<span class="nc" id="L319">    byte[] bestMacAddr = notFound;</span>
+    InetAddress bestInetAddr;
+    try {
+<span class="nc" id="L322">      bestInetAddr = InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 });</span>
+<span class="nc" id="L323">    } catch (final UnknownHostException e) {</span>
+      // Never happens.
+<span class="nc" id="L325">      throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L326">    }</span>
+
+    // Retrieve the list of available network interfaces.
+<span class="nc" id="L329">    final Map&lt;NetworkInterface, InetAddress&gt; ifaces =</span>
+        new LinkedHashMap&lt;NetworkInterface, InetAddress&gt;();
+    try {
+      for (final Enumeration&lt;NetworkInterface&gt; i =
+<span class="nc bnc" id="L333" title="All 2 branches missed.">           NetworkInterface.getNetworkInterfaces(); i.hasMoreElements(); ) {</span>
+<span class="nc" id="L334">        final NetworkInterface iface = i.nextElement();</span>
+        // Use the interface with proper INET addresses only.
+<span class="nc" id="L336">        final Enumeration&lt;InetAddress&gt; addrs = iface.getInetAddresses();</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (addrs.hasMoreElements()) {</span>
+<span class="nc" id="L338">          final InetAddress a = addrs.nextElement();</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">          if (!a.isLoopbackAddress()) {</span>
+<span class="nc" id="L340">            ifaces.put(iface, a);</span>
+          }
+        }
+<span class="nc" id="L343">      }</span>
+<span class="nc" id="L344">    } catch (final SocketException ignored) {</span>
+      // nothing
+<span class="nc" id="L346">    }</span>
+
+<span class="nc bnc" id="L348" title="All 2 branches missed.">    for (final Entry&lt;NetworkInterface, InetAddress&gt; entry : ifaces.entrySet()) {</span>
+<span class="nc" id="L349">      final NetworkInterface iface = entry.getKey();</span>
+<span class="nc" id="L350">      final InetAddress inetAddr = entry.getValue();</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">      if (iface.isVirtual()) {</span>
+<span class="nc" id="L352">        continue;</span>
+      }
+
+      final byte[] macAddr;
+      try {
+<span class="nc" id="L357">        macAddr = iface.getHardwareAddress();</span>
+<span class="nc" id="L358">      } catch (final SocketException e) {</span>
+<span class="nc" id="L359">        continue;</span>
+<span class="nc" id="L360">      }</span>
+
+<span class="nc" id="L362">      boolean replace = false;</span>
+<span class="nc" id="L363">      int res = compareAddresses(bestMacAddr, macAddr);</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">      if (res &lt; 0) {</span>
+        // Found a better MAC address.
+<span class="nc" id="L366">        replace = true;</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">      } else if (res == 0) {</span>
+        // Two MAC addresses are of pretty much same quality.
+<span class="nc" id="L369">        res = compareAddresses(bestInetAddr, inetAddr);</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">        if (res &lt; 0) {</span>
+          // Found a MAC address with better INET address.
+<span class="nc" id="L372">          replace = true;</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">        } else if (res == 0) {</span>
+          // Cannot tell the difference. Choose the longer one.
+<span class="nc bnc" id="L375" title="All 2 branches missed.">          if (bestMacAddr.length &lt; macAddr.length) {</span>
+<span class="nc" id="L376">            replace = true;</span>
+          }
+        }
+      }
+
+<span class="nc bnc" id="L381" title="All 2 branches missed.">      if (replace) {</span>
+<span class="nc" id="L382">        bestMacAddr = macAddr;</span>
+<span class="nc" id="L383">        bestInetAddr = inetAddr;</span>
+      }
+<span class="nc" id="L385">    }</span>
+
+<span class="nc bnc" id="L387" title="All 2 branches missed.">    if (bestMacAddr == notFound) {</span>
+<span class="nc" id="L388">      bestMacAddr = StringUtils.getRandom(MACHINE_ID_LEN);</span>
+    }
+<span class="nc" id="L390">    return bestMacAddr;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
