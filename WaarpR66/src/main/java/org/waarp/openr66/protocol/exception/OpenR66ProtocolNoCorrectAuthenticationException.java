@@ -17,49 +17,46 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-
-package org.waarp.openr66.protocol.utils;
+package org.waarp.openr66.protocol.exception;
 
 /**
- * Protocol versions
+ * Business Protocol exception due to an invalid authentication for a function
  */
-public enum R66Versions {
-  /**
-   * Not usable for extra information
-   */
-  V2_4_12,
-  /**
-   * Introducing different separator, adding HostConfiguration table
-   */
-  V2_4_13,
-  /**
-   * Add TransferInformation to TaskRunner table
-   */
-  V2_4_17,
-  /**
-   * Add IsActive on DbHostAuth table
-   */
-  V2_4_23,
-  /**
-   * Change VARCHAR(255) to VARCHAR(8096)
-   */
-  V2_4_25,
-  /**
-   * Add support for FileInformation change
-   */
-  V3_0_4,
-  /**
-   * From version 3.1, no real change
-   */
-  V3_1_0;
+public class OpenR66ProtocolNoCorrectAuthenticationException
+    extends OpenR66ProtocolBusinessException {
 
-  private final String version;
+  /**
+   *
+   */
+  private static final long serialVersionUID = 4671796883262590190L;
 
-  R66Versions() {
-    version = name().substring(1).replace('_', '.');
+  /**
+   *
+   */
+  public OpenR66ProtocolNoCorrectAuthenticationException() {
   }
 
-  public final String getVersion() {
-    return version;
+  /**
+   * @param arg0
+   * @param arg1
+   */
+  public OpenR66ProtocolNoCorrectAuthenticationException(final String arg0,
+                                                         final Throwable arg1) {
+    super(arg0, arg1);
   }
+
+  /**
+   * @param arg0
+   */
+  public OpenR66ProtocolNoCorrectAuthenticationException(final String arg0) {
+    super(arg0);
+  }
+
+  /**
+   * @param arg0
+   */
+  public OpenR66ProtocolNoCorrectAuthenticationException(final Throwable arg0) {
+    super(arg0);
+  }
+
 }

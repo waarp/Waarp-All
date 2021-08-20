@@ -127,6 +127,7 @@ public class R66Session implements SessionInterface {
    * The Finite Machine State
    */
   private final MachineState<R66FiniteDualStates> state;
+  private Exception traceState = null;
   /**
    * Business Object if used
    */
@@ -220,9 +221,16 @@ public class R66Session implements SessionInterface {
   public final void newState(final R66FiniteDualStates desiredstate) {
     try {
       state.setCurrent(desiredstate);
+      if (logger.isDebugEnabled()) {
+        traceState = new Exception("Trace for debugging");
+      }
     } catch (final IllegalFiniteStateException e) {
       logger.warn("Should not changed of State: {} {}", this, e.getMessage(),
                   e);
+      if (logger.isDebugEnabled()) {
+        logger.warn("Previous condition of state: {}", this, traceState);
+        traceState = new Exception("Trace for debugging");
+      }
       state.setDryCurrent(desiredstate);
     }
   }

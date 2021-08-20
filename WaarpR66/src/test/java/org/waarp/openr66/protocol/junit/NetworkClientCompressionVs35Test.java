@@ -1152,73 +1152,75 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
   @Test
   public void test91_ExtraCommandsInformationPacket() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    setUpBeforeClassClient("config-clientB.xml");
-    final DbHostAuth host = new DbHostAuth("hostb");
-    final SocketAddress socketServerAddress;
     try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
+      setUpBeforeClassClient("config-clientB.xml");
+      final DbHostAuth host = new DbHostAuth("hostb");
+      final SocketAddress socketServerAddress;
+      try {
+        socketServerAddress = host.getSocketAddress();
+      } catch (final IllegalArgumentException e) {
+        logger.error("Needs a correct configuration file as first argument");
+        return;
+      }
+      final R66Future futureTransfer = new R66Future(true);
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(futureTransfer, "hostb", "testTask.txt", "rule3",
+                               "Test SendDirect Small #COMPRESS#", true, 8192,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      transaction.run();
+      futureTransfer.awaitOrInterruptible();
+      assertTrue("File transfer not ok", futureTransfer.isSuccess());
+      final long id = futureTransfer.getRunner().getSpecialId();
+      logger.warn("Remote Task: {}", id);
+
+      // InformationPacket
+      logger.warn("Start Extra commands: InformationPacket");
+      byte scode = -1;
+      InformationPacket informationPacket =
+          new InformationPacket(String.valueOf(id), scode, "0");
+      R66Future future = new R66Future(true);
+      sendInformation(informationPacket, socketServerAddress, future, scode,
+                      false, R66FiniteDualStates.INFORMATION, true);
+
+      logger.warn("Start Extra commands: ASKEXIST");
+      future = new R66Future(true);
+      scode = (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal();
+      informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
+      sendInformation(informationPacket, socketServerAddress, future, scode,
+                      true, R66FiniteDualStates.INFORMATION, true);
+
+      logger.warn("Start Extra commands: ASKLIST");
+      future = new R66Future(true);
+      scode = (byte) InformationPacket.ASKENUM.ASKLIST.ordinal();
+      informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
+      sendInformation(informationPacket, socketServerAddress, future, scode,
+                      true, R66FiniteDualStates.INFORMATION, true);
+
+      logger.warn("Start Extra commands: ASKMLSDETAIL");
+      future = new R66Future(true);
+      scode = (byte) InformationPacket.ASKENUM.ASKMLSDETAIL.ordinal();
+      informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
+      sendInformation(informationPacket, socketServerAddress, future, scode,
+                      true, R66FiniteDualStates.INFORMATION, true);
+
+      logger.warn("Start Extra commands: ASKMLSLIST");
+      future = new R66Future(true);
+      scode = (byte) InformationPacket.ASKENUM.ASKMLSLIST.ordinal();
+      informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
+      sendInformation(informationPacket, socketServerAddress, future, scode,
+                      true, R66FiniteDualStates.INFORMATION, true);
+
+      // ValidPacket BANDWIDTH
+      logger.warn("Start Extra commands: BANDWIDTHPACKET)");
+      future = new R66Future(true);
+      final ValidPacket valid =
+          new ValidPacket("-1", "-1", LocalPacketFactory.BANDWIDTHPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.VALIDOTHER, true);
+    } finally {
+      setUpBeforeClassClient(CONFIG_CLIENT_A);
+      totest.delete();
     }
-    final R66Future futureTransfer = new R66Future(true);
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(futureTransfer, "hostb", "testTask.txt", "rule3",
-                             "Test SendDirect Small #COMPRESS#", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    futureTransfer.awaitOrInterruptible();
-    assertTrue("File transfer not ok", futureTransfer.isSuccess());
-    final long id = futureTransfer.getRunner().getSpecialId();
-    logger.warn("Remote Task: {}", id);
-
-    // InformationPacket
-    logger.warn("Start Extra commands: InformationPacket");
-    byte scode = -1;
-    InformationPacket informationPacket =
-        new InformationPacket(String.valueOf(id), scode, "0");
-    R66Future future = new R66Future(true);
-    sendInformation(informationPacket, socketServerAddress, future, scode,
-                    false, R66FiniteDualStates.INFORMATION, true);
-
-    logger.warn("Start Extra commands: ASKEXIST");
-    future = new R66Future(true);
-    scode = (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal();
-    informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
-    sendInformation(informationPacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    logger.warn("Start Extra commands: ASKLIST");
-    future = new R66Future(true);
-    scode = (byte) InformationPacket.ASKENUM.ASKLIST.ordinal();
-    informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
-    sendInformation(informationPacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    logger.warn("Start Extra commands: ASKMLSDETAIL");
-    future = new R66Future(true);
-    scode = (byte) InformationPacket.ASKENUM.ASKMLSDETAIL.ordinal();
-    informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
-    sendInformation(informationPacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    logger.warn("Start Extra commands: ASKMLSLIST");
-    future = new R66Future(true);
-    scode = (byte) InformationPacket.ASKENUM.ASKMLSLIST.ordinal();
-    informationPacket = new InformationPacket("rule3", scode, "testTask.txt");
-    sendInformation(informationPacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    // ValidPacket BANDWIDTH
-    logger.warn("Start Extra commands: BANDWIDTHPACKET)");
-    future = new R66Future(true);
-    final ValidPacket valid =
-        new ValidPacket("-1", "-1", LocalPacketFactory.BANDWIDTHPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    setUpBeforeClassClient(CONFIG_CLIENT_A);
-    totest.delete();
   }
 
   @Test
@@ -1262,82 +1264,85 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
 
   @Test
   public void test92_ExtraCommandsOther() throws Exception {
-    setUpBeforeClassClient("config-clientB.xml");
-    ValidPacket valid;
-    final byte scode = -1;
-    final DbHostAuth host = new DbHostAuth("hostb");
-    final SocketAddress socketServerAddress;
     try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
+      setUpBeforeClassClient("config-clientB.xml");
+      ValidPacket valid;
+      final byte scode = -1;
+      final DbHostAuth host = new DbHostAuth("hostb");
+      final SocketAddress socketServerAddress;
+      try {
+        socketServerAddress = host.getSocketAddress();
+      } catch (final IllegalArgumentException e) {
+        logger.error("Needs a correct configuration file as first argument");
+        return;
+      }
+      R66Future future;
+
+      // Message
+      logger.warn("Start Message");
+      future = new R66Future(true);
+      final TestPacket packet = new TestPacket("MSG", "Message", 2);
+      final Message message =
+          new Message(networkTransaction, future, "hostb", packet);
+      message.run();
+      future.awaitOrInterruptible();
+      assertTrue("Message should be OK", future.isSuccess());
+
+      // MultipleSubmitTransfer
+      logger.warn("Start MultipleSubmitTransfer");
+      future = new R66Future(true);
+      File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+      final MultipleSubmitTransfer multipleSubmitTransfer =
+          new MultipleSubmitTransfer(future, "hostb",
+                                     "/tmp/R66/out/testTask.txt", "rule3",
+                                     "Multiple Submit #COMPRESS#", true, 1024,
+                                     DbConstantR66.ILLEGALVALUE, null,
+                                     networkTransaction);
+      multipleSubmitTransfer.run();
+      future.awaitOrInterruptible();
+      assertTrue("All submits should be OK", future.isSuccess());
+
+      // ValidPacket CONFEXPORTPACKET
+      logger.warn("Start Valid CONFEXPORTPACKET");
+      future = new R66Future(true);
+      valid = new ValidPacket(Boolean.TRUE.toString(), Boolean.TRUE.toString(),
+                              LocalPacketFactory.CONFEXPORTPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // ValidPacket LOG
+      logger.warn("Start Valid LOG");
+      future = new R66Future(true);
+      valid = new ValidPacket(null, null, LocalPacketFactory.LOGPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // ValidPacket LOGPURGE
+      logger.warn("Start Valid LOGPURGE");
+      future = new R66Future(true);
+      valid = new ValidPacket(null, null, LocalPacketFactory.LOGPURGEPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, false,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // NoOpPacket
+      logger.warn("Start NoOp");
+      final long timeout = Configuration.configuration.getTimeoutCon();
+      Configuration.configuration.setTimeoutCon(100);
+      future = new R66Future(true);
+      final NoOpPacket noOpPacket = new NoOpPacket();
+      sendInformation(noOpPacket, socketServerAddress, future, scode, false,
+                      R66FiniteDualStates.INFORMATION, true);
+
+      // KeepAlivePacket
+      logger.warn("Start KeepAlive");
+      future = new R66Future(true);
+      final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
+      sendInformation(keepAlivePacket, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.INFORMATION, true);
+      Configuration.configuration.setTimeoutCon(timeout);
+    } finally {
+      setUpBeforeClassClient(CONFIG_CLIENT_A);
     }
-    R66Future future;
-
-    // Message
-    logger.warn("Start Message");
-    future = new R66Future(true);
-    final TestPacket packet = new TestPacket("MSG", "Message", 2);
-    final Message message =
-        new Message(networkTransaction, future, "hostb", packet);
-    message.run();
-    future.awaitOrInterruptible();
-    assertTrue("Message should be OK", future.isSuccess());
-
-    // MultipleSubmitTransfer
-    logger.warn("Start MultipleSubmitTransfer");
-    future = new R66Future(true);
-    File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final MultipleSubmitTransfer multipleSubmitTransfer =
-        new MultipleSubmitTransfer(future, "hostb", "/tmp/R66/out/testTask.txt",
-                                   "rule3", "Multiple Submit #COMPRESS#", true,
-                                   1024, DbConstantR66.ILLEGALVALUE, null,
-                                   networkTransaction);
-    multipleSubmitTransfer.run();
-    future.awaitOrInterruptible();
-    assertTrue("All submits should be OK", future.isSuccess());
-
-    // ValidPacket CONFEXPORTPACKET
-    logger.warn("Start Valid CONFEXPORTPACKET");
-    future = new R66Future(true);
-    valid = new ValidPacket(Boolean.TRUE.toString(), Boolean.TRUE.toString(),
-                            LocalPacketFactory.CONFEXPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket LOG
-    logger.warn("Start Valid LOG");
-    future = new R66Future(true);
-    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket LOGPURGE
-    logger.warn("Start Valid LOGPURGE");
-    future = new R66Future(true);
-    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPURGEPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // NoOpPacket
-    logger.warn("Start NoOp");
-    final long timeout = Configuration.configuration.getTimeoutCon();
-    Configuration.configuration.setTimeoutCon(100);
-    future = new R66Future(true);
-    final NoOpPacket noOpPacket = new NoOpPacket();
-    sendInformation(noOpPacket, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    // KeepAlivePacket
-    logger.warn("Start KeepAlive");
-    future = new R66Future(true);
-    final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
-    sendInformation(keepAlivePacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-    Configuration.configuration.setTimeoutCon(timeout);
-
-    setUpBeforeClassClient(CONFIG_CLIENT_A);
   }
 
   public static final class RestHandlerHookForTest extends RestHandlerHook {

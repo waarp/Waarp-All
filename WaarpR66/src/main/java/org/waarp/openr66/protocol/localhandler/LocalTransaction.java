@@ -31,6 +31,7 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolShutdownException;
@@ -143,7 +144,11 @@ public class LocalTransaction {
         new StartupPacket(localChannelReference.getLocalId(), fromSsl);
     try {
       localChannelReference.getServerHandler().startup(startup);
+      // Try but may not be available yet
+      localChannelReference.getServerHandler().validateAuthenticationReuse();
     } catch (final OpenR66ProtocolPacketException e) {
+      throw new OpenR66ProtocolNoConnectionException(e);
+    } catch (final OpenR66ProtocolNotAuthenticatedException e) {
       throw new OpenR66ProtocolNoConnectionException(e);
     }
     return localChannelReference;

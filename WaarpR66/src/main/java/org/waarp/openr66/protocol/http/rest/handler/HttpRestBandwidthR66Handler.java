@@ -33,6 +33,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
@@ -134,6 +135,8 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
       node.setReadsession(lresult[3]);
       setOk(handler, result, node, HttpResponseStatus.OK);
     } catch (final OpenR66ProtocolNotAuthenticatedException e) {
+      throw new HttpInvalidAuthenticationException(e);
+    } catch (final OpenR66ProtocolNoCorrectAuthenticationException e) {
       throw new HttpInvalidAuthenticationException(e);
     }
   }

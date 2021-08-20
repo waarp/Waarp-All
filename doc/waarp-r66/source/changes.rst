@@ -7,7 +7,24 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.6.0 (2021-04-03)
+Waarp R66 3.6.1 (2021-09-03)
+============================
+
+
+Correctifs
+----------
+
+- Amélioration des performances en ne forçant l'authentification que lors
+  de connections réseau nouvelles (le multiplexage n'imposant pas
+  la réauthentification)
+- Traces en mode DEBUG pour les états R66
+- Correction de tests en erreur
+- Benchmarks réitérés
+- Amélioration de la documentation
+- Mise à jour des dépendances
+
+
+Waarp R66 3.6.0 (2021-08-15)
 ============================
 
 Nouvelles fonctionnalités

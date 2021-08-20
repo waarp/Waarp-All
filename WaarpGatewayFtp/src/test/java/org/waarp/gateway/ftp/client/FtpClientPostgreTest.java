@@ -214,7 +214,9 @@ public class FtpClientPostgreTest {
   public static void startServer() throws Exception {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
-    ResourceLeakDetector.setLevel(Level.PARANOID);
+    ResourceLeakDetector.setLevel(
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? Level.SIMPLE :
+            Level.PARANOID);
     WaarpSystemUtil.setJunit(true);
     // R66 Home
     File home = new File("/tmp/FTP");
@@ -400,7 +402,7 @@ public class FtpClientPostgreTest {
 
     final File localFilename = new File("/tmp/ftpfile.bin");
     final int nbThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10 : 1;
-    final int nbPerThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 30 : 1;
+    final int nbPerThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10 : 1;
     final int delay = SystemPropertyUtil.get(IT_LONG_TEST, false)? 0 : DELAY;
     testFtp4J("127.0.0.1", 2021, "fred", key, "a", 0,
               localFilename.getAbsolutePath(), 0, delay, true, nbThread,

@@ -120,6 +120,15 @@ public final class R66SystemProperties {
    */
   public static final String OPENR66_CACHE_TIMELIMIT =
       "openr66.cache.timelimit";
+
+  /**
+   * Shall the server or client try to reuse already authenticated
+   * partner when using the very same network link (multiplexing)?
+   * If 0 (default), it will reuse the first successful authentication.
+   * If 1, it will always use a new authentication for each command.
+   */
+  public static final String OPENR66_AUTHENT_NO_REUSE =
+      "openr66.authent.noreuse";
   /**
    * Test only: apply a NoOpRecvThroughHandler to each recv operation
    * if rule is RecvThrough

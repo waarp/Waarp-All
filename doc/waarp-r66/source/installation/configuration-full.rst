@@ -1,6 +1,11 @@
 Configuration Avancée
 #####################
 
+EN plus des arguments détaillés ci-dessous, il est possible d'ajouter
+d'autres paramètres aux commandes Java pour adapter le comportement,
+voir :ref:`ici <raw-commands>`.
+
+
 client.xml
 **********
 
@@ -389,11 +394,11 @@ Modèle                 Mixte Active / Passive     Accélération Description
 ===================== =========================== ============ ========================
 FTP 10 clients 2c     488/s                       Référence    10 clients avec transferts concurrents
 FTP 50 clients 2c     1102/s                      Référence    50 clients avec transferts concurrents
-FTP 100 clients 2c    1158/s                      Référence    100 clients avec transferts concurrents
+FTP 100 clients 2c    1217/s                      Référence    100 clients avec transferts concurrents
 FTP 10 clients 4C     1056/s                      116%         10 clients avec transferts concurrents
 FTP 50 clients 4C     3233/s                      193%         50 clients avec transferts concurrents
-FTP 100 clients 4c    4200/s                      263%         100 clients avec transferts concurrents
-GW FTP 10 clients 2C  234/s                       Référence    10 clients avec transferts concurrents
+FTP 100 clients 4c    4200/s                      245%         100 clients avec transferts concurrents
+GW FTP 10 clients 2C  290/s                       Référence    10 clients avec transferts concurrents
 GW FTP 50 clients 2C  260/s                       Référence    50 clients avec transferts concurrents
 GW FTP 100 clients 2c 244/s                       Référence    100 clients avec transferts concurrents
 GW FTP 10 clients 2C  224/s                       -4%          10 clients avec transferts concurrents avec PostGreSQL

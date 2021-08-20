@@ -121,12 +121,9 @@ Options additionnelles pour Waarp via la JVM
 .. index:: -Dopenr66.cache.timelimit
 
 ``-Dopenr66.cache.limit=n`` et ``-Dopenr66.cache.timelimit=m``
-   (défaut n = 20000, m=180000)
+   (défaut n = 5000, m=180000)
 
-   .. versionchanged:: 3.2.0
-      Le cache a été supprimé, ces options sont ignorées
-
-   pour mettre en cache les informations de transfert avec
+   Pour mettre en cache les informations de transfert avec
 
    - ``n`` est le nombre maximum de tâches à conserver dans un cache LRU (Last
      Recent Used). La valeur minimale est 100
@@ -142,7 +139,7 @@ Options additionnelles pour Waarp via la JVM
    (défaut = 0)
 
    Autorise Waarp à utiliser l'espace comme séparateur mais induit des risques
-   de bugs.
+   de bugs. **USAGE NON RECOMMANDE**
 
 
 .. index:: -Dopenr66.executebeforetransferred
@@ -152,6 +149,64 @@ Options additionnelles pour Waarp via la JVM
 
    Autorise Waarp à exécuter les Error-Tasks si une erreur intervient pendant
    les "pré-task", avant le transfert effectif
+
+
+.. index:: -Dopenr66.authent.noreuse
+
+``-Dopenr66.authent.noreuse=0|1``
+   (défaut = 0)
+
+   Autorise Waarp à ne pas réauthentifier un partenaire qui est déjà connecté
+   sur un même lien réseau (channel), par défaut. Si activé, l'authentification
+   sera obligatoire pour chaque commande (comme avant la version 3.6.0).
+
+   .. versionchanged:: 3.6.1
+      Cette option a été activée par défaut (valeur 0) pour optimiser
+      mais peut être désactivée (1) si nécessaire.
+
+.. index:: -Dwaarp.database.connection.max
+
+``-Dwaarp.database.connection.max=n``
+   (défaut = 10)
+
+   Permet d'augmenter le nombre maximum de connection simultanées à la base
+   de données, avec un minimum de 2 et un maximum lié à la base elle-même.
+
+
+.. index:: -Dfile.encoding
+
+``-Dfile.encoding=UTF-8``
+   (défaut = UTF-8)
+
+   Configuration du mode des fichiers par défaut (UTF-8 recommandé).
+
+
+.. index:: -Dio.netty.allocator.type
+
+``-Dio.netty.allocator.type=pooled``
+   (défaut = pooled)
+
+   Configuration de la mémoire pour Netty, par défaut utilise le mode "pooled".
+
+.. index:: -Dio.netty.noPreferDirect
+
+``-Dio.netty.noPreferDirect=true``
+   (défaut = pooled)
+
+   Configuration de la mémoire pour Netty, par défaut utilise le mode amoindrie
+   en mémoire Direct.
+
+.. index:: -Dio.netty.maxDirectMemory
+
+``-Dio.netty.maxDirectMemory=0|-1``
+   (défaut = 0)
+
+   Configuration de la mémoire pour Netty, par défaut utilise le mode optimisé
+   par Netty (0) en se limitant au maximum que la JVM autorise.
+   -1 est possible (contrôle total à Netty) mais aucun nettoyage de la mémoire
+   n'étant réalisé, cette valeur tend à augmenter la consommation mémoire de
+   manière trop importante.
+
 
 
 ``org.waarp.client.Message``

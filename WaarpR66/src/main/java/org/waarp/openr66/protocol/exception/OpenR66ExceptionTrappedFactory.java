@@ -96,6 +96,12 @@ public final class OpenR66ExceptionTrappedFactory {
       logger.debug("Request cannot continue since not authenticated: {}",
                    e2.getMessage());
       return e2;
+    } else if (throwable instanceof OpenR66ProtocolNoCorrectAuthenticationException) {
+      final OpenR66ProtocolNoCorrectAuthenticationException e2 =
+          (OpenR66ProtocolNoCorrectAuthenticationException) throwable;
+      logger.debug("Request cannot continue since authentication is " +
+                   "incompatible: {}", e2.getMessage());
+      return e2;
     } else if (throwable instanceof OpenR66ProtocolBusinessStopException) {
       final OpenR66ProtocolBusinessStopException e2 =
           (OpenR66ProtocolBusinessStopException) throwable;

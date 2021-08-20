@@ -104,7 +104,9 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
     }
     Configuration.configuration.scheduleWithFixedDelay(monitorExporterTransfers,
                                                        1, TimeUnit.SECONDS);
-    ResourceLeakDetector.setLevel(Level.PARANOID);
+    ResourceLeakDetector.setLevel(
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? Level.SIMPLE :
+            Level.PARANOID);
     container = new MinioContainer(
         new MinioContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));
     container.start();

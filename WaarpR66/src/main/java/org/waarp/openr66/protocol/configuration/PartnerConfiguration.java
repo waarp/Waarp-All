@@ -51,6 +51,7 @@ public class PartnerConfiguration {
    * Uses as separator in field
    */
   public static final String BLANK_SEPARATOR_FIELD = " ";
+  public static final String VERSION_R66_SOFTWARE_3_6_1 = "3.6.1";
   /**
    * Uses as separator in field
    */
@@ -83,6 +84,7 @@ public class PartnerConfiguration {
   private final DigestAlgo digestAlgo;
   private final boolean compression;
   private final String separator;
+  private final boolean supportReuseAuthentication;
 
   /**
    * Constructor for an external HostId
@@ -155,6 +157,8 @@ public class PartnerConfiguration {
     compression = root.get(FIELDS.COMPRESSION.name).asBoolean();
     r66Version = root.get(FIELDS.R66VERSION.name).asText();
     separator = root.get(FIELDS.SEPARATOR.name).asText();
+    supportReuseAuthentication =
+        isVersion2GEQVersion1(VERSION_R66_SOFTWARE_3_6_1, r66Version);
     logger.info("Info on HostId: {}", root);
   }
 
@@ -185,6 +189,8 @@ public class PartnerConfiguration {
     changeFileInfoEnabled = true;
     digestAlgo = getDigestAlgoInternal();
     separator = getSEPARATOR_FIELD();
+    supportReuseAuthentication =
+        isVersion2GEQVersion1(VERSION_R66_SOFTWARE_3_6_1, r66Version);
     logger.debug("Info on HostId: {}", root);
   }
 
@@ -279,6 +285,13 @@ public class PartnerConfiguration {
   }
 
   /**
+   * @return True if this Host support Reuse Authentication
+   */
+  public final boolean supportReuseAuthentication() {
+    return supportReuseAuthentication;
+  }
+
+  /**
    * @return the String representation as version.json
    */
   @Override
@@ -334,28 +347,43 @@ public class PartnerConfiguration {
     if (version1 == null || version2 == null) {
       return false;
     }
-    final int major1;
-    final int rank1;
-    final int subversion1;
-    String[] vals = version1.split("\\.");
-    major1 = Integer.parseInt(vals[0]);
-    rank1 = Integer.parseInt(vals[1]);
-    subversion1 = Integer.parseInt(vals[2]);
-    final int major2;
-    final int rank2;
-    final int subversion2;
-    vals = version2.split("\\.");
-    major2 = Integer.parseInt(vals[0]);
-    rank2 = Integer.parseInt(vals[1]);
-    subversion2 = Integer.parseInt(vals[2]);
-    final boolean b = major1 < major2 || (major1 == major2 && (rank1 < rank2 ||
-                                                               (rank1 ==
-                                                                rank2 &&
-                                                                subversion1 <=
-                                                                subversion2)));
-    logger.trace("1: {}:{}:{} <=? {}:{}:{} = {}", major1, rank1, subversion1,
-                 major2, rank2, subversion2, b);
-    return b;
+    try {
+      final int major1;
+      final int rank1;
+      final int subversion1;
+      String[] vals = version1.split("\\.");
+      major1 = Integer.parseInt(vals[0]);
+      rank1 = Integer.parseInt(vals[1]);
+      final int pos = vals[2].indexOf('-');
+      if (pos > 0) {
+        subversion1 = Integer.parseInt(vals[2].substring(0, pos));
+      } else {
+        subversion1 = Integer.parseInt(vals[2]);
+      }
+      final int major2;
+      final int rank2;
+      final int subversion2;
+      vals = version2.split("\\.");
+      major2 = Integer.parseInt(vals[0]);
+      rank2 = Integer.parseInt(vals[1]);
+      final int pos2 = vals[2].indexOf('-');
+      if (pos2 > 0) {
+        subversion2 = Integer.parseInt(vals[2].substring(0, pos2));
+      } else {
+        subversion2 = Integer.parseInt(vals[2]);
+      }
+      final boolean b = major1 < major2 || (major1 == major2 &&
+                                            (rank1 < rank2 || (rank1 == rank2 &&
+                                                               subversion1 <=
+                                                               subversion2)));
+      logger.trace("1: {}:{}:{} <=? {}:{}:{} = {}", major1, rank1, subversion1,
+                   major2, rank2, subversion2, b);
+      return b;
+    } catch (final Exception e) {
+      logger.error("Error while comparing versions {} vs {}: {}", version1,
+                   version2, e.getMessage());
+      return false;
+    }
   }
 
   /**
@@ -371,28 +399,43 @@ public class PartnerConfiguration {
     if (version1 == null || version2 == null) {
       return false;
     }
-    final int major1;
-    final int rank1;
-    final int subversion1;
-    String[] vals = version1.split("\\.");
-    major1 = Integer.parseInt(vals[0]);
-    rank1 = Integer.parseInt(vals[1]);
-    subversion1 = Integer.parseInt(vals[2]);
-    final int major2;
-    final int rank2;
-    final int subversion2;
-    vals = version2.split("\\.");
-    major2 = Integer.parseInt(vals[0]);
-    rank2 = Integer.parseInt(vals[1]);
-    subversion2 = Integer.parseInt(vals[2]);
-    final boolean b = major1 < major2 || (major1 == major2 && (rank1 < rank2 ||
-                                                               (rank1 ==
-                                                                rank2 &&
-                                                                subversion1 <
-                                                                subversion2)));
-    logger.debug("1: {}:{}:{} <? {}:{}:{} = {}", major1, rank1, subversion1,
-                 major2, rank2, subversion2, b);
-    return b;
+    try {
+      final int major1;
+      final int rank1;
+      final int subversion1;
+      String[] vals = version1.split("\\.");
+      major1 = Integer.parseInt(vals[0]);
+      rank1 = Integer.parseInt(vals[1]);
+      final int pos = vals[2].indexOf('-');
+      if (pos > 0) {
+        subversion1 = Integer.parseInt(vals[2].substring(0, pos));
+      } else {
+        subversion1 = Integer.parseInt(vals[2]);
+      }
+      final int major2;
+      final int rank2;
+      final int subversion2;
+      vals = version2.split("\\.");
+      major2 = Integer.parseInt(vals[0]);
+      rank2 = Integer.parseInt(vals[1]);
+      final int pos2 = vals[2].indexOf('-');
+      if (pos2 > 0) {
+        subversion2 = Integer.parseInt(vals[2].substring(0, pos2));
+      } else {
+        subversion2 = Integer.parseInt(vals[2]);
+      }
+      final boolean b = major1 < major2 || (major1 == major2 &&
+                                            (rank1 < rank2 || (rank1 == rank2 &&
+                                                               subversion1 <
+                                                               subversion2)));
+      logger.debug("1: {}:{}:{} <? {}:{}:{} = {}", major1, rank1, subversion1,
+                   major2, rank2, subversion2, b);
+      return b;
+    } catch (final Exception e) {
+      logger.error("Error while comparing versions {} vs {}: {}", version1,
+                   version2, e.getMessage());
+      return false;
+    }
   }
 
   /**

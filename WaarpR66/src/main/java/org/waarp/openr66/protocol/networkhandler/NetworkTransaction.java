@@ -144,6 +144,7 @@ public class NetworkTransaction {
   private ChannelGroup networkChannelGroup;
 
   public NetworkTransaction() {
+    clearPreviousStates();
     networkChannelGroup = new DefaultChannelGroup("NetworkChannels",
                                                   Configuration.configuration.getSubTaskGroup()
                                                                              .next());
@@ -174,6 +175,30 @@ public class NetworkTransaction {
         logger.warn("No SSL support configured");
       } else {
         logger.info("No SSL support configured");
+      }
+    }
+  }
+
+  private final void clearPreviousStates() {
+    if (WaarpSystemUtil.isJunit()) {
+      for (final NetworkChannelReference ncr : networkChannelOnSocketAddressConcurrentHashMap.values()) {
+        if (ncr.channel != null &&
+            ncr.channel.hasAttr(NetworkServerHandler.REUSABLE_AUTH_KEY)) {
+          logger.debug("DEBUG clear {}",
+                       ncr.channel.attr(NetworkServerHandler.REUSABLE_AUTH_KEY)
+                                  .get());
+          ncr.channel.attr(NetworkServerHandler.REUSABLE_AUTH_KEY).set(null);
+        }
+      }
+      for (final ClientNetworkChannels cnc : clientNetworkChannelsPerHostId.values()) {
+        for (final NetworkChannelReference ncr : cnc.getNetworkChannelReferences()) {
+          if (ncr.channel != null &&
+              ncr.channel.hasAttr(NetworkServerHandler.REUSABLE_AUTH_KEY)) {
+            logger.debug("DEBUG clear {}", ncr.channel.attr(
+                NetworkServerHandler.REUSABLE_AUTH_KEY).get());
+            ncr.channel.attr(NetworkServerHandler.REUSABLE_AUTH_KEY).set(null);
+          }
+        }
       }
     }
   }
@@ -398,7 +423,7 @@ public class NetworkTransaction {
       } catch (final OpenR66ProtocolNetworkException e) {
         // Can retry
         logger.error("Cannot connect : {}. Will retry", e.getMessage());
-        logger.debug(e);
+        logger.warn(e);
         try {
           Thread.sleep(Configuration.configuration.getDelayRetry());
         } catch (final InterruptedException e1) {//NOSONAR
@@ -642,6 +667,11 @@ public class NetworkTransaction {
       final LocalChannelReference localChannelReference)
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolNotAuthenticatedException {
+    if (localChannelReference.getServerHandler()
+                             .validateAuthenticationReuse()) {
+      // Already authenticated
+      return;
+    }
     final AuthentPacket authent;
 
     try {

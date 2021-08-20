@@ -622,6 +622,8 @@ public class Configuration {
 
   private boolean isHostProxyfied;
 
+  private boolean authentNoReuse;
+
   private boolean warnOnStartup = true;
 
   private boolean chrootChecked = true;
@@ -692,7 +694,8 @@ public class Configuration {
         R66SystemProperties.OPENR66_ISHOSTPROXYFIED, false));
     setWarnOnStartup(SystemPropertyUtil.getBoolean(
         R66SystemProperties.OPENR66_STARTUP_WARNING, true));
-
+    setAuthentNoReuse(SystemPropertyUtil.getBoolean(
+        R66SystemProperties.OPENR66_AUTHENT_NO_REUSE, false));
     if (!SystemPropertyUtil.get(
         R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn("{} is deprecated in system properties use {} instead",
@@ -2633,6 +2636,20 @@ public class Configuration {
    */
   public final void setHostProxyfied(final boolean isHostProxyfied) {
     this.isHostProxyfied = isHostProxyfied;
+  }
+
+  /**
+   * @return True if Authentication cannot be reused
+   */
+  public final boolean isAuthentNoReuse() {
+    return authentNoReuse;
+  }
+
+  /**
+   * @param authentNoReuse
+   */
+  public final void setAuthentNoReuse(final boolean authentNoReuse) {
+    this.authentNoReuse = authentNoReuse;
   }
 
   /**
