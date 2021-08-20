@@ -31,6 +31,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.authentication.R66Auth;
@@ -54,6 +55,7 @@ import org.waarp.openr66.protocol.localhandler.packet.AuthentPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ConnectionErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.StartupPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
@@ -131,8 +133,9 @@ public abstract class ConnectionActions {
       }
       // clean session objects like files
       boolean mustFinalize = true;
-      if (localChannelReference != null &&
-          localChannelReference.getFutureRequest().isDone()) {
+      final R66Future transfer = localChannelReference != null?
+          localChannelReference.getFutureRequest() : null;
+      if (transfer != null && transfer.isDone()) {
         // already done
         mustFinalize = false;
       } else {
@@ -168,18 +171,16 @@ public abstract class ConnectionActions {
           }
         }
       }
-      if (mustFinalize && runner != null) {
-        if (runner.isRequestOnRequested() && localChannelReference != null) {
-          final R66Future transfer = localChannelReference.getFutureRequest();
-          // Since requested : log
-          final R66Result result = transfer.getResult();
-          if (transfer.isDone() && transfer.isSuccess()) {
-            logger.info("TRANSFER REQUESTED RESULT:     SUCCESS     {}",
-                        (result != null? result : "no result"));
-          } else {
-            logger.error("TRANSFER REQUESTED RESULT:     FAILURE     " +
-                         (result != null? result.toString() : "no result"));
-          }
+      if (mustFinalize && runner != null && runner.isRequestOnRequested() &&
+          localChannelReference != null) {
+        // Since requested : log
+        final R66Result result = transfer.getResult();
+        if (transfer.isDone() && transfer.isSuccess()) {
+          logger.info("TRANSFER REQUESTED RESULT:     SUCCESS     {}",
+                      (result != null? result : "no result"));
+        } else {
+          logger.error("TRANSFER REQUESTED RESULT:     FAILURE     " +
+                       (result != null? result.toString() : "no result"));
         }
       }
       session.setStatus(50);
@@ -200,8 +201,7 @@ public abstract class ConnectionActions {
             "Local Server Channel Closed but no LocalChannelReference");
       }
       // Now if runner is not yet finished, finish it by force
-      if (mustFinalize && localChannelReference != null &&
-          !localChannelReference.getFutureRequest().isDone()) {
+      if (mustFinalize && localChannelReference != null && !transfer.isDone()) {
         final R66Result finalValue = new R66Result(
             new OpenR66ProtocolSystemException(
                 Messages.getString("LocalServerHandler.11")),
@@ -361,7 +361,9 @@ public abstract class ConnectionActions {
       throws OpenR66ProtocolPacketException {
     logger.debug("AUTHENT {}", packet);
     if (packet.isToValidate()) {
-      session.newState(AUTHENTR);
+      if (session.getState() != AUTHENTD) {
+        session.newState(AUTHENTR);
+      }
     }
 
     logger.debug("LocalChannelReference null? {}",
@@ -480,7 +482,9 @@ public abstract class ConnectionActions {
         Configuration.configuration.isCompressionAvailable());
     final R66Result result =
         new R66Result(session, true, ErrorCode.InitOk, null);
-    session.newState(AUTHENTD);
+    if (session.getState() != AUTHENTD) {
+      session.newState(AUTHENTD);
+    }
     localChannelReference.validateConnection(true, result);
     logger.debug("Local Server Channel Validated: {} ",
                  localChannelReference != null? localChannelReference :
@@ -495,8 +499,79 @@ public abstract class ConnectionActions {
                                             false);
       session.setStatus(98);
     }
+    // Checking if partner is able to reuse authentication
+    if (allowReusableAuthentication() &&
+        Configuration.configuration.getVersions()
+                                   .containsKey(session.getAuth().getUser()) &&
+        Configuration.configuration.getVersions()
+                                   .get(session.getAuth().getUser())
+                                   .supportReuseAuthentication()) {
+      localChannelReference.getNetworkChannel()
+                           .attr(NetworkServerHandler.REUSABLE_AUTH_KEY)
+                           .set(session.getAuth().clone());
+    }
     logger.debug("Partner: {} from {}", localChannelReference.getPartner(),
                  Configuration.configuration.getVersions());
+  }
+
+  public final boolean allowReusableAuthentication() {
+    return !Configuration.configuration.isAuthentNoReuse();
+  }
+
+  public final boolean hasReusableAuthentication() {
+    return allowReusableAuthentication() &&
+           localChannelReference.getNetworkChannel().hasAttr(
+               NetworkServerHandler.REUSABLE_AUTH_KEY) &&
+           localChannelReference.getNetworkChannel()
+                                .attr(NetworkServerHandler.REUSABLE_AUTH_KEY)
+                                .get() != null;
+  }
+
+  public final boolean validateAuthenticationReuse()
+      throws OpenR66ProtocolNotAuthenticatedException {
+    if (hasReusableAuthentication()) {
+      // Already authenticated
+      final R66Auth source = localChannelReference.getNetworkChannel().attr(
+          NetworkServerHandler.REUSABLE_AUTH_KEY).get();
+      if (source != null) {
+        if (localChannelReference.getDbSession() != null) {
+          localChannelReference.getDbSession().useConnection();
+        }
+        if (localChannelReference.getNetworkChannelObject() != null) {
+          localChannelReference.getNetworkChannelObject()
+                               .setHostId(source.getUser());
+        }
+        localChannelReference.getSession().getAuth().setFromClone(source);
+        localChannelReference.setPartner(source.getUser());
+        if (session.getBusinessObject() != null) {
+          try {
+            session.getBusinessObject().checkAtAuthentication(session);
+          } catch (final OpenR66RunnerErrorException e) {
+            session.setStatus(104);
+            throw new OpenR66ProtocolNotAuthenticatedException(e.getMessage());
+          }
+        }
+        // Check compression
+        session.setCompressionEnabled(
+            localChannelReference.getPartner().isCompression() &&
+            Configuration.configuration.isCompressionAvailable());
+        final R66Result result =
+            new R66Result(session, true, ErrorCode.InitOk, null);
+        localChannelReference.validateConnection(true, result);
+        session.setStatus(44);
+        NetworkTransaction.addClient(
+            localChannelReference.getNetworkChannelObject(), source.getUser());
+        final R66FiniteDualStates state =
+            localChannelReference.getSessionState();
+        if (state == AUTHENTR || state == STARTUP) {
+          localChannelReference.sessionNewState(AUTHENTD);
+        }
+        logger.debug("Authentication is done using reuse");
+        return true;
+      }
+    }
+    logger.debug("Authentication will be done as usual");
+    return false;
   }
 
   /**

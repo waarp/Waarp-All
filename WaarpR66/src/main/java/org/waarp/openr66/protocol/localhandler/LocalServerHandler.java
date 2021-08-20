@@ -41,6 +41,7 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessRemoteFileNot
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessStopException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -69,6 +70,7 @@ import org.waarp.openr66.protocol.localhandler.packet.json.RequestJsonPacket;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.R66Future;
 
 import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
@@ -376,12 +378,12 @@ public final class LocalServerHandler {
   public static void exceptionCaught(final TransferActions serverHandler,
                                      final Throwable cause) {
     // inform clients
+    final R66Future futureRequest =
+        serverHandler.getLocalChannelReference() != null?
+            serverHandler.getLocalChannelReference().getFutureRequest() : null;
     logger.debug("Exception and isFinished: {}",
-                 (serverHandler.getLocalChannelReference() != null &&
-                  serverHandler.getLocalChannelReference().getFutureRequest()
-                               .isDone()), cause);
-    if (serverHandler.getLocalChannelReference() != null &&
-        serverHandler.getLocalChannelReference().getFutureRequest().isDone()) {
+                 (futureRequest != null && futureRequest.isDone()), cause);
+    if (futureRequest != null && futureRequest.isDone()) {
       ChannelCloseTimer.closeFutureTransaction(serverHandler);
       return;
     }
@@ -398,14 +400,9 @@ public final class LocalServerHandler {
         shutdownFromException(serverHandler, exception);
         return;
       } else {
-        if (serverHandler.getLocalChannelReference() != null &&
-            serverHandler.getLocalChannelReference().getFutureRequest() !=
-            null) {
-          if (serverHandler.getLocalChannelReference().getFutureRequest()
-                           .isDone()) {
-            final R66Result result =
-                serverHandler.getLocalChannelReference().getFutureRequest()
-                             .getResult();
+        if (futureRequest != null && futureRequest != null) {
+          if (futureRequest.isDone()) {
+            final R66Result result = futureRequest.getResult();
             if (result != null) {
               isAnswered = result.isAnswered();
             }
@@ -455,6 +452,8 @@ public final class LocalServerHandler {
         } else if (exception instanceof OpenR66ProtocolNotAuthenticatedException) {
           code = ErrorCode.BadAuthent;
           isAnswered = true;
+        } else if (exception instanceof OpenR66ProtocolNoCorrectAuthenticationException) {
+          code = ErrorCode.BadAuthent;
         } else if (exception instanceof OpenR66ProtocolNetworkException) {
           code = ErrorCode.Disconnection;
           if (runner != null) {
@@ -510,6 +509,11 @@ public final class LocalServerHandler {
           } catch (final OpenR66ProtocolPacketException e1) {
             // should not be
           }
+        }
+        if (Configuration.configuration.getR66Mib() != null) {
+          Configuration.configuration.getR66Mib().notifyError(
+              "Transfer in error since " + exception.getMessage(),
+              code != null? code.getMesg() : "Unknown Error");
         }
         final R66Result finalValue =
             new R66Result(exception, serverHandler.getSession(), true, code,

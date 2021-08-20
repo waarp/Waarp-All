@@ -1398,91 +1398,94 @@ public class NetworkClientOnlyBothCompressionTest extends TestAbstract {
 
   @Test
   public void test92_ExtraCommandsOther() throws Exception {
-    setUpBeforeClassClient("config-clientB.xml");
-    ValidPacket valid;
-    final byte scode = -1;
-    final DbHostAuth host = new DbHostAuth("hostb");
-    final SocketAddress socketServerAddress;
     try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
+      setUpBeforeClassClient("config-clientB.xml");
+      ValidPacket valid;
+      final byte scode = -1;
+      final DbHostAuth host = new DbHostAuth("hostb");
+      final SocketAddress socketServerAddress;
+      try {
+        socketServerAddress = host.getSocketAddress();
+      } catch (final IllegalArgumentException e) {
+        logger.error("Needs a correct configuration file as first argument");
+        return;
+      }
+      R66Future future;
+
+      // Message
+      logger.warn("Start Message");
+      future = new R66Future(true);
+      final TestPacket packet = new TestPacket("MSG", "Message", 2);
+      final Message message =
+          new Message(networkTransaction, future, "hostb", packet);
+      message.run();
+      future.awaitOrInterruptible();
+      assertTrue("Message should be OK", future.isSuccess());
+
+      // MultipleSubmitTransfer
+      logger.warn("Start MultipleSubmitTransfer");
+      future = new R66Future(true);
+      File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+      final MultipleSubmitTransfer multipleSubmitTransfer =
+          new MultipleSubmitTransfer(future, "hostb",
+                                     "/tmp/R66/out/testTask.txt", "rule3",
+                                     "Multiple Submit #COMPRESS#", true, 1024,
+                                     DbConstantR66.ILLEGALVALUE, null,
+                                     networkTransaction);
+      multipleSubmitTransfer.run();
+      future.awaitOrInterruptible();
+      assertTrue("All submits should be OK", future.isSuccess());
+
+      // ValidPacket CONFEXPORTPACKET
+      logger.warn("Start Valid CONFEXPORTPACKET");
+      future = new R66Future(true);
+      valid = new ValidPacket(Boolean.TRUE.toString(), Boolean.TRUE.toString(),
+                              LocalPacketFactory.CONFEXPORTPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // ValidPacket CONFIMPORTPACKET
+      logger.warn("Start Valid CONFIMPORTPACKET");
+      future = new R66Future(true);
+      valid = new ValidPacket("0 /tmp/R66/arch/hostb_Authentications.xml",
+                              "0 /tmp/R66/arch/hostb.rules.xml",
+                              LocalPacketFactory.CONFIMPORTPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // ValidPacket LOG
+      logger.warn("Start Valid LOG");
+      future = new R66Future(true);
+      valid = new ValidPacket(null, null, LocalPacketFactory.LOGPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // ValidPacket LOGPURGE
+      logger.warn("Start Valid LOGPURGE");
+      future = new R66Future(true);
+      valid = new ValidPacket(null, null, LocalPacketFactory.LOGPURGEPACKET);
+      sendInformation(valid, socketServerAddress, future, scode, false,
+                      R66FiniteDualStates.VALIDOTHER, true);
+
+      // NoOpPacket
+      logger.warn("Start NoOp");
+      final long timeout = Configuration.configuration.getTimeoutCon();
+      Configuration.configuration.setTimeoutCon(100);
+      future = new R66Future(true);
+      final NoOpPacket noOpPacket = new NoOpPacket();
+      sendInformation(noOpPacket, socketServerAddress, future, scode, false,
+                      R66FiniteDualStates.INFORMATION, true);
+
+      // KeepAlivePacket
+      logger.warn("Start KeepAlive");
+      future = new R66Future(true);
+      final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
+      sendInformation(keepAlivePacket, socketServerAddress, future, scode, true,
+                      R66FiniteDualStates.INFORMATION, true);
+      Configuration.configuration.setTimeoutCon(timeout);
+    } finally {
+      setUpBeforeClassClient(CONFIG_CLIENT_A);
     }
-    R66Future future;
-
-    // Message
-    logger.warn("Start Message");
-    future = new R66Future(true);
-    final TestPacket packet = new TestPacket("MSG", "Message", 2);
-    final Message message =
-        new Message(networkTransaction, future, "hostb", packet);
-    message.run();
-    future.awaitOrInterruptible();
-    assertTrue("Message should be OK", future.isSuccess());
-
-    // MultipleSubmitTransfer
-    logger.warn("Start MultipleSubmitTransfer");
-    future = new R66Future(true);
-    File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final MultipleSubmitTransfer multipleSubmitTransfer =
-        new MultipleSubmitTransfer(future, "hostb", "/tmp/R66/out/testTask.txt",
-                                   "rule3", "Multiple Submit #COMPRESS#", true,
-                                   1024, DbConstantR66.ILLEGALVALUE, null,
-                                   networkTransaction);
-    multipleSubmitTransfer.run();
-    future.awaitOrInterruptible();
-    assertTrue("All submits should be OK", future.isSuccess());
-
-    // ValidPacket CONFEXPORTPACKET
-    logger.warn("Start Valid CONFEXPORTPACKET");
-    future = new R66Future(true);
-    valid = new ValidPacket(Boolean.TRUE.toString(), Boolean.TRUE.toString(),
-                            LocalPacketFactory.CONFEXPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket CONFIMPORTPACKET
-    logger.warn("Start Valid CONFIMPORTPACKET");
-    future = new R66Future(true);
-    valid = new ValidPacket("0 /tmp/R66/arch/hostb_Authentications.xml",
-                            "0 /tmp/R66/arch/hostb.rules.xml",
-                            LocalPacketFactory.CONFIMPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket LOG
-    logger.warn("Start Valid LOG");
-    future = new R66Future(true);
-    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket LOGPURGE
-    logger.warn("Start Valid LOGPURGE");
-    future = new R66Future(true);
-    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPURGEPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // NoOpPacket
-    logger.warn("Start NoOp");
-    final long timeout = Configuration.configuration.getTimeoutCon();
-    Configuration.configuration.setTimeoutCon(100);
-    future = new R66Future(true);
-    final NoOpPacket noOpPacket = new NoOpPacket();
-    sendInformation(noOpPacket, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    // KeepAlivePacket
-    logger.warn("Start KeepAlive");
-    future = new R66Future(true);
-    final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
-    sendInformation(keepAlivePacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-    Configuration.configuration.setTimeoutCon(timeout);
-
-    setUpBeforeClassClient(CONFIG_CLIENT_A);
   }
 
   public static final class RestHandlerHookForTest extends RestHandlerHook {

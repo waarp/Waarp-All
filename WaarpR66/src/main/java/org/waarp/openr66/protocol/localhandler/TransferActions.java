@@ -45,6 +45,7 @@ import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryAlreadyFinishedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryStillRunningException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -300,12 +301,12 @@ public class TransferActions extends ServerActions {
 
   private RequestPacket computeBlockSizeFromRequest(RequestPacket packet,
                                                     final DbRule rule)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNoCorrectAuthenticationException {
     int blocksize = packet.getBlocksize();
     if (packet.isToValidate()) {
       if (!rule.checkHostAllow(session.getAuth().getUser())) {
         session.setStatus(30);
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             Messages.getString("LocalServerHandler.10")); //$NON-NLS-1$
       }
       // Check if the blocksize is greater than local value
@@ -323,7 +324,7 @@ public class TransferActions extends ServerActions {
     }
     if (!RequestPacket.isCompatibleMode(rule.getMode(), packet.getMode())) {
       // not compatible Rule and mode in request
-      throw new OpenR66ProtocolNotAuthenticatedException(
+      throw new OpenR66ProtocolNoCorrectAuthenticationException(
           Messages.getString("LocalServerHandler.12") + rule.getMode() + " vs "
           //$NON-NLS-1$
           + packet.getMode());

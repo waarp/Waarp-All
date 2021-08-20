@@ -67,6 +67,48 @@ public class R66Auth extends FilesystemBasedAuthImpl {
     super(session);
   }
 
+  /**
+   * To be able to store a clone of this Authentication
+   *
+   * @return the clone
+   */
+  public R66Auth clone() {
+    final R66Auth newAuth = new R66Auth((R66Session) session);
+    newAuth.currentAuth = currentAuth;
+    newAuth.role.clear();
+    newAuth.setIsIdentified(true);
+    newAuth.user = user;
+    newAuth.rootFromAuth = rootFromAuth;
+    newAuth.getSession().getDir().initAfterIdentification();
+    newAuth.isAdmin = currentAuth.isAdminrole();
+    newAuth.role.setRoleDefault(role);
+    return newAuth;
+  }
+
+  /**
+   * For same channel, no proxy, authentification from already authenticated
+   * channel
+   *
+   * @param source
+   *
+   * @throws IllegalStateException if conditions are not valid to create a
+   *     correct R66Auth
+   */
+  public void setFromClone(final R66Auth source) {
+    if (source == null || !source.isIdentified()) {
+      throw new IllegalStateException("Source Authentification not valid");
+    }
+    currentAuth = source.currentAuth;
+    role.clear();
+    setIsIdentified(true);
+    user = source.user;
+    rootFromAuth = source.rootFromAuth;
+    getSession().getDir().initAfterIdentification();
+    isAdmin = currentAuth.isAdminrole();
+    role.setRoleDefault(source.role);
+    logger.debug("{}", role);
+  }
+
   @Override
   protected final void businessClean() {
     currentAuth = null;

@@ -55,6 +55,10 @@ public class ClientNetworkChannels {
     networkChannelReferences.remove(networkChannelReference);
   }
 
+  public final Set<NetworkChannelReference> getNetworkChannelReferences() {
+    return networkChannelReferences;
+  }
+
   public final boolean isEmpty() {
     return networkChannelReferences.isEmpty();
   }

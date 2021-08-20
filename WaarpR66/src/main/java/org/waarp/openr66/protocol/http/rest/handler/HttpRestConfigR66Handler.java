@@ -34,6 +34,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -145,6 +146,8 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
       throw new HttpInvalidAuthenticationException(e);
     } catch (final OpenR66ProtocolSystemException e) {
       throw new HttpIncorrectRequestException(e);
+    } catch (OpenR66ProtocolNoCorrectAuthenticationException e) {
+      throw new HttpInvalidAuthenticationException(e);
     }
   }
 

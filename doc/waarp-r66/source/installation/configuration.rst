@@ -442,4 +442,5 @@ Les sections suivantes présentent:
  #. Le détail complet des fichiers de configuration
 
 
-La section d'après détails le lancement d'un serveur WaarpR66.
+La section d'après détaille le lancement d'un serveur WaarpR66.
+

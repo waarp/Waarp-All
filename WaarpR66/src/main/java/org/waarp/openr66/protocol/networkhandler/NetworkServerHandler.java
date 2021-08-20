@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.util.AttributeKey;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -31,6 +32,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.openr66.context.authentication.R66Auth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
@@ -68,7 +70,9 @@ public class NetworkServerHandler
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(NetworkServerHandler.class);
-
+  public static final String REUSABLE_AUTH_KEY_NAME = "ReusableAuthKey";
+  public static final AttributeKey<R66Auth> REUSABLE_AUTH_KEY =
+      AttributeKey.newInstance(REUSABLE_AUTH_KEY_NAME);
   /**
    * The associated Remote Address
    */

@@ -60,6 +60,7 @@ import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessRemoteFileNotFoundException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
@@ -316,7 +317,8 @@ public class ServerActions extends ConnectionActions {
   }
 
   private void bandwidthPacket(final ValidPacket packet)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     final String[] splitglobal = packet.getSheader().split(" ");
     final String[] splitsession = packet.getSmiddle().split(" ");
     packet.clear();
@@ -326,7 +328,6 @@ public class ServerActions extends ConnectionActions {
     if (splitglobal.length < 2 || splitsession.length < 2) {
       // request of current values
       session.newState(VALIDOTHER);
-
       final long[] lresult = bandwidth(false, 0, 0, 0, 0);
       // Now answer
       valid = new ValidPacket(
@@ -353,6 +354,7 @@ public class ServerActions extends ConnectionActions {
 
   private void configImportPacket(final ValidPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException,
              OpenR66ProtocolSystemException {
     session.newState(VALIDOTHER);
     // Authentication must be the local server or CONFIGADMIN authorization
@@ -360,7 +362,7 @@ public class ServerActions extends ConnectionActions {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -476,7 +478,8 @@ public class ServerActions extends ConnectionActions {
   }
 
   private void configExportPacket(final ValidPacket packet)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     final String shost = packet.getSheader();
     final String srule = packet.getSmiddle();
     final boolean bhost = Boolean.parseBoolean(shost);
@@ -512,7 +515,7 @@ public class ServerActions extends ConnectionActions {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.LOGCONTROL)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -612,7 +615,8 @@ public class ServerActions extends ConnectionActions {
   }
 
   private void validPacket(final ValidPacket packet)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     // header = ?; middle = requested+blank+requester+blank+specialId
     // note: might contains one more argument = time to reschedule in yyyyMMddHHmmss format
     final String[] keys = packet.getSmiddle().split(" ");
@@ -664,7 +668,8 @@ public class ServerActions extends ConnectionActions {
   }
 
   private void stopOrCancelPacket(final ValidPacket packet)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     final String[] keys = packet.getSmiddle().split(" ");
     final long id = Long.parseLong(keys[2]);
     session.newState(VALIDOTHER);
@@ -831,7 +836,8 @@ public class ServerActions extends ConnectionActions {
   }
 
   private void jsonCommandBandwidth(final BandwidthJsonPacket json)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     // setter, writeglobal, readglobal, writesession, readsession
     final boolean setter = json.isSetter();
     // request of current values or set new values
@@ -861,7 +867,8 @@ public class ServerActions extends ConnectionActions {
 
   private void jsonCommandConfigImport(final ConfigImportJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
-             OpenR66ProtocolSystemException {
+             OpenR66ProtocolSystemException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     final ConfigImportResponseJsonPacket resp = configImport(json);
     final R66Result result;
     if (resp.isImportedhost() || resp.isImportedrule() ||
@@ -886,7 +893,8 @@ public class ServerActions extends ConnectionActions {
   }
 
   private void jsonCommandConfigExport(final ConfigExportJsonPacket json)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     // host, rule, business, alias, roles
     final boolean bhost = json.isHost();
     final boolean brule = json.isRule();
@@ -1001,7 +1009,8 @@ public class ServerActions extends ConnectionActions {
 
   private void jsonCommandValid(final JsonCommandPacket packet,
                                 final RestartTransferJsonPacket json)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     session.newState(VALIDOTHER);
     final R66Result result =
         requestRestart(json.getRequested(), json.getRequester(),
@@ -1027,7 +1036,8 @@ public class ServerActions extends ConnectionActions {
 
   private void jsonCommandStopOrCancel(final JsonCommandPacket packet,
                                        final JsonPacket json)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;
     final R66Result resulttest;
     if (node.getRequested() == null || node.getRequester() == null ||
@@ -1120,7 +1130,8 @@ public class ServerActions extends ConnectionActions {
 
   private void jsonCommandBusinessCommand(final BusinessRequestJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
-             OpenR66ProtocolPacketException {
+             OpenR66ProtocolPacketException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     if (json.isToApplied()) {
       session.newState(BUSINESSD);
     }
@@ -1346,13 +1357,14 @@ public class ServerActions extends ConnectionActions {
   public final long[] bandwidth(final boolean setter, final long writeglobal,
                                 final long readglobal, final long writesession,
                                 final long readsession)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     // Authentication must be the local server or LIMIT authorization
     try {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.LIMIT)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -1410,6 +1422,7 @@ public class ServerActions extends ConnectionActions {
   public final ConfigImportResponseJsonPacket configImport(
       final ConfigImportJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException,
              OpenR66ProtocolSystemException {
     session.newState(VALIDOTHER);
     // Authentication must be the local server or CONFIGADMIN authorization
@@ -1417,7 +1430,7 @@ public class ServerActions extends ConnectionActions {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -1700,13 +1713,14 @@ public class ServerActions extends ConnectionActions {
   public final String[] configExport(final boolean bhost, final boolean brule,
                                      final boolean bbusiness,
                                      final boolean balias, final boolean broles)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     // Authentication must be the local server or CONFIGADMIN authorization
     try {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -1853,7 +1867,8 @@ public class ServerActions extends ConnectionActions {
    */
   public final R66Result requestRestart(final String reqd, final String reqr,
                                         final long id, final Date date)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     ErrorCode returnCode = ErrorCode.Internal;
     R66Result resulttest;
     // should be from the local server or from an authorized hosts: TRANSFER
@@ -1861,7 +1876,7 @@ public class ServerActions extends ConnectionActions {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.TRANSFER)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -2004,7 +2019,7 @@ public class ServerActions extends ConnectionActions {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.LOGCONTROL)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -2103,13 +2118,14 @@ public class ServerActions extends ConnectionActions {
    */
   public final R66Result stopOrCancel(final byte type, final String reqd,
                                       final String reqr, final long id)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     // should be from the local server or from an authorized hosts: SYSTEM
     try {
       if (!session.getAuth().getUser().equals(
           Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
           !session.getAuth().isValidRole(ROLE.SYSTEM)) {
-        throw new OpenR66ProtocolNotAuthenticatedException(
+        throw new OpenR66ProtocolNoCorrectAuthenticationException(
             NOT_CORRECTLY_AUTHENTICATED);
       }
     } catch (final OpenR66ProtocolNoSslException e1) {
@@ -2332,7 +2348,8 @@ public class ServerActions extends ConnectionActions {
    */
   public final void businessRequest(final BusinessRequestPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
-             OpenR66ProtocolPacketException {
+             OpenR66ProtocolPacketException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     final String argRule = packet.getSheader();
     if (packet.isToValidate()) {
       session.newState(BUSINESSD);
@@ -2413,7 +2430,8 @@ public class ServerActions extends ConnectionActions {
                                          final String arguments,
                                          final String extraArguments,
                                          final int delay)
-      throws OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolNoCorrectAuthenticationException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while BusinessRequest received");
@@ -2423,7 +2441,7 @@ public class ServerActions extends ConnectionActions {
                                                                     .getUser())) {
       logger.warn("Not allow to execute a BusinessRequest: " +
                   session.getAuth().getUser());
-      throw new OpenR66ProtocolNotAuthenticatedException(
+      throw new OpenR66ProtocolNoCorrectAuthenticationException(
           "Not allow to execute a BusinessRequest");
     }
     session.setStatus(200);

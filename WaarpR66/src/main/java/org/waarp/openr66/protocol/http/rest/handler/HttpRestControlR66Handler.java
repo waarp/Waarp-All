@@ -36,6 +36,7 @@ import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -190,6 +191,8 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
       throw new HttpInvalidAuthenticationException(e);
     } catch (final OpenR66ProtocolNoDataException e) {
       throw new HttpIncorrectRequestException(e);
+    } catch (OpenR66ProtocolNoCorrectAuthenticationException e) {
+      throw new HttpInvalidAuthenticationException(e);
     }
   }
 

@@ -45,6 +45,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.elasticsearch.ElasticsearchMonitoringExporterClientImpl;
@@ -119,7 +120,9 @@ public class ScenarioLoopBenchmarkMonitoringElasticsearchPostGreSqlIT
     };
     Configuration.configuration.scheduleWithFixedDelay(monitorExporterTransfers,
                                                        1, TimeUnit.SECONDS);
-    ResourceLeakDetector.setLevel(Level.PARANOID);
+    ResourceLeakDetector.setLevel(
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? Level.SIMPLE :
+            Level.PARANOID);
   }
 
   private static class ElasticsearchMonitoringExporterClientImplExtend

@@ -37,6 +37,7 @@ import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
@@ -130,6 +131,8 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
         setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);
       }
     } catch (final OpenR66ProtocolNotAuthenticatedException e) {
+      throw new HttpInvalidAuthenticationException(e);
+    } catch (final OpenR66ProtocolNoCorrectAuthenticationException e) {
       throw new HttpInvalidAuthenticationException(e);
     }
   }
