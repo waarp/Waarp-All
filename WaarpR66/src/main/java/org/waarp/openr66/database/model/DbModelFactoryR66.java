@@ -528,21 +528,18 @@ public class DbModelFactoryR66 extends DbModelFactory {
     }
     try {
       if (dbTypeResolver.getDbType() == DbType.PostGreSQL) {
-        String saction = "CREATE EXTENSION IF NOT EXISTS pg_trgm";
+        String saction = "DROP INDEX IF EXISTS GIST_FOLLOWID_IDX";
         SysErrLogger.FAKE_LOGGER.sysout(saction);
         request.query(saction);
-        saction = createIndex + " GIST_FOLLOWID_IDX ON " + DbTaskRunner.table +
-                  " USING gist (" + Columns.TRANSFERINFO.name() +
-                  " gist_trgm_ops)";
-        SysErrLogger.FAKE_LOGGER.sysout(saction);
-        request.query(saction);
-      } else {
-        String saction =
-            createIndex + " FOLLOWID_IDX ON " + DbTaskRunner.table + " (" +
-            Columns.TRANSFERINFO.name() + ", " + Columns.OWNERREQ.name() + ")";
+        saction = "DROP EXTENSION IF EXISTS pg_trgm";
         SysErrLogger.FAKE_LOGGER.sysout(saction);
         request.query(saction);
       }
+      final String saction =
+          createIndex + " FOLLOWID_IDX ON " + DbTaskRunner.table + " (" +
+          Columns.TRANSFERINFO.name() + ", " + Columns.OWNERREQ.name() + ")";
+      SysErrLogger.FAKE_LOGGER.sysout(saction);
+      request.query(saction);
     } catch (final WaarpDatabaseNoConnectionException e) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return false;

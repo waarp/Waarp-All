@@ -258,6 +258,7 @@ public class ClientRunner extends Thread {
         try {
           taskRunner.forceSaveStatus();
           taskRunner.run();
+          taskRunner.saveStatus();
         } catch (final OpenR66RunnerErrorException e1) {
           changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
                             true);
@@ -417,6 +418,7 @@ public class ClientRunner extends Thread {
                                    ErrorCode.ConnectionImpossible);
         taskRunner.setErrorTask();
         taskRunner.run();
+        taskRunner.saveStatus();
         throw new OpenR66ProtocolNoConnectionException(
             "End of retry on ServerOverloaded due to interruption");
       }
@@ -430,6 +432,7 @@ public class ClientRunner extends Thread {
                                  ErrorCode.ConnectionImpossible);
       taskRunner.setErrorTask();
       taskRunner.run();
+      taskRunner.saveStatus();
       throw new OpenR66ProtocolNoConnectionException(
           "End of retry on ServerOverloaded");
     }

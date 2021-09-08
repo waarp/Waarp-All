@@ -714,7 +714,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
         if (runner.isAllDone()) {
           logger.info("DbTaskRunner done");
           if (!isCheckCompressionOk(runner)) {
-            logger.error("DbTaskRunner in error for compression");
+            logger.error("DbTaskRunner in error for compression: {}", runner);
             fail("Compression shall be " + SHOULD_COMPRESS + " but is " +
                  runner.isBlockCompression());
           }

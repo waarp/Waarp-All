@@ -52,6 +52,9 @@ import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.client.TransferArgs;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.database.DBTransferDAO;
+import org.waarp.openr66.dao.database.DbTransferDAOStatistic;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
@@ -67,11 +70,12 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.waarp.openr66.protocol.it.ScenarioBase.*;
+import static org.waarp.openr66.protocol.it.ScenarioLoopBenchmarkPostGreSqlNativeIT.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
-  protected static ScenarioBaseLoopBenchmark scenarioBase;
+  protected static ScenarioBaseLoopBenchmark scenarioBase = null;
   private static final String PATH_COMMON = "scenario_loop_benchmark";
   private static final String SERVER_1_XML = "R1/conf/server_1_SQLDB.xml";
   private static final String SERVER_1_REWRITTEN_XML = "R1/conf/server.xml";
@@ -96,6 +100,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   private long usedMemory;
 
   public static void setUpBeforeClass() throws Exception {
+    if (scenarioBase == null) {
+      return;
+    }
     ResourceLeakDetector.setLevel(Level.SIMPLE);
     final ClassLoader classLoader =
         ScenarioBaseLoopBenchmark.class.getClassLoader();
@@ -131,6 +138,16 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     // Thread.sleep(10000);// To enable Profiling
+    if (SystemPropertyUtil.get(NATIVE_POSTGRESQL, null) != null) {
+      logger.warn("Check Ability Statistics");
+      final DBTransferDAO transferDAO =
+          (DBTransferDAO) DAOFactory.getInstance().getTransferDAO();
+      final DbTransferDAOStatistic transferDAOStatistic =
+          new DbTransferDAOStatistic(transferDAO);
+      transferDAOStatistic.initStatistics();
+      transferDAOStatistic.close();
+    }
+    logger.warn("Startup Finished");
   }
 
   public String getServerConfigFile() {
@@ -148,10 +165,21 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
-    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getJdbcUrl());
-    String driver = getJDC().getDriverClassName();
-    String target = "notfound";
-    String jdbcUrl = getJDC().getJdbcUrl();
+    final String driver;
+    String target;
+    String jdbcUrl;
+    if (getJDC() != null) {
+      driver = getJDC().getDriverClassName();
+      target = "notfound";
+      jdbcUrl = getJDC().getJdbcUrl();
+      SysErrLogger.FAKE_LOGGER.sysout(jdbcUrl);
+    } else {
+      driver = "org.postgresql.Driver";
+      target = "postgresql";
+      jdbcUrl =
+          ((ScenarioLoopBenchmarkPostGreSqlNativeIT) scenarioBase).getJDBC();
+      SysErrLogger.FAKE_LOGGER.sysout(jdbcUrl);
+    }
     if (driver.equalsIgnoreCase("org.mariadb.jdbc.Driver")) {
       target = "mariadb";
     } else if (driver.equalsIgnoreCase("org.h2.Driver")) {
@@ -173,7 +201,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     }
     content = content.replace("XXXJDBCXXX", jdbcUrl);
     content = content.replace("XXXDRIVERXXX", target);
-    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.sysout(driver);
     SysErrLogger.FAKE_LOGGER.sysout(target);
     File fileTo = new File(TMP_R66_CONFIG_R1);
     fileTo.getParentFile().mkdirs();
@@ -278,7 +306,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     // For debug only ServerInitDatabase.main(args);
   }
 
-  public static int startServer(String serverConfig) throws Exception {
+  public static int startServer(final String serverConfig) throws Exception {
     final File file2;
     if (serverConfig.charAt(0) == '/') {
       file2 = new File(serverConfig);
@@ -293,9 +321,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes.getPidOfRunnerCommandLinux("java",
-                                                     R66Server.class.getName(),
-                                                     PIDS);
+      final int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                           R66Server.class.getName(),
+                                                           PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -311,6 +339,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    if (scenarioBase == null) {
+      return;
+    }
     CloseableHttpClient httpClient = null;
     int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10000 : 500;
     int totalTransfers = max;
@@ -388,19 +419,30 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
                 (stopTime - startTime) / 1000.0, totalTransfers,
                 totalTransfers / ((stopTime - startTime) / 1000.0));
     WaarpSystemUtil.stopLogger(true);
+    if (SystemPropertyUtil.get(NATIVE_POSTGRESQL, null) != null) {
+      final DBTransferDAO transferDAO =
+          (DBTransferDAO) DAOFactory.getInstance().getTransferDAO();
+      final DbTransferDAOStatistic transferDAOStatistic =
+          new DbTransferDAOStatistic(transferDAO);
+      transferDAOStatistic.executeStatistics();
+      transferDAOStatistic.close();
+    }
     Configuration.configuration.setTimeoutCon(100);
-    for (int pid : PIDS) {
+    for (final int pid : PIDS) {
       Processes.kill(pid, true);
     }
     tearDownAfterClassClient();
     tearDownAfterClassMinimal();
     tearDownAfterClassServer();
-    File base = new File("/tmp/R66");
+    final File base = new File("/tmp/R66");
     FileUtils.deleteRecursiveDir(base);
   }
 
   @Before
   public void setUp() throws Exception {
+    if (scenarioBase == null) {
+      return;
+    }
     Configuration.configuration.setTimeoutCon(30000);
     Runtime runtime = Runtime.getRuntime();
     usedMemory = runtime.totalMemory() - runtime.freeMemory();
@@ -408,6 +450,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   @After
   public void tearDown() throws Exception {
+    if (scenarioBase == null) {
+      return;
+    }
     int cores = Runtime.getRuntime().availableProcessors();
     int itMax = cores > 4? 10000 : 74000;
     Thread.sleep(SystemPropertyUtil.get(IT_LONG_TEST, false)? itMax : 100);
@@ -475,6 +520,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   @Test
   public void test01_LoopBenchmarkSendsSyncSslNoLimit()
       throws IOException, Reply550Exception {
+    Assume.assumeNotNull(scenarioBase);
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2-ssl";
@@ -499,6 +545,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   @Test
   public void test02_LoopBenchmarkSendsSyncNoLimit()
       throws IOException, Reply550Exception {
+    Assume.assumeNotNull(scenarioBase);
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2";
@@ -523,6 +570,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   @Test
   public void test03_LoopBenchmarkSendSelfSyncNoLimit()
       throws IOException, Reply550Exception {
+    Assume.assumeNotNull(scenarioBase);
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     for (int pid : PIDS) {
       Processes.kill(pid, true);

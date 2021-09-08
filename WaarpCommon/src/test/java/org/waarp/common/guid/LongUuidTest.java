@@ -34,7 +34,7 @@ public class LongUuidTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
-  private static final int NB = 100000;
+  private static final int NB = 1000000;
 
   @Test
   public void testStructure() {
@@ -101,7 +101,7 @@ public class LongUuidTest {
   public void testPIDField() throws Exception {
     final LongUuid id = new LongUuid();
 
-    assertEquals(JvmProcessId.jvmProcessId() & 0xFFFF, id.getProcessId());
+    assertEquals(JvmProcessId.jvmInstanceId() & 0xFFFF, id.getProcessId());
   }
 
   @Test
@@ -145,13 +145,14 @@ public class LongUuidTest {
     if (largest == 0) {
       largest = n;
     }
-    System.out.println(uuidArray[0] + "(" + uuidArray[0].getTimestamp() + ':' +
-                       uuidArray[0].getLong() + ") - " + uuidArray[n - 1] +
-                       '(' + uuidArray[n - 1].getTimestamp() + ':' +
-                       uuidArray[n - 1].getLong() + ") = " +
-                       (uuidArray[n - 1].getLong() - uuidArray[0].getLong() +
-                        1));
-    System.out.println(largest + " different consecutive elements");
+    System.out.println(
+        "Time elapsed: " + uuidArray[0] + "(" + uuidArray[0].getTimestamp() +
+        ':' + uuidArray[0].getLong() + ") - " + uuidArray[n - 1] + '(' +
+        uuidArray[n - 1].getTimestamp() + ':' + uuidArray[n - 1].getLong() +
+        ") = " + (uuidArray[n - 1].getLong() - uuidArray[0].getLong()) + " & " +
+        (uuidArray[n - 1].getTimestamp() - uuidArray[0].getTimestamp()));
+    System.out.println(
+        largest + " different consecutive elements for same time");
   }
 
   @Test

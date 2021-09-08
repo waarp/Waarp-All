@@ -548,13 +548,7 @@ public class TransferActions extends ServerActions {
       }
       logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
       // ok to restart
-      try {
-        if (runner.restart(false)) {
-          runner.saveStatus();
-        }
-      } catch (final OpenR66RunnerErrorException ignored) {
-        // nothing
-      }
+      runner.restart(false);
       // Change the SpecialID! => could generate an error ?
       if (packet.getSpecialId() == ILLEGALVALUE) {
         packet.setSpecialId(runner.getSpecialId());
@@ -656,13 +650,7 @@ public class TransferActions extends ServerActions {
       }
     }
     logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
-    try {
-      if (runner.restart(false) && !runner.isSelfRequest()) {
-        runner.saveStatus();
-      }
-    } catch (final OpenR66RunnerErrorException ignored) {
-      // nothing
-    }
+    runner.restart(false);
     return runner;
   }
 
@@ -1328,17 +1316,13 @@ public class TransferActions extends ServerActions {
   }
 
   /**
-   * If newFileInfo is provided and different than current value
-   *
-   * @param newFileInfo
+   * Update if necessary after Filename or size changed
    *
    * @throws OpenR66RunnerErrorException
    */
-  public final void requestChangeFileInfo(final String newFileInfo)
+  public final void saveAfterChangingFileInfo()
       throws OpenR66RunnerErrorException {
     final DbTaskRunner runner = session.getRunner();
-    logger.debug("NewFileInfo {}", newFileInfo);
-    runner.setFileInformation(newFileInfo);
     try {
       runner.update();
     } catch (final WaarpDatabaseException e) {
@@ -1371,6 +1355,20 @@ public class TransferActions extends ServerActions {
       session.setStatus(97);
       ChannelCloseTimer.closeFutureTransaction(this);
     }
+  }
+
+  /**
+   * If newFileInfo is provided and different than current value
+   *
+   * @param newFileInfo
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public final void requestChangeFileInfo(final String newFileInfo)
+      throws OpenR66RunnerErrorException {
+    final DbTaskRunner runner = session.getRunner();
+    logger.debug("NewFileInfo {}", newFileInfo);
+    runner.setFileInformation(newFileInfo);
   }
 
   /**

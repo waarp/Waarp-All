@@ -223,6 +223,7 @@ public final class LocalServerHandler {
               serverHandler.requestChangeFileInfo(newFileInfo);
             }
             serverHandler.requestChangeNameSize(newfilename, newSize);
+            serverHandler.saveAfterChangingFileInfo();
             packet.clear();
           } else {
             serverHandler.valid((ValidPacket) packet);
@@ -350,6 +351,7 @@ public final class LocalServerHandler {
             }
             // potential file size changed
             serverHandler.requestChangeNameSize(newfilename, newSize);
+            serverHandler.saveAfterChangingFileInfo();
           } else {
             serverHandler.jsonCommand((JsonCommandPacket) packet, json);
           }

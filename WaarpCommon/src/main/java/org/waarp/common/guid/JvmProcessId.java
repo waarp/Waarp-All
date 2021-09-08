@@ -55,21 +55,33 @@ public final class JvmProcessId {
   static final int JVMPID;
   private static final Object[] EMPTY_OBJECTS = new Object[0];
   private static final Class<?>[] EMPTY_CLASSES = new Class<?>[0];
+
   /**
    * Try to get Mac Address but could be also changed dynamically
    */
   static byte[] mac;
   static int macInt;
+  static int jvmId;
 
   static {
     JVMPID = jvmProcessId();
     mac = macAddress();
     macInt = macAddressAsInt();
+    jvmId = jvmInstanceId();
   }
 
   private JvmProcessId() {
   }
 
+  /**
+   * Use both PID and MAC address but as 16 bytes
+   *
+   * @return one id as much as possible unique
+   */
+  public static short jvmInstanceId() {
+    final long id = 31 * jvmProcessId() + macAddressAsInt();
+    return (short) (Long.hashCode(id) % Short.MAX_VALUE);
+  }
 
   /**
    * @return the JVM Process ID
