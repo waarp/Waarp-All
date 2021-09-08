@@ -137,7 +137,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public static final String TRACE_FOR_ERROR = "Trace for error";
   /**
    * HashTable in case of lack of database using LRU mode with 20 000 items
-   * maximum (< 2 MB?) for 180s
+   * maximum (< 100 KB?) for 180s
    */
   private static SynchronizedLruCache<Long, Boolean> dbR66TaskHashMap;
 
@@ -2361,10 +2361,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   @Override
   public final void changeUpdatedInfo(final UpdatedInfo info) {
-    setStopNow();
-    isSaved = false;
-    pojo.setUpdatedInfo(
-        org.waarp.openr66.pojo.UpdatedInfo.valueOf(info.ordinal()));
+    if (pojo.getUpdatedInfo() !=
+        org.waarp.openr66.pojo.UpdatedInfo.valueOf(info.ordinal())) {
+      setStopNow();
+      isSaved = false;
+      pojo.setUpdatedInfo(
+          org.waarp.openr66.pojo.UpdatedInfo.valueOf(info.ordinal()));
+    }
   }
 
   /**
@@ -2373,9 +2376,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param code
    */
   public final void setErrorExecutionStatus(final ErrorCode code) {
-    setStopNow();
-    isSaved = false;
-    pojo.setInfoStatus(code);
+    if (pojo.getInfoStatus() != code) {
+      setStopNow();
+      isSaved = false;
+      pojo.setInfoStatus(code);
+    }
   }
 
   /**
@@ -2431,18 +2436,22 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param blocksize the block size to set
    */
   public final void setBlocksize(final int blocksize) {
-    isSaved = false;
-    isOtherThanStatus = true;
-    pojo.setBlockSize(blocksize);
+    if (pojo.getBlockSize() != blocksize) {
+      isSaved = false;
+      isOtherThanStatus = true;
+      pojo.setBlockSize(blocksize);
+    }
   }
 
   /**
    * @param filename the filename to set
    */
   public final void setFilename(final String filename) {
-    isSaved = false;
-    isOtherThanStatus = true;
-    pojo.setFilename(filename);
+    if (pojo.getFilename() == null || !pojo.getFilename().equals(filename)) {
+      isSaved = false;
+      isOtherThanStatus = true;
+      pojo.setFilename(filename);
+    }
   }
 
   /**
@@ -2461,9 +2470,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param originalFilename the originalFilename to set
    */
   public final void setOriginalFilename(final String originalFilename) {
-    isSaved = false;
-    isOtherThanStatus = true;
-    pojo.setOriginalName(originalFilename);
+    if (pojo.getOriginalName() == null ||
+        !pojo.getOriginalName().equals(originalFilename)) {
+      isSaved = false;
+      isOtherThanStatus = true;
+      pojo.setOriginalName(originalFilename);
+    }
   }
 
   /**
@@ -2479,8 +2491,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param status
    */
   public final void setExecutionStatus(final ErrorCode status) {
-    isSaved = false;
-    pojo.setStepStatus(status);
+    if (pojo.getStepStatus() != status) {
+      isSaved = false;
+      pojo.setStepStatus(status);
+    }
   }
 
   /**
@@ -2645,9 +2659,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       transferMap = null;
     }
     final Map<String, Object> map = getMapFromString(transferInfo);
-    isSaved = false;
-    isOtherThanStatus = true;
-    internalSetNoMapMap(map, noMap);
+    if (transferMap == null || !transferMap.equals(map) ||
+        !pojo.getTransferInfo().equals(noMap)) {
+      isSaved = false;
+      isOtherThanStatus = true;
+      internalSetNoMapMap(map, noMap);
+    }
   }
 
   /**
@@ -2730,9 +2747,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public final boolean isBlockCompression() {
     final Object compression = getFromTransferMap(JSON_COMPRESSION);
-    logger.debug("current value {} {} => {}", pojo.getTransferInfo(),
-                 transferMap, compression != null? compression : false,
-                 new Exception("trace"));
+    if (logger.isDebugEnabled()) {
+      logger.debug("current value {} {} => {}", pojo.getTransferInfo(),
+                   transferMap, compression != null? compression : false,
+                   new Exception("Trace for " + "debugging"));
+    }
     if (compression != null) {
       if (compression instanceof Boolean) {
         return (Boolean) compression;
@@ -2783,10 +2802,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param newFileInformation
    */
   public final void setFileInformation(final String newFileInformation) {
-    pojo.setFileInfo(newFileInformation);
-    isOtherThanStatus = true;
-    isSaved = false;
-    setMapFromFileInfo();
+    if (pojo.getFileInfo() == null ||
+        !pojo.getFileInfo().equals(newFileInformation)) {
+      pojo.setFileInfo(newFileInformation);
+      isOtherThanStatus = true;
+      isSaved = false;
+      setMapFromFileInfo();
+    }
   }
 
   /**
@@ -2824,10 +2846,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public final void setRuleId(final String ruleId)
       throws WaarpDatabaseException {
-    rule = new DbRule(ruleId);
-    pojo.setRule(ruleId);
-    isSaved = false;
-    isOtherThanStatus = true;
+    if (rule == null || !rule.getIdRule().equals(ruleId)) {
+      rule = new DbRule(ruleId);
+      pojo.setRule(ruleId);
+      isSaved = false;
+      isOtherThanStatus = true;
+    }
   }
 
   /**
@@ -3239,9 +3263,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       try {
         future = runNext();
       } catch (final OpenR66RunnerEndTasksException e) {
-        pojo.setStep(0);
-        isSaved = false;
-        saveStatus();
+        if (pojo.getStep() != 0) {
+          pojo.setStep(0);
+          isSaved = false;
+        }
         return;
       } catch (final OpenR66RunnerErrorException e) {
         setErrorExecutionStatus(ErrorCode.ExternalOp);
@@ -3321,13 +3346,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (session.isSender()) {
       // Nothing to do since it is the original file
       setPostTask();
-      if (!shallIgnoreSave()) {
-        saveStatus();
-      }
     } else {
       finalizeReceiver(localChannelReference, file, finalValue);
     }
-    saveStatus();
     if (isRecvThrough() || isSendThrough()) {
       // File could not exist
     } else if (getStep() == 0) {
@@ -3385,7 +3406,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     final int poststep = getStep();
     setPostTask();
-    saveStatus();
     // in case of error
     final R66Result error =
         new R66Result(session, finalValue.isAnswered(), ErrorCode.FinalOp,
@@ -3997,9 +4017,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param start new Start time to apply when reschedule
    */
   public final void setStart(final Timestamp start) {
-    pojo.setStart(start);
-    isOtherThanStatus = true;
-    isSaved = false;
+    if (pojo.getStart() == null || !pojo.getStart().equals(start)) {
+      pojo.setStart(start);
+      isOtherThanStatus = true;
+      isSaved = false;
+    }
   }
 
   /**
@@ -4010,8 +4032,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   public final void setStop(final Timestamp stop) {
-    pojo.setStop(stop);
-    isSaved = false;
+    if (pojo.getStop() == null || !pojo.getStop().equals(stop)) {
+      pojo.setStop(stop);
+      isSaved = false;
+    }
   }
 
   /**
@@ -4621,9 +4645,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param sender
    */
   public final void setSender(final boolean sender) {
-    pojo.setRetrieveMode(sender);
-    isOtherThanStatus = true;
-    isSaved = false;
+    if (pojo.getRetrieveMode() != sender) {
+      pojo.setRetrieveMode(sender);
+      isOtherThanStatus = true;
+      isSaved = false;
+    }
   }
 
   /**
@@ -4647,12 +4673,15 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public final void setSenderByRequestToValidate(
       final boolean requestToValidate) {
+    final boolean oldValue = pojo.getRetrieveMode();
     pojo.setRetrieveMode(RequestPacket.isRecvMode(pojo.getTransferMode()));
     if (!requestToValidate) {
       pojo.setRetrieveMode(!pojo.getRetrieveMode());
     }
-    isOtherThanStatus = true;
-    isSaved = false;
+    if (oldValue != pojo.getRetrieveMode()) {
+      isOtherThanStatus = true;
+      isSaved = false;
+    }
   }
 
   /**
@@ -4660,9 +4689,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   private void setSenderForUpdate() {
     if (isSelfRequest()) {
-      isSaved = false;
-      isOtherThanStatus = true;
+      final boolean oldValue = pojo.getRetrieveMode();
       pojo.setRetrieveMode(RequestPacket.isRecvMode(pojo.getTransferMode()));
+      if (oldValue != pojo.getRetrieveMode()) {
+        isSaved = false;
+        isOtherThanStatus = true;
+      }
     }
   }
 

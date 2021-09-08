@@ -661,8 +661,10 @@ public class FtpTransferControl {
    * Abort the current transfer
    */
   private void abortTransfer() {
-    logger.debug("Will abort transfer and write: ",
-                 new Exception("trace only"));
+    if (logger.isDebugEnabled()) {
+      logger.debug("Will abort transfer and write: ",
+                   new Exception("trace only"));
+    }
     final FtpFile file;
     FtpTransfer current = null;
     try {
@@ -768,7 +770,9 @@ public class FtpTransferControl {
     }
     if (endOfCommand != null && !endOfCommand.isDone()) {
       logger.warn("Command cancelled");
-      logger.debug(new Exception("TRACE"));
+      if (logger.isDebugEnabled()) {
+        logger.debug(new Exception("Trace only"));
+      }
       endOfCommand.cancel();
     }
   }
@@ -797,7 +801,9 @@ public class FtpTransferControl {
       endOfCommand.awaitOrInterruptible();
       if (endOfCommand.isFailed()) {
         logger.error("Transfer aborted");
-        logger.debug(new Exception("TRACE"));
+        if (logger.isDebugEnabled()) {
+          logger.debug(new Exception("Trace only"));
+        }
         throw new InterruptedException("Transfer aborted");
       }
     }

@@ -527,7 +527,7 @@ public class LocalChannelReference {
     }
     if (logger.isTraceEnabled()) {
       logger.trace("Invalidate Request",
-                   new Exception("DEBUG Trace for " + "Invalidation"));
+                   new Exception("DEBUG Trace for Invalidation"));
     }
     if (finalValue.getCode() != ErrorCode.ServerOverloaded) {
       if (!futureRequest.isDone()) {

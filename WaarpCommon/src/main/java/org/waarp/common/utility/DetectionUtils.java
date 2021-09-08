@@ -21,9 +21,6 @@ package org.waarp.common.utility;
 
 import io.netty.util.internal.SystemPropertyUtil;
 
-import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
-
 /**
  * Utility that detects various properties specific to the current runtime
  * environment, such as Java version.
@@ -79,40 +76,49 @@ public final class DetectionUtils {
     return JAVA_VERSION;
   }
 
+  private static boolean isAndroid0() {
+    // Idea: Sometimes java binaries include Android classes on the classpath, even if it isn't actually Android.
+    // Rather than check if certain classes are present, just check the VM, which is tied to the JDK.
+
+    // Optional improvement: check if `android.os.Build.VERSION` is >= 24. On later versions of Android, the
+    // OpenJDK is used, which means `Unsafe` will actually work as expected.
+
+    // Android sets this property to Dalvik, regardless of whether it actually is.
+    final String vmName = SystemPropertyUtil.get("java.vm.name");
+    return "Dalvik".equals(vmName);
+  }
+
   private static int javaVersion0() {
-    try {
-      // Check if its android, if so handle it the same way as java6.
-      //
-      // See https://github.com/netty/netty/issues/282
-      Class.forName("android.app.Application");
-      return 6;
-    } catch (final ClassNotFoundException e) {
-      // Ignore
+    final int majorVersion;
+
+    if (isAndroid0()) {
+      majorVersion = 6;
+    } else {
+      majorVersion = majorVersionFromJavaSpecificationVersion();
     }
 
-    try {
-      Class.forName("java.time.Clock", false, Object.class.getClassLoader());
-      return 8;
-    } catch (final Exception e) {
-      // Ignore
+    return majorVersion;
+  }
+
+  // Package-private for testing only
+  static int majorVersionFromJavaSpecificationVersion() {
+    return majorVersion(
+        SystemPropertyUtil.get("java.specification.version", "1.6"));
+  }
+
+  // Package-private for testing only
+  static int majorVersion(final String javaSpecVersion) {
+    final String[] components = javaSpecVersion.split("\\.");
+    final int[] version = new int[components.length];
+    for (int i = 0; i < components.length; i++) {
+      version[i] = Integer.parseInt(components[i]);
     }
 
-    try {
-      Class.forName("java.util.concurrent.LinkedTransferQueue", false,
-                    BlockingQueue.class.getClassLoader());
-      return 7;
-    } catch (final Exception e) {
-      // Ignore
+    if (version[0] == 1) {
+      assert version[1] >= 6;
+      return version[1];
+    } else {
+      return version[0];
     }
-
-    try {
-      Class.forName("java.util.ArrayDeque", false,
-                    Queue.class.getClassLoader());
-      return 6;
-    } catch (final Exception e) {
-      // Ignore
-    }
-
-    return 5;
   }
 }

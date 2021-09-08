@@ -20,7 +20,6 @@
 
 package org.waarp.common.database;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.waarp.common.database.properties.DbProperties;
 import org.waarp.common.database.properties.H2Properties;
@@ -30,6 +29,7 @@ import org.waarp.common.database.properties.OracleProperties;
 import org.waarp.common.database.properties.PostgreSQLProperties;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 
 import java.sql.Connection;
@@ -87,7 +87,7 @@ public class ConnectionFactory {
   /**
    * The datasource for connection pooling
    */
-  private final BasicDataSource ds;
+  private final WaarpBasicDataSource ds;
 
   /**
    * @param server the connection url of the database
@@ -172,7 +172,11 @@ public class ConnectionFactory {
     this.password = password;
     this.properties = properties;
 
-    ds = new BasicDataSource();
+    if (DetectionUtils.javaVersion() > 6) {
+      ds = new WaarpBasicDataSourceJava8();
+    } else {
+      ds = new WaarpBasicDataSourceJava6();
+    }
 
     // Initialize DataSource
     ds.setDriverClassName(this.properties.getDriverName());
@@ -230,11 +234,7 @@ public class ConnectionFactory {
    */
   public void close() {
     logger.info("Closing ConnectionFactory");
-    try {
-      ds.close();
-    } catch (final SQLException e) {
-      logger.debug("Cannot close properly the connection pool", e);
-    }
+    ds.close();
   }
 
   /**

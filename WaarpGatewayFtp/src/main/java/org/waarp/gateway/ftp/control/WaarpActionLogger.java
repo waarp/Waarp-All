@@ -168,7 +168,7 @@ public final class WaarpActionLogger {
     final String sessionContexte = session.toString();
     logger.error(rcode.getCode() + ":" + message + ' ' + sessionContexte);
     if (logger.isDebugEnabled()) {
-      logger.debug("Log", new Exception("Log"));
+      logger.debug("Log", new Exception("Trace only"));
     }
     if (ftpSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();

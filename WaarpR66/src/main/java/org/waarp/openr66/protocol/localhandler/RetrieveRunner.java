@@ -159,14 +159,7 @@ public class RetrieveRunner extends Thread {
             Configuration.configuration.getTimeoutCon()) ||
             Thread.interrupted()) {
           // valid it however
-          session.getRunner().setAllDone();
-          try {
-            session.getRunner().saveStatus();
-          } catch (final OpenR66RunnerErrorException e) {
-            // ignore
-          }
-          localChannelReference.validateRequest(
-              localChannelReference.getFutureEndTransfer().getResult());
+          finalizeInternal();
         }
         if (session.getRunner() != null &&
             session.getRunner().isRequestOnRequested()) {
@@ -197,6 +190,17 @@ public class RetrieveRunner extends Thread {
         setName("Finished_" + nameThread);
       }
     }
+  }
+
+  private void finalizeInternal() {
+    session.getRunner().setAllDone();
+    try {
+      session.getRunner().saveStatus();
+    } catch (final OpenR66RunnerErrorException e) {
+      // ignore
+    }
+    localChannelReference.validateRequest(
+        localChannelReference.getFutureEndTransfer().getResult());
   }
 
   private boolean checkDoneNotAnswered() {
@@ -242,14 +246,7 @@ public class RetrieveRunner extends Thread {
           // nothing
         }
       }
-      session.getRunner().setAllDone();
-      try {
-        session.getRunner().saveStatus();
-      } catch (final OpenR66RunnerErrorException e) {
-        // ignore
-      }
-      localChannelReference.validateRequest(
-          localChannelReference.getFutureEndTransfer().getResult());
+      finalizeInternal();
       if (session.getRunner() != null &&
           session.getRunner().isRequestOnRequested()) {
         localChannelReference.close();

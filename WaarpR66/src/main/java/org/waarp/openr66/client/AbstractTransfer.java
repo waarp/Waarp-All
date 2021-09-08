@@ -408,6 +408,7 @@ public abstract class AbstractTransfer implements Runnable {
     try {
       taskRunner.forceSaveStatus();
       taskRunner.run();
+      taskRunner.saveStatus();
     } catch (final OpenR66RunnerErrorException e1) {
       runner.changeUpdatedInfo(UpdatedInfo.INERROR, code, true);
     }

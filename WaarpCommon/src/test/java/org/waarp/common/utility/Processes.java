@@ -312,9 +312,9 @@ public final class Processes {
     final int freePhysicalMemorySize =
         (int) (osmxb.getFreePhysicalMemorySize() / (1024 * 1024 * 1024));
     final int maxMemory = freePhysicalMemorySize / nbProcess;
-    final int realMemory = maxMemory > 0? maxMemory : 2;
+    final int realMemory = maxMemory > 0? Math.min(maxMemory, 8) : 2;
     setJvmArgsDefault("-Xms" + realMemory + "g -Xmx" + realMemory + "g ");
-    System.err.println("Will propose " + realMemory);
+    System.err.println("Will propose " + realMemory + "GB of Memory");
   }
 
   public static void setJvmArgsDefault(String jvmArgsDefault1) {

@@ -39,14 +39,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class LongUuid {
   private static final Object SYNC_OBJECT = new Object();
   /**
+   * Bits size of Counter
+   */
+  private static final int SIZE_COUNTER = 19;
+  /**
+   * Min Counter value
+   */
+  private static final int MIN_COUNTER = 0;
+  /**
+   * Max Counter value
+   */
+  private static final int MAX_COUNTER = (1 << SIZE_COUNTER) - 1;
+  /**
    * Counter part
    */
   private static final AtomicInteger COUNTER =
-      new AtomicInteger(StringUtils.RANDOM.nextInt());
+      new AtomicInteger(Math.abs(StringUtils.RANDOM.nextInt(SIZE_COUNTER)));
   /**
    * Byte size of UUID
    */
   private static final int UUIDSIZE = 8;
+
 
   /**
    * real UUID
@@ -54,8 +67,8 @@ public final class LongUuid {
   private final byte[] uuid = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
   /**
-   * Constructor that generates a new UUID using the current process id, MAC
-   * address, and timestamp
+   * Constructor that generates a new UUID using the current process id and
+   * MAC address, timestamp and a counter
    */
   public LongUuid() {
     final long time = System.currentTimeMillis();
@@ -63,22 +76,23 @@ public final class LongUuid {
     final int count;
     synchronized (SYNC_OBJECT) {
       count = COUNTER.incrementAndGet();
-      if (count == Integer.MAX_VALUE) {
-        COUNTER.set(Integer.MIN_VALUE + 1);
+      if (count >= MAX_COUNTER) {
+        COUNTER.set(MIN_COUNTER);
       }
     }
 
-    // copy pid to uuid
-    uuid[0] = (byte) (JvmProcessId.JVMPID >> 8);
-    uuid[1] = (byte) JvmProcessId.JVMPID;
+    // copy Jvm Id to uuid
+    uuid[0] = (byte) (JvmProcessId.jvmId >> 8);
+    uuid[1] = (byte) JvmProcessId.jvmId;
 
-    // copy timestamp into uuid (up to 2^36 s = 2 years rolling)
-    uuid[2] = (byte) (time >> 28);
-    uuid[3] = (byte) (time >> 20);
-    uuid[4] = (byte) (time >> 12);
+    // copy timestamp into uuid (up to 2^30 s/4 = 2 years rolling)
+    uuid[2] = (byte) (time >> 22);
+    uuid[3] = (byte) (time >> 14);
+    uuid[4] = (byte) (time >> 6);
 
-    // Keep 4 first bytes, 4 bytes coming from Timestamp => 2^20 (at most 1M / 1/2s)
-    uuid[5] = (byte) (count >> 16 & 0x0F | time >> 4 & 0xF0);
+    // Count 3 first bytes, 5 bytes coming from Timestamp =>
+    // 2^19 (0.5M / 4ms = 131072 / ms ~ 131M / s)
+    uuid[5] = (byte) (count >> 16 & 0x07 | (time << 2) & 0xF8);
     uuid[6] = (byte) (count >> 8);
     uuid[7] = (byte) count;
   }
@@ -146,10 +160,10 @@ public final class LongUuid {
    */
   public final long getTimestamp() {
     long time;
-    time = ((long) uuid[2] & 0xFF) << 28;
-    time |= ((long) uuid[3] & 0xFF) << 20;
-    time |= ((long) uuid[4] & 0xFF) << 12;
-    time |= ((long) uuid[5] & 0xF0) << 4;
+    time = ((long) uuid[2] & 0xFF) << 22;
+    time |= ((long) uuid[3] & 0xFF) << 14;
+    time |= ((long) uuid[4] & 0xFF) << 6;
+    time |= ((long) uuid[5] & 0xF8) >> 2;
     return time;
   }
 

@@ -1060,7 +1060,6 @@ public class R66Session implements SessionInterface {
         }
       }
       runner.setPreTask();
-      runner.saveStatus();
       runner.run();
       if (runner.isSender() && !runner.isSendThrough()) {
         if (file != null) {
@@ -1074,12 +1073,10 @@ public class R66Session implements SessionInterface {
           }
         }
       }
-      runner.saveStatus();
       runner.setTransferTask(runner.getRank());
     } else {
       runner.reset();
       runner.changeUpdatedInfo(UpdatedInfo.RUNNING);
-      runner.saveStatus();
     }
   }
 
@@ -1126,7 +1123,6 @@ public class R66Session implements SessionInterface {
     } catch (final CommandAbstractException e) {
       throw new OpenR66RunnerErrorException(e);
     }
-    runner.saveStatus();
   }
 
   /**
@@ -1210,7 +1206,6 @@ public class R66Session implements SessionInterface {
     } else {
       runner.finishTransferTask(finalValue.getCode());
     }
-    runner.saveStatus();
     logger.debug("Transfer {} on {} and {}", status, file, runner);
     if (!runner.ready()) {
       // Pre task in error (or even before)
@@ -1229,6 +1224,7 @@ public class R66Session implements SessionInterface {
         runner.finalizeTransfer(localChannelReference, file, finalValue,
                                 status);
       }
+      runner.saveStatus();
       localChannelReference.invalidateRequest(finalValue);
       throw runnerErrorException;
     }

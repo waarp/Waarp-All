@@ -298,6 +298,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
       session.getRunner().setErrorTask();
       try {
         session.getRunner().run();
+        session.getRunner().saveStatus();
       } catch (final OpenR66RunnerErrorException ex) {
         logger.info(e);
       }
