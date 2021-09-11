@@ -25,6 +25,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.configuration.BadConfigurationException;
+import org.waarp.openr66.configuration.FileBasedConfiguration;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Rules.Tasks;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -304,18 +307,25 @@ public class Rule {
     this.hostids = hostids;
   }
 
-  private String checkPath(final String path) {
+  private String checkPath(final String path) throws WaarpDatabaseSqlException {
     if (ParametersChecker.isEmpty(path)) {
       return "";
     }
-    return path.replace("//", "/").replaceAll("[\\\\]+", "\\\\");
+    final String path2 = path.replace("//", "/").replaceAll("[\\\\]+", "\\\\");
+    try {
+      return FileBasedConfiguration.checkNotAbsolutePathNotUnderBase(
+          Configuration.configuration, path2);
+    } catch (final BadConfigurationException e) {
+      throw new WaarpDatabaseSqlException(e);
+    }
   }
 
   public final String getRecvPath() {
     return recvPath;
   }
 
-  public final void setRecvPath(final String recvPath) {
+  public final void setRecvPath(final String recvPath)
+      throws WaarpDatabaseSqlException {
     this.recvPath = checkPath(recvPath);
   }
 
@@ -323,7 +333,8 @@ public class Rule {
     return sendPath;
   }
 
-  public final void setSendPath(final String sendPath) {
+  public final void setSendPath(final String sendPath)
+      throws WaarpDatabaseSqlException {
     this.sendPath = checkPath(sendPath);
   }
 
@@ -331,7 +342,8 @@ public class Rule {
     return archivePath;
   }
 
-  public final void setArchivePath(final String archivePath) {
+  public final void setArchivePath(final String archivePath)
+      throws WaarpDatabaseSqlException {
     this.archivePath = checkPath(archivePath);
   }
 
@@ -339,7 +351,8 @@ public class Rule {
     return workPath;
   }
 
-  public final void setWorkPath(final String workPath) {
+  public final void setWorkPath(final String workPath)
+      throws WaarpDatabaseSqlException {
     this.workPath = checkPath(workPath);
   }
 

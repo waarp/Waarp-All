@@ -157,7 +157,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     return Columns.IDRULE.name();
   }
 
-  protected final void checkPath() {
+  protected final void checkPathes() throws WaarpDatabaseSqlException {
     if (ParametersChecker.isNotEmpty(getRecvPath()) &&
         getRecvPath().charAt(0) != DirInterface.SEPARATORCHAR) {
       pojo.setRecvPath(DirInterface.SEPARATOR + getRecvPath());
@@ -206,7 +206,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
                     fromLegacyTasks(getTasksRule(spreTasks)),
                     fromLegacyTasks(getTasksRule(spostTasks)),
                     fromLegacyTasks(getTasksRule(serrorTasks)));
-    checkPath();
+    checkPathes();
   }
 
   /**
@@ -226,7 +226,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     } finally {
       DAOFactory.closeDAO(ruleAccess);
     }
-    checkPath();
+    checkPathes();
   }
 
   public DbRule(final Rule rule) {
@@ -235,7 +235,11 @@ public class DbRule extends AbstractDbDataDao<Rule> {
           "Argument in constructor cannot be null");
     }
     this.pojo = rule;
-    checkPath();
+    try {
+      checkPathes();
+    } catch (final WaarpDatabaseSqlException e) {
+      throw new IllegalArgumentException(e);
+    }
   }
 
   /**
@@ -275,7 +279,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
                  fromLegacyTasks(spretasksArray),
                  fromLegacyTasks(sposttasksArray),
                  fromLegacyTasks(serrortasksArray));
-    checkPath();
+    checkPathes();
   }
 
   /**
@@ -292,7 +296,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
-    checkPath();
+    checkPathes();
   }
 
   @Override
@@ -305,11 +309,12 @@ public class DbRule extends AbstractDbDataDao<Rule> {
                                 final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
-    checkPath();
+    checkPathes();
   }
 
   @Override
-  protected final void setFromJson(final String field, final JsonNode value) {
+  protected final void setFromJson(final String field, final JsonNode value)
+      throws WaarpDatabaseSqlException {
     if (value == null) {
       return;
     }
@@ -362,7 +367,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
         }
       }
     }
-    checkPath();
+    checkPathes();
   }
 
   /**
@@ -533,7 +538,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return True if ok, else False (default values).
    */
   private String[] getIdsRule(final String idsref) {
-    if (idsref == null) {
+    if (ParametersChecker.isEmpty(idsref)) {
       // No ids so setting to the default!
       return STRING_0_LENGTH;
     }

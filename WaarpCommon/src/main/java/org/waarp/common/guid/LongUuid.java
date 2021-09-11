@@ -82,17 +82,17 @@ public final class LongUuid {
     }
 
     // copy Jvm Id to uuid
-    uuid[0] = (byte) (JvmProcessId.jvmId >> 8);
-    uuid[1] = (byte) JvmProcessId.jvmId;
+    uuid[0] = (byte) (JvmProcessId.jvmId);
+    uuid[1] = (byte) (time >> 29);
 
-    // copy timestamp into uuid (up to 2^30 s/4 = 2 years rolling)
-    uuid[2] = (byte) (time >> 22);
-    uuid[3] = (byte) (time >> 14);
-    uuid[4] = (byte) (time >> 6);
+    // copy timestamp into uuid (up to 2^37 s/4 = 4 years rolling)
+    uuid[2] = (byte) (time >> 21);
+    uuid[3] = (byte) (time >> 13);
+    uuid[4] = (byte) (time >> 5);
 
     // Count 3 first bytes, 5 bytes coming from Timestamp =>
-    // 2^19 (0.5M / 4ms = 131072 / ms ~ 131M / s)
-    uuid[5] = (byte) (count >> 16 & 0x07 | (time << 2) & 0xF8);
+    // 2^19 (0.5M / ms)
+    uuid[5] = (byte) (count >> 16 & 0x07 | (time << 3) & 0xF8);
     uuid[6] = (byte) (count >> 8);
     uuid[7] = (byte) count;
   }
@@ -150,7 +150,7 @@ public final class LongUuid {
    * @return id of process that generated the UUID
    */
   public final int getProcessId() {
-    return (uuid[0] & 0xFF) << 8 | uuid[1] & 0xFF;
+    return uuid[0];
   }
 
   /**
@@ -160,10 +160,11 @@ public final class LongUuid {
    */
   public final long getTimestamp() {
     long time;
-    time = ((long) uuid[2] & 0xFF) << 22;
-    time |= ((long) uuid[3] & 0xFF) << 14;
-    time |= ((long) uuid[4] & 0xFF) << 6;
-    time |= ((long) uuid[5] & 0xF8) >> 2;
+    time = ((long) uuid[1] & 0xFF) << 29;
+    time |= ((long) uuid[2] & 0xFF) << 21;
+    time |= ((long) uuid[3] & 0xFF) << 13;
+    time |= ((long) uuid[4] & 0xFF) << 5;
+    time |= ((long) uuid[5] & 0xF8) >> 3;
     return time;
   }
 

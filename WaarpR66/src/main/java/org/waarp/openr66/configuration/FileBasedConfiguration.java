@@ -122,7 +122,8 @@ public class FileBasedConfiguration {
 
   private static final String FILE_BASED_CONFIGURATION_NO_SET_CONFIG =
       "FileBasedConfiguration.NoSetConfig";
-
+  private static final String FILE_BASED_CONFIGURATION_INVALID_CONFIG =
+      "FileBasedConfiguration.NotValidConfig";
   private static final String FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG =
       "FileBasedConfiguration.NotFoundConfig";
 
@@ -771,6 +772,11 @@ public class FileBasedConfiguration {
             Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
             "In"); //$NON-NLS-1$
         return false;
+      } catch (final BadConfigurationException e2) {
+        logger.error(
+            Messages.getString(FILE_BASED_CONFIGURATION_INVALID_CONFIG) +
+            "In ({})", e2.getMessage()); //$NON-NLS-1$
+        return false;
       }
       try {
         config.setOutPath(
@@ -780,6 +786,11 @@ public class FileBasedConfiguration {
             Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
             "Out"); //$NON-NLS-1$
         return false;
+      } catch (final BadConfigurationException e2) {
+        logger.error(
+            Messages.getString(FILE_BASED_CONFIGURATION_INVALID_CONFIG) +
+            "Out ({})", e2.getMessage()); //$NON-NLS-1$
+        return false;
       }
       try {
         config.setWorkingPath(
@@ -788,6 +799,11 @@ public class FileBasedConfiguration {
         logger.error(
             Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
             "Working"); //$NON-NLS-1$
+        return false;
+      } catch (final BadConfigurationException e2) {
+        logger.error(
+            Messages.getString(FILE_BASED_CONFIGURATION_INVALID_CONFIG) +
+            "Working ({})", e2.getMessage()); //$NON-NLS-1$
         return false;
       }
       loadExtendTaskFactory(config);
@@ -855,6 +871,10 @@ public class FileBasedConfiguration {
       logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
                    "Config"); //$NON-NLS-1$
       return true;
+    } catch (final BadConfigurationException e2) {
+      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_INVALID_CONFIG) +
+                   "Config ({})", e2.getMessage()); //$NON-NLS-1$
+      return true;
     }
     try {
       config.setArchivePath(
@@ -862,6 +882,10 @@ public class FileBasedConfiguration {
     } catch (final OpenR66ProtocolSystemException e2) {
       logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
                    "Archive"); //$NON-NLS-1$
+      return true;
+    } catch (final BadConfigurationException e2) {
+      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_INVALID_CONFIG) +
+                   "Archive ({})", e2.getMessage()); //$NON-NLS-1$
       return true;
     }
     return false;
@@ -1881,7 +1905,7 @@ public class FileBasedConfiguration {
    */
   private static String getSubPath(final Configuration config,
                                    final String fromXML)
-      throws OpenR66ProtocolSystemException {
+      throws OpenR66ProtocolSystemException, BadConfigurationException {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DIRECTORY));
     try {
       final XmlValue value = hashConfig.get(fromXML);
@@ -1899,6 +1923,7 @@ public class FileBasedConfiguration {
             Messages.getString("FileBasedConfiguration.NotCorrectPath") +
             fromXML); //$NON-NLS-1$
       }
+      path = checkNotAbsolutePathNotUnderBase(config, path);
       path = DirInterface.SEPARATOR + path;
       final String newpath = config.getBaseDirectory() + path;
       final File file = new File(newpath);
@@ -1910,6 +1935,34 @@ public class FileBasedConfiguration {
       hashConfig.clear();
       hashConfig = null;
     }
+  }
+
+  /**
+   * Check if path is really under Base directory (if defined)
+   *
+   * @param config
+   * @param path
+   *
+   * @return new path (truncated if necessary)
+   *
+   * @throws BadConfigurationException
+   */
+  public static String checkNotAbsolutePathNotUnderBase(
+      final Configuration config, final String path)
+      throws BadConfigurationException {
+    File tempPath = new File(path);
+    if (config.getBaseDirectory() != null && tempPath.isAbsolute() &&
+        tempPath.isDirectory()) {
+      if (!FileUtils.isInSubdirectory(new File(config.getBaseDirectory()),
+                                      tempPath)) {
+        throw new BadConfigurationException(
+            "Directory given is absolute and exists but must be below Base " +
+            "directory");
+      }
+      // Check if path must be truncated
+      return path.replace(config.getBaseDirectory(), "");
+    }
+    return path;
   }
 
   /**

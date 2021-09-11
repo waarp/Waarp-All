@@ -20,7 +20,6 @@
 
 package org.waarp.openr66.protocol.it;
 
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;

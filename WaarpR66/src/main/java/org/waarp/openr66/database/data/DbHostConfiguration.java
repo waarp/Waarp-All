@@ -358,6 +358,11 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
 
   @SuppressWarnings("unchecked")
   private void readValuesFromXml(final String input, final XmlDecl[] config) {
+    if (ParametersChecker.isEmpty(input)) {
+      logger.error(Messages.getString(
+          "FileBasedConfiguration.CannotReadXml")); //$NON-NLS-1$
+      return;
+    }
     final Document document;
     final StringReader reader = new StringReader(input);
     // Open config file
