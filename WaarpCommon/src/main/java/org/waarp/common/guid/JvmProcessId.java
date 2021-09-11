@@ -74,13 +74,13 @@ public final class JvmProcessId {
   }
 
   /**
-   * Use both PID and MAC address but as 16 bytes
+   * Use both PID and MAC address but as 8 bytes hash
    *
    * @return one id as much as possible unique
    */
-  public static short jvmInstanceId() {
+  public static byte jvmInstanceId() {
     final long id = 31 * jvmProcessId() + macAddressAsInt();
-    return (short) (Long.hashCode(id) % Short.MAX_VALUE);
+    return (byte) (Long.hashCode(id) % Byte.MAX_VALUE);
   }
 
   /**

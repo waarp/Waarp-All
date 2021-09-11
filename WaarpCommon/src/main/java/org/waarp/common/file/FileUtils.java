@@ -632,4 +632,20 @@ public final class FileUtils {
     out.flush();
     close(out);
   }
+
+  /**
+   * Check if the file (directory or file) is in directory dir or in sub
+   * directories of dir
+   *
+   * @param dir
+   * @param file
+   *
+   * @return True if in (sub) directory (of) dir
+   */
+  public static boolean isInSubdirectory(final File dir, final File file) {
+    if (file == null || dir == null) {
+      return false;
+    }
+    return file.equals(dir) || isInSubdirectory(dir, file.getParentFile());
+  }
 }

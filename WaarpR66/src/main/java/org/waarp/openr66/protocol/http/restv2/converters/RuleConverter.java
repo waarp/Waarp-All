@@ -284,28 +284,48 @@ public final class RuleConverter {
         }
       } else if (name.equalsIgnoreCase(RECV_PATH)) {
         if (value.isTextual()) {
-          oldRule.setRecvPath(XmlUtil.getExtraTrimed(value.asText()));
+          try {
+            oldRule.setRecvPath(XmlUtil.getExtraTrimed(value.asText()));
+          } catch (final WaarpDatabaseSqlException e) {
+            errors.add(ILLEGAL_FIELD_VALUE(RECV_PATH, XmlUtil.getExtraTrimed(
+                value.toString())));
+          }
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(RECV_PATH, XmlUtil.getExtraTrimed(
               value.toString())));
         }
       } else if (name.equalsIgnoreCase(SEND_PATH)) {
         if (value.isTextual()) {
-          oldRule.setSendPath(XmlUtil.getExtraTrimed(value.asText()));
+          try {
+            oldRule.setSendPath(XmlUtil.getExtraTrimed(value.asText()));
+          } catch (final WaarpDatabaseSqlException e) {
+            errors.add(ILLEGAL_FIELD_VALUE(SEND_PATH, XmlUtil.getExtraTrimed(
+                value.toString())));
+          }
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(SEND_PATH, XmlUtil.getExtraTrimed(
               value.toString())));
         }
       } else if (name.equalsIgnoreCase(ARCHIVE_PATH)) {
         if (value.isTextual()) {
-          oldRule.setArchivePath(XmlUtil.getExtraTrimed(value.asText()));
+          try {
+            oldRule.setArchivePath(XmlUtil.getExtraTrimed(value.asText()));
+          } catch (final WaarpDatabaseSqlException e) {
+            errors.add(ILLEGAL_FIELD_VALUE(ARCHIVE_PATH, XmlUtil.getExtraTrimed(
+                value.toString())));
+          }
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(ARCHIVE_PATH, XmlUtil.getExtraTrimed(
               value.toString())));
         }
       } else if (name.equalsIgnoreCase(WORK_PATH)) {
         if (value.isTextual()) {
-          oldRule.setWorkPath(XmlUtil.getExtraTrimed(value.asText()));
+          try {
+            oldRule.setWorkPath(XmlUtil.getExtraTrimed(value.asText()));
+          } catch (final WaarpDatabaseSqlException e) {
+            errors.add(ILLEGAL_FIELD_VALUE(WORK_PATH, XmlUtil.getExtraTrimed(
+                value.toString())));
+          }
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(WORK_PATH, XmlUtil.getExtraTrimed(
               value.toString())));

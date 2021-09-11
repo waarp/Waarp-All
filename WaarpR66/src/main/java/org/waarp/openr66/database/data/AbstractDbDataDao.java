@@ -224,7 +224,8 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     return node;
   }
 
-  protected abstract void setFromJson(String field, JsonNode value);
+  protected abstract void setFromJson(String field, JsonNode value)
+      throws WaarpDatabaseSqlException;
 
   /**
    * Set the values from the Json node to the current object (no database

@@ -24,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.xml.XmlUtil;
@@ -202,13 +203,29 @@ public class XMLRuleDAO implements RuleDAO {
       } else if (node.getNodeName().equals(MODE_TRANS_FIELD)) {
         res.setMode(Integer.parseInt(content));
       } else if (node.getNodeName().equals(SEND_PATH_FIELD)) {
-        res.setSendPath(content);
+        try {
+          res.setSendPath(content);
+        } catch (final WaarpDatabaseSqlException e) {
+          throw new DAOConnectionException(e);
+        }
       } else if (node.getNodeName().equals(RECV_PATH_FIELD)) {
-        res.setRecvPath(content);
+        try {
+          res.setRecvPath(content);
+        } catch (final WaarpDatabaseSqlException e) {
+          throw new DAOConnectionException(e);
+        }
       } else if (node.getNodeName().equals(ARCHIVE_PATH_FIELD)) {
-        res.setArchivePath(content);
+        try {
+          res.setArchivePath(content);
+        } catch (final WaarpDatabaseSqlException e) {
+          throw new DAOConnectionException(e);
+        }
       } else if (node.getNodeName().equals(WORK_PATH_FIELD)) {
-        res.setWorkPath(content);
+        try {
+          res.setWorkPath(content);
+        } catch (final WaarpDatabaseSqlException e) {
+          throw new DAOConnectionException(e);
+        }
       } else if (node.getNodeName().equals(R_PRE_TASKS_FIELD)) {
         res.setRPreTasks(retrieveTasks(node));
       } else if (node.getNodeName().equals(R_POST_TASKS_FIELD)) {

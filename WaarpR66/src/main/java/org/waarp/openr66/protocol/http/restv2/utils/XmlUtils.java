@@ -225,6 +225,9 @@ public final class XmlUtils {
    *     occurred
    */
   private static String pretty(final String input) {
+    if (ParametersChecker.isEmpty(input)) {
+      throw new InternalServerErrorException("Input empty but should not");
+    }
     try {
       final Source xmlInput = new StreamSource(new StringReader(input));
       final StringWriter stringWriter = new StringWriter();
@@ -236,7 +239,6 @@ public final class XmlUtils {
       final Transformer transformer = factory.newTransformer();
       transformer.setOutputProperty(INDENT, "yes");
       transformer.setOutputProperty(OMIT_XML_DECLARATION, "yes");
-
       transformer.transform(xmlInput, xmlOutput);
       return xmlOutput.getWriter().toString();
     } catch (final TransformerConfigurationException e) {
