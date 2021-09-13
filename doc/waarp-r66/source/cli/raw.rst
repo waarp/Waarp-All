@@ -151,6 +151,25 @@ Options additionnelles pour Waarp via la JVM
    les "pré-task", avant le transfert effectif
 
 
+.. index:: -Dopenr66.transfer.guid
+
+``-Dopenr66.transfer.guid=0|1``
+   (défaut = 1)
+
+   Waarp utilisera les GUID en lieu et place d'une séquence SQL pour déterminer
+   l'identifiant unique d'un transfert (l'identifiant unique étant la
+   conjonction de cet Id au format Long, et des identifiants du requeteur
+   et du requeté. Si désactivé (``0``), la séquence SQL sera utilisé
+   (comme avant la version 3.6.0).
+
+   .. versionchanged:: 3.6.1
+      Cette option a été activée par défaut (valeur 1) pour optimiser
+      et diminuer les soucis de réinstallation avec effacement de la base
+      en évitant de devoir repositionner la séquence à une valeur plus élevée
+      que la dernière utilisée, mais peut être désactivée (``0``) si
+      nécessaire.
+
+
 .. index:: -Dopenr66.authent.noreuse
 
 ``-Dopenr66.authent.noreuse=0|1``
@@ -161,8 +180,8 @@ Options additionnelles pour Waarp via la JVM
    sera obligatoire pour chaque commande (comme avant la version 3.6.0).
 
    .. versionchanged:: 3.6.1
-      Cette option a été activée par défaut (valeur 0) pour optimiser
-      mais peut être désactivée (1) si nécessaire.
+      Cette option a été activée par défaut (valeur ``0``) pour optimiser
+      mais peut être désactivée (``1``) si nécessaire.
 
 .. index:: -Dwaarp.database.connection.max
 

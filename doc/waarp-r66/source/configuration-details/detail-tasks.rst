@@ -63,7 +63,7 @@ Une tâche est définie selon un format unifié XML :
   - ``#LOCALEXEC#`` : Utilisé par la tâche EXEC pour spécifier que la commande est à exécuter de manière
     distante (pas dans la JVM courante) mais au travers d'un démon ``LocalExec`` (spécifié dans la
     configuration globale
-  - ``COMPRESS`` : Utilisé en complément de l'option ``compression`` dans la configuration du serveur
+  - ``#COMPRESS#`` : Utilisé en complément de l'option ``compression`` dans la configuration du serveur
     pour indiquer la demande de pouvoire compresser par bloc un transfert (si le partenaire ne dispose
     pas de l'option de compression, cela sera refusé).
 

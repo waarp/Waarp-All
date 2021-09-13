@@ -624,6 +624,8 @@ public class Configuration {
 
   private boolean authentNoReuse;
 
+  private boolean transferGuid = true;
+
   private boolean warnOnStartup = true;
 
   private boolean chrootChecked = true;
@@ -696,6 +698,9 @@ public class Configuration {
         R66SystemProperties.OPENR66_STARTUP_WARNING, true));
     setAuthentNoReuse(SystemPropertyUtil.getBoolean(
         R66SystemProperties.OPENR66_AUTHENT_NO_REUSE, false));
+    setTransferGuid(
+        SystemPropertyUtil.getBoolean(R66SystemProperties.OPENR66_TRANSFER_GUID,
+                                      true));
     if (!SystemPropertyUtil.get(
         R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn("{} is deprecated in system properties use {} instead",
@@ -2650,6 +2655,23 @@ public class Configuration {
    */
   public final void setAuthentNoReuse(final boolean authentNoReuse) {
     this.authentNoReuse = authentNoReuse;
+  }
+
+  /**
+   * @param transferGuid
+   */
+  public final void setTransferGuid(final boolean transferGuid) {
+    this.transferGuid = transferGuid;
+    logger.warn("Startup: Transfer Id will use {}",
+                transferGuid? "GUID" : "SQL Sequence");
+  }
+
+  /**
+   * @return True if the GUID is to use instead of getNextLong SQL based
+   *     (default True)
+   */
+  public final boolean isTransferGuid() {
+    return transferGuid;
   }
 
   /**

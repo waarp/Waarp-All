@@ -572,11 +572,11 @@ public class TransferArgs {
         transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());
       }
       if (transferArgs1.getFollowId().isEmpty()) {
-        final LongUuid longUuid = new LongUuid();
-        map.put(FOLLOW_JSON_KEY, longUuid.getLong());
+        final long longUuid = LongUuid.getLongUuid();
+        map.put(FOLLOW_JSON_KEY, longUuid);
         transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + " " +
                                       JsonHandler.writeAsStringEscaped(map));
-        transferArgs1.setFollowId("" + longUuid.getLong());
+        transferArgs1.setFollowId(Long.toString(longUuid));
       } else {
         if (map.size() > 1) {
           transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + " " +

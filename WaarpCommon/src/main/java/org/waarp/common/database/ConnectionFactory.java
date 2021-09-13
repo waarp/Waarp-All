@@ -29,8 +29,8 @@ import org.waarp.common.database.properties.OracleProperties;
 import org.waarp.common.database.properties.PostgreSQLProperties;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.Version;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -172,7 +172,7 @@ public class ConnectionFactory {
     this.password = password;
     this.properties = properties;
 
-    if (DetectionUtils.javaVersion() > 6) {
+    if (Version.version().contains("-jre")) {
       ds = new WaarpBasicDataSourceJava8();
     } else {
       ds = new WaarpBasicDataSourceJava6();

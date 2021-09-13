@@ -69,8 +69,6 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     extends TestAbstract {
 
   protected static ScenarioBaseBenchmarkDualServerMultipleFiles scenarioBase;
-  private static final ArrayList<DbTaskRunner> dbTaskRunners =
-      new ArrayList<DbTaskRunner>();
   private static final String SERVER_1_XML = "R1/conf/server_1_SQLDB.xml";
   private static final String SERVER_1_REWRITTEN_XML = "R1/conf/server1.xml";
   private static final String RESOURCES_SERVER_1_XML =
@@ -80,6 +78,17 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
   private static final String SERVER_2_REWRITTEN_XML = "R1/conf/server2.xml";
   private static final String RESOURCES_SERVER_2_XML =
       "it/scenario_multiple_servers/" + SERVER_2_XML;
+
+  private static final String SERVER_3_XML = "R1/conf/server_3_SQLDB.xml";
+  private static final String SERVER_3_REWRITTEN_XML = "R1/conf/server3.xml";
+  private static final String RESOURCES_SERVER_3_XML =
+      "it/scenario_multiple_servers/" + SERVER_3_XML;
+
+  private static final String SERVER_4_XML = "R1/conf/server_4_SQLDB.xml";
+  private static final String SERVER_4_REWRITTEN_XML = "R1/conf/server4.xml";
+  private static final String RESOURCES_SERVER_4_XML =
+      "it/scenario_multiple_servers/" + SERVER_4_XML;
+
   private static final String CLIENT_3_XML = "client_3.xml";
 
   private static final List<Integer> PIDS = new ArrayList<Integer>();
@@ -89,17 +98,26 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
       "/tmp/R66/scenario_multiple_servers/" + SERVER_1_REWRITTEN_XML;
   private static final String TMP_R66_CONFIG_R2 =
       "/tmp/R66/scenario_multiple_servers/" + SERVER_2_REWRITTEN_XML;
+  private static final String TMP_R66_CONFIG_R3 =
+      "/tmp/R66/scenario_multiple_servers/" + SERVER_3_REWRITTEN_XML;
+  private static final String TMP_R66_CONFIG_R4 =
+      "/tmp/R66/scenario_multiple_servers/" + SERVER_4_REWRITTEN_XML;
   public static int NUMBER_FILES = 1;
-  public static final int IT_NUMBER_FILES = 4000;
+  private static final int NB_SERVER = 2;
+  public static final int IT_NUMBER_FILES = NB_SERVER >= 3? 6000 : 4000;
   public static int BLOCK_SIZE = 1048576;
   public static long MAX_USED_MEMORY = 536870912;
 
   private static int r66Pid1 = 999999;
   private static int r66Pid2 = 999999;
+  private static int r66Pid3 = 999999;
+  private static int r66Pid4 = 999999;
   public static boolean SERVER1_IN_JUNIT = false;
   private static final String TMP_CONFIG_XML = "/tmp/config.xml";
   private static File configFile1 = null;
   private static File configFile2 = null;
+  private static File configFile3 = null;
+  private static File configFile4 = null;
   private static final NoOpRecvThroughHandler handler =
       new NoOpRecvThroughHandler();
   private long usedMemory;
@@ -127,12 +145,19 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     } else if ("-Xmx2048m".equalsIgnoreCase(xmx)) {
       Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
     } else {
-      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 2 : 3);
+      Processes.setMemoryAccordingToFreeMemory(
+          SERVER1_IN_JUNIT? NB_SERVER - 1 : NB_SERVER);
     }
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile1.getAbsolutePath());
     }
     r66Pid2 = startServer(configFile2.getAbsolutePath());
+    if (NB_SERVER >= 3) {
+      r66Pid3 = startServer(configFile3.getAbsolutePath());
+    }
+    if (NB_SERVER >= 4) {
+      r66Pid4 = startServer(configFile4.getAbsolutePath());
+    }
     if (SERVER1_IN_JUNIT) {
       R66Server.main(new String[] { configFile1.getAbsolutePath() });
       setUpBeforeClassClient();
@@ -147,17 +172,12 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
   }
 
-  // Server 1
-  public String getServerConfig1File() {
-    if (configFile1 != null) {
-      logger.warn("ConfigFile already set to {]", configFile1);
-      return configFile1.getAbsolutePath();
-    }
+  private File generateServerConfigFile(final String resources,
+                                        final String tmpConfig) {
     logger.warn("Build configFile");
     ClassLoader classLoader =
         ScenarioBaseBenchmarkDualServerMultipleFiles.class.getClassLoader();
-    File file =
-        new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
+    File file = new File(classLoader.getResource(resources).getFile());
     if (!file.exists()) {
       SysErrLogger.FAKE_LOGGER.syserr(
           "Cannot find in  " + file.getAbsolutePath());
@@ -191,7 +211,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     content = content.replace("XXXDRIVERXXX", target);
     SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
     SysErrLogger.FAKE_LOGGER.sysout(target);
-    File fileTo = new File(TMP_R66_CONFIG_R1);
+    File fileTo = new File(tmpConfig);
     fileTo.getParentFile().mkdirs();
     FileWriter writer = null;
     try {
@@ -205,6 +225,17 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
         FileUtils.close(writer);
       }
     }
+    return fileTo;
+  }
+
+  // Server 1
+  public String getServerConfig1File() {
+    if (configFile1 != null) {
+      logger.warn("ConfigFile already set to {]", configFile1);
+      return configFile1.getAbsolutePath();
+    }
+    File fileTo =
+        generateServerConfigFile(RESOURCES_SERVER_1_XML, TMP_R66_CONFIG_R1);
     configFile1 = fileTo;
     logger.warn("Config file created at {}", fileTo);
     File copy = new File(TMP_CONFIG_XML);
@@ -225,58 +256,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
       logger.warn("ConfigFile already set to {]", configFile2);
       return configFile2.getAbsolutePath();
     }
-    logger.warn("Build configFile");
-    ClassLoader classLoader =
-        ScenarioBaseBenchmarkDualServerMultipleFiles.class.getClassLoader();
-    File file =
-        new File(classLoader.getResource(RESOURCES_SERVER_2_XML).getFile());
-    if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER.syserr(
-          "Cannot find in  " + file.getAbsolutePath());
-      fail("Cannot find " + file.getAbsolutePath());
-    }
-    String content = WaarpStringUtils.readFile(file.getAbsolutePath());
-    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getJdbcUrl());
-    String driver = getJDC().getDriverClassName();
-    String target = "notfound";
-    String jdbcUrl = getJDC().getJdbcUrl();
-    if (driver.equalsIgnoreCase("org.mariadb.jdbc.Driver")) {
-      target = "mariadb";
-    } else if (driver.equalsIgnoreCase("org.h2.Driver")) {
-      target = "h2";
-    } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
-      target = "oracle";
-      jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER.syserr(
-          jdbcUrl + " while should be something like " + jdbcUrl);
-      throw new UnsupportedOperationException(
-          "Unsupported Test for Oracle since wrong JDBC driver");
-    } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
-      target = "postgresql";
-    } else if (DbModelMysql.MYSQL_DRIVER_JRE6.equalsIgnoreCase(driver) ||
-               DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver)) {
-      target = "mysql";
-    } else {
-      SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
-    }
-    content = content.replace("XXXJDBCXXX", jdbcUrl);
-    content = content.replace("XXXDRIVERXXX", target);
-    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
-    SysErrLogger.FAKE_LOGGER.sysout(target);
-    File fileTo = new File(TMP_R66_CONFIG_R2);
-    fileTo.getParentFile().mkdirs();
-    FileWriter writer = null;
-    try {
-      writer = new FileWriter(fileTo);
-      writer.write(content);
-      writer.flush();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      if (writer != null) {
-        FileUtils.close(writer);
-      }
-    }
+    File fileTo =
+        generateServerConfigFile(RESOURCES_SERVER_2_XML, TMP_R66_CONFIG_R2);
     configFile2 = fileTo;
     logger.warn("Config file created at {}", fileTo);
     File copy = new File(TMP_CONFIG_XML);
@@ -291,7 +272,80 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     return TMP_R66_CONFIG_R2;
   }
 
+  // Server 3
+  public String getServerConfig3File() {
+    if (configFile3 != null) {
+      logger.warn("ConfigFile already set to {]", configFile3);
+      return configFile3.getAbsolutePath();
+    }
+    File fileTo =
+        generateServerConfigFile(RESOURCES_SERVER_3_XML, TMP_R66_CONFIG_R3);
+    configFile3 = fileTo;
+    logger.warn("Config file created at {}", fileTo);
+    File copy = new File(TMP_CONFIG_XML);
+    try {
+      FileUtils.copy(configFile3, copy, false, false);
+      logger.warn("Copy from {} to {}", configFile3, copy);
+    } catch (Reply550Exception e) {
+      e.printStackTrace();
+    }
+    logger.warn("Copy from {} to {} and return {}", configFile3, copy,
+                TMP_R66_CONFIG_R3);
+    return TMP_R66_CONFIG_R3;
+  }
+
+  // Server 4
+  public String getServerConfig4File() {
+    if (configFile4 != null) {
+      logger.warn("ConfigFile already set to {]", configFile4);
+      return configFile4.getAbsolutePath();
+    }
+    File fileTo =
+        generateServerConfigFile(RESOURCES_SERVER_4_XML, TMP_R66_CONFIG_R4);
+    configFile4 = fileTo;
+    logger.warn("Config file created at {}", fileTo);
+    File copy = new File(TMP_CONFIG_XML);
+    try {
+      FileUtils.copy(configFile4, copy, false, false);
+      logger.warn("Copy from {} to {}", configFile4, copy);
+    } catch (Reply550Exception e) {
+      e.printStackTrace();
+    }
+    logger.warn("Copy from {} to {} and return {}", configFile4, copy,
+                TMP_R66_CONFIG_R4);
+    return TMP_R66_CONFIG_R4;
+  }
+
   public abstract JdbcDatabaseContainer getJDC();
+
+  private static File setup1DbBeforeClass(final String serverConfig,
+                                          final File srcConfigFile) {
+    File configFile = srcConfigFile;
+    String fileconf = null;
+    try {
+      fileconf = serverConfig;
+      logger.warn("Config file found {}", fileconf);
+      if (fileconf.charAt(0) != '/') {
+        configFile = new File(dirResources, fileconf);
+      }
+    } catch (UnsupportedOperationException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
+      Assume.assumeNoException(e);
+      return null;
+    }
+    File copy = new File(TMP_CONFIG_XML);
+    if (copy.exists() && configFile != null && !configFile.exists()) {
+      try {
+        FileUtils.copy(copy, configFile, false, false);
+      } catch (Reply550Exception e) {
+        //e.printStackTrace();
+      }
+    } else {
+      logger.warn("Could not find {} or {}", copy, configFile);
+    }
+    return configFile;
+  }
 
   public static void setUp3DbBeforeClass() throws Exception {
     deleteBase();
@@ -312,54 +366,19 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
 
     // global ant project settings
     project = Processes.getProject(homeDir);
-    String fileconf = null;
-    try {
-      fileconf = scenarioBase.getServerConfig1File();
-      logger.warn("Config file found {}", fileconf);
-      if (fileconf.charAt(0) != '/') {
-        configFile1 = new File(dirResources, fileconf);
-      }
-    } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(
-          "Database not supported by this test Start Stop R66", e);
-      Assume.assumeNoException(e);
-      return;
-    }
-    File copy = new File(TMP_CONFIG_XML);
-    if (copy.exists() && configFile1 != null && !configFile1.exists()) {
-      try {
-        FileUtils.copy(copy, configFile1, false, false);
-      } catch (Reply550Exception e) {
-        //e.printStackTrace();
-      }
-    } else {
-      logger.warn("Could not find {} or {}", copy, configFile1);
-    }
+    configFile1 =
+        setup1DbBeforeClass(scenarioBase.getServerConfig1File(), configFile1);
     initiateDb(configFile1.getAbsolutePath());
-    fileconf = null;
-    try {
-      fileconf = scenarioBase.getServerConfig2File();
-      logger.warn("Config file found {}", fileconf);
-      if (fileconf.charAt(0) != '/') {
-        configFile2 = new File(dirResources, fileconf);
-      }
-    } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(
-          "Database not supported by this test Start Stop R66", e);
-      Assume.assumeNoException(e);
-      return;
+    configFile2 =
+        setup1DbBeforeClass(scenarioBase.getServerConfig2File(), configFile2);
+    if (NB_SERVER >= 3) {
+      configFile3 =
+          setup1DbBeforeClass(scenarioBase.getServerConfig3File(), configFile3);
     }
-    copy = new File(TMP_CONFIG_XML);
-    if (copy.exists() && configFile2 != null && !configFile2.exists()) {
-      try {
-        FileUtils.copy(copy, configFile2, false, false);
-      } catch (Reply550Exception e) {
-        //e.printStackTrace();
-      }
-    } else {
-      logger.warn("Could not find {} or {}", copy, configFile2);
+    if (NB_SERVER >= 4) {
+      configFile4 =
+          setup1DbBeforeClass(scenarioBase.getServerConfig4File(), configFile4);
     }
-
     Processes.finalizeProject(project);
   }
 
@@ -478,20 +497,48 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
       final R66Future future = new R66Future(true);
       futures[rank] = future;
       final TestRecvThroughClient transaction;
-      if (rank % 2 == 0) {
-        transaction = new TestRecvThroughClient(future, handler,
-                                                tls? "server2-ssl" : "server2",
-                                                "hello" + size, "sendany",
-                                                "Test Send " + size +
-                                                " #COMPRESS#", true, BLOCK_SIZE,
-                                                networkTransaction);
-      } else {
-        transaction = new TestRecvThroughClient(future, handler,
-                                                tls? "server1-ssl" : "server1",
-                                                "hello" + size, "sendany",
-                                                "Test Send " + size +
-                                                " #COMPRESS#", true, BLOCK_SIZE,
-                                                networkTransaction);
+      switch (rank % NB_SERVER) {
+        case 0:
+          transaction = new TestRecvThroughClient(future, handler,
+                                                  tls? "server2-ssl" :
+                                                      "server2", "hello" + size,
+                                                  "sendany",
+                                                  "Test Send " + size +
+                                                  " #COMPRESS#", true,
+                                                  BLOCK_SIZE,
+                                                  networkTransaction);
+          break;
+        case 1:
+          transaction = new TestRecvThroughClient(future, handler,
+                                                  tls? "server1-ssl" :
+                                                      "server1", "hello" + size,
+                                                  "sendany",
+                                                  "Test Send " + size +
+                                                  " #COMPRESS#", true,
+                                                  BLOCK_SIZE,
+                                                  networkTransaction);
+          break;
+        case 2:
+          transaction = new TestRecvThroughClient(future, handler,
+                                                  tls? "server3-ssl" :
+                                                      "server3", "hello" + size,
+                                                  "sendany",
+                                                  "Test Send " + size +
+                                                  " #COMPRESS#", true,
+                                                  BLOCK_SIZE,
+                                                  networkTransaction);
+          break;
+        case 3:
+        default:
+          transaction = new TestRecvThroughClient(future, handler,
+                                                  tls? "server4-ssl" :
+                                                      "server4", "hello" + size,
+                                                  "sendany",
+                                                  "Test Send " + size +
+                                                  " #COMPRESS#", true,
+                                                  BLOCK_SIZE,
+                                                  networkTransaction);
+          break;
       }
       transaction.setNormalInfoAsWarn(false);
       transaction.run();
@@ -633,13 +680,13 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     int ratio = initFiles();
     logger.warn("End of file creations");
 
-    R66Future[] futures = new R66Future[NUMBER_FILES * 2];
+    R66Future[] futures = new R66Future[NUMBER_FILES * NB_SERVER];
     NUMBER_FILES = IT_NUMBER_FILES / 2;
     logger.warn("WarmUp {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    directRecvThread(futures, false, ratio, 2);
+    directRecvThread(futures, false, ratio, NB_SERVER);
     NUMBER_FILES = IT_NUMBER_FILES;
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    long time = directRecvThread(futures, false, ratio, 2);
+    long time = directRecvThread(futures, false, ratio, NB_SERVER);
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
                 "({} seconds,  {} nb/s, {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
@@ -670,13 +717,13 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     int ratio = initFiles();
     logger.warn("End of file creations");
 
-    R66Future[] futures = new R66Future[NUMBER_FILES * 2];
+    R66Future[] futures = new R66Future[NUMBER_FILES * NB_SERVER];
     NUMBER_FILES = IT_NUMBER_FILES / 2;
     logger.warn("WarmUp {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    directRecvThread(futures, true, ratio, 2);
+    directRecvThread(futures, true, ratio, NB_SERVER);
     NUMBER_FILES = IT_NUMBER_FILES;
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    long time = directRecvThread(futures, true, ratio, 2);
+    long time = directRecvThread(futures, true, ratio, NB_SERVER);
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
                 "({} seconds,  {} nb/s, {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,

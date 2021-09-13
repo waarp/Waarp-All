@@ -37,11 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * issues
  */
 public final class LongUuid {
-  private static final Object SYNC_OBJECT = new Object();
   /**
    * Bits size of Counter
    */
-  private static final int SIZE_COUNTER = 19;
+  private static final int SIZE_COUNTER = 20;
   /**
    * Min Counter value
    */
@@ -66,35 +65,33 @@ public final class LongUuid {
    */
   private final byte[] uuid = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
+  static final synchronized int getCounter() {
+    if (COUNTER.compareAndSet(MAX_COUNTER, MIN_COUNTER)) {
+      return MAX_COUNTER;
+    } else {
+      return COUNTER.getAndIncrement();
+    }
+  }
+
+  public static final long getLongUuid() {
+    final long time = System.currentTimeMillis();
+    // atomically
+    final int count = getCounter();
+    // Jvmd Id on 4 first bits
+    // Timestamp on 40 bits (2^40 ms = 35 years rolling)
+    // Count on 20 bits => 2^20 (1M / ms)
+    long uuidAsLong = (JvmProcessId.jvmId & 0xF0L) << 56;
+    uuidAsLong |= (time & 0xFFFFFFFFFFL) << 20;
+    uuidAsLong |= count & 0xFFFFFL;
+    return uuidAsLong;
+  }
+
   /**
    * Constructor that generates a new UUID using the current process id and
    * MAC address, timestamp and a counter
    */
   public LongUuid() {
-    final long time = System.currentTimeMillis();
-    // atomically
-    final int count;
-    synchronized (SYNC_OBJECT) {
-      count = COUNTER.incrementAndGet();
-      if (count >= MAX_COUNTER) {
-        COUNTER.set(MIN_COUNTER);
-      }
-    }
-
-    // copy Jvm Id to uuid
-    uuid[0] = (byte) (JvmProcessId.jvmId);
-    uuid[1] = (byte) (time >> 29);
-
-    // copy timestamp into uuid (up to 2^37 s/4 = 4 years rolling)
-    uuid[2] = (byte) (time >> 21);
-    uuid[3] = (byte) (time >> 13);
-    uuid[4] = (byte) (time >> 5);
-
-    // Count 3 first bytes, 5 bytes coming from Timestamp =>
-    // 2^19 (0.5M / ms)
-    uuid[5] = (byte) (count >> 16 & 0x07 | (time << 3) & 0xF8);
-    uuid[6] = (byte) (count >> 8);
-    uuid[7] = (byte) count;
+    this(getLongUuid());
   }
 
   /**
@@ -150,7 +147,7 @@ public final class LongUuid {
    * @return id of process that generated the UUID
    */
   public final int getProcessId() {
-    return uuid[0];
+    return (uuid[0] >> 4 & 0x0F);
   }
 
   /**
@@ -160,11 +157,12 @@ public final class LongUuid {
    */
   public final long getTimestamp() {
     long time;
-    time = ((long) uuid[1] & 0xFF) << 29;
-    time |= ((long) uuid[2] & 0xFF) << 21;
-    time |= ((long) uuid[3] & 0xFF) << 13;
-    time |= ((long) uuid[4] & 0xFF) << 5;
-    time |= ((long) uuid[5] & 0xF8) >> 3;
+    time = ((long) uuid[0] & 0x0F) << 36;
+    time |= ((long) uuid[1] & 0xFF) << 28;
+    time |= ((long) uuid[2] & 0xFF) << 20;
+    time |= ((long) uuid[3] & 0xFF) << 12;
+    time |= ((long) uuid[4] & 0xFF) << 4;
+    time |= ((long) uuid[5] & 0xF0) >> 4;
     return time;
   }
 

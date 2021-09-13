@@ -129,6 +129,13 @@ public final class R66SystemProperties {
    */
   public static final String OPENR66_AUTHENT_NO_REUSE =
       "openr66.authent.noreuse";
+
+  /**
+   * Shall the server or client try to use GUID as transfer ID
+   * instead of SQL nextLong Id
+   */
+  public static final String OPENR66_TRANSFER_GUID = "openr66.transfer.guid";
+
   /**
    * Test only: apply a NoOpRecvThroughHandler to each recv operation
    * if rule is RecvThrough
