@@ -61,7 +61,7 @@ public final class JvmProcessId {
    */
   static byte[] mac;
   static int macInt;
-  static int jvmId;
+  static byte jvmId;
 
   static {
     JVMPID = jvmProcessId();
@@ -80,7 +80,7 @@ public final class JvmProcessId {
    */
   public static byte jvmInstanceId() {
     final long id = 31 * jvmProcessId() + macAddressAsInt();
-    return (byte) (Long.hashCode(id) % Byte.MAX_VALUE);
+    return (byte) (Long.hashCode(id) & 0xFF);
   }
 
   /**

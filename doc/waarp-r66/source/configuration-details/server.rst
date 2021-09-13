@@ -225,7 +225,7 @@ usethrift         integer N    0          Active le serveur RPC Apache Thrift (0
 checkversion      boolean N    True       Vérifie la version de ses partenaires pour s'assurer de la compatibilité du protocole
 globaldigest      boolean N    True       Active ou non le contrôle d'intégrité de bout en bout
 localdigest       boolean N    True       Active ou non le contrôle d'intégrité de bout en bout en fin de transfert localement (optionnel, False est autorisé sans restreindre les capacités)
-compression       boolean N    False      Active ou Désactive la compression à la volée des blocs transmis, en fonction du partenaire.
+compression       boolean N    False      Active ou Désactive la compression à la volée des blocs transmis, en fonction du partenaire. (nécessite le mot clef #COMPRESS# dans chaque règle où l'on veut le voir actif)
 ================= ======= ==== ========== =============
 
 

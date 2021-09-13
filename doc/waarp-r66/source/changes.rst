@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.6.1 (2021-09-03)
+Waarp R66 3.6.1 (2021-09-20)
 ============================
 
 
@@ -17,10 +17,25 @@ Correctifs
 - Amélioration des performances en ne forçant l'authentification que lors
   de connections réseau nouvelles (le multiplexage n'imposant pas
   la réauthentification)
-- Traces en mode DEBUG pour les états R66
+- Remplacement du Special Id de transfert en mode séquence dans une base par un GUID (l'option séquence peut
+  être réactivée via ``-Dopenr66.transfer.guid=0``)
+  (issue [`#102 <https://github.com/waarp/Waarp-All/issues/102>`__])
+- Traces en mode DEBUG pour certains états R66
 - Correction de tests en erreur
+  (issue [`#100 <https://github.com/waarp/Waarp-All/issues/100>`__] et
+  [`#99 <https://github.com/waarp/Waarp-All/issues/99>`__])
 - Benchmarks réitérés
-- Amélioration de la documentation
+
+  - +25% entre v3.6.0 et v3.6.1, après +40% entre v3.5.2 et V3.6.0, soit +75% depuis la V3.5.2 ou +310%
+    depuis la V3.0, avec une pointe à 150 transferts/s
+  - Confirmation du mode Cluster : avec 4 serveurs en cluster, une pointe à 340
+    transferts/s est obtenue, avec une accélération quasi linéaire de 2 à 4 instances
+
+- Ajout de la vérification sur les chemins globaux ou associés aux règles comme étant sous
+  le répertoire de base global
+  (issue [`#103 <https://github.com/waarp/Waarp-All/issues/103>`__])
+- Amélioration de la documentation et de sa génération
+  [`#98 <https://github.com/waarp/Waarp-All/issues/98>`__]
 - Mise à jour des dépendances
 
 

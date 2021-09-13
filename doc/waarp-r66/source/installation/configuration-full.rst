@@ -133,7 +133,7 @@ fastmd5                          SODLL                Path vers la JNI. Si vide,
 checkversion                     Boolean (True)       Utilisation du protocole etendu (>= 2.3), accès à plus de retour d'information en fin de transfert
 globaldigest                     Boolean (True)       Utilisation d'un digest global (MD5, SHA1, ...) par transfert de fichier
 localdigest                      Boolean (True)       Utilisation d'un digest local (MD5, SHA1, ...) en fin de transfert (optionnel)
-compression                      Boolean (False)      Active ou Désactive la compression à la volée par bloc, puis en fonction du partenaire
+compression                      Boolean (False)      Active ou Désactive la compression à la volée par bloc, puis en fonction du partenaire (nécessite le mot clef #COMPRESS# dans chaque règle où l'on veut le voir actif)
 
 **db**
 dbdriver                         address              Driver JDBC à utiliser pour se connecter à la base de données (mysql, postgresql, h2)
@@ -185,6 +185,8 @@ username                         String (null)        Spécifie si nécessaire l
 paswd                            String (null)        Spécifie si nécessaire le password dans le cadre d'une authentification basique
 compression                      Boolean (True)       Spécifie si les flux sont compressés (par défaut True)
 ================================ ==================== ==============
+
+
 
 Les balises <roles> et <aliases> contiennent des listes d'option. Exemple:
 
@@ -249,6 +251,9 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
  * `runlimit`: Possibilité de limiter le nombre de transferts simultanés (il est avisé de ne pas mettre moins
    de 2)
  * `compression`: Possibilité de ne pas activer la compression à la volée (moins de mémoire et de cpu)
+
+   * Possibilité de del déclarer mais sans utiliser le mot clef #COMPRESS# dans toutes les règles où l'on veut le voir actif)
+
  * de limiter l'impact processeur via une gestion adaptative de la bande passante globale :
 
    * `usecpulimit` à `True` : ceci active la fonctionnalité
@@ -282,9 +287,11 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
 
  * `globaldigest` : Possibilité de le désactiver mais recommandé à `True` (environ 25% de gains)
  * `localdigest` : Possibilité de le désactiver (`False`) (environ 20% de gains)
- * `runlimit` : Possibilité d'augmenter ou de diminuer la valeur par défaut (1000) entre 2 et 50000 transferts concurrents
+ * `runlimit` : Possibilité d'augmenter ou de diminuer la valeur par défaut (1000) entre 2 et 50000
+   transferts concurrents
  * `compression`: Permet d'activer (désativée par défaut) la possibilité de compression à la volée des blocs
-   et donc la vitesse des transferts sur des environnements à réseau contraint
+   et donc la vitesse des transferts sur des environnements à réseau contraint (nécessite le mot clef
+   #COMPRESS# dans chaque règle où l'on veut le voir actif)
 
 
 La performance d'autres éléments peuvent jouer :
@@ -321,23 +328,13 @@ protocole s'appuie sur TCP/IP, il est possible d'avoir une corruption sur le ré
 
 *Benchmarks Waarp R66*
 
-Les benchmarks suivants ont été réalisés sur un seul serveur à chaque fois, hébergeant tous les services
-(Waarp R66 et base de données PostgreSQL).
+Tous les benchmarks ont été réalisés sur un seul serveur à chaque fois, hébergeant tous les services
+(2 moteurs Waarp R66 et 2 bases de données PostgreSQL/H2).
+Seul le benchmark Cluster utilise une seule base PostgreSQL (commune) mais 1 client à part et de 1 à 4
+serveurs Waarp R66 clusterisés.
 
-================ ============== ============ ============ ========================
-Modèle           TLS            NoTLS        Accélération Description
-================ ============== ============ ============ ========================
-Loop 2 coeurs    100/s          104/s        Référence    2 Serveurs en ping pong pour une taille moyenne de 250 Ko
-Loop 2 coeurs    95/s           100/s        -4%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
-Loop 4 coeurs    127/s          133/s        27%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko
-Loop 4 coeurs    125/s          125/s        25%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
-Cluster 2 coeurs 70/s           72/s         Référence    Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
-Cluster 2 coeurs 83/s           87/s         21%          Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
-Cluster 4 coeurs 89/s           91/s         27%          Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
-Cluster 4 coeurs 191/s          192/s        167%         Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
-Gros Fichier 2c  152 MB/s       181 MB/s     Référence    Transfert d'un fichier de 500 Mo
-Gros Fichier 4c  250 MB/s       296 MB/s     64%          Transfert d'un fichier de 500 Mo
-================ ============== ============ ============ ========================
+
+**Evolution selon les versions**
 
 L'évolution selon les versions depuis la 3.0 jusqu'à la dernière version.
 
@@ -348,35 +345,85 @@ V3.0 Loop 2 Serveurs           4        Oui 30/s         100% Référence
 V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 100%
 V3.5.2 Loop 2 Serveurs         4        Oui 71/s         100% 137%
 V3.6.0 Loop 2 Serveurs         4        Oui 100/s        90%  233%
-V3.6.0 Loop 2 Serveurs Compres 4        Oui 99/s         80%  230%
-V3.6.0 Loop 2 Serveurs         8        Oui 127/s        30%  323%
-V3.6.0 Loop 2 Serveurs Compres 8        Oui 127/s        35%  323%
-V3.6.0 Loop 2 Serveurs         4        Non 104/s        80%  Référence
-V3.6.0 Loop 2 Serveurs Compres 4        Non 103/s        75%  -1%
-V3.6.0 Loop 2 Serveurs         8        Non 133/s        30%  28%
-V3.6.0 Loop 2 Serveurs Compres 8        Non 127/s        35%  22%
-V3.6.0 Loop 2 Serveurs Monitor 4        Oui 95/s         90%  -8%
-V3.6.0 Loop 2 Serveurs Monitor 8        Oui 125/s        45%  20%
-V3.6.0 Loop 2 Serveurs Monitor 4        Non 100/s        85%  -4%
-V3.6.0 Loop 2 Serveurs Monitor 8        Non 125/s        40%  20%
-V3.6.0 Cluster 1 Serveurs      4        Oui 70/s         80%  Référence
-V3.6.0 Cluster 2 Serveurs      4        Oui 83/s         100% 19% (-17% vs mono serveur)
-V3.6.0 Cluster 1 Serveurs      8        Oui 89/s         30%  27%
-V3.6.0 Cluster 2 Serveurs      8        Oui 191/s        60%  173% (51% vs mono serveur)
-V3.6.0 Cluster 1 Serveurs      4        Non 72/s         80%  Référence
-V3.6.0 Cluster 2 Serveurs      4        Non 87/s         100% 21% (-16% vs mono serveur)
-V3.6.0 Cluster 1 Serveurs      8        Non 91/s         30%  26%
-V3.6.0 Cluster 2 Serveurs      8        Non 192/s        60%  167% (44% vs mono serveur)
+V3.6.1 Loop 2 Serveurs         4        Oui 124/s        80%  313%
 ============================== ======== === ============ ==== ==========================
 
+**Vision globale des benchmarks V3.6.1**
 
-Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (8 threads)
-dédiés par serveur Waarp R66 pour être optimal. En terme de mémoire,
-4 GB étaient alloués à chaque instance, si possible 8 GB.
+================ ============== ============ ============ ========================
+Modèle           TLS            NoTLS        Accélération Description
+================ ============== ============ ============ ========================
+Loop 2 coeurs    124/s          126/s        Référence    2 Serveurs en ping pong pour une taille moyenne de 250 Ko
+Loop 2 coeurs    113/s          114/s        -4%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
+Loop 4 coeurs    150/s          149/s        21%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko
+Loop 4 coeurs    149/s          146/s        20%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
+Cluster 2 coeurs 73/s           75/s         Référence    Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
+Cluster 2 coeurs 116/s          116/s        21%          Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
+Cluster 4 coeurs 85/s           86/s         17%          Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
+Cluster 4 coeurs 178/s          179/s        144%         Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
+Cluster 4 coeurs 263/s          266/s        260%         Mode Cluster avec 3 serveurs pour une taille moyenne de 250 Ko
+Cluster 4 coeurs 346/s          344/s        374%         Mode Cluster avec 4 serveurs pour une taille moyenne de 250 Ko
+Gros Fichier 2c  152 MB/s       181 MB/s     Référence    Transfert d'un fichier de 500 Mo
+Gros Fichier 4c  254 MB/s       301 MB/s     67%          Transfert d'un fichier de 500 Mo
+================ ============== ============ ============ ========================
+
+**Vision détaillée des benchmarks V3.6.1**
+
+============================== ======== === ============ ==== =======================================
+Contexte                       Nb vCore TLS Transferts/s CPU  Gain
+============================== ======== === ============ ==== =======================================
+V3.6.1 Loop 2 Serveurs         4        Oui 124/s        80%  Référence
+V3.6.1 Loop 2 Serveurs Compres 4        Oui 123/s        75%  -1%
+V3.6.1 Loop 2 Serveurs         8        Oui 150/s        35%  21%
+V3.6.1 Loop 2 Serveurs Compres 8        Oui 150/s        35%  21%
+V3.6.1 Loop 2 Serveurs         4        Non 126/s        80%  2%
+V3.6.1 Loop 2 Serveurs Compres 4        Non 123/s        75%  -1%
+V3.6.1 Loop 2 Serveurs         8        Non 149/s        35%  20%
+V3.6.1 Loop 2 Serveurs Compres 8        Non 149/s        35%  20%
+V3.6.1 Loop 2 Serveurs Monitor 4        Oui 113/s        85%  -9%
+V3.6.1 Loop 2 Serveurs Monitor 8        Oui 149/s        40%  20%
+V3.6.1 Loop 2 Serveurs Monitor 4        Non 114/s        80%  -8%
+V3.6.1 Loop 2 Serveurs Monitor 8        Non 146/s        40%  18%
+V3.6.1 Cluster 1 Serveurs      4        Oui 73/s         80%  -41% (Référence mono serveur TLS)
+V3.6.1 Cluster 2 Serveurs      4        Oui 116/s        95%  -6% (+55% vs mono serveur TLS)
+V3.6.1 Cluster 1 Serveurs      8        Oui 85/s         25%  14% (+17% vs mono serveur TLS)
+V3.6.1 Cluster 2 Serveurs      8        Oui 178/s        45%  44% (+140% vs mono serveur TLS)
+V3.6.1 Cluster 3 Serveurs      8        Oui 263/s        60%  112% (+260% vs mono serveur TLS)
+V3.6.1 Cluster 4 Serveurs      8        Oui 346/s        80%  179% (+374% vs mono serveur TLS)
+V3.6.1 Cluster 1 Serveurs      4        Non 75/s         75%  -39% (Référence mono serveur Sans TLS)
+V3.6.1 Cluster 2 Serveurs      4        Non 116/s        90%  -8% (+55% vs mono serveur Sans TLS)
+V3.6.1 Cluster 1 Serveurs      8        Non 86/s         25%  18% (+15% vs mono serveur Sans TLS)
+V3.6.1 Cluster 2 Serveurs      8        Non 179/s        45%  45% (+139% vs mono serveur Sans TLS)
+V3.6.1 Cluster 3 Serveurs      8        Non 266/s        60%  115% (+255% vs mono serveur Sans TLS)
+V3.6.1 Cluster 4 Serveurs      8        Non 344/s        80%  178% (+359% vs mono serveur Sans TLS)
+============================== ======== === ============ ==== =======================================
+
+**Analyse**
+
+Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (4 threads)
+dédiés par serveur Waarp R66 pour être optimal. En termes de mémoire,
+entre 4 et 8 GB étaient alloués à chaque instance, 8 GB étant confortable.
+
+La performance attendue est fonction du processeur et de la mémoire, ainsi que de la vitesse du
+disque sous-jacent, sans oublier le réseau, mais il est possible de viser en mono serveur
+environ 150 transferts/s en mono serveur.
+
+En mode cluster (de 2 à 4 serveurs), les performances sont, sur le même matériel
+(4 core 32 GB répartis sur 1 à 4 instances Waarp R66 et 1 base PostgreSQL),
+légèrement supérieures avec 2 instances en cluster (150/s contre 178/s) et ne font qu'augmenter avec
+plus de 340 transferts/s avec 4 instances, soit une accélération quasi linéaire avec une charge
+CPU globale de moitié (35% contre 80% en cluster).
+
+Le surcoût de la synchronisation via la base est donc perceptible mais vite récupéré
+en ajoutant au moins 2 instances (haute disponibilité) et peut largement dépasser
+la capacité d'une mono-instance.
+
 
 *Benchmarks Waarp Gateway FTP et Waarp FTP Server*
 
 Il s'agit de benchmarks orientés FTP (Serveur ou Gateway).
+
+**Benchmarks avec transferts séquentiels**
 
 ===================== ============== ============ ============ ========================
 Modèle                Active         Passive      Accélération Description
@@ -388,6 +435,7 @@ GW FTP 4 core         113/s          77/s         11%          Petits transferts
 GW FTP 4 core Postgre 113/s          77/s         11%          Petits transferts séquentiels avec reconnexion
 ===================== ============== ============ ============ ========================
 
+**Benchmarks avec concurrence des clients et des transferts**
 
 ===================== =========================== ============ ========================
 Modèle                 Mixte Active / Passive     Accélération Description
@@ -409,8 +457,9 @@ GW FTP 50 clients 4C  1234/s                      375%         50 clients avec t
 GW FTP 100 clients 4c 1350/s                      453%         100 clients avec transferts concurrents
 ===================== =========================== ============ ========================
 
+**Analyse**
 
-Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (8 threads)
+Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (4 threads)
 dédiés par serveur Waarp Gateway FTP pour être optimal. En terme de mémoire,
 4 GB étaient alloués à chaque instance.
 

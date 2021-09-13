@@ -336,7 +336,7 @@ public class XMLTransferDAO implements TransferDAO {
   public void insert(final Transfer transfer) throws DAOConnectionException {
     // Set unique Id
     if (transfer.getId() == DbConstantR66.ILLEGALVALUE) {
-      transfer.setId(new LongUuid().getLong());
+      transfer.setId(LongUuid.getLongUuid());
     }
     dbR66TaskHashMap.put(transfer.getId(), transfer);
     if (noFile) {

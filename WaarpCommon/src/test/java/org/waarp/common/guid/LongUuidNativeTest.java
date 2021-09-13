@@ -30,7 +30,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class LongUuidTest {
+public class LongUuidNativeTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
@@ -38,25 +38,10 @@ public class LongUuidTest {
   private static final int NB_THREAD = 10;
 
   @Test
-  public void testStructure() {
-    final LongUuid id = new LongUuid();
-    final String str = id.toString();
-
-    assertEquals(16, str.length());
-  }
-
-  @Test
   public void testParsing() {
-    final LongUuid id1 = new LongUuid();
-    final LongUuid id2 = new LongUuid(id1.toString());
-    assertEquals(id1, id2);
-    assertEquals(id1.hashCode(), id2.hashCode());
-    assertEquals(id1.getLong(), id2.getLong());
-
-    final LongUuid id3 = new LongUuid(id1.getBytes());
-    assertEquals(id1, id3);
-    final LongUuid id4 = new LongUuid(id1.getLong());
-    assertEquals(id1, id4);
+    final long id1 = LongUuid.getLongUuid();
+    final LongUuid id2 = new LongUuid(id1);
+    assertEquals(id1, id2.getLong());
   }
 
   @Test
@@ -65,7 +50,7 @@ public class LongUuidTest {
     final long[] ids = new long[n];
 
     for (int i = 0; i < n; i++) {
-      ids[i] = new LongUuid().getLong();
+      ids[i] = LongUuid.getLongUuid();
     }
 
     for (int i = 1; i < n; i++) {
@@ -74,86 +59,37 @@ public class LongUuidTest {
   }
 
   @Test
-  public void testGetBytesImmutability() {
-    final LongUuid id = new LongUuid();
-    final byte[] bytes = id.getBytes();
-    final byte[] original = Arrays.copyOf(bytes, bytes.length);
-    bytes[0] = 0;
-    bytes[1] = 0;
-    bytes[2] = 0;
-
-    assertArrayEquals(id.getBytes(), original);
-  }
-
-  @Test
-  public void testConstructorImmutability() {
-    final LongUuid id = new LongUuid();
-    final byte[] bytes = id.getBytes();
-    final byte[] original = Arrays.copyOf(bytes, bytes.length);
-
-    final LongUuid id2 = new LongUuid(bytes);
-    bytes[0] = 0;
-    bytes[1] = 0;
-
-    assertArrayEquals(id2.getBytes(), original);
-  }
-
-  @Test
   public void testPIDField() throws Exception {
-    final LongUuid id = new LongUuid();
-
-    assertEquals((JvmProcessId.jvmInstanceId() >> 4) & 0x0F, id.getProcessId());
+    final long id = LongUuid.getLongUuid();
+    final LongUuid longUuid = new LongUuid(id);
+    assertEquals((JvmProcessId.jvmInstanceId() >> 4) & 0x0F,
+                 longUuid.getProcessId());
   }
 
   @Test
   public void testForDuplicates() {
     final int n = NB;
     final Set<Long> uuids = new HashSet<Long>(n);
-    final LongUuid[] uuidArray = new LongUuid[n];
+    final Long[] uuidArray = new Long[n];
 
     final long start = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
-      uuidArray[i] = new LongUuid();
+      uuidArray[i] = LongUuid.getLongUuid();
     }
     final long stop = System.currentTimeMillis();
     System.out.println(
         "Time = " + (stop - start) + " so " + (n / (stop - start)) * 1000 +
         " Uuids/s");
 
-    for (int i = 0; i < n; i++) {
-      uuids.add(uuidArray[i].getLong());
-    }
+    uuids.addAll(Arrays.asList(uuidArray));
 
     System.out.println("Create " + n + " and get: " + uuids.size());
     assertEquals(n, uuids.size());
-    int i = 1;
-    int largest = 0;
-    for (; i < n; i++) {
-      if (uuidArray[i].getTimestamp() != uuidArray[i - 1].getTimestamp()) {
-        int j = i + 1;
-        final long time = uuidArray[i].getTimestamp();
-        for (; j < n; j++) {
-          if (uuidArray[j].getTimestamp() != time) {
-            if (largest < j - i + 1) {
-              largest = j - i + 1;
-            }
-            i = j;
-            break;
-          }
-        }
-      }
-    }
-    if (largest == 0) {
-      largest = n;
-    }
     System.out.println(
-        "Time elapsed: " + uuidArray[0] + "(" + uuidArray[0].getTimestamp() +
-        ':' + uuidArray[0].getLong() + ") - " + uuidArray[n - 1] + '(' +
-        uuidArray[n - 1].getTimestamp() + ':' + uuidArray[n - 1].getLong() +
-        ") = " + (uuidArray[n - 1].getLong() - uuidArray[0].getLong()) + " & " +
-        (uuidArray[n - 1].getTimestamp() - uuidArray[0].getTimestamp()));
-    System.out.println(
-        largest + " different consecutive elements for same time");
+        "Time elapsed: " + uuidArray[0] + " - " + uuidArray[n - 1] + " = " +
+        (uuidArray[n - 1] - uuidArray[0]) + " & " +
+        (new LongUuid(uuidArray[n - 1]).getTimestamp() -
+         new LongUuid(uuidArray[0]).getTimestamp()));
   }
 
   @Test
@@ -162,7 +98,7 @@ public class LongUuidTest {
     final Thread[] threads = new Thread[numThreads];
     final int n = NB;
     final int effectiveN = n / numThreads * numThreads;
-    final LongUuid[] uuids = new LongUuid[effectiveN];
+    final Long[] uuids = new Long[effectiveN];
 
     final long start = System.currentTimeMillis();
     for (int i = 0; i < numThreads; i++) {
@@ -178,7 +114,7 @@ public class LongUuidTest {
         "Time = " + (stop - start) + " so " + (n / (stop - start)) * 1000 +
         " Uuids/s");
 
-    final Set<LongUuid> uuidSet = new HashSet<LongUuid>(effectiveN);
+    final Set<Long> uuidSet = new HashSet<Long>(effectiveN);
     uuidSet.addAll(Arrays.asList(uuids));
 
     assertEquals(effectiveN, uuidSet.size());
@@ -190,7 +126,7 @@ public class LongUuidTest {
     final Thread[] threads = new Thread[numThreads];
     final int n = NB;
     final int effectiveN = n / numThreads * numThreads;
-    final long[] uuids = new long[effectiveN];
+    final Long[] uuids = new Long[effectiveN];
 
     final long start = System.currentTimeMillis();
     for (int i = 0; i < numThreads; i++) {
@@ -207,19 +143,17 @@ public class LongUuidTest {
         " Counter/s");
 
     final Set<Long> uuidSet = new HashSet<Long>(effectiveN);
-    for (Long i : uuids) {
-      uuidSet.add(i);
-    }
+    uuidSet.addAll(Arrays.asList(uuids));
 
     assertEquals(effectiveN, uuidSet.size());
   }
 
   private static class CounterParallel extends Thread {
-    private final long[] uuids;
+    private final Long[] uuids;
     final int id;
     final int n;
 
-    public CounterParallel(final int n, final long[] uuids, final int id) {
+    public CounterParallel(final int n, final Long[] uuids, final int id) {
       this.n = n;
       this.uuids = uuids;
       this.id = id * n;
@@ -235,11 +169,11 @@ public class LongUuidTest {
   }
 
   private static class Generator extends Thread {
-    private final LongUuid[] uuids;
+    private final Long[] uuids;
     final int id;
     final int n;
 
-    public Generator(final int n, final LongUuid[] uuids, final int id) {
+    public Generator(final int n, final Long[] uuids, final int id) {
       this.n = n;
       this.uuids = uuids;
       this.id = id * n;
@@ -248,7 +182,7 @@ public class LongUuidTest {
     @Override
     public void run() {
       for (int i = 0; i < n; i++) {
-        uuids[id + i] = new LongUuid();
+        uuids[id + i] = LongUuid.getLongUuid();
       }
     }
   }

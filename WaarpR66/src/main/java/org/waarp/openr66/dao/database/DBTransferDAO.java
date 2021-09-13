@@ -21,6 +21,7 @@
 package org.waarp.openr66.dao.database;
 
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.guid.LongUuid;
 import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.Filter;
@@ -29,6 +30,7 @@ import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -551,7 +553,11 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   public final void insert(final Transfer transfer)
       throws DAOConnectionException {
     if (transfer.getId() == ILLEGALVALUE) {
-      transfer.setId(getNextId());
+      if (Configuration.configuration.isTransferGuid()) {
+        transfer.setId(LongUuid.getLongUuid());
+      } else {
+        transfer.setId(getNextId());
+      }
     }
     super.insert(transfer);
   }

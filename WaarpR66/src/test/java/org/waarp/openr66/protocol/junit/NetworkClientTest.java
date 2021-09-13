@@ -1540,13 +1540,22 @@ public class NetworkClientTest extends TestAbstract {
         success++;
       } else {
         if (runner != null) {
+          logger.warn("Try to find: {}:{}", runner.getSpecialId(),
+                      runner.getFollowId());
           DbTaskRunner dbTaskRunner = null;
           for (int i = 0; i < 10; i++) {
             try {
-              dbTaskRunner = new DbTaskRunner(runner.getSpecialId() + 1,
-                                              runner.getRequester(),
-                                              runner.getRequested());
-              break;
+              DbTaskRunner[] runners =
+                  DbTaskRunner.getSelectSameFollowId(runner.getFollowId(), true,
+                                                     10, true);
+              if (runners != null && runners.length > 1) {
+                for (DbTaskRunner dbTaskRunner1 : runners) {
+                  if (dbTaskRunner1.getSpecialId() != runner.getSpecialId()) {
+                    dbTaskRunner = dbTaskRunner1;
+                    break;
+                  }
+                }
+              }
             } catch (WaarpDatabaseException e) {
               Thread.sleep(200);
             }
@@ -1646,13 +1655,22 @@ public class NetworkClientTest extends TestAbstract {
         success++;
       } else {
         if (runner != null) {
+          logger.warn("Try to find: {}:{}", runner.getSpecialId(),
+                      runner.getFollowId());
           DbTaskRunner dbTaskRunner = null;
           for (int i = 0; i < 20; i++) {
             try {
-              dbTaskRunner = new DbTaskRunner(runner.getSpecialId() + 1,
-                                              runner.getRequester(),
-                                              runner.getRequested());
-              break;
+              DbTaskRunner[] runners =
+                  DbTaskRunner.getSelectSameFollowId(runner.getFollowId(), true,
+                                                     10, true);
+              if (runners != null && runners.length > 1) {
+                for (DbTaskRunner dbTaskRunner1 : runners) {
+                  if (dbTaskRunner1.getSpecialId() != runner.getSpecialId()) {
+                    dbTaskRunner = dbTaskRunner1;
+                    break;
+                  }
+                }
+              }
             } catch (WaarpDatabaseException e) {
               Thread.sleep(200);
             }

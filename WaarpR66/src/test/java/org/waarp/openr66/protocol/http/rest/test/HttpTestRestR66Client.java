@@ -1103,7 +1103,7 @@ public class HttpTestRestR66Client implements Runnable {
         source.put(Columns.ORIGINALNAME.name(), "original filename");
         source.put(Columns.OWNERREQ.name(),
                    Configuration.configuration.getHostId());
-        source.put(Columns.SPECIALID.name(), new LongUuid().getLong());
+        source.put(Columns.SPECIALID.name(), LongUuid.getLongUuid());
         source.put(Columns.REQUESTED.name(), hostid + rank);
         source.put(Columns.REQUESTER.name(), hostid + rank);
         source.put(Columns.RETRIEVEMODE.name(), true);
