@@ -592,22 +592,48 @@ public class DbModelFactoryR66 extends DbModelFactory {
     request.close();
     StringBuilder action;
     // cptrunner
-    /*
-     * # Table to handle any number of sequences
-     */
-    action = new StringBuilder(
-        "CREATE TABLE IF NOT EXISTS Sequences (name VARCHAR(22) NOT NULL " +
-        "PRIMARY KEY, seq BIGINT NOT NULL)");
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    if (executeRequestAction(session, action)) {
-      return;
+    boolean sequenceDone = false;
+    if (dbTypeResolver.getDbType() == DbType.MariaDB) {
+      // MariaDB supports Sequence from 10.3
+      try {
+        final long minimalValue = System.currentTimeMillis() + 1;
+        action = new StringBuilder(
+            "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
+            " MINVALUE " + (ILLEGALVALUE + 1) + " START WITH " + minimalValue);
+        SysErrLogger.FAKE_LOGGER.sysout(action);
+        try {
+          request.query(action.toString());
+          sequenceDone = true;
+        } catch (final WaarpDatabaseNoConnectionException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          return;
+        } catch (final WaarpDatabaseSqlException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          // Change to old way
+        }
+      } finally {
+        request.close();
+      }
     }
-    action = new StringBuilder(
-        "INSERT INTO Sequences (name, seq) VALUES ('" + DbTaskRunner.fieldseq +
-        "', " + (ILLEGALVALUE + 1) + ')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    if (executeRequestAction(session, action)) {
-      return;
+    if (!sequenceDone) {
+      /*
+       * # Table to handle any number of sequences
+       */
+      action = new StringBuilder(
+          "CREATE TABLE IF NOT EXISTS Sequences (name VARCHAR(22) NOT NULL " +
+          "PRIMARY KEY, seq BIGINT NOT NULL)");
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      if (executeRequestAction(session, action)) {
+        return;
+      }
+      final long minimalValue = System.currentTimeMillis() + 1;
+      action = new StringBuilder("INSERT INTO Sequences (name, seq) VALUES ('" +
+                                 DbTaskRunner.fieldseq + "', " + minimalValue +
+                                 ')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      if (executeRequestAction(session, action)) {
+        return;
+      }
     }
 
     DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),

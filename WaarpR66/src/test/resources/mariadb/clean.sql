@@ -3,7 +3,7 @@ DROP INDEX idx_hostconf on hostconfig;
 DROP INDEX idx_host on hosts;
 DROP INDEX idx_rule on rules;
 DROP INDEX idx_run_filter on runner;
-DROP TABLE Sequences;
+DROP SEQUENCE IF EXISTS runseq;
 DROP TABLE runner;
 DROP TABLE rules;
 DROP TABLE multiplemonitor;

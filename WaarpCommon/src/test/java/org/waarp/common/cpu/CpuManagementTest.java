@@ -78,7 +78,8 @@ public class CpuManagementTest {
     System.err.println("LA: " + min);
     // Not checking since not as precise: assertTrue("Max > current: " + max + " >? " + min, max > min);
     if (max <= min) {
-      SysErrLogger.FAKE_LOGGER.syserr("Max > current FALSE: " + max + " <= " + min);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Max > current FALSE: " + max + " <= " + min);
     }
     total = 0;
     for (long i = 0; i < 1000 * 1000 * 1000 * 1000; i++) {
@@ -96,7 +97,8 @@ public class CpuManagementTest {
     System.err.println("LA: " + max);
     // Not checking since not as precise: assertTrue("Min < current: " + min + " <? " + max, max >= min);
     if (max < min) {
-      SysErrLogger.FAKE_LOGGER.syserr("Min < current FALSE: " + min + " > " + max);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Min < current FALSE: " + min + " > " + max);
     }
     assertTrue(true);
   }
@@ -141,7 +143,8 @@ public class CpuManagementTest {
     System.err.println("LAs: " + min);
     // Not checking since not as precise: assertTrue("Max > current: " + max + " >? " + min, max > min);
     if (max <= min) {
-      SysErrLogger.FAKE_LOGGER.syserr("Max > current FALSE: " + max + " <= " + min);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Max > current FALSE: " + max + " <= " + min);
     }
 
     total = 0;
@@ -160,7 +163,8 @@ public class CpuManagementTest {
     System.err.println("LAs: " + max);
     // Not checking since not as precise: assertTrue("Min < current: " + min + " <? " + max, max > min);
     if (max <= min) {
-      SysErrLogger.FAKE_LOGGER.syserr("Min < current FALSE: " + min + " >= " + max);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Min < current FALSE: " + min + " >= " + max);
     }
     assertTrue(true);
   }

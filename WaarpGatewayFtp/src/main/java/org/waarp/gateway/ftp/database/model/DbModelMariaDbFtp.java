@@ -62,7 +62,7 @@ public class DbModelMariaDbFtp extends DbModelMariadb {
   }
 
   @Override
-  public synchronized long nextSequence(final DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);

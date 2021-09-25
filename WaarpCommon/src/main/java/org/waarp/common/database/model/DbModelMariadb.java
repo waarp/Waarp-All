@@ -22,8 +22,14 @@ package org.waarp.common.database.model;
 import org.mariadb.jdbc.Driver;
 import org.mariadb.jdbc.MariaDbDataSource;
 import org.waarp.common.database.DbConnectionPool;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.DbDataModel;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -187,6 +193,56 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
       }
     }
     return super.getDbConnection(server, user, passwd);
+  }
+
+  @Override
+  public void resetSequence(final DbSession session, final long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+    final String action =
+        "ALTER SEQUENCE IF EXISTS " + DbDataModel.fieldseq + " MINVALUE " +
+        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
+    final DbRequest request = new DbRequest(session);
+    try {
+      request.query(action);
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+    } catch (final WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      // Old way
+      super.resetSequence(session, newvalue);
+    } finally {
+      request.close();
+    }
+    logger.warn(action);
+  }
+
+  @Override
+  public long nextSequence(final DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+    long result;
+    final String action = "SELECT NEXT VALUE FOR " + DbDataModel.fieldseq;
+    final DbPreparedStatement preparedStatement =
+        new DbPreparedStatement(dbSession);
+    try {
+      preparedStatement.createPrepareStatement(action);
+      // Limit the search
+      preparedStatement.executeQuery();
+      if (preparedStatement.getNext()) {
+        try {
+          result = preparedStatement.getResultSet().getLong(1);
+        } catch (final SQLException e) {
+          // Old way
+          return super.nextSequence(dbSession);
+        }
+        return result;
+      } else {
+        // Old way
+        return super.nextSequence(dbSession);
+      }
+    } finally {
+      preparedStatement.realClose();
+    }
   }
 
   @Override

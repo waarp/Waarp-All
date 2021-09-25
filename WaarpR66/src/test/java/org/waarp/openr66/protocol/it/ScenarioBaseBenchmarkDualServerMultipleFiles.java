@@ -41,7 +41,6 @@ import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.NoOpRecvThroughHandler;
-import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
 import org.waarp.openr66.protocol.test.TestRecvThroughClient;

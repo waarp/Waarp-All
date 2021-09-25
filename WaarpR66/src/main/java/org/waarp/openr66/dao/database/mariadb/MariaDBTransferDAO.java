@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.database.mariadb;
 
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,9 +32,7 @@ import java.sql.SQLException;
 public class MariaDBTransferDAO extends DBTransferDAO {
 
   protected static final String SQL_GET_ID =
-      "SELECT seq FROM Sequences " + "WHERE name='RUNSEQ' FOR UPDATE";
-  private static final String SQL_UPDATE_ID =
-      "UPDATE Sequences SET seq = ? " + "WHERE name='RUNSEQ'";
+      "SELECT NEXT VALUE FOR " + DbTaskRunner.fieldseq;
 
   public MariaDBTransferDAO(final Connection con)
       throws DAOConnectionException {
@@ -43,24 +42,18 @@ public class MariaDBTransferDAO extends DBTransferDAO {
   @Override
   protected final long getNextId() throws DAOConnectionException {
     PreparedStatement ps = null;
-    PreparedStatement ps2 = null;
     ResultSet rs = null;
     try {
       ps = connection.prepareStatement(SQL_GET_ID);
       rs = ps.executeQuery();
-      final long res;
       if (rs.next()) {
-        res = rs.getLong(1);
-        ps2 = connection.prepareStatement(SQL_UPDATE_ID);
-        ps2.setLong(1, res + 1);
-        ps2.executeUpdate();
-        return res;
+        return rs.getLong(1);
       } else {
         throw new DAOConnectionException(
             "Error no id available, you should purge the database.");
       }
     } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
+      throw new DAOConnectionException("While executing: " + SQL_GET_ID, e);
     } finally {
       try {
         if (rs != null) {
@@ -70,7 +63,6 @@ public class MariaDBTransferDAO extends DBTransferDAO {
         // ignore
       }
       closeStatement(ps);
-      closeStatement(ps2);
     }
   }
 }

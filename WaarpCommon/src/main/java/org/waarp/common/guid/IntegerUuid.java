@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Limit is about 4000000/s UUID
  */
 public final class IntegerUuid {
-  private static final Object SYNC_OBJECT = new Object();
   /**
    * Counter part
    */
@@ -55,19 +54,21 @@ public final class IntegerUuid {
    */
   private final byte[] uuid = { 0, 0, 0, 0 };
 
+  static final synchronized int getCounter() {
+    if (COUNTER.compareAndSet(Integer.MAX_VALUE, Integer.MIN_VALUE)) {
+      return Integer.MAX_VALUE;
+    } else {
+      return COUNTER.getAndIncrement();
+    }
+  }
+
   /**
    * Constructor that generates a new UUID using the current process id, MAC
    * address, and timestamp
    */
   public IntegerUuid() {
     // atomically
-    final int count;
-    synchronized (SYNC_OBJECT) {
-      count = COUNTER.incrementAndGet();
-      if (count == Integer.MAX_VALUE) {
-        COUNTER.set(Integer.MIN_VALUE + 1);
-      }
-    }
+    final int count = getCounter();
     uuid[0] = (byte) (count >> 24);
     uuid[1] = (byte) (count >> 16);
     uuid[2] = (byte) (count >> 8);

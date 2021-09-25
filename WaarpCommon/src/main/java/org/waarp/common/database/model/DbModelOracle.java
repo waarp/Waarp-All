@@ -294,7 +294,7 @@ public abstract class DbModelOracle extends DbModelAbstract {
   public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
+    long result;
     final String action =
         "SELECT " + DbDataModel.fieldseq + ".NEXTVAL FROM DUAL";
     final DbPreparedStatement preparedStatement =

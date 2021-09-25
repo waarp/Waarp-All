@@ -253,9 +253,10 @@ public class DbModelOracleR66 extends DbModelOracle {
     }
 
     // cptrunner
+    final long minimalValue = System.currentTimeMillis() + 1;
     action = new StringBuilder(
         "CREATE SEQUENCE " + DbTaskRunner.fieldseq + " MINVALUE " +
-        (ILLEGALVALUE + 1) + " START WITH " + (ILLEGALVALUE + 1));
+        (ILLEGALVALUE + 1) + " START WITH " + minimalValue);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());

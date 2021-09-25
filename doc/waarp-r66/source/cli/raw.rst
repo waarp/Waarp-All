@@ -154,20 +154,22 @@ Options additionnelles pour Waarp via la JVM
 .. index:: -Dopenr66.transfer.guid
 
 ``-Dopenr66.transfer.guid=0|1``
-   (défaut = 1)
+   (défaut = 0)
 
    Waarp utilisera les GUID en lieu et place d'une séquence SQL pour déterminer
    l'identifiant unique d'un transfert (l'identifiant unique étant la
    conjonction de cet Id au format Long, et des identifiants du requeteur
-   et du requeté. Si désactivé (``0``), la séquence SQL sera utilisé
-   (comme avant la version 3.6.0).
+   et du requeté si activé (``1``). Si désactivé (``0``, par défaut),
+   la séquence SQL sera utilisé (comme jusqu'à la version 3.6.0).
 
    .. versionchanged:: 3.6.1
-      Cette option a été activée par défaut (valeur 1) pour optimiser
-      et diminuer les soucis de réinstallation avec effacement de la base
-      en évitant de devoir repositionner la séquence à une valeur plus élevée
-      que la dernière utilisée, mais peut être désactivée (``0``) si
-      nécessaire.
+      Cette option est inactive par défaut (valeur ``0``) mais l'activation
+      (valeur ``1``) peut
+      optimiser et diminuer les soucis de réinstallation avec effacement
+      de la base en évitant de devoir repositionner la séquence à une valeur
+      plus élevée que la dernière utilisée. Cependant la séquence est dorénavant
+      initialisée au timestamp (EPOCH en 64 bits) de façon à limiter les
+      besoins de réinitialisation manuelle.
 
 
 .. index:: -Dopenr66.authent.noreuse

@@ -34,7 +34,6 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbType;
-import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -945,12 +944,6 @@ public class FileBasedConfiguration {
         }
       }
       logger.info("DigestAlgo used: {}", config.getDigest());
-      value = hashConfig.get(XML_USEFASTMD5);
-      if (value != null && !value.isEmpty()) {
-        FilesystemBasedDigest.setUseFastMd5(value.getBoolean());
-      } else {
-        FilesystemBasedDigest.setUseFastMd5(false);
-      }
       value = hashConfig.get(XML_GAPRESTART);
       if (value != null && !value.isEmpty()) {
         Configuration.setRankRestart(value.getInteger());

@@ -72,10 +72,10 @@ public class DbModelH2R66 extends DbModelH2 {
     StringBuilder action;
 
     // cptrunner
+    final long minimalValue = System.currentTimeMillis() + 1;
     action = new StringBuilder(
         "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
-        " START WITH " + (ILLEGALVALUE + 1) + " MINVALUE " +
-        (ILLEGALVALUE + 1));
+        " START WITH " + (ILLEGALVALUE + 1) + " MINVALUE " + minimalValue);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -86,7 +86,7 @@ public class DbModelH2R66 extends DbModelH2 {
       // version <= 1.2.173
       action = new StringBuilder(
           "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
-          " START WITH " + (ILLEGALVALUE + 1));
+          " START WITH " + minimalValue);
       SysErrLogger.FAKE_LOGGER.sysout(action);
       try {
         request.query(action.toString());

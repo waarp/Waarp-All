@@ -45,14 +45,14 @@ import static java.lang.String.*;
 public final class UnsafeUtil {
   private static boolean initialized;
   public static final Unsafe UNSAFE;
-  private static final Field ADDRESS_ACCESSOR;
+  private static final long ADDRESS_OFFSET;
 
   private UnsafeUtil() {
   }
 
   static {
     Unsafe tempUnsafe = null;
-    Field tempField = null;
+    long tempField = 0;
     try {
       initLittleEndian();
       tempUnsafe = initUnsafe();
@@ -62,7 +62,7 @@ public final class UnsafeUtil {
       initialized = false;
     }
     UNSAFE = tempUnsafe;
-    ADDRESS_ACCESSOR = tempField;
+    ADDRESS_OFFSET = tempField;
   }
 
   public static boolean isValid() {
@@ -104,9 +104,9 @@ public final class UnsafeUtil {
   /**
    * @throws IncompatibleJvmException if this implementation is not available
    */
-  private static final Field initAccessor() {
+  private static final long initAccessor() {
     if (initialized) {
-      return ADDRESS_ACCESSOR;
+      return ADDRESS_OFFSET;
     }
     try {
       // Remove warning
@@ -115,9 +115,8 @@ public final class UnsafeUtil {
       final Field logger = cls.getDeclaredField("logger");
       UNSAFE.putObjectVolatile(cls, UNSAFE.staticFieldOffset(logger), null);
 
-      final Field field = Buffer.class.getDeclaredField("address");
-      field.setAccessible(true);
-      return field;
+      // fetch the address field for direct buffers
+      return UNSAFE.objectFieldOffset(Buffer.class.getDeclaredField("address"));
     } catch (final Exception e) {
       throw new IncompatibleJvmException(
           "Zstandard requires access to java.nio.Buffer raw address field");
@@ -125,10 +124,9 @@ public final class UnsafeUtil {
   }
 
   public static final long getAddress(final Buffer buffer) {
-    try {
-      return (Long) ADDRESS_ACCESSOR.get(buffer);
-    } catch (final IllegalAccessException e) {
-      throw new RuntimeException(e);
+    if (!buffer.isDirect()) {
+      throw new IllegalArgumentException("buffer is not direct");
     }
+    return UNSAFE.getLong(buffer, ADDRESS_OFFSET);
   }
 }

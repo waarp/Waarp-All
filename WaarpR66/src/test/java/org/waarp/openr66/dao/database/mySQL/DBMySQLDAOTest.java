@@ -28,7 +28,7 @@ import org.testcontainers.containers.MySQLContainer;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.dao.database.DBAllDAOTest;
 import org.waarp.openr66.dao.database.DBTransferDAO;
-import org.waarp.openr66.dao.database.mariadb.MariaDBTransferDAO;
+import org.waarp.openr66.dao.database.mysql.MySqlDBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 
 import java.sql.Connection;
@@ -53,7 +53,7 @@ public class DBMySQLDAOTest extends DBAllDAOTest {
 
   @Override
   public DBTransferDAO getDAO(Connection con) throws DAOConnectionException {
-    return new MariaDBTransferDAO(con);
+    return new MySqlDBTransferDAO(con);
   }
 
   @Override

@@ -112,10 +112,11 @@ public class DbModelH2Kernel extends DbModelH2 {
     }
 
     // cptrunner
+    final long minimalValue = System.currentTimeMillis() + 1;
     action = new StringBuilder(
         "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
         " START WITH " + (DbConstantGateway.ILLEGALVALUE + 1) + " MINVALUE " +
-        (DbConstantGateway.ILLEGALVALUE + 1));
+        minimalValue);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -125,7 +126,7 @@ public class DbModelH2Kernel extends DbModelH2 {
       // version <= 1.2.173
       action = new StringBuilder(
           "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
-          " START WITH " + (DbConstantGateway.ILLEGALVALUE + 1));
+          " START WITH " + minimalValue);
       SysErrLogger.FAKE_LOGGER.sysout(action);
       try {
         request.query(action.toString());
