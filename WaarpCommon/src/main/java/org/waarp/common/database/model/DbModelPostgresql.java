@@ -186,7 +186,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
+    long result;
     final String action = "SELECT NEXTVAL('" + DbDataModel.fieldseq + "')";
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(dbSession);

@@ -17,10 +17,15 @@ Correctifs
 - Amélioration des performances en ne forçant l'authentification que lors
   de connections réseau nouvelles (le multiplexage n'imposant pas
   la réauthentification)
-- Remplacement du Special Id de transfert en mode séquence dans une base par un GUID (l'option séquence peut
-  être réactivée via ``-Dopenr66.transfer.guid=0``)
+- Remplacement du Special Id de transfert en mode séquence dans une base par un GUID (l'option GUID peut
+  être activée via ``-Dopenr66.transfer.guid=1``) ; correction da la valeur minimale de la séquence
+  pour éviter les problèmes de réinitialisation de la dite séquence
+  (issue [`#102 <https://github.com/waarp/Waarp-All/issues/102>`__])
+- Ajout de la possibilité de réinitialiser en ligne de commande la valeur de la séquence (ServerInitDatabase
+  avec l'option ``-minimalSeq value``)
   (issue [`#102 <https://github.com/waarp/Waarp-All/issues/102>`__])
 - Traces en mode DEBUG pour certains états R66
+- MariaDB depuis la version 10.3 autorise l'usage de "SEQUENCE"
 - Correction de tests en erreur
   (issue [`#100 <https://github.com/waarp/Waarp-All/issues/100>`__] et
   [`#99 <https://github.com/waarp/Waarp-All/issues/99>`__])

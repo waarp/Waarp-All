@@ -94,10 +94,10 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
     }
     try {
       // cptrunner
+      final long minimalValue = System.currentTimeMillis() + 1;
       final StringBuilder action = new StringBuilder(
           "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
-          " MINVALUE " + (ILLEGALVALUE + 1) + " START WITH " +
-          (ILLEGALVALUE + 1));
+          " MINVALUE " + (ILLEGALVALUE + 1) + " START WITH " + minimalValue);
       SysErrLogger.FAKE_LOGGER.sysout(action);
       try {
         request.query(action.toString());

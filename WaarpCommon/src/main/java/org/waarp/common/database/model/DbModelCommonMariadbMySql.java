@@ -19,7 +19,6 @@
  */
 package org.waarp.common.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
@@ -129,12 +128,12 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
   }
 
   @Override
-  public synchronized long nextSequence(final DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     lock.lock();
     try {
-      long result = DbConstant.ILLEGALVALUE;
+      long result;
       String action =
           "SELECT seq FROM Sequences WHERE name = '" + DbDataModel.fieldseq +
           "' FOR UPDATE";

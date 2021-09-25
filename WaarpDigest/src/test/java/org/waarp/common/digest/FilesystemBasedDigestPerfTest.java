@@ -60,14 +60,12 @@ public class FilesystemBasedDigestPerfTest {
     try {
       ByteBuf buf = Unpooled.wrappedBuffer(TESTPHRASEBYTES);
       for (final DigestAlgo algo : DigestAlgo.values()) {
-        FilesystemBasedDigest.setUseFastMd5(false);
         FilesystemBasedDigest digest = new FilesystemBasedDigest(algo);
         digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
         byte[] bmd5 = digest.Final();
         String hex = FilesystemBasedDigest.getHex(bmd5);
         long start = System.currentTimeMillis();
         for (int i = 0; i < COUNT; i++) {
-          FilesystemBasedDigest.setUseFastMd5(false);
           digest = new FilesystemBasedDigest(algo);
           digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
           bmd5 = digest.Final();
@@ -80,7 +78,6 @@ public class FilesystemBasedDigestPerfTest {
         start = System.currentTimeMillis();
         for (int i = 0; i < COUNT; i++) {
           buf.readerIndex(0);
-          FilesystemBasedDigest.setUseFastMd5(false);
           digest = new FilesystemBasedDigest(algo);
           digest.Update(buf);
           bmd5 = digest.Final();
@@ -90,41 +87,13 @@ public class FilesystemBasedDigestPerfTest {
         }
         end = System.currentTimeMillis();
         System.out.println("Buf Algo: " + algo + " Time: " + (end - start));
-        start = System.currentTimeMillis();
-        for (int i = 0; i < COUNT; i++) {
-          FilesystemBasedDigest.setUseFastMd5(true);
-          final FilesystemBasedDigest digest2 = new FilesystemBasedDigest(algo);
-          digest2.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
-          final byte[] bmd52 = digest2.Final();
-          final String hex2 = FilesystemBasedDigest.getHex(bmd52);
-          assertTrue(algo + " Hex Not Equals",
-                     FilesystemBasedDigest.digestEquals(hex2, bmd52));
-        }
-        end = System.currentTimeMillis();
-        System.out.println(
-            "Byte Fast Algo: " + algo + " Time: " + (end - start));
-        start = System.currentTimeMillis();
-        for (int i = 0; i < COUNT; i++) {
-          buf.readerIndex(0);
-          FilesystemBasedDigest.setUseFastMd5(true);
-          final FilesystemBasedDigest digest2 = new FilesystemBasedDigest(algo);
-          final byte[] bmd53 = FilesystemBasedDigest.getHash(buf, algo);
-          final String hex3 = FilesystemBasedDigest.getHex(bmd53);
-          assertTrue(algo + " Hex Not Equals",
-                     FilesystemBasedDigest.digestEquals(hex3, bmd53));
-        }
-        end = System.currentTimeMillis();
-        System.out.println(
-            "Buf Fast Algo: " + algo + " Time: " + (end - start));
       }
-      FilesystemBasedDigest.setUseFastMd5(false);
       FilesystemBasedDigest digest = new FilesystemBasedDigest(DigestAlgo.MD5);
       digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
       byte[] bmd5 = digest.Final();
       String hex = FilesystemBasedDigest.getHex(bmd5);
       long start = System.currentTimeMillis();
       for (int i = 0; i < COUNT; i++) {
-        FilesystemBasedDigest.setUseFastMd5(false);
         digest = new FilesystemBasedDigest(DigestAlgo.MD5);
         digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
         bmd5 = digest.Final();
@@ -158,7 +127,6 @@ public class FilesystemBasedDigestPerfTest {
       hex = FilesystemBasedDigest.getHex(bmd5);
       start = System.currentTimeMillis();
       for (int i = 0; i < COUNT; i++) {
-        FilesystemBasedDigest.setUseFastMd5(false);
         digest = new FilesystemBasedDigest(DigestAlgo.SHA512);
         digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
         bmd5 = digest.Final();
@@ -205,8 +173,6 @@ public class FilesystemBasedDigestPerfTest {
       System.out.println(digest2.getProvider().getName());
     } catch (final NoSuchAlgorithmException e) {
       fail(e.getMessage());
-    } catch (final IOException e) {
-      fail(e.getMessage());
     } catch (NoSuchProviderException e) {
       fail(e.getMessage());
     }
@@ -234,7 +200,6 @@ public class FilesystemBasedDigestPerfTest {
       }
     }
     try {
-      FilesystemBasedDigest.setUseFastMd5(false);
       for (final DigestAlgo algo : DigestAlgo.values()) {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 2; i++) {

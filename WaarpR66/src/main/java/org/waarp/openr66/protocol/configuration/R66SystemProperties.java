@@ -132,7 +132,7 @@ public final class R66SystemProperties {
 
   /**
    * Shall the server or client try to use GUID as transfer ID
-   * instead of SQL nextLong Id
+   * instead of SQL nextLong Id (default)
    */
   public static final String OPENR66_TRANSFER_GUID = "openr66.transfer.guid";
 

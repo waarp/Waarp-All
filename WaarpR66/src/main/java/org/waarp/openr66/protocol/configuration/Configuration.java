@@ -624,7 +624,7 @@ public class Configuration {
 
   private boolean authentNoReuse;
 
-  private boolean transferGuid = true;
+  private boolean transferGuid = false;
 
   private boolean warnOnStartup = true;
 
@@ -700,7 +700,7 @@ public class Configuration {
         R66SystemProperties.OPENR66_AUTHENT_NO_REUSE, false));
     setTransferGuid(
         SystemPropertyUtil.getBoolean(R66SystemProperties.OPENR66_TRANSFER_GUID,
-                                      true));
+                                      false));
     if (!SystemPropertyUtil.get(
         R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn("{} is deprecated in system properties use {} instead",

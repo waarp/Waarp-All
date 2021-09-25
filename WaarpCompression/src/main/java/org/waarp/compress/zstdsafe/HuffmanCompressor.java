@@ -122,6 +122,9 @@ class HuffmanCompressor {
                                          final int inputAddress,
                                          final int inputSize,
                                          final HuffmanCompressionTable table) {
+    if (outputSize < SIZE_OF_LONG) {
+      return 0;
+    }
     final BitOutputStream bitstream =
         new BitOutputStream(outputBase, outputAddress, outputSize);
 

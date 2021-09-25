@@ -104,7 +104,7 @@ public class DbModelFactoryGateway extends DbModelFactory {
   public static long nextSequenceMonitoring(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstantGateway.ILLEGALVALUE;
+    long result;
     final String action = "SELECT NEXTVAL('" + DbTransferLog.fieldseq + "')";
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(dbSession);

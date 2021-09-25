@@ -29,6 +29,8 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -68,7 +70,7 @@ public class GUIDTest {
   private static final int HEXLENGTH = GUID.KEYSIZE * 2;
 
   public void printValues() {
-    GUID guid = new GUID();
+    final GUID guid = new GUID();
     LOGGER.warn("GUID: {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}",
                 guid.getVersion(), guid.toBase32(), guid.getBytes(),
                 guid.toHex(), guid.getTenantId(), guid.toString(),
@@ -267,4 +269,51 @@ public class GUIDTest {
     assertEquals(guid, guid2);
   }
 
+
+  @Test
+  public void concurrentGeneration() throws Exception {
+    final int numThreads = 10;
+    final Thread[] threads = new Thread[numThreads];
+    final int n = 1000000;
+    final int effectiveN = n / numThreads * numThreads;
+    final GUID[] uuids = new GUID[effectiveN];
+
+    final long start = System.currentTimeMillis();
+    for (int i = 0; i < numThreads; i++) {
+      threads[i] = new Generator(n / numThreads, uuids, i);
+      threads[i].start();
+    }
+
+    for (int i = 0; i < numThreads; i++) {
+      threads[i].join();
+    }
+    final long stop = System.currentTimeMillis();
+    System.out.println(
+        "Time = " + (stop - start) + " so " + (n / (stop - start)) * 1000 +
+        " Uuids/s");
+
+    final Set<GUID> uuidSet = new HashSet<GUID>(effectiveN);
+    uuidSet.addAll(Arrays.asList(uuids));
+
+    assertEquals(effectiveN, uuidSet.size());
+  }
+
+  private static class Generator extends Thread {
+    private final GUID[] uuids;
+    final int id;
+    final int n;
+
+    public Generator(final int n, final GUID[] uuids, final int id) {
+      this.n = n;
+      this.uuids = uuids;
+      this.id = id * n;
+    }
+
+    @Override
+    public void run() {
+      for (int i = 0; i < n; i++) {
+        uuids[id + i] = new GUID();
+      }
+    }
+  }
 }

@@ -79,7 +79,7 @@ public final class JvmProcessId {
    * @return one id as much as possible unique
    */
   public static byte jvmInstanceId() {
-    final long id = 31 * jvmProcessId() + macAddressAsInt();
+    final long id = 31L * jvmProcessId() + macAddressAsInt();
     return (byte) (Long.hashCode(id) & 0xFF);
   }
 

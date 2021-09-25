@@ -154,6 +154,18 @@ Cette commande accepte les arguments suivants :
 
    Charge les données business en base depuis le fichier FICHIER
 
+.. option:: -minimalSeq valeur
+
+   Modifie la valeur minimale de la séquence utilisée pour identifier de manière
+   unique un transfert (par défaut, le timestamp (EPOCH en 64 bits) sera utilisé
+   lors de l'initialisation de la base)
+
+   .. versionchanged:: 3.6.1
+
+      Cette option a été rajoutée pour faciliter les cas de réinstallation d'un
+      serveur en forçant le numéro de reprise mais en général peut être ignorée
+      grâce à l'usage du timestamp qui doit résoudre tous les problèmes de
+      conflits dans les cas d'usages remontés.
 
 Codes de retour :
 

@@ -105,10 +105,10 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
     }
 
     // cptrunner
+    final long minimalValue = System.currentTimeMillis() + 1;
     action = new StringBuilder(
         "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstantGateway.ILLEGALVALUE + 1) + " RESTART WITH " +
-        (DbConstantGateway.ILLEGALVALUE + 1));
+        (DbConstantGateway.ILLEGALVALUE + 1) + " RESTART WITH " + minimalValue);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());

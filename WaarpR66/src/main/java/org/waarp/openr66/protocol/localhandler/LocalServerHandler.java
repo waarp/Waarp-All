@@ -402,7 +402,7 @@ public final class LocalServerHandler {
         shutdownFromException(serverHandler, exception);
         return;
       } else {
-        if (futureRequest != null && futureRequest != null) {
+        if (futureRequest != null) {
           if (futureRequest.isDone()) {
             final R66Result result = futureRequest.getResult();
             if (result != null) {

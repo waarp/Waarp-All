@@ -39,25 +39,19 @@ import java.util.zip.Checksum;
 import static org.waarp.common.digest.WaarpBC.*;
 
 /**
- * Class implementing digest like MD5, SHA1. MD5 is based on the Fast MD5
- * implementation, without C library
- * support, but can be revert to JVM native digest.<br>
+ * Class implementing digest like MD5, SHA1, SHAxxx.
  * <br>
  * <p>
  * Some performance reports: (done using java -server option)
  * <ul>
  * <li>File based only:</li>
  * <ul>
- * <li>FastMD5 in C is almost the fastest (+20%), while FastMD5 in Java is the
- * slowest (-20%) and JVM version
- * is in the middle.</li>
  * <li>If ADLER32 is the referenced time ADLER32=1, CRC32=2.5, MD5=4, SHA1=7,
  * SHA256=11, SHA512=25</li>
  * </ul>
  * <li>Buffer based only:</li>
  * <ul>
- * <li>JVM version is the fastest (+20%), while FastMD5 in C or in Java are the
- * same (-20% than JVM).</li>
+ * <li>JVM version is the fastest (+20%).</li>
  * <li>If ADLER32 is the referenced time ADLER32=1, CRC32=2.5, MD5=4, SHA1=8,
  * SHA256=13, SHA384=29,
  * SHA512=31</li>
@@ -80,7 +74,6 @@ public class FilesystemBasedDigest {
     initializedTlsContext();
   }
 
-  MD5 md5;
   Checksum checksum;
   MessageDigest digest;
   DigestAlgo algo;
@@ -103,10 +96,6 @@ public class FilesystemBasedDigest {
    * @throws NoSuchAlgorithmException
    */
   public final void initialize() throws NoSuchAlgorithmException {
-    if (algo == DigestAlgo.MD5 && isUseFastMd5()) {
-      md5 = new MD5();
-      return;
-    }
     switch (algo) {
       case ADLER32:
         checksum = new Adler32();
@@ -160,10 +149,6 @@ public class FilesystemBasedDigest {
    */
   public final void Update(final byte[] bytes, final int offset,
                            final int length) {
-    if (md5 != null) {
-      md5.Update(bytes, offset, length);
-      return;
-    }
     switch (algo) {
       case ADLER32:
       case CRC32:
@@ -236,9 +221,6 @@ public class FilesystemBasedDigest {
    * @return the digest in array of bytes
    */
   public final byte[] Final() {
-    if (md5 != null) {
-      return md5.Final();
-    }
     switch (algo) {
       case ADLER32:
       case CRC32:
@@ -252,34 +234,6 @@ public class FilesystemBasedDigest {
         return digest.digest();
     }
     return EMPTY;
-  }
-
-  /**
-   * Initialize the MD5 support
-   *
-   * @param mustUseFastMd5 True will use FastMD5 support, False will
-   *     use JVM
-   *     native MD5
-   *
-   * @return True if the native library is loaded
-   */
-  public static boolean initializeMd5(final boolean mustUseFastMd5) {
-    setUseFastMd5(mustUseFastMd5);
-    return true;
-  }
-
-  /**
-   * @return the useFastMd5
-   */
-  public static boolean isUseFastMd5() {
-    return useFastMd5;
-  }
-
-  /**
-   * @param useFastMd5 the useFastMd5 to set
-   */
-  public static void setUseFastMd5(final boolean useFastMd5) {
-    FilesystemBasedDigest.useFastMd5 = useFastMd5;
   }
 
   /**
@@ -377,9 +331,6 @@ public class FilesystemBasedDigest {
    * @throws IOException
    */
   public static byte[] getHashMd5Nio(final File f) throws IOException {
-    if (isUseFastMd5()) {
-      return MD5.getHashNio(f);
-    }
     return getHash(f, true, DigestAlgo.MD5);
   }
 
@@ -394,9 +345,6 @@ public class FilesystemBasedDigest {
    * @throws IOException
    */
   public static byte[] getHashMd5(final File f) throws IOException {
-    if (isUseFastMd5()) {
-      return MD5.getHash(f);
-    }
     return getHash(f, false, DigestAlgo.MD5);
   }
 
@@ -415,7 +363,7 @@ public class FilesystemBasedDigest {
                                      final DigestAlgo algo, final byte[] buf)
       throws IOException {
     // Not NIO
-    Checksum checksum = null;
+    final Checksum checksum;
     int size;
     try {
       switch (algo) {
@@ -480,13 +428,6 @@ public class FilesystemBasedDigest {
     if (!f.exists()) {
       throw new FileNotFoundException(f.toString());
     }
-    if (algo == DigestAlgo.MD5 && isUseFastMd5()) {
-      if (nio) {
-        return MD5.getHashNio(f);
-      } else {
-        return MD5.getHash(f);
-      }
-    }
     FileInputStream in = null;
     try {
       long bufSize = f.length();
@@ -502,7 +443,7 @@ public class FilesystemBasedDigest {
         final FileChannel fileChannel = in.getChannel();
         try {
           final ByteBuffer bb = ByteBuffer.wrap(buf);
-          Checksum checksum = null;
+          final Checksum checksum;
           int size;
           switch (algo) {
             case ADLER32:
@@ -586,9 +527,6 @@ public class FilesystemBasedDigest {
     if (stream == null) {
       throw new FileNotFoundException();
     }
-    if (algo == DigestAlgo.MD5 && isUseFastMd5()) {
-      return MD5.getHash(stream);
-    }
     try {
       final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
       // Not NIO
@@ -615,8 +553,8 @@ public class FilesystemBasedDigest {
    */
   public static byte[] getHash(final ByteBuf buffer, final DigestAlgo algo)
       throws IOException {
-    Checksum checksum = null;
-    byte[] bytes;
+    final Checksum checksum;
+    final byte[] bytes;
     int start = 0;
     final int length = buffer.readableBytes();
     if (buffer.hasArray()) {
@@ -633,13 +571,6 @@ public class FilesystemBasedDigest {
       case CRC32:
         return getBytesCrcByteBuf(null, bytes, start, length);
       case MD5:
-        if (isUseFastMd5()) {
-          final MD5 md5 = new MD5();
-          md5.Update(bytes, start, length);
-          bytes = md5.Final();
-          return bytes;
-        }
-        return getBytesVarious(algo, bytes, start, length);
       case MD2:
       case SHA1:
       case SHA256:
@@ -686,12 +617,6 @@ public class FilesystemBasedDigest {
       case CRC32:
         return getBytesCrcByteBuf(null, buffer, 0, length);
       case MD5:
-        if (isUseFastMd5()) {
-          final MD5 md5 = new MD5();
-          md5.Update(buffer, 0, length);
-          return md5.Final();
-        }
-        return getBytesVarious(algo, buffer, 0, length);
       case MD2:
       case SHA1:
       case SHA256:
@@ -741,9 +666,7 @@ public class FilesystemBasedDigest {
     try {
       return getHash(buffer, DigestAlgo.MD5);
     } catch (final IOException e) {
-      final MD5 md5 = new MD5();
-      md5.Update(buffer);
-      return md5.Final();
+      throw new IllegalStateException(e);
     }
   }
 
@@ -808,18 +731,13 @@ public class FilesystemBasedDigest {
    * @param pwd to crypt
    *
    * @return the crypted password
-   *
-   * @throws IOException
    */
   public static String passwdCrypt(final String pwd) {
-    if (isUseFastMd5()) {
-      return MD5.passwdCrypt(pwd);
-    }
     final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);
     } catch (final NoSuchAlgorithmException e) {
-      return MD5.passwdCrypt(pwd);
+      throw new IllegalStateException(e);
     }
     final byte[] bpwd = pwd.getBytes(UTF8);
     for (int i = 0; i < 16; i++) {
@@ -835,18 +753,13 @@ public class FilesystemBasedDigest {
    * @param pwd to crypt
    *
    * @return the crypted password
-   *
-   * @throws IOException
    */
   public static byte[] passwdCrypt(final byte[] pwd) {
-    if (isUseFastMd5()) {
-      return MD5.passwdCrypt(pwd);
-    }
     final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);
     } catch (final NoSuchAlgorithmException e) {
-      return MD5.passwdCrypt(pwd);
+      throw new IllegalStateException(e);
     }
     for (int i = 0; i < 16; i++) {
       digest.update(pwd, 0, pwd.length);
@@ -860,8 +773,6 @@ public class FilesystemBasedDigest {
    * @param cryptPwd
    *
    * @return True if the pwd is comparable with the cryptPwd
-   *
-   * @throws IOException
    */
   public static boolean equalPasswd(final String pwd, final String cryptPwd) {
     final String asHex;

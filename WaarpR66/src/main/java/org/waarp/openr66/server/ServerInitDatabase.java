@@ -64,6 +64,7 @@ public class ServerInitDatabase {
   static String shostauth;
   static String slimitconfig;
   static String sextendedFactoryClassList = null;
+  static long minimalSequenceValue = ILLEGALVALUE;
 
   private ServerInitDatabase() {
   }
@@ -105,6 +106,15 @@ public class ServerInitDatabase {
       } else if ("-loadExtendedTaskFactory".equalsIgnoreCase(args[i])) {
         i++;
         sextendedFactoryClassList = args[i];
+      } else if ("-minimalSeq".equalsIgnoreCase(args[i])) {
+        i++;
+        try {
+          minimalSequenceValue = Long.parseLong(args[i]);
+        } catch (final NumberFormatException e) {
+          logger.error("Number for restart sequence is not a long: {}",
+                       args[i]);
+          minimalSequenceValue = ILLEGALVALUE;
+        }
       }
     }
     return true;
@@ -172,6 +182,7 @@ public class ServerInitDatabase {
           SysErrLogger.FAKE_LOGGER.syserr(
               Messages.getString("ServerInitDatabase.SchemaNotUptodate"));
           SysErrLogger.FAKE_LOGGER.syserr();
+          updateMinimalValueSequence();
           WaarpSystemUtil.systemExit(1);
           return;
         }
@@ -179,6 +190,7 @@ public class ServerInitDatabase {
             Messages.getString("ServerInitDatabase.Upgrade.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
+      updateMinimalValueSequence();
       // Try to load some element directly into database from first
       // configuration file
       FileBasedConfiguration.setConfigurationServerFromXml(
@@ -286,6 +298,18 @@ public class ServerInitDatabase {
     } finally {
       if (admin != null) {
         admin.close();
+      }
+    }
+  }
+
+  private static void updateMinimalValueSequence() {
+    if (minimalSequenceValue != ILLEGALVALUE) {
+      try {
+        admin.getSession().getAdmin().getDbModel()
+             .resetSequence(admin.getSession(), minimalSequenceValue);
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        logger.error("Cannot update sequence restart value: {}",
+                     e.getMessage());
       }
     }
   }

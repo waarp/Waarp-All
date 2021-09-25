@@ -178,7 +178,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
   }
 
   @Override
-  public synchronized long nextSequence(final DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return nextSequenceMonitoring(dbSession, lock);

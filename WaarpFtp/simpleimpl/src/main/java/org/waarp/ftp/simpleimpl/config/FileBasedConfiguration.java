@@ -23,7 +23,6 @@ import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
-import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.FileParameterInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
@@ -284,13 +283,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
     if (node != null) {
       FilesystemBasedFileParameterImpl.useNio =
           Integer.parseInt(node.getText()) == 1;
-    }
-    node = document.selectSingleNode(XML_USEFASTMD5);
-    if (node != null) {
-      FilesystemBasedDigest.setUseFastMd5(
-          Integer.parseInt(node.getText()) == 1);
-    } else {
-      FilesystemBasedDigest.setUseFastMd5(false);
     }
     node = document.selectSingleNode(XML_BLOCKSIZE);
     if (node != null) {

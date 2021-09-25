@@ -92,7 +92,9 @@ class BitOutputStream {
     addBitsFast(1, 1); // end mark
     flush();
 
-    Util.checkState(currentAddress < outputLimit, "Overflow detected");
+    if (currentAddress >= outputLimit) {
+      return 0;
+    }
 
     return (int) ((currentAddress - outputAddress) + (bitCount > 0? 1 : 0));
   }

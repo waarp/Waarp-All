@@ -32,6 +32,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.database.h2.H2TransferDAO;
 import org.waarp.openr66.dao.database.mariadb.MariaDBTransferDAO;
+import org.waarp.openr66.dao.database.mysql.MySqlDBTransferDAO;
 import org.waarp.openr66.dao.database.oracle.OracleTransferDAO;
 import org.waarp.openr66.dao.database.postgres.PostgreSQLTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -157,7 +158,7 @@ public class DBDAOFactory extends DAOFactory {
       } else if (prop instanceof MariaDBProperties) {
         return new MariaDBTransferDAO(connectionFactory.getConnection());
       } else if (prop instanceof MySQLProperties) {
-        return new MariaDBTransferDAO(connectionFactory.getConnection());
+        return new MySqlDBTransferDAO(connectionFactory.getConnection());
       } else if (prop instanceof OracleProperties) {
         return new OracleTransferDAO(connectionFactory.getConnection());
       } else if (prop instanceof PostgreSQLProperties) {

@@ -111,10 +111,7 @@ CREATE TABLE runner (
     PRIMARY KEY (ownerreq, requester, requested, specialid)
 );
 
-CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY, seq BIGINT NOT NULL);
-
-INSERT INTO Sequences (name, seq) VALUES ('RUNSEQ', 1);
-
+CREATE SEQUENCE IF NOT EXISTS RUNSEQ MINVALUE -9223372036854775807 START WITH 1;
 
 CREATE INDEX IF NOT EXISTS idx_config USING btree ON configuration (hostid, updatedinfo);
 CREATE INDEX IF NOT EXISTS idx_hostconf USING btree ON hostconfig (hostid, updatedinfo);

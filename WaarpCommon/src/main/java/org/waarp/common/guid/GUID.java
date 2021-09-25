@@ -25,11 +25,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.waarp.common.exception.InvalidArgumentException;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.BaseXx;
 import org.waarp.common.utility.SingletonUtils;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class GUID implements Comparable<GUID> {
@@ -40,7 +40,6 @@ public class GUID implements Comparable<GUID> {
 
   private static final String ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID =
       "Attempted to parse malformed ARK GUID: ";
-  private static final Object FORSYNC = new Object();
   /**
    * Native size of the GUID
    */
@@ -61,6 +60,18 @@ public class GUID implements Comparable<GUID> {
   static final int COUNTER_POS = 18;
   static final int COUNTER_SIZE = 3;
   /**
+   * Bits size of Counter
+   */
+  private static final int SIZE_COUNTER = COUNTER_SIZE * 8;
+  /**
+   * Min Counter value
+   */
+  private static final int MIN_COUNTER = 0;
+  /**
+   * Max Counter value
+   */
+  private static final int MAX_COUNTER = (1 << SIZE_COUNTER) - 1;
+  /**
    * Version to store (to check correctness if future algorithm) between 0 and
    * 255
    */
@@ -70,16 +81,20 @@ public class GUID implements Comparable<GUID> {
   /**
    * Counter part
    */
-  private static volatile int counter;
-  /**
-   * Counter reset
-   */
-  private static volatile long lastTimeStamp;
+  private static final AtomicInteger COUNTER = new AtomicInteger(MIN_COUNTER);
   /**
    * real GUID
    */
   @JsonIgnore
   private final byte[] bguid;
+
+  static final synchronized int getNewCounter() {
+    if (COUNTER.compareAndSet(MAX_COUNTER, MIN_COUNTER)) {
+      return MAX_COUNTER;
+    } else {
+      return COUNTER.getAndIncrement();
+    }
+  }
 
   /**
    * @return the KeySize
@@ -185,28 +200,8 @@ public class GUID implements Comparable<GUID> {
     }
 
     // atomically
-    final long time;
-    final int count;
-    synchronized (FORSYNC) {
-      long tmptime = System.currentTimeMillis();
-      if (lastTimeStamp != tmptime) {
-        counter = 0;
-        lastTimeStamp = tmptime;
-      }
-      count = ++counter;
-      if (count > 0xFFFFFF) {
-        try {
-          Thread.sleep(1);//NOSONAR
-        } catch (final InterruptedException e) {//NOSONAR
-          // ignore
-          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-        }
-        tmptime = System.currentTimeMillis();
-        counter = 0;
-        lastTimeStamp = tmptime;
-      }
-      time = tmptime;
-    }
+    final long time = System.currentTimeMillis();
+    final int count = getNewCounter();
     // 1 bytes = Version (8)
     bguid[HEADER_POS] = (byte) VERSION;
 

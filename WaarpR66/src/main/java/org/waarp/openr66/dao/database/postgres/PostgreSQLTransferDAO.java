@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.database.postgres;
 
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,7 +31,8 @@ import java.sql.SQLException;
 
 public class PostgreSQLTransferDAO extends DBTransferDAO {
 
-  protected static final String SQL_GET_ID = "SELECT NEXTVAL('runseq')";
+  protected static final String SQL_GET_ID =
+      "SELECT NEXTVAL('" + DbTaskRunner.fieldseq + "')";
 
   public PostgreSQLTransferDAO(final Connection con)
       throws DAOConnectionException {

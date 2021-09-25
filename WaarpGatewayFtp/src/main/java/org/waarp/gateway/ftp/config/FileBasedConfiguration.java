@@ -39,7 +39,6 @@ import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.AbstractDir;
@@ -1020,10 +1019,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
     value = hashConfig.get(XML_USENIO);
     if (value != null && !value.isEmpty()) {
       FilesystemBasedFileParameterImpl.useNio = value.getBoolean();
-    }
-    value = hashConfig.get(XML_USEFASTMD5);
-    if (value != null && !value.isEmpty()) {
-      FilesystemBasedDigest.setUseFastMd5(value.getBoolean());
     }
     value = hashConfig.get(XML_BLOCKSIZE);
     if (value != null && !value.isEmpty()) {
