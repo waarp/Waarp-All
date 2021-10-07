@@ -900,7 +900,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
     totestBig.delete();
   }
 
-  private void test_Spooled(final SpooledThread spooledThread, final int factor)
+  private void test_Spooled(final SpooledThread spooledThread)
       throws IOException, InterruptedException {
     final int size = 200;
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
@@ -912,25 +912,51 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
     spooledThread.future = future;
     spooledThread.start();
     Thread.sleep(200);
+    int cpt = 0;
     logger.warn("1rst file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(4000 / factor);
+    cpt++;
+    for (int i = 0; i < 100; i++) {
+      if (spooledThread.spooledDirectoryTransfer.getSent() != cpt) {
+        Thread.sleep(200);
+      } else {
+        break;
+      }
+    }
     logger.warn("1rst file delete");
     totestBig.delete();
     Thread.sleep(2000);
     logger.warn("Second file");
     generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(4000 / factor);
-    logger.warn("Third file");
+    cpt++;
+    for (int i = 0; i < 100; i++) {
+      if (spooledThread.spooledDirectoryTransfer.getSent() != cpt) {
+        Thread.sleep(200);
+      } else {
+        break;
+      }
+    }
+    logger.warn("Third file modifying second file");
     generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size + 1,
         "abcdefghij");
-    Thread.sleep(4000 / factor);
+    if (spooledThread.ignoreAlreadyUsed) {
+      Thread.sleep(2000);
+    } else {
+      cpt++;
+      for (int i = 0; i < 100; i++) {
+        if (spooledThread.spooledDirectoryTransfer.getSent() != cpt) {
+          Thread.sleep(200);
+        } else {
+          break;
+        }
+      }
+    }
     logger.warn("Third file deleted");
     totestBig.delete();
-    Thread.sleep(2000 / factor);
+    Thread.sleep(1000);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
@@ -948,7 +974,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = false;
     spooledThread.submit = false;
-    test_Spooled(spooledThread, 2);
+    test_Spooled(spooledThread);
     assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
     assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }
@@ -959,7 +985,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = false;
     spooledThread.submit = true;
-    test_Spooled(spooledThread, 2);
+    test_Spooled(spooledThread);
     assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
     assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }
@@ -970,7 +996,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = true;
     spooledThread.submit = false;
-    test_Spooled(spooledThread, 2);
+    test_Spooled(spooledThread);
     assertEquals(2, spooledThread.spooledDirectoryTransfer.getSent());
     assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }
@@ -982,7 +1008,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = true;
     spooledThread.submit = true;
-    test_Spooled(spooledThread, 2);
+    test_Spooled(spooledThread);
     assertEquals(2, spooledThread.spooledDirectoryTransfer.getSent());
     assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }

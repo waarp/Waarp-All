@@ -39,7 +39,7 @@ public class ProcessesTest {
 
   public boolean waitForPidDone(int pid) {
     int i;
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 50; i++) {
       try {
         Thread.sleep(TIMEMS);
       } catch (InterruptedException ignored) {//NOSONAR
