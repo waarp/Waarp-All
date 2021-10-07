@@ -48,7 +48,7 @@ requêtée selon l'algorithme suivant :
    sont utilisés, sont convertis en minuscules et triés dans l'ordre alphabétique
    des identifiants pour reconstruire une nouvelle chaine de requête.
 2. Le paramètre ``X-Auth-InternalKey`` est ajouté à la chaîne de requête
-   obtenue à l'étape precedente, avec pour valeur le mot de passe de
+   obtenue à l'étape précédente, avec pour valeur le mot de passe de
    l'utilisateur.
 3. La chaîne de caractère utilisée pour le calcul de la signature est construite
    en concaténant le chemin de l'url et la chaîne de requête obtenue

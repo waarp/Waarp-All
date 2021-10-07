@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.6.1 (2021-09-20)
+Waarp R66 3.6.1 (2021-12-10)
 ============================
 
 
@@ -41,6 +41,8 @@ Correctifs
   (issue [`#103 <https://github.com/waarp/Waarp-All/issues/103>`__])
 - Amélioration de la documentation et de sa génération
   [`#98 <https://github.com/waarp/Waarp-All/issues/98>`__]
+- Corrections de tests non passant sur des environnements chargés par ailleurs
+  (issue [`#104 <https://github.com/waarp/Waarp-All/issues/104>`__])
 - Mise à jour des dépendances
 
 
