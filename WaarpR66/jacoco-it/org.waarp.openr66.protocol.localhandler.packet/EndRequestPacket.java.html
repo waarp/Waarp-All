@@ -107,13 +107,13 @@ public class EndRequestPacket extends AbstractLocalPacket {
 <span class="fc" id="L107">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
 <span class="fc" id="L111">    return true;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
 <span class="fc" id="L117">    final int headerSize = 4;</span>
 <span class="fc" id="L118">    final int middleSize = 1;</span>
 <span class="pc bpc" id="L119" title="1 of 2 branches missed.">    final byte[] endBytes =</span>
@@ -123,7 +123,7 @@ public class EndRequestPacket extends AbstractLocalPacket {
 <span class="fc" id="L123">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
 <span class="fc" id="L125">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="fc" id="L126">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L126">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
 <span class="fc" id="L127">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
 <span class="fc" id="L128">    header.writeInt(code);</span>
 <span class="fc" id="L129">    offset += headerSize;</span>
@@ -137,12 +137,12 @@ public class EndRequestPacket extends AbstractLocalPacket {
 <span class="fc" id="L137">  }</span>
 
   @Override
-  public byte getType() {
+  public final byte getType() {
 <span class="fc" id="L141">    return LocalPacketFactory.ENDREQUESTPACKET;</span>
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
 <span class="nc bnc" id="L146" title="All 2 branches missed.">    return &quot;EndRequestPacket: &quot; + code + ' ' + way +</span>
            (optional != null? ' ' + optional : &quot;&quot;);
   }
@@ -150,21 +150,21 @@ public class EndRequestPacket extends AbstractLocalPacket {
   /**
    * @return the code
    */
-  public int getCode() {
+  public final int getCode() {
 <span class="nc" id="L154">    return code;</span>
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
 <span class="fc bfc" id="L161" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
-  public void validate() {
+  public final void validate() {
 <span class="fc" id="L168">    way = ANSWERVALIDATE;</span>
 <span class="fc" id="L169">    clear();</span>
 <span class="fc" id="L170">  }</span>
@@ -172,16 +172,16 @@ public class EndRequestPacket extends AbstractLocalPacket {
   /**
    * @return the optional
    */
-  public String getOptional() {
+  public final String getOptional() {
 <span class="fc" id="L176">    return optional;</span>
   }
 
   /**
    * @param optional the optional to set
    */
-  public void setOptional(final String optional) {
+  public final void setOptional(final String optional) {
 <span class="fc" id="L183">    this.optional = optional;</span>
 <span class="fc" id="L184">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

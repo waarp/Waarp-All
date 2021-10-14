@@ -27,6 +27,7 @@ import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -53,8 +54,8 @@ public class ExecMoveTask extends AbstractExecTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L56">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L57">      WaarpLoggerFactory.getLogger(ExecMoveTask.class);</span>
+<span class="nc" id="L57">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L58">      WaarpLoggerFactory.getLogger(ExecMoveTask.class);</span>
 
   /**
    * @param argRule
@@ -64,11 +65,11 @@ public class ExecMoveTask extends AbstractExecTask {
    */
   public ExecMoveTask(final String argRule, final int delay,
                       final String argTransfer, final R66Session session) {
-<span class="nc" id="L67">    super(TaskType.EXECMOVE, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L68">  }</span>
+<span class="nc" id="L68">    super(TaskType.EXECMOVE, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L69">  }</span>
 
   @Override
-  public void run() {
+  public final void run() {
     /*
      * First apply all replacements and format to argRule from context and argTransfer. Will call exec (from first
      * element of resulting string) with arguments as the following value from the replacements. Return 0 if OK,
@@ -76,113 +77,115 @@ public class ExecMoveTask extends AbstractExecTask {
      * case of status 0. The previous file should be deleted by the script or will be deleted in case of status 0.
      * If the status is 1, no change is made to the file.
      */
-<span class="nc" id="L79">    logger.info(&quot;ExecMove with {}:{} and {}&quot;, argRule, argTransfer, session);</span>
-<span class="nc" id="L80">    final String finalname = applyTransferSubstitutions(argRule);</span>
+<span class="nc" id="L80">    logger.info(&quot;ExecMove with {}:{} and {}&quot;, argRule, argTransfer, session);</span>
+<span class="nc" id="L81">    final String finalname = applyTransferSubstitutions(argRule);</span>
 
     // Force the WaitForValidation
-<span class="nc" id="L83">    waitForValidation = true;</span>
-<span class="nc bnc" id="L84" title="All 4 branches missed.">    if (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {</span>
-<span class="nc" id="L85">      final LocalExecClient localExecClient = new LocalExecClient();</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">      if (localExecClient.connect()) {</span>
-<span class="nc" id="L87">        localExecClient.runOneCommand(finalname, delay, waitForValidation,</span>
+<span class="nc" id="L84">    waitForValidation = true;</span>
+<span class="nc bnc" id="L85" title="All 4 branches missed.">    if (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {</span>
+<span class="nc" id="L86">      final LocalExecClient localExecClient = new LocalExecClient();</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (localExecClient.connect()) {</span>
+<span class="nc" id="L88">        localExecClient.runOneCommand(finalname, delay, waitForValidation,</span>
                                       futureCompletion);
-<span class="nc" id="L89">        final LocalExecResult result = localExecClient.getLocalExecResult();</span>
-<span class="nc" id="L90">        move(result.getStatus(), result.getResult(), finalname);</span>
-<span class="nc" id="L91">        localExecClient.disconnect();</span>
-<span class="nc" id="L92">        return;</span>
+<span class="nc" id="L90">        final LocalExecResult result = localExecClient.getLocalExecResult();</span>
+<span class="nc" id="L91">        move(result.getStatus(), result.getResult(), finalname);</span>
+<span class="nc" id="L92">        localExecClient.disconnect();</span>
+<span class="nc" id="L93">        return;</span>
       } // else continue
     }
 
-<span class="nc" id="L96">    final PrepareCommandExec prepareCommandExec =</span>
-<span class="nc" id="L97">        new PrepareCommandExec(finalname, false, waitForValidation).invoke();</span>
-<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
-<span class="nc" id="L99">      return;</span>
+<span class="nc" id="L97">    final PrepareCommandExec prepareCommandExec =</span>
+        new PrepareCommandExec(this, finalname, false,
+<span class="nc" id="L99">                               waitForValidation).invoke();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
+<span class="nc" id="L101">      return;</span>
     }
-<span class="nc" id="L101">    final CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
-<span class="nc" id="L102">    final DefaultExecutor defaultExecutor =</span>
-<span class="nc" id="L103">        prepareCommandExec.getDefaultExecutor();</span>
-<span class="nc" id="L104">    final PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
-<span class="nc" id="L105">    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
-<span class="nc" id="L106">    final PumpStreamHandler pumpStreamHandler =</span>
-<span class="nc" id="L107">        prepareCommandExec.getPumpStreamHandler();</span>
-<span class="nc" id="L108">    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
-<span class="nc" id="L109">    final LastLineReader lastLineReader = new LastLineReader(inputStream);</span>
-<span class="nc" id="L110">    lastLineReader</span>
-<span class="nc" id="L111">        .setName(&quot;LastLineReader&quot; + session.getRunner().getSpecialId());</span>
-<span class="nc" id="L112">    lastLineReader.setDaemon(true);</span>
-<span class="nc" id="L113">    Configuration.configuration.getExecutorService().execute(lastLineReader);</span>
-<span class="nc" id="L114">    final ExecuteCommand executeCommand =</span>
-        new ExecuteCommand(commandLine, defaultExecutor, inputStream,
-                           outputStream, pumpStreamHandler, lastLineReader)
-<span class="nc" id="L117">            .invoke();</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (executeCommand.isError()) {</span>
-<span class="nc" id="L119">      return;</span>
+<span class="nc" id="L103">    final CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
+<span class="nc" id="L104">    final DefaultExecutor defaultExecutor =</span>
+<span class="nc" id="L105">        prepareCommandExec.getDefaultExecutor();</span>
+<span class="nc" id="L106">    final PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
+<span class="nc" id="L107">    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
+<span class="nc" id="L108">    final PumpStreamHandler pumpStreamHandler =</span>
+<span class="nc" id="L109">        prepareCommandExec.getPumpStreamHandler();</span>
+<span class="nc" id="L110">    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
+<span class="nc" id="L111">    final LastLineReader lastLineReader = new LastLineReader(inputStream);</span>
+<span class="nc" id="L112">    lastLineReader.setName(</span>
+<span class="nc" id="L113">        &quot;LastLineReader&quot; + session.getRunner().getSpecialId());</span>
+<span class="nc" id="L114">    lastLineReader.setDaemon(true);</span>
+<span class="nc" id="L115">    Configuration.configuration.getExecutorService().execute(lastLineReader);</span>
+<span class="nc" id="L116">    final ExecuteCommand executeCommand =</span>
+        new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
+                           outputStream, pumpStreamHandler,
+<span class="nc" id="L119">                           lastLineReader).invoke();</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (executeCommand.isError()) {</span>
+<span class="nc" id="L121">      return;</span>
     }
-<span class="nc" id="L121">    int status = executeCommand.getStatus();</span>
+<span class="nc" id="L123">    int status = executeCommand.getStatus();</span>
     final String newname;
-<span class="nc bnc" id="L123" title="All 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
       // kill by the watchdoc (time out)
-<span class="nc" id="L126">      status = -1;</span>
-<span class="nc" id="L127">      newname = &quot;TimeOut&quot;;</span>
+<span class="nc" id="L128">      status = -1;</span>
+<span class="nc" id="L129">      newname = &quot;TimeOut&quot;;</span>
     } else {
-<span class="nc" id="L129">      newname = lastLineReader.getLastLine();</span>
-<span class="nc bnc" id="L130" title="All 6 branches missed.">      if (status == 0 &amp;&amp; (newname == null || newname.isEmpty())) {</span>
-<span class="nc" id="L131">        status = 1;</span>
+<span class="nc" id="L131">      newname = lastLineReader.getLastLine();</span>
+<span class="nc bnc" id="L132" title="All 4 branches missed.">      if (status == 0 &amp;&amp; ParametersChecker.isEmpty(newname)) {</span>
+<span class="nc" id="L133">        status = 1;</span>
       }
     }
-<span class="nc" id="L134">    move(status, newname, commandLine.toString());</span>
-<span class="nc" id="L135">  }</span>
+<span class="nc" id="L136">    move(status, newname, commandLine.toString());</span>
+<span class="nc" id="L137">  }</span>
 
   private void move(final int status, final String newName,
                     final String commandLine) {
-<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (newName == null) {</span>
-<span class="nc" id="L140">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (newName == null) {</span>
+<span class="nc" id="L142">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
                    &quot; returns no line&quot;);
-<span class="nc" id="L142">      futureCompletion.cancel();</span>
-<span class="nc" id="L143">      return;</span>
+<span class="nc" id="L144">      futureCompletion.cancel();</span>
+<span class="nc" id="L145">      return;</span>
     }
-<span class="nc" id="L145">    final String newname = newName.replace('\\', '/');</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (status == 0) {</span>
-<span class="nc bnc" id="L147" title="All 2 branches missed.">      if (newname.indexOf(' ') &gt; 0) {</span>
-<span class="nc" id="L148">        logger.warn(&quot;Exec returns a multiple string in final line: &quot; + newname);</span>
+<span class="nc" id="L147">    final String newname = newName.replace('\\', '/');</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (status == 0) {</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">      if (newname.indexOf(' ') &gt; 0) {</span>
+<span class="nc" id="L150">        logger.warn(&quot;Exec returns a multiple string in final line: &quot; + newname);</span>
         // XXX FIXME: should not split String[] args = newname.split(&quot; &quot;)
         // newname = args[args.length - 1]
       }
       // now test if the previous file was deleted (should be)
-<span class="nc" id="L153">      final File file = new File(newname);</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (!file.exists()) {</span>
-<span class="nc" id="L155">        logger</span>
-<span class="nc" id="L156">            .warn(&quot;New file does not exist at the end of the exec: &quot; + newname);</span>
+<span class="nc" id="L155">      final File file = new File(newname);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (!file.exists()) {</span>
+<span class="nc" id="L157">        logger.warn(</span>
+            &quot;New file does not exist at the end of the exec: &quot; + newname);
       }
       // now replace the file with the new one
       try {
-<span class="nc" id="L160">        session.getFile().replaceFilename(newname, true);</span>
-<span class="nc" id="L161">      } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L162">        logger.warn(&quot;Exec in warning with &quot; + commandLine, e);</span>
-<span class="nc" id="L163">      }</span>
-<span class="nc" id="L164">      session.getRunner().setFileMoved(newname, true);</span>
-<span class="nc" id="L165">      final R66Result result =</span>
+<span class="nc" id="L162">        session.getFile().replaceFilename(newname, true);</span>
+<span class="nc" id="L163">      } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L164">        logger.warn(&quot;Exec in warning with &quot; + commandLine + &quot; : {}&quot;,</span>
+<span class="nc" id="L165">                    e.getMessage());</span>
+<span class="nc" id="L166">      }</span>
+<span class="nc" id="L167">      session.getRunner().setFileMoved(newname, true);</span>
+<span class="nc" id="L168">      final R66Result result =</span>
           new R66Result(session, true, ErrorCode.CompleteOk,
-<span class="nc" id="L167">                        session.getRunner());</span>
-<span class="nc" id="L168">      result.setOther(newname);</span>
-<span class="nc" id="L169">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L170">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L171">      logger.info(&quot;Exec OK with {} returns {}&quot;, commandLine, newname);</span>
-<span class="nc bnc" id="L172" title="All 2 branches missed.">    } else if (status == 1) {</span>
-<span class="nc" id="L173">      logger</span>
-<span class="nc" id="L174">          .warn(&quot;Exec in warning with &quot; + commandLine + &quot; returns &quot; + newname);</span>
-<span class="nc" id="L175">      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);</span>
-<span class="nc" id="L176">      final R66Result result =</span>
-<span class="nc" id="L177">          new R66Result(session, true, ErrorCode.Warning, session.getRunner());</span>
-<span class="nc" id="L178">      result.setOther(newname);</span>
-<span class="nc" id="L179">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L180">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L181">    } else {</span>
-<span class="nc" id="L182">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc" id="L170">                        session.getRunner());</span>
+<span class="nc" id="L171">      result.setOther(newname);</span>
+<span class="nc" id="L172">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L173">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L174">      logger.info(&quot;Exec OK with {} returns {}&quot;, commandLine, newname);</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L176">      logger.warn(</span>
+          &quot;Exec in warning with &quot; + commandLine + &quot; returns &quot; + newname);
+<span class="nc" id="L178">      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);</span>
+<span class="nc" id="L179">      final R66Result result =</span>
+<span class="nc" id="L180">          new R66Result(session, true, ErrorCode.Warning, session.getRunner());</span>
+<span class="nc" id="L181">      result.setOther(newname);</span>
+<span class="nc" id="L182">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L183">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L184">    } else {</span>
+<span class="nc" id="L185">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
                    &quot; returns &quot; + newname);
-<span class="nc" id="L184">      futureCompletion.cancel();</span>
+<span class="nc" id="L187">      futureCompletion.cancel();</span>
     }
-<span class="nc" id="L186">  }</span>
+<span class="nc" id="L189">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

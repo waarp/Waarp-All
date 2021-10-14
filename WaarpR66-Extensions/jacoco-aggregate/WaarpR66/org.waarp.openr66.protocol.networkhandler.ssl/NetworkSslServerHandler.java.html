@@ -39,15 +39,15 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
   /**
    * Internal Logger
    */
-<span class="nc" id="L42">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L43">      WaarpLoggerFactory.getLogger(NetworkSslServerHandler.class);</span>
+<span class="fc" id="L42">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L43">      WaarpLoggerFactory.getLogger(NetworkSslServerHandler.class);</span>
 
   /**
    * @param isServer
    */
   public NetworkSslServerHandler(final boolean isServer) {
-<span class="nc" id="L49">    super();</span>
-<span class="nc" id="L50">  }</span>
+<span class="fc" id="L49">    super();</span>
+<span class="fc" id="L50">  }</span>
 
   /**
    * @param channel
@@ -55,17 +55,17 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
    * @return True if the SSL handshake is over and OK, else False
    */
   public static boolean isSslConnectedChannel(final Channel channel) {
-<span class="nc" id="L58">    return WaarpSslUtility.waitForHandshake(channel);</span>
+<span class="fc" id="L58">    return WaarpSslUtility.waitForHandshake(channel);</span>
   }
 
   @Override
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-<span class="nc" id="L63">    final Channel networkChannel = ctx.channel();</span>
-<span class="nc" id="L64">    logger.debug(&quot;Add channel to ssl&quot;);</span>
-<span class="nc" id="L65">    WaarpSslUtility.addSslOpenedChannel(networkChannel);</span>
-<span class="nc" id="L66">    isSSL = true;</span>
+<span class="fc" id="L63">    final Channel networkChannel = ctx.channel();</span>
+<span class="fc" id="L64">    logger.debug(&quot;Add channel to ssl&quot;);</span>
+<span class="fc" id="L65">    WaarpSslUtility.addSslOpenedChannel(networkChannel);</span>
+<span class="fc" id="L66">    isSSL = true;</span>
     // Check first if allowed
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (NetworkTransaction.isBlacklisted(networkChannel)) {</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (NetworkTransaction.isBlacklisted(networkChannel)) {</span>
       try {
 <span class="nc" id="L70">        logger.warn(&quot;Connection refused since Partner is in BlackListed from &quot; +</span>
 <span class="nc" id="L71">                    networkChannel.remoteAddress());</span>
@@ -83,27 +83,27 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
     }
     // Get the SslHandler in the current pipeline.
     // We added it in NetworkSslServerInitializer.
-<span class="nc" id="L86">    final ChannelHandler handler = ctx.pipeline().first();</span>
-<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (handler instanceof SslHandler) {</span>
-<span class="nc" id="L88">      final SslHandler sslHandler = (SslHandler) handler;</span>
-<span class="nc" id="L89">      sslHandler.handshakeFuture().addListener(</span>
-<span class="nc" id="L90">          new GenericFutureListener&lt;Future&lt;? super Channel&gt;&gt;() {</span>
+<span class="fc" id="L86">    final ChannelHandler handler = ctx.pipeline().first();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">    if (handler instanceof SslHandler) {</span>
+<span class="fc" id="L88">      final SslHandler sslHandler = (SslHandler) handler;</span>
+<span class="fc" id="L89">      sslHandler.handshakeFuture().addListener(</span>
+<span class="fc" id="L90">          new GenericFutureListener&lt;Future&lt;? super Channel&gt;&gt;() {</span>
             @Override
             public void operationComplete(
                 final Future&lt;? super Channel&gt; future) {
-<span class="nc bnc" id="L94" title="All 2 branches missed.">              if (!future.isSuccess() &amp;&amp;</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">              if (!future.isSuccess() &amp;&amp;</span>
 <span class="nc bnc" id="L95" title="All 2 branches missed.">                  Configuration.configuration.getR66Mib() != null) {</span>
 <span class="nc" id="L96">                Configuration.configuration.getR66Mib()</span>
 <span class="nc" id="L97">                                           .notifyError(&quot;SSL Connection Error&quot;,</span>
                                                         &quot;During Handshake&quot;);
               }
-<span class="nc" id="L100">              ctx.channel().config().setAutoRead(false);</span>
-<span class="nc" id="L101">            }</span>
+<span class="fc" id="L100">              ctx.channel().config().setAutoRead(false);</span>
+<span class="fc" id="L101">            }</span>
           });
-<span class="nc" id="L103">    } else {</span>
+<span class="fc" id="L103">    } else {</span>
 <span class="nc" id="L104">      logger.error(&quot;SSL Not found&quot;);</span>
     }
-<span class="nc" id="L106">    super.channelActive(ctx);</span>
-<span class="nc" id="L107">  }</span>
+<span class="fc" id="L106">    super.channelActive(ctx);</span>
+<span class="fc" id="L107">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -125,7 +125,7 @@ public class TransferArgs {
   public static final String DELAY_ARG = &quot;-&quot; + DELAY;
 <span class="fc" id="L126">  private static final Option DELAY_OPTION =</span>
 <span class="fc" id="L127">      Option.builder(DELAY).required(false).hasArg(true).desc(</span>
-          &quot;Specify the delay time as an epoch time or '+' a delay in ms&quot;)
+                &quot;Specify the delay time as an epoch time or '+' a delay in ms&quot;)
 <span class="fc" id="L129">            .build();</span>
 
   private static final String LOGWARN = &quot;logWarn&quot;;
@@ -260,7 +260,7 @@ public class TransferArgs {
 <span class="fc" id="L260">      checkOutput(cmd);</span>
 <span class="fc" id="L261">    } catch (final ParseException e) {</span>
 <span class="fc" id="L262">      printHelp();</span>
-<span class="fc" id="L263">      logger.error(&quot;Arguments are incorrect&quot;, e);</span>
+<span class="fc" id="L263">      logger.error(&quot;Arguments are incorrect {}&quot;, e.getMessage());</span>
 <span class="fc" id="L264">      return null;</span>
 <span class="fc" id="L265">    }</span>
 <span class="fc" id="L266">    return finalizeTransferArgs(analyseFollow, transferArgs1);</span>
@@ -320,28 +320,27 @@ public class TransferArgs {
 <span class="fc" id="L320">          transferArgs1.getRemoteHost())) {</span>
 <span class="fc" id="L321">        transferArgs1.setRemoteHost(Configuration.configuration.getAliases()</span>
 <span class="fc" id="L322">                                                               .get(</span>
-                                                                   transferArgs1
-<span class="fc" id="L324">                                                                       .getRemoteHost()));</span>
+<span class="fc" id="L323">                                                                   transferArgs1.getRemoteHost()));</span>
       }
     }
-<span class="fc bfc" id="L327" title="All 2 branches covered.">    if (cmd.hasOption(FILE)) {</span>
-<span class="fc" id="L328">      transferArgs1.setFilename(cmd.getOptionValue(FILE));</span>
-<span class="fc" id="L329">      transferArgs1.setFilename(transferArgs1.getFilename().replace('§', '*'));</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">    if (cmd.hasOption(FILE)) {</span>
+<span class="fc" id="L327">      transferArgs1.setFilename(cmd.getOptionValue(FILE));</span>
+<span class="fc" id="L328">      transferArgs1.setFilename(transferArgs1.getFilename().replace('§', '*'));</span>
     }
-<span class="fc bfc" id="L331" title="All 2 branches covered.">    if (cmd.hasOption(RULE)) {</span>
-<span class="fc" id="L332">      transferArgs1.setRulename(cmd.getOptionValue(RULE));</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">    if (cmd.hasOption(RULE)) {</span>
+<span class="fc" id="L331">      transferArgs1.setRulename(cmd.getOptionValue(RULE));</span>
     }
-<span class="fc bfc" id="L334" title="All 2 branches covered.">    if (cmd.hasOption(ID_FIELD)) {</span>
+<span class="fc bfc" id="L333" title="All 2 branches covered.">    if (cmd.hasOption(ID_FIELD)) {</span>
       try {
-<span class="fc" id="L336">        transferArgs1.setId(Long.parseLong(cmd.getOptionValue(ID_FIELD)));</span>
-<span class="fc" id="L337">      } catch (final NumberFormatException ignored) {</span>
-<span class="fc" id="L338">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="fc" id="L339">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; id&quot;);</span>
+<span class="fc" id="L335">        transferArgs1.setId(Long.parseLong(cmd.getOptionValue(ID_FIELD)));</span>
+<span class="fc" id="L336">      } catch (final NumberFormatException ignored) {</span>
+<span class="fc" id="L337">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L338">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; id&quot;);</span>
         //$NON-NLS-1$
-<span class="fc" id="L341">        return true;</span>
-<span class="fc" id="L342">      }</span>
+<span class="fc" id="L340">        return true;</span>
+<span class="fc" id="L341">      }</span>
     }
-<span class="fc" id="L344">    return false;</span>
+<span class="fc" id="L343">    return false;</span>
   }
 
   /**
@@ -354,15 +353,15 @@ public class TransferArgs {
    * @return the real arguments
    */
   private static String[] getRealArgs(final int rank, final String[] args) {
-<span class="fc bfc" id="L357" title="All 2 branches covered.">    String[] realArgs =</span>
-<span class="fc" id="L358">        rank == 0? args : Arrays.copyOfRange(args, rank, args.length);</span>
-<span class="fc bfc" id="L359" title="All 2 branches covered.">    for (int i = rank; i &lt; args.length; i++) {</span>
-<span class="fc bfc" id="L360" title="All 2 branches covered.">      if (SEPARATOR_SEND.equals(args[i])) {</span>
-<span class="fc" id="L361">        realArgs = Arrays.copyOfRange(args, rank, i);</span>
-<span class="fc" id="L362">        break;</span>
+<span class="fc bfc" id="L356" title="All 2 branches covered.">    String[] realArgs =</span>
+<span class="fc" id="L357">        rank == 0? args : Arrays.copyOfRange(args, rank, args.length);</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">    for (int i = rank; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">      if (SEPARATOR_SEND.equals(args[i])) {</span>
+<span class="fc" id="L360">        realArgs = Arrays.copyOfRange(args, rank, i);</span>
+<span class="fc" id="L361">        break;</span>
       }
     }
-<span class="fc" id="L365">    return realArgs;</span>
+<span class="fc" id="L364">    return realArgs;</span>
   }
 
   /**
@@ -375,47 +374,45 @@ public class TransferArgs {
    */
   private static TransferArgs finalizeTransferArgs(final boolean analyseFollow,
                                                    final TransferArgs transferArgs1) {
-<span class="fc bfc" id="L378" title="All 2 branches covered.">    if (transferArgs1.getTransferInfo() == null) {</span>
-<span class="fc" id="L379">      transferArgs1.setTransferInfo(AbstractTransfer.NO_INFO_ARGS);</span>
+<span class="fc bfc" id="L377" title="All 2 branches covered.">    if (transferArgs1.getTransferInfo() == null) {</span>
+<span class="fc" id="L378">      transferArgs1.setTransferInfo(AbstractTransfer.NO_INFO_ARGS);</span>
     }
-<span class="fc bfc" id="L381" title="All 2 branches covered.">    if (analyseFollow) {</span>
-<span class="fc" id="L382">      analyzeFollow(transferArgs1);</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">    if (analyseFollow) {</span>
+<span class="fc" id="L381">      analyzeFollow(transferArgs1);</span>
     }
-<span class="pc bpc" id="L384" title="1 of 2 branches missed.">    if (transferArgs1.getRemoteHost() != null &amp;&amp;</span>
-<span class="fc bfc" id="L385" title="All 2 branches covered.">        transferArgs1.getRulename() != null &amp;&amp;</span>
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">        transferArgs1.getFilename() != null) {</span>
-<span class="fc" id="L387">      return transferArgs1;</span>
-<span class="fc bfc" id="L388" title="All 2 branches covered.">    } else if (transferArgs1.getId() != ILLEGALVALUE &amp;&amp;</span>
-<span class="pc bpc" id="L389" title="1 of 2 branches missed.">               transferArgs1.getRemoteHost() != null) {</span>
+<span class="pc bpc" id="L383" title="1 of 2 branches missed.">    if (transferArgs1.getRemoteHost() != null &amp;&amp;</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">        transferArgs1.getRulename() != null &amp;&amp;</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">        transferArgs1.getFilename() != null) {</span>
+<span class="fc" id="L386">      return transferArgs1;</span>
+<span class="fc bfc" id="L387" title="All 2 branches covered.">    } else if (transferArgs1.getId() != ILLEGALVALUE &amp;&amp;</span>
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">               transferArgs1.getRemoteHost() != null) {</span>
       try {
-<span class="fc" id="L391">        final DbTaskRunner runner = new DbTaskRunner(transferArgs1.getId(),</span>
-                                                     transferArgs1
-<span class="fc" id="L393">                                                         .getRemoteHost());</span>
-<span class="fc" id="L394">        transferArgs1.setRulename(runner.getRuleId());</span>
-<span class="fc" id="L395">        transferArgs1.setFilename(runner.getOriginalFilename());</span>
-<span class="fc" id="L396">        return transferArgs1;</span>
-<span class="fc" id="L397">      } catch (final WaarpDatabaseNoDataException e) {</span>
-<span class="fc" id="L398">        logger.error(&quot;No transfer found with this id and partner&quot;);</span>
-<span class="fc" id="L399">        logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+<span class="fc" id="L390">        final DbTaskRunner runner = new DbTaskRunner(transferArgs1.getId(),</span>
+<span class="fc" id="L391">                                                     transferArgs1.getRemoteHost());</span>
+<span class="fc" id="L392">        transferArgs1.setRulename(runner.getRuleId());</span>
+<span class="fc" id="L393">        transferArgs1.setFilename(runner.getOriginalFilename());</span>
+<span class="fc" id="L394">        return transferArgs1;</span>
+<span class="fc" id="L395">      } catch (final WaarpDatabaseNoDataException e) {</span>
+<span class="fc" id="L396">        logger.error(&quot;No transfer found with this id and partner&quot;);</span>
+<span class="fc" id="L397">        logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
                                         &quot;(-to -rule -file | -to -id with &quot; +
-                                        &quot;existing id transfer)&quot;)
+                                        &quot;existing id transfer): {}&quot;)
                      //$NON-NLS-1$
-            , e);
-<span class="fc" id="L404">        return null;</span>
-<span class="nc" id="L405">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L406">        logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+<span class="fc" id="L401">            , e.getMessage());</span>
+<span class="fc" id="L402">        return null;</span>
+<span class="nc" id="L403">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L404">        logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
                                         &quot;(-to -rule -file | -to -id) with a &quot; +
-                                        &quot;correct database connexion&quot;)
-                     //$NON-NLS-1$
-            , e);
-<span class="nc" id="L411">        return null;</span>
+                                        &quot;correct database connexion: {}&quot;,
+<span class="nc" id="L407">                                        e.getMessage()));//$NON-NLS-1$</span>
+<span class="nc" id="L408">        return null;</span>
       }
     }
-<span class="fc" id="L414">    logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+<span class="fc" id="L411">    logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
                                     &quot;(-to -rule -file | -to -id)&quot;) +
                  //$NON-NLS-1$
                  AbstractTransfer.INFO_ARGS);
-<span class="fc" id="L418">    return null;</span>
+<span class="fc" id="L415">    return null;</span>
   }
 
   /**
@@ -426,16 +423,16 @@ public class TransferArgs {
    */
   private static void checkLog(final TransferArgs transferArgs1,
                                final CommandLine cmd) {
-<span class="fc bfc" id="L429" title="All 2 branches covered.">    if (cmd.hasOption(LOGWARN)) {</span>
-<span class="fc" id="L430">      transferArgs1.setNormalInfoAsWarn(true);</span>
+<span class="fc bfc" id="L426" title="All 2 branches covered.">    if (cmd.hasOption(LOGWARN)) {</span>
+<span class="fc" id="L427">      transferArgs1.setNormalInfoAsWarn(true);</span>
     }
-<span class="fc bfc" id="L432" title="All 2 branches covered.">    if (cmd.hasOption(NOTLOGWARN)) {</span>
-<span class="fc" id="L433">      transferArgs1.setNormalInfoAsWarn(false);</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">    if (cmd.hasOption(NOTLOGWARN)) {</span>
+<span class="fc" id="L430">      transferArgs1.setNormalInfoAsWarn(false);</span>
     }
-<span class="fc bfc" id="L435" title="All 2 branches covered.">    if (cmd.hasOption(NOTLOG)) {</span>
-<span class="fc" id="L436">      transferArgs1.setNolog(true);</span>
+<span class="fc bfc" id="L432" title="All 2 branches covered.">    if (cmd.hasOption(NOTLOG)) {</span>
+<span class="fc" id="L433">      transferArgs1.setNolog(true);</span>
     }
-<span class="fc" id="L438">  }</span>
+<span class="fc" id="L435">  }</span>
 
   /**
    * Check if any output format specification is set
@@ -443,18 +440,18 @@ public class TransferArgs {
    * @param cmd
    */
   private static void checkOutput(final CommandLine cmd) {
-<span class="fc bfc" id="L446" title="All 2 branches covered.">    if (cmd.hasOption(QUIET)) {</span>
-<span class="fc" id="L447">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.QUIET);</span>
-<span class="fc bfc" id="L448" title="All 2 branches covered.">    } else if (cmd.hasOption(CSV)) {</span>
-<span class="fc" id="L449">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.CSV);</span>
-<span class="fc bfc" id="L450" title="All 2 branches covered.">    } else if (cmd.hasOption(XML)) {</span>
-<span class="fc" id="L451">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.XML);</span>
-<span class="fc bfc" id="L452" title="All 2 branches covered.">    } else if (cmd.hasOption(JSON)) {</span>
-<span class="fc" id="L453">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.JSON);</span>
-<span class="fc bfc" id="L454" title="All 2 branches covered.">    } else if (cmd.hasOption(PROPERTY)) {</span>
-<span class="fc" id="L455">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.PROPERTY);</span>
+<span class="fc bfc" id="L443" title="All 2 branches covered.">    if (cmd.hasOption(QUIET)) {</span>
+<span class="fc" id="L444">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.QUIET);</span>
+<span class="fc bfc" id="L445" title="All 2 branches covered.">    } else if (cmd.hasOption(CSV)) {</span>
+<span class="fc" id="L446">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.CSV);</span>
+<span class="fc bfc" id="L447" title="All 2 branches covered.">    } else if (cmd.hasOption(XML)) {</span>
+<span class="fc" id="L448">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.XML);</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">    } else if (cmd.hasOption(JSON)) {</span>
+<span class="fc" id="L450">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.JSON);</span>
+<span class="fc bfc" id="L451" title="All 2 branches covered.">    } else if (cmd.hasOption(PROPERTY)) {</span>
+<span class="fc" id="L452">      OutputFormat.setDefaultOutput(OUTPUTFORMAT.PROPERTY);</span>
     }
-<span class="fc" id="L457">  }</span>
+<span class="fc" id="L454">  }</span>
 
   /**
    * Check DELAY or START
@@ -466,37 +463,37 @@ public class TransferArgs {
    */
   private static boolean checkDelayStart(final TransferArgs transferArgs1,
                                          final CommandLine cmd) {
-<span class="fc bfc" id="L469" title="All 2 branches covered.">    if (cmd.hasOption(START)) {</span>
+<span class="fc bfc" id="L466" title="All 2 branches covered.">    if (cmd.hasOption(START)) {</span>
       final Date date;
-<span class="fc" id="L471">      final SimpleDateFormat dateFormat =</span>
+<span class="fc" id="L468">      final SimpleDateFormat dateFormat =</span>
           new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
       try {
-<span class="fc" id="L474">        date = dateFormat.parse(cmd.getOptionValue(START));</span>
-<span class="fc" id="L475">        transferArgs1.setStartTime(new Timestamp(date.getTime()));</span>
-<span class="fc" id="L476">      } catch (final java.text.ParseException ignored) {</span>
-<span class="fc" id="L477">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="fc" id="L478">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; StartTime&quot;);</span>
+<span class="fc" id="L471">        date = dateFormat.parse(cmd.getOptionValue(START));</span>
+<span class="fc" id="L472">        transferArgs1.setStartTime(new Timestamp(date.getTime()));</span>
+<span class="fc" id="L473">      } catch (final java.text.ParseException ignored) {</span>
+<span class="fc" id="L474">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L475">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; StartTime&quot;);</span>
         //$NON-NLS-1$
-<span class="fc" id="L480">        return true;</span>
-<span class="fc" id="L481">      }</span>
+<span class="fc" id="L477">        return true;</span>
+<span class="fc" id="L478">      }</span>
     }
-<span class="fc bfc" id="L483" title="All 2 branches covered.">    if (cmd.hasOption(DELAY)) {</span>
-<span class="fc" id="L484">      final String delay = cmd.getOptionValue(DELAY);</span>
+<span class="fc bfc" id="L480" title="All 2 branches covered.">    if (cmd.hasOption(DELAY)) {</span>
+<span class="fc" id="L481">      final String delay = cmd.getOptionValue(DELAY);</span>
       try {
-<span class="pc bpc" id="L486" title="1 of 2 branches missed.">        if (delay.charAt(0) == '+') {</span>
-<span class="fc" id="L487">          transferArgs1.setStartTime(new Timestamp(</span>
-<span class="fc" id="L488">              System.currentTimeMillis() + Long.parseLong(delay.substring(1))));</span>
+<span class="pc bpc" id="L483" title="1 of 2 branches missed.">        if (delay.charAt(0) == '+') {</span>
+<span class="fc" id="L484">          transferArgs1.setStartTime(new Timestamp(</span>
+<span class="fc" id="L485">              System.currentTimeMillis() + Long.parseLong(delay.substring(1))));</span>
         } else {
-<span class="nc" id="L490">          transferArgs1.setStartTime(new Timestamp(Long.parseLong(delay)));</span>
+<span class="nc" id="L487">          transferArgs1.setStartTime(new Timestamp(Long.parseLong(delay)));</span>
         }
-<span class="fc" id="L492">      } catch (final NumberFormatException ignored) {</span>
-<span class="fc" id="L493">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="fc" id="L494">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; Delay&quot;);</span>
+<span class="fc" id="L489">      } catch (final NumberFormatException ignored) {</span>
+<span class="fc" id="L490">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L491">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; Delay&quot;);</span>
         //$NON-NLS-1$
-<span class="fc" id="L496">        return true;</span>
-<span class="fc" id="L497">      }</span>
+<span class="fc" id="L493">        return true;</span>
+<span class="fc" id="L494">      }</span>
     }
-<span class="fc" id="L499">    return false;</span>
+<span class="fc" id="L496">    return false;</span>
   }
 
   /**
@@ -509,30 +506,30 @@ public class TransferArgs {
    */
   public static void getAllInfo(final TransferArgs transferArgs, final int rank,
                                 final String[] args, final String copiedInfo) {
-<span class="pc bpc" id="L512" title="1 of 2 branches missed.">    if (transferArgs != null) {</span>
-<span class="fc" id="L513">      final StringBuilder builder = new StringBuilder();</span>
-<span class="fc bfc" id="L514" title="All 2 branches covered.">      if (copiedInfo != null) {</span>
-<span class="fc" id="L515">        builder.append(copiedInfo);</span>
+<span class="pc bpc" id="L509" title="1 of 2 branches missed.">    if (transferArgs != null) {</span>
+<span class="fc" id="L510">      final StringBuilder builder = new StringBuilder();</span>
+<span class="fc bfc" id="L511" title="All 2 branches covered.">      if (copiedInfo != null) {</span>
+<span class="fc" id="L512">        builder.append(copiedInfo);</span>
       }
-<span class="fc bfc" id="L517" title="All 2 branches covered.">      for (int i = rank; i &lt; args.length; i++) {</span>
-<span class="fc bfc" id="L518" title="All 2 branches covered.">        if (INFO_ARG.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L519">          i++;</span>
-<span class="fc bfc" id="L520" title="All 2 branches covered.">          if (builder.length() == 0) {</span>
-<span class="fc" id="L521">            builder.append(args[i].trim());</span>
+<span class="fc bfc" id="L514" title="All 2 branches covered.">      for (int i = rank; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">        if (INFO_ARG.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L516">          i++;</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">          if (builder.length() == 0) {</span>
+<span class="fc" id="L518">            builder.append(args[i].trim());</span>
           } else {
-<span class="fc" id="L523">            builder.append(' ').append(args[i].trim());</span>
+<span class="fc" id="L520">            builder.append(' ').append(args[i].trim());</span>
           }
-<span class="fc" id="L525">          i++;</span>
-<span class="fc bfc" id="L526" title="All 2 branches covered.">          while (i &lt; args.length) {</span>
-<span class="fc" id="L527">            builder.append(' ').append(args[i].trim());</span>
-<span class="fc" id="L528">            i++;</span>
+<span class="fc" id="L522">          i++;</span>
+<span class="fc bfc" id="L523" title="All 2 branches covered.">          while (i &lt; args.length) {</span>
+<span class="fc" id="L524">            builder.append(' ').append(args[i].trim());</span>
+<span class="fc" id="L525">            i++;</span>
           }
         }
       }
-<span class="fc" id="L532">      transferArgs.setTransferInfo(builder.toString());</span>
-<span class="fc" id="L533">      TransferArgs.analyzeFollow(transferArgs);</span>
+<span class="fc" id="L529">      transferArgs.setTransferInfo(builder.toString());</span>
+<span class="fc" id="L530">      TransferArgs.analyzeFollow(transferArgs);</span>
     }
-<span class="fc" id="L535">  }</span>
+<span class="fc" id="L532">  }</span>
 
   /**
    * Mainly Junit, but also special command where Follow Id might be lost or
@@ -542,22 +539,23 @@ public class TransferArgs {
    */
   public static void forceAnalyzeFollow(
       final AbstractTransfer abstractTransfer) {
-<span class="pc bpc" id="L545" title="1 of 2 branches missed.">    if (abstractTransfer.transferArgs.getFollowId() == null) {</span>
-<span class="fc" id="L546">      abstractTransfer.transferArgs.setFollowId(&quot;&quot;);</span>
-<span class="fc" id="L547">      analyzeFollow(abstractTransfer.transferArgs);</span>
-<span class="nc bnc" id="L548" title="All 2 branches missed.">    } else if (!abstractTransfer.transferArgs.getFollowId().isEmpty() &amp;&amp;</span>
-<span class="nc bnc" id="L549" title="All 2 branches missed.">               abstractTransfer.transferArgs.getTransferInfo() != null) {</span>
-<span class="nc" id="L550">      if (!abstractTransfer.transferArgs.getTransferInfo()</span>
-<span class="nc bnc" id="L551" title="All 2 branches missed.">                                        .contains(FOLLOW_JSON_KEY)) {</span>
+<span class="pc bpc" id="L542" title="1 of 2 branches missed.">    if (abstractTransfer.transferArgs.getFollowId() == null) {</span>
+<span class="fc" id="L543">      abstractTransfer.transferArgs.setFollowId(&quot;&quot;);</span>
+<span class="fc" id="L544">      analyzeFollow(abstractTransfer.transferArgs);</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">    } else if (!abstractTransfer.transferArgs.getFollowId().isEmpty() &amp;&amp;</span>
+<span class="nc bnc" id="L546" title="All 2 branches missed.">               abstractTransfer.transferArgs.getTransferInfo() != null) {</span>
+<span class="nc" id="L547">      if (!abstractTransfer.transferArgs.getTransferInfo()</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">                                        .contains(FOLLOW_JSON_KEY)) {</span>
         // Add FOLLOW ID to transferArgs
-<span class="nc" id="L553">        final Map&lt;String, String&gt; map = new HashMap&lt;String, String&gt;();</span>
-<span class="nc" id="L554">        map.put(FOLLOW_JSON_KEY, abstractTransfer.transferArgs.getFollowId());</span>
-<span class="nc" id="L555">        abstractTransfer.transferArgs.setTransferInfo(</span>
-<span class="nc" id="L556">            abstractTransfer.transferArgs.getTransferInfo() + &quot; &quot; +</span>
-<span class="nc" id="L557">            JsonHandler.writeAsStringEscaped(map));</span>
+<span class="nc" id="L550">        final Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L551">        map.put(FOLLOW_JSON_KEY,</span>
+<span class="nc" id="L552">                Long.parseLong(abstractTransfer.transferArgs.getFollowId()));</span>
+<span class="nc" id="L553">        abstractTransfer.transferArgs.setTransferInfo(</span>
+<span class="nc" id="L554">            abstractTransfer.transferArgs.getTransferInfo() + &quot; &quot; +</span>
+<span class="nc" id="L555">            JsonHandler.writeAsStringEscaped(map));</span>
       }
     }
-<span class="fc" id="L560">  }</span>
+<span class="fc" id="L558">  }</span>
 
   /**
    * Analyze Follow option: fill it if Follow is &quot;&quot; (do not if null).
@@ -566,144 +564,145 @@ public class TransferArgs {
    * @param transferArgs1 the current TransferArgs
    */
   public static void analyzeFollow(final TransferArgs transferArgs1) {
-<span class="fc bfc" id="L569" title="All 2 branches covered.">    if (transferArgs1.getFollowId() != null &amp;&amp;</span>
-<span class="pc bpc" id="L570" title="1 of 2 branches missed.">        transferArgs1.getTransferInfo() != null) {</span>
-<span class="fc" id="L571">      final Map&lt;String, Object&gt; map =</span>
-<span class="fc" id="L572">          DbTaskRunner.getMapFromString(transferArgs1.getTransferInfo());</span>
-<span class="fc bfc" id="L573" title="All 2 branches covered.">      if (map.containsKey(FOLLOW_JSON_KEY)) {</span>
-<span class="fc" id="L574">        transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());</span>
+<span class="fc bfc" id="L567" title="All 2 branches covered.">    if (transferArgs1.getFollowId() != null &amp;&amp;</span>
+<span class="pc bpc" id="L568" title="1 of 2 branches missed.">        transferArgs1.getTransferInfo() != null) {</span>
+<span class="fc" id="L569">      final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L570">          DbTaskRunner.getMapFromString(transferArgs1.getTransferInfo());</span>
+<span class="fc bfc" id="L571" title="All 2 branches covered.">      if (map.containsKey(FOLLOW_JSON_KEY)) {</span>
+<span class="fc" id="L572">        transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());</span>
       }
-<span class="fc bfc" id="L576" title="All 2 branches covered.">      if (transferArgs1.getFollowId().isEmpty()) {</span>
-<span class="fc" id="L577">        final LongUuid longUuid = new LongUuid();</span>
-<span class="fc" id="L578">        map.put(FOLLOW_JSON_KEY, longUuid.getLong());</span>
-<span class="fc" id="L579">        transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + &quot; &quot; +</span>
-<span class="fc" id="L580">                                      JsonHandler.writeAsStringEscaped(map));</span>
-<span class="fc" id="L581">        transferArgs1.setFollowId(&quot;&quot; + longUuid.getLong());</span>
-<span class="fc" id="L582">      } else {</span>
-<span class="fc bfc" id="L583" title="All 2 branches covered.">        if (map.size() &gt; 1) {</span>
-<span class="fc" id="L584">          transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + &quot; &quot; +</span>
-<span class="fc" id="L585">                                        JsonHandler.writeAsStringEscaped(map));</span>
+<span class="fc bfc" id="L574" title="All 2 branches covered.">      if (transferArgs1.getFollowId().isEmpty()) {</span>
+<span class="fc" id="L575">        final long longUuid = LongUuid.getLongUuid();</span>
+<span class="fc" id="L576">        map.put(FOLLOW_JSON_KEY, longUuid);</span>
+<span class="fc" id="L577">        transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + &quot; &quot; +</span>
+<span class="fc" id="L578">                                      JsonHandler.writeAsStringEscaped(map));</span>
+<span class="fc" id="L579">        transferArgs1.setFollowId(Long.toString(longUuid));</span>
+<span class="fc" id="L580">      } else {</span>
+<span class="fc bfc" id="L581" title="All 2 branches covered.">        if (map.size() &gt; 1) {</span>
+<span class="fc" id="L582">          transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + &quot; &quot; +</span>
+<span class="fc" id="L583">                                        JsonHandler.writeAsStringEscaped(map));</span>
         }
       }
     }
-<span class="fc" id="L589">  }</span>
+<span class="fc" id="L587">  }</span>
 
   private String filename;
   private String rulename;
   private String transferInfo;
   private boolean isMD5;
   private String remoteHost;
-<span class="fc" id="L596">  private int blocksize = 0x10000; // 64K</span>
-<span class="fc" id="L597">  private long id = ILLEGALVALUE;</span>
+<span class="fc" id="L594">  private int blocksize = 0x10000; // 64K</span>
+<span class="fc" id="L595">  private long id = ILLEGALVALUE;</span>
   private Timestamp startTime;
   private String followId;
-<span class="fc" id="L600">  private boolean normalInfoAsWarn = true;</span>
-<span class="fc" id="L601">  private boolean nolog = false;</span>
+<span class="fc" id="L598">  private boolean normalInfoAsWarn = true;</span>
+<span class="fc" id="L599">  private boolean nolog = false;</span>
 
   /**
    * Empty constructor
    */
-<span class="fc" id="L606">  public TransferArgs() {</span>
+<span class="fc" id="L604">  public TransferArgs() {</span>
     // Empty
-<span class="fc" id="L608">  }</span>
+<span class="fc" id="L606">  }</span>
 
-  public String getFilename() {
-<span class="fc" id="L611">    return filename;</span>
+  public final String getFilename() {
+<span class="fc" id="L609">    return filename;</span>
   }
 
-  public TransferArgs setFilename(final String filename) {
-<span class="fc" id="L615">    this.filename = filename;</span>
-<span class="fc" id="L616">    return this;</span>
+  public final TransferArgs setFilename(final String filename) {
+<span class="fc" id="L613">    this.filename = filename;</span>
+<span class="fc" id="L614">    return this;</span>
   }
 
-  public String getRulename() {
-<span class="fc" id="L620">    return rulename;</span>
+  public final String getRulename() {
+<span class="fc" id="L618">    return rulename;</span>
   }
 
-  public TransferArgs setRulename(final String rulename) {
-<span class="fc" id="L624">    this.rulename = rulename;</span>
-<span class="fc" id="L625">    return this;</span>
+  public final TransferArgs setRulename(final String rulename) {
+<span class="fc" id="L622">    this.rulename = rulename;</span>
+<span class="fc" id="L623">    return this;</span>
   }
 
-  public String getTransferInfo() {
-<span class="fc" id="L629">    return transferInfo;</span>
+  public final String getTransferInfo() {
+<span class="fc" id="L627">    return transferInfo;</span>
   }
 
-  public TransferArgs setTransferInfo(final String transferInfo) {
-<span class="fc" id="L633">    this.transferInfo = transferInfo;</span>
-<span class="fc" id="L634">    return this;</span>
+  public final TransferArgs setTransferInfo(final String transferInfo) {
+<span class="fc" id="L631">    this.transferInfo = transferInfo;</span>
+<span class="fc" id="L632">    return this;</span>
   }
 
-  public boolean isMD5() {
-<span class="fc" id="L638">    return isMD5;</span>
+  public final boolean isMD5() {
+<span class="fc" id="L636">    return isMD5;</span>
   }
 
-  public TransferArgs setMD5(final boolean md5) {
-<span class="fc" id="L642">    isMD5 = md5;</span>
-<span class="fc" id="L643">    return this;</span>
+  public final TransferArgs setMD5(final boolean md5) {
+<span class="fc" id="L640">    isMD5 = md5;</span>
+<span class="fc" id="L641">    return this;</span>
   }
 
-  public String getRemoteHost() {
-<span class="fc" id="L647">    return remoteHost;</span>
+  public final String getRemoteHost() {
+<span class="fc" id="L645">    return remoteHost;</span>
   }
 
-  public TransferArgs setRemoteHost(final String remoteHost) {
-<span class="fc" id="L651">    this.remoteHost = remoteHost;</span>
-<span class="fc" id="L652">    return this;</span>
+  public final TransferArgs setRemoteHost(final String remoteHost) {
+<span class="fc" id="L649">    this.remoteHost = remoteHost;</span>
+<span class="fc" id="L650">    return this;</span>
   }
 
-  public int getBlockSize() {
-<span class="fc" id="L656">    return blocksize;</span>
+  public final int getBlockSize() {
+<span class="fc" id="L654">    return blocksize;</span>
   }
 
-  public TransferArgs setBlockSize(final int blocksize) {
-<span class="fc" id="L660">    this.blocksize = blocksize;</span>
-<span class="fc" id="L661">    return this;</span>
+  public final TransferArgs setBlockSize(final int blocksize) {
+<span class="fc" id="L658">    this.blocksize = blocksize;</span>
+<span class="fc" id="L659">    return this;</span>
   }
 
-  public long getId() {
-<span class="fc" id="L665">    return id;</span>
+  public final long getId() {
+<span class="fc" id="L663">    return id;</span>
   }
 
-  public TransferArgs setId(final long id) {
-<span class="fc" id="L669">    this.id = id;</span>
-<span class="fc" id="L670">    return this;</span>
+  public final TransferArgs setId(final long id) {
+<span class="fc" id="L667">    this.id = id;</span>
+<span class="fc" id="L668">    return this;</span>
   }
 
-  public Timestamp getStartTime() {
-<span class="fc" id="L674">    return startTime;</span>
+  public final Timestamp getStartTime() {
+<span class="fc" id="L672">    return startTime;</span>
   }
 
-  public TransferArgs setStartTime(final Timestamp startTime) {
-<span class="fc" id="L678">    this.startTime = startTime;</span>
-<span class="fc" id="L679">    return this;</span>
+  public final TransferArgs setStartTime(final Timestamp startTime) {
+<span class="fc" id="L676">    this.startTime = startTime;</span>
+<span class="fc" id="L677">    return this;</span>
   }
 
-  public String getFollowId() {
-<span class="fc" id="L683">    return followId;</span>
+  public final String getFollowId() {
+<span class="fc" id="L681">    return followId;</span>
   }
 
-  public TransferArgs setFollowId(final String followId) {
-<span class="fc" id="L687">    this.followId = followId;</span>
-<span class="fc" id="L688">    return this;</span>
+  public final TransferArgs setFollowId(final String followId) {
+<span class="fc" id="L685">    this.followId = followId;</span>
+<span class="fc" id="L686">    return this;</span>
   }
 
-  public boolean isNormalInfoAsWarn() {
-<span class="fc" id="L692">    return normalInfoAsWarn;</span>
+  public final boolean isNormalInfoAsWarn() {
+<span class="fc" id="L690">    return normalInfoAsWarn;</span>
   }
 
-  public TransferArgs setNormalInfoAsWarn(final boolean normalInfoAsWarn) {
-<span class="fc" id="L696">    this.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="fc" id="L697">    return this;</span>
+  public final TransferArgs setNormalInfoAsWarn(
+      final boolean normalInfoAsWarn) {
+<span class="fc" id="L695">    this.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="fc" id="L696">    return this;</span>
   }
 
-  public boolean isNolog() {
-<span class="fc" id="L701">    return nolog;</span>
+  public final boolean isNolog() {
+<span class="fc" id="L700">    return nolog;</span>
   }
 
-  public TransferArgs setNolog(final boolean nolog) {
-<span class="fc" id="L705">    this.nolog = nolog;</span>
-<span class="fc" id="L706">    return this;</span>
+  public final TransferArgs setNolog(final boolean nolog) {
+<span class="fc" id="L704">    this.nolog = nolog;</span>
+<span class="fc" id="L705">    return this;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

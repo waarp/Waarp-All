@@ -25,8 +25,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
-import org.waarp.ftp.core.utils.FtpChannelUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
@@ -48,20 +47,20 @@ public class ServerInitDatabase {
   }
 
   protected static boolean getParams(final String[] args) {
-<span class="nc bnc" id="L51" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L52">      logger.error(</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L51">      logger.error(</span>
           &quot;Need at least the configuration file as first argument then optionally\n&quot; +
           &quot;    -initdb&quot;);
-<span class="nc" id="L55">      return false;</span>
+<span class="nc" id="L54">      return false;</span>
     }
-<span class="nc" id="L57">    sxml = args[0];</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L59" title="All 2 branches missed.">      if (&quot;-initdb&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L60">        database = true;</span>
-<span class="nc" id="L61">        break;</span>
+<span class="nc" id="L56">    sxml = args[0];</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">      if (&quot;-initdb&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L59">        database = true;</span>
+<span class="nc" id="L60">        break;</span>
       }
     }
-<span class="nc" id="L64">    return true;</span>
+<span class="nc" id="L63">    return true;</span>
   }
 
   /**
@@ -69,65 +68,58 @@ public class ServerInitDatabase {
    *     limit_configuration]
    */
   public static void main(final String[] args) {
-<span class="nc" id="L72">    WaarpLoggerFactory</span>
-<span class="nc" id="L73">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L75">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
+<span class="nc" id="L71">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L74">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
     }
-<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (!getParams(args)) {</span>
-<span class="nc" id="L78">      logger.error(</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L77">      logger.error(</span>
           &quot;Need at least the configuration file as first argument then optionally\n&quot; +
           &quot;    -initdb&quot;);
-<span class="nc bnc" id="L81" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
-<span class="nc" id="L82">        DbConstantFtp.gatewayAdmin.close();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L81">        DbConstantFtp.gatewayAdmin.close();</span>
       }
-<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L85">        return;</span>
-      }
-<span class="nc" id="L87">      FtpChannelUtils.stopLogger();</span>
-<span class="nc" id="L88">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L83">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L84">      return;</span>
     }
-<span class="nc" id="L90">    final FileBasedConfiguration configuration =</span>
+<span class="nc" id="L86">    final FileBasedConfiguration configuration =</span>
         new FileBasedConfiguration(ExecGatewayFtpServer.class,
                                    ExecBusinessHandler.class,
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     try {
-<span class="nc bnc" id="L96" title="All 2 branches missed.">      if (!configuration.setConfigurationServerFromXml(args[0])) {</span>
-<span class="nc" id="L97">        SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad main configuration&quot;);</span>
-<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (DbConstantFtp.gatewayAdmin != null) {</span>
-<span class="nc" id="L99">          DbConstantFtp.gatewayAdmin.close();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (!configuration.setConfigurationServerFromXml(args[0])) {</span>
+<span class="nc" id="L93">        SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad main configuration&quot;);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L95">          DbConstantFtp.gatewayAdmin.close();</span>
         }
-<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L102">          return;</span>
-        }
-<span class="nc" id="L104">        FtpChannelUtils.stopLogger();</span>
-<span class="nc" id="L105">        System.exit(1);//NOSONAR</span>
-<span class="nc" id="L106">        return;</span>
+<span class="nc" id="L97">        WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L98">        return;</span>
       }
-<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (database) {</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">      if (database) {</span>
         // Init database
         try {
-<span class="nc" id="L111">          initdb();</span>
-<span class="nc" id="L112">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L113">          logger.error(&quot;Cannot connect to database&quot;);</span>
-<span class="nc" id="L114">          return;</span>
-<span class="nc" id="L115">        }</span>
-<span class="nc" id="L116">        SysErrLogger.FAKE_LOGGER.sysout(&quot;End creation&quot;);</span>
+<span class="nc" id="L103">          initdb();</span>
+<span class="nc" id="L104">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L105">          logger.error(&quot;Cannot connect to database&quot;);</span>
+<span class="nc" id="L106">          return;</span>
+<span class="nc" id="L107">        }</span>
+<span class="nc" id="L108">        SysErrLogger.FAKE_LOGGER.sysout(&quot;End creation&quot;);</span>
       }
-<span class="nc" id="L118">      SysErrLogger.FAKE_LOGGER.sysout(&quot;Load done&quot;);</span>
+<span class="nc" id="L110">      SysErrLogger.FAKE_LOGGER.sysout(&quot;Load done&quot;);</span>
     } finally {
-<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
-<span class="nc" id="L121">        DbConstantFtp.gatewayAdmin.close();</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L113">        DbConstantFtp.gatewayAdmin.close();</span>
       }
     }
-<span class="nc" id="L124">  }</span>
+<span class="nc" id="L116">  }</span>
 
   public static void initdb() throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
-<span class="fc" id="L128">    DbConstantFtp.gatewayAdmin.getDbModel().createTables(</span>
-<span class="fc" id="L129">        DbConstantFtp.gatewayAdmin.getSession());</span>
-<span class="fc" id="L130">  }</span>
+<span class="fc" id="L120">    DbConstantFtp.gatewayAdmin.getDbModel().createTables(</span>
+<span class="fc" id="L121">        DbConstantFtp.gatewayAdmin.getSession());</span>
+<span class="fc" id="L122">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

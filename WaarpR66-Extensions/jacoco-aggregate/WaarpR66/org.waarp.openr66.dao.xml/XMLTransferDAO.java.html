@@ -58,8 +58,8 @@ import static org.waarp.openr66.dao.database.DBTransferDAO.*;
 
 public class XMLTransferDAO implements TransferDAO {
 
-<span class="nc" id="L61">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L62">      WaarpLoggerFactory.getLogger(XMLTransferDAO.class);</span>
+<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(XMLTransferDAO.class);</span>
 
   public static final String ROOT_LIST = &quot;taskrunners&quot;;
   public static final String ROOT_ELEMENT = &quot;runner&quot;;
@@ -78,15 +78,15 @@ public class XMLTransferDAO implements TransferDAO {
    */
   private static SynchronizedLruCache&lt;Long, Transfer&gt; dbR66TaskHashMap;
 
-<span class="nc" id="L81">  private static boolean noFile = false;</span>
+<span class="fc" id="L81">  private static boolean noFile = false;</span>
 
   /**
    * @param newNoFile if True, no file will be created but only on Memory
    *     using LruCache
    */
   public static void setNoFile(final boolean newNoFile) {
-<span class="nc" id="L88">    noFile = newNoFile;</span>
-<span class="nc" id="L89">  }</span>
+<span class="fc" id="L88">    noFile = newNoFile;</span>
+<span class="fc" id="L89">  }</span>
 
   /**
    * Create the LRU cache
@@ -95,8 +95,8 @@ public class XMLTransferDAO implements TransferDAO {
    * @param ttl time to leave used
    */
   public static void createLruCache(final int limit, final long ttl) {
-<span class="nc" id="L98">    dbR66TaskHashMap = new SynchronizedLruCache&lt;Long, Transfer&gt;(limit, ttl);</span>
-<span class="nc" id="L99">  }</span>
+<span class="fc" id="L98">    dbR66TaskHashMap = new SynchronizedLruCache&lt;Long, Transfer&gt;(limit, ttl);</span>
+<span class="fc" id="L99">  }</span>
 
   public static String hashStatus() {
 <span class="nc" id="L102">    return &quot;DbTaskRunner: [dbR66TaskHashMap: &quot; + dbR66TaskHashMap.size() + &quot;] &quot;;</span>
@@ -108,7 +108,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @return the number of elements removed
    */
   public static int clearCache() {
-<span class="nc" id="L111">    return dbR66TaskHashMap.forceClearOldest();</span>
+<span class="fc" id="L111">    return dbR66TaskHashMap.forceClearOldest();</span>
   }
 
   /**
@@ -117,8 +117,8 @@ public class XMLTransferDAO implements TransferDAO {
    * @param ttl
    */
   public static void updateLruCacheTimeout(final long ttl) {
-<span class="nc" id="L120">    dbR66TaskHashMap.setNewTtl(ttl);</span>
-<span class="nc" id="L121">  }</span>
+<span class="fc" id="L120">    dbR66TaskHashMap.setNewTtl(ttl);</span>
+<span class="fc" id="L121">  }</span>
 
   /**
    * To allow to remove specifically one SpecialId from MemoryHashmap
@@ -126,8 +126,8 @@ public class XMLTransferDAO implements TransferDAO {
    * @param specialId
    */
   public static void removeNoDbSpecialId(final long specialId) {
-<span class="nc" id="L129">    dbR66TaskHashMap.remove(specialId);</span>
-<span class="nc" id="L130">  }</span>
+<span class="fc" id="L129">    dbR66TaskHashMap.remove(specialId);</span>
+<span class="fc" id="L130">  }</span>
 
   /**
    * To update the usage TTL of the associated object
@@ -138,51 +138,51 @@ public class XMLTransferDAO implements TransferDAO {
 <span class="nc" id="L138">    dbR66TaskHashMap.updateTtl(specialId);</span>
 <span class="nc" id="L139">  }</span>
 
-<span class="nc" id="L141">  public XMLTransferDAO() {</span>
+<span class="fc" id="L141">  public XMLTransferDAO() {</span>
     // Empty
-<span class="nc" id="L143">  }</span>
+<span class="fc" id="L143">  }</span>
 
   @Override
   public void close() {
     // ignore
-<span class="nc" id="L148">  }</span>
+<span class="fc" id="L148">  }</span>
 
   public static final String XMLEXTENSION = &quot;_singlerunner.xml&quot;;
 
   private File getFile(final String requester, final String requested,
                        final long id) {
-<span class="nc" id="L154">    return new File(Configuration.configuration.getBaseDirectory() +</span>
-<span class="nc" id="L155">                    Configuration.configuration.getArchivePath() + '/' +</span>
+<span class="fc" id="L154">    return new File(Configuration.configuration.getBaseDirectory() +</span>
+<span class="fc" id="L155">                    Configuration.configuration.getArchivePath() + '/' +</span>
                     requester + '_' + requested + '_' + id + XMLEXTENSION);
   }
 
   @Override
   public void delete(final Transfer transfer) {
-<span class="nc" id="L161">    removeNoDbSpecialId(transfer.getId());</span>
-<span class="nc" id="L162">  }</span>
+<span class="fc" id="L161">    removeNoDbSpecialId(transfer.getId());</span>
+<span class="fc" id="L162">  }</span>
 
   /**
    * {@link DAOConnectionException}
    */
   @Override
   public void deleteAll() {
-<span class="nc" id="L169">    dbR66TaskHashMap.clear();</span>
-<span class="nc" id="L170">    final File arch = new File(Configuration.configuration.getBaseDirectory() +</span>
-<span class="nc" id="L171">                               Configuration.configuration.getArchivePath());</span>
-<span class="nc bnc" id="L172" title="All 2 branches missed.">    if (arch.isDirectory()) {</span>
-<span class="nc" id="L173">      FileUtils.forceDeleteRecursiveDir(arch);</span>
+<span class="fc" id="L169">    dbR66TaskHashMap.clear();</span>
+<span class="fc" id="L170">    final File arch = new File(Configuration.configuration.getBaseDirectory() +</span>
+<span class="fc" id="L171">                               Configuration.configuration.getArchivePath());</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">    if (arch.isDirectory()) {</span>
+<span class="fc" id="L173">      FileUtils.forceDeleteRecursiveDir(arch);</span>
     }
-<span class="nc" id="L175">  }</span>
+<span class="fc" id="L175">  }</span>
 
   @Override
   public List&lt;Transfer&gt; getAll() throws DAOConnectionException {
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (noFile) {</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (noFile) {</span>
 <span class="nc" id="L180">      return new ArrayList&lt;Transfer&gt;(dbR66TaskHashMap.values());</span>
     }
-<span class="nc" id="L182">    final File arch = new File(Configuration.configuration.getArchivePath());</span>
-<span class="nc" id="L183">    final File[] runnerFiles = arch.listFiles();</span>
-<span class="nc" id="L184">    final List&lt;Transfer&gt; res = new ArrayList&lt;Transfer&gt;();</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">    if (runnerFiles != null) {</span>
+<span class="fc" id="L182">    final File arch = new File(Configuration.configuration.getArchivePath());</span>
+<span class="fc" id="L183">    final File[] runnerFiles = arch.listFiles();</span>
+<span class="fc" id="L184">    final List&lt;Transfer&gt; res = new ArrayList&lt;Transfer&gt;();</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">    if (runnerFiles != null) {</span>
 <span class="nc bnc" id="L186" title="All 2 branches missed.">      for (final File fileNew : runnerFiles) {</span>
         try {
 <span class="nc" id="L188">          final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
@@ -210,24 +210,24 @@ public class XMLTransferDAO implements TransferDAO {
 <span class="nc" id="L210">        }</span>
       }
     }
-<span class="nc" id="L213">    synchronized (dbR66TaskHashMap) {</span>
-<span class="nc bnc" id="L214" title="All 2 branches missed.">      for (final Transfer transfer : dbR66TaskHashMap.values()) {</span>
-<span class="nc bnc" id="L215" title="All 4 branches missed.">        if (transfer != null &amp;&amp; !res.contains(transfer)) {</span>
-<span class="nc" id="L216">          res.add(transfer);</span>
+<span class="fc" id="L213">    synchronized (dbR66TaskHashMap) {</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">      for (final Transfer transfer : dbR66TaskHashMap.values()) {</span>
+<span class="pc bpc" id="L215" title="2 of 4 branches missed.">        if (transfer != null &amp;&amp; !res.contains(transfer)) {</span>
+<span class="fc" id="L216">          res.add(transfer);</span>
         }
-<span class="nc" id="L218">      }</span>
-<span class="nc" id="L219">    }</span>
-<span class="nc" id="L220">    return res;</span>
+<span class="fc" id="L218">      }</span>
+<span class="fc" id="L219">    }</span>
+<span class="fc" id="L220">    return res;</span>
   }
 
   @Override
   public boolean exist(final long id, final String requester,
                        final String requested, final String owner) {
-<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (dbR66TaskHashMap.contains(id)) {</span>
-<span class="nc" id="L227">      return true;</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">    if (dbR66TaskHashMap.contains(id)) {</span>
+<span class="fc" id="L227">      return true;</span>
     }
-<span class="nc" id="L229">    final File file = getFile(requester, requested, id);</span>
-<span class="nc" id="L230">    return file.exists();</span>
+<span class="fc" id="L229">    final File file = getFile(requester, requested, id);</span>
+<span class="fc" id="L230">    return file.exists();</span>
   }
 
   /**
@@ -335,49 +335,49 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public void insert(final Transfer transfer) throws DAOConnectionException {
     // Set unique Id
-<span class="nc bnc" id="L338" title="All 2 branches missed.">    if (transfer.getId() == DbConstantR66.ILLEGALVALUE) {</span>
-<span class="nc" id="L339">      transfer.setId(new LongUuid().getLong());</span>
+<span class="fc bfc" id="L338" title="All 2 branches covered.">    if (transfer.getId() == DbConstantR66.ILLEGALVALUE) {</span>
+<span class="fc" id="L339">      transfer.setId(LongUuid.getLongUuid());</span>
     }
-<span class="nc" id="L341">    dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">    if (noFile) {</span>
-<span class="nc" id="L343">      return;</span>
+<span class="fc" id="L341">    dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">    if (noFile) {</span>
+<span class="fc" id="L343">      return;</span>
     }
-<span class="nc" id="L345">    final File file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
-<span class="nc" id="L346">                              transfer.getId());</span>
-<span class="nc bnc" id="L347" title="All 2 branches missed.">    if (file.exists()) {</span>
+<span class="fc" id="L345">    final File file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
+<span class="fc" id="L346">                              transfer.getId());</span>
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">    if (file.exists()) {</span>
 <span class="nc" id="L348">      throw new DAOConnectionException(</span>
 <span class="nc" id="L349">          &quot;File already exist: &quot; + file.getAbsolutePath());</span>
     }
     try {
-<span class="nc" id="L352">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L353">      final Document document = dbf.newDocumentBuilder().newDocument();</span>
-<span class="nc" id="L354">      final Element root = document.createElement(ROOT_LIST);</span>
-<span class="nc" id="L355">      document.appendChild(root);</span>
-<span class="nc" id="L356">      root.appendChild(getNode(document, transfer));</span>
+<span class="fc" id="L352">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L353">      final Document document = dbf.newDocumentBuilder().newDocument();</span>
+<span class="fc" id="L354">      final Element root = document.createElement(ROOT_LIST);</span>
+<span class="fc" id="L355">      document.appendChild(root);</span>
+<span class="fc" id="L356">      root.appendChild(getNode(document, transfer));</span>
       // Write document in file
-<span class="nc" id="L358">      XMLUtils.writeToFile(file, document);</span>
+<span class="fc" id="L358">      XMLUtils.writeToFile(file, document);</span>
 <span class="nc" id="L359">    } catch (final ParserConfigurationException e) {</span>
 <span class="nc" id="L360">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L361">    }</span>
-<span class="nc" id="L362">  }</span>
+<span class="fc" id="L361">    }</span>
+<span class="fc" id="L362">  }</span>
 
   @Override
   public Transfer select(final long id, final String requester,
                          final String requested, final String owner)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc bnc" id="L368" title="All 2 branches missed.">    if (dbR66TaskHashMap.contains(id)) {</span>
-<span class="nc" id="L369">      final Transfer value = dbR66TaskHashMap.get(id);</span>
-<span class="nc bnc" id="L370" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L371">        dbR66TaskHashMap.updateTtl(id);</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">    if (dbR66TaskHashMap.contains(id)) {</span>
+<span class="fc" id="L369">      final Transfer value = dbR66TaskHashMap.get(id);</span>
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">      if (value != null) {</span>
+<span class="fc" id="L371">        dbR66TaskHashMap.updateTtl(id);</span>
       }
-<span class="nc" id="L373">      return value;</span>
+<span class="fc" id="L373">      return value;</span>
     }
-<span class="nc bnc" id="L375" title="All 2 branches missed.">    if (noFile) {</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">    if (noFile) {</span>
 <span class="nc" id="L376">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
     }
-<span class="nc" id="L378">    final File file = getFile(requester, requested, id);</span>
-<span class="nc bnc" id="L379" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L380">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
+<span class="fc" id="L378">    final File file = getFile(requester, requested, id);</span>
+<span class="pc bpc" id="L379" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
+<span class="fc" id="L380">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
     }
     try {
 <span class="nc" id="L383">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
@@ -411,27 +411,27 @@ public class XMLTransferDAO implements TransferDAO {
 
   @Override
   public void update(final Transfer transfer) throws DAOConnectionException {
-<span class="nc" id="L414">    dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
-<span class="nc bnc" id="L415" title="All 2 branches missed.">    if (noFile) {</span>
+<span class="fc" id="L414">    dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
+<span class="pc bpc" id="L415" title="1 of 2 branches missed.">    if (noFile) {</span>
 <span class="nc" id="L416">      return;</span>
     }
-<span class="nc" id="L418">    final File file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
-<span class="nc" id="L419">                              transfer.getId());</span>
-<span class="nc bnc" id="L420" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="fc" id="L418">    final File file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
+<span class="fc" id="L419">                              transfer.getId());</span>
+<span class="pc bpc" id="L420" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L421">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L424">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L425">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
-<span class="nc" id="L426">      final Element root = document.getDocumentElement();</span>
-<span class="nc" id="L427">      Node node = null;</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">      if (root.hasChildNodes()) {</span>
-<span class="nc" id="L429">        final NodeList nodeList = root.getChildNodes();</span>
-<span class="nc" id="L430">        final int nb = nodeList.getLength();</span>
-<span class="nc bnc" id="L431" title="All 2 branches missed.">        for (int i = 0; i &lt; nb; i++) {</span>
-<span class="nc" id="L432">          int found = 4;</span>
-<span class="nc" id="L433">          node = nodeList.item(0);</span>
-<span class="nc bnc" id="L434" title="All 2 branches missed.">          if (node.hasChildNodes()) {</span>
+<span class="fc" id="L424">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L425">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+<span class="fc" id="L426">      final Element root = document.getDocumentElement();</span>
+<span class="fc" id="L427">      Node node = null;</span>
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">      if (root.hasChildNodes()) {</span>
+<span class="fc" id="L429">        final NodeList nodeList = root.getChildNodes();</span>
+<span class="fc" id="L430">        final int nb = nodeList.getLength();</span>
+<span class="fc bfc" id="L431" title="All 2 branches covered.">        for (int i = 0; i &lt; nb; i++) {</span>
+<span class="fc" id="L432">          int found = 4;</span>
+<span class="fc" id="L433">          node = nodeList.item(0);</span>
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">          if (node.hasChildNodes()) {</span>
 <span class="nc" id="L435">            final NodeList nodeChildList = node.getChildNodes();</span>
 <span class="nc" id="L436">            final int nbChild = nodeChildList.getLength();</span>
 <span class="nc bnc" id="L437" title="All 2 branches missed.">            for (int j = 0; j &lt; nbChild; j++) {</span>
@@ -464,25 +464,25 @@ public class XMLTransferDAO implements TransferDAO {
           }
         }
       }
-<span class="nc bnc" id="L467" title="All 2 branches missed.">      if (node == null) {</span>
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">      if (node == null) {</span>
 <span class="nc" id="L468">        logger.warn(&quot;Entry not found cannot update for {} {} {} {}&quot;,</span>
 <span class="nc" id="L469">                    transfer.getId(), transfer.getRequester(),</span>
 <span class="nc" id="L470">                    transfer.getRequested(), transfer.getOwnerRequest());</span>
 <span class="nc" id="L471">        return;</span>
       }
-<span class="nc" id="L473">      node.getParentNode().removeChild(node);</span>
+<span class="fc" id="L473">      node.getParentNode().removeChild(node);</span>
       // Insert updated node
-<span class="nc" id="L475">      root.appendChild(getNode(document, transfer));</span>
+<span class="fc" id="L475">      root.appendChild(getNode(document, transfer));</span>
       // Write document in file
-<span class="nc" id="L477">      XMLUtils.writeToFile(file, document);</span>
+<span class="fc" id="L477">      XMLUtils.writeToFile(file, document);</span>
 <span class="nc" id="L478">    } catch (final SAXException e) {</span>
 <span class="nc" id="L479">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L480">    } catch (final ParserConfigurationException e) {</span>
 <span class="nc" id="L481">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L482">    } catch (final IOException e) {</span>
 <span class="nc" id="L483">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L484">    }</span>
-<span class="nc" id="L485">  }</span>
+<span class="fc" id="L484">    }</span>
+<span class="fc" id="L485">  }</span>
 
   private Transfer getFromNode(final Node parent) {
 <span class="nc" id="L488">    final Transfer res = new Transfer();</span>
@@ -539,58 +539,58 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   private Node getNode(final Document doc, final Transfer transfer) {
-<span class="nc" id="L542">    final Node res = doc.createElement(ROOT_ELEMENT);</span>
-<span class="nc" id="L543">    res.appendChild(</span>
-<span class="nc" id="L544">        XMLUtils.createNode(doc, ID_FIELD, Long.toString(transfer.getId())));</span>
-<span class="nc" id="L545">    res.appendChild(XMLUtils.createNode(doc, OWNER_REQUEST_FIELD,</span>
-<span class="nc" id="L546">                                        transfer.getOwnerRequest()));</span>
-<span class="nc" id="L547">    res.appendChild(</span>
-<span class="nc" id="L548">        XMLUtils.createNode(doc, REQUESTER_FIELD, transfer.getRequester()));</span>
-<span class="nc" id="L549">    res.appendChild(</span>
-<span class="nc" id="L550">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getRequested()));</span>
-<span class="nc" id="L551">    res.appendChild(</span>
-<span class="nc" id="L552">        XMLUtils.createNode(doc, ID_RULE_FIELD, transfer.getRule()));</span>
-<span class="nc" id="L553">    res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD,</span>
-<span class="nc" id="L554">                                        Boolean.toString(</span>
-<span class="nc" id="L555">                                            transfer.getRetrieveMode())));</span>
-<span class="nc" id="L556">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD,</span>
-<span class="nc" id="L557">                                        Integer.toString(</span>
-<span class="nc" id="L558">                                            transfer.getTransferMode())));</span>
-<span class="nc" id="L559">    res.appendChild(</span>
-<span class="nc" id="L560">        XMLUtils.createNode(doc, FILENAME_FIELD, transfer.getRequested()));</span>
-<span class="nc" id="L561">    res.appendChild(</span>
-<span class="nc" id="L562">        XMLUtils.createNode(doc, ORIGINAL_NAME_FIELD, transfer.getFilename()));</span>
-<span class="nc" id="L563">    res.appendChild(</span>
-<span class="nc" id="L564">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getOriginalName()));</span>
-<span class="nc" id="L565">    res.appendChild(</span>
-<span class="nc" id="L566">        XMLUtils.createNode(doc, FILE_INFO_FIELD, transfer.getFileInfo()));</span>
-<span class="nc" id="L567">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_INFO_FIELD,</span>
-<span class="nc" id="L568">                                        transfer.getTransferInfo()));</span>
-<span class="nc" id="L569">    res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean.toString(</span>
-<span class="nc" id="L570">        transfer.getIsMoved())));</span>
-<span class="nc" id="L571">    res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer.toString(</span>
-<span class="nc" id="L572">        transfer.getBlockSize())));</span>
-<span class="nc" id="L573">    res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD,</span>
-<span class="nc" id="L574">                                        Integer.toString(</span>
-<span class="nc" id="L575">                                            transfer.getGlobalStep()</span>
-<span class="nc" id="L576">                                                    .ordinal())));</span>
-<span class="nc" id="L577">    res.appendChild(XMLUtils.createNode(doc, GLOBAL_LAST_STEP_FIELD,</span>
-<span class="nc" id="L578">                                        Integer.toString(</span>
-<span class="nc" id="L579">                                            transfer.getLastGlobalStep()</span>
-<span class="nc" id="L580">                                                    .ordinal())));</span>
-<span class="nc" id="L581">    res.appendChild(XMLUtils.createNode(doc, STEP_FIELD,</span>
-<span class="nc" id="L582">                                        Integer.toString(transfer.getStep())));</span>
-<span class="nc" id="L583">    res.appendChild(XMLUtils.createNode(doc, RANK_FIELD,</span>
-<span class="nc" id="L584">                                        Integer.toString(transfer.getRank())));</span>
-<span class="nc" id="L585">    res.appendChild(XMLUtils.createNode(doc, STEP_STATUS_FIELD,</span>
-<span class="nc" id="L586">                                        transfer.getStepStatus().getCode()));</span>
-<span class="nc" id="L587">    res.appendChild(XMLUtils.createNode(doc, INFO_STATUS_FIELD,</span>
-<span class="nc" id="L588">                                        transfer.getInfoStatus().getCode()));</span>
-<span class="nc" id="L589">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_START_FIELD,</span>
-<span class="nc" id="L590">                                        transfer.getStart().toString()));</span>
-<span class="nc" id="L591">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_STOP_FIELD,</span>
-<span class="nc" id="L592">                                        transfer.getStop().toString()));</span>
-<span class="nc" id="L593">    return res;</span>
+<span class="fc" id="L542">    final Node res = doc.createElement(ROOT_ELEMENT);</span>
+<span class="fc" id="L543">    res.appendChild(</span>
+<span class="fc" id="L544">        XMLUtils.createNode(doc, ID_FIELD, Long.toString(transfer.getId())));</span>
+<span class="fc" id="L545">    res.appendChild(XMLUtils.createNode(doc, OWNER_REQUEST_FIELD,</span>
+<span class="fc" id="L546">                                        transfer.getOwnerRequest()));</span>
+<span class="fc" id="L547">    res.appendChild(</span>
+<span class="fc" id="L548">        XMLUtils.createNode(doc, REQUESTER_FIELD, transfer.getRequester()));</span>
+<span class="fc" id="L549">    res.appendChild(</span>
+<span class="fc" id="L550">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getRequested()));</span>
+<span class="fc" id="L551">    res.appendChild(</span>
+<span class="fc" id="L552">        XMLUtils.createNode(doc, ID_RULE_FIELD, transfer.getRule()));</span>
+<span class="fc" id="L553">    res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD,</span>
+<span class="fc" id="L554">                                        Boolean.toString(</span>
+<span class="fc" id="L555">                                            transfer.getRetrieveMode())));</span>
+<span class="fc" id="L556">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD,</span>
+<span class="fc" id="L557">                                        Integer.toString(</span>
+<span class="fc" id="L558">                                            transfer.getTransferMode())));</span>
+<span class="fc" id="L559">    res.appendChild(</span>
+<span class="fc" id="L560">        XMLUtils.createNode(doc, FILENAME_FIELD, transfer.getRequested()));</span>
+<span class="fc" id="L561">    res.appendChild(</span>
+<span class="fc" id="L562">        XMLUtils.createNode(doc, ORIGINAL_NAME_FIELD, transfer.getFilename()));</span>
+<span class="fc" id="L563">    res.appendChild(</span>
+<span class="fc" id="L564">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getOriginalName()));</span>
+<span class="fc" id="L565">    res.appendChild(</span>
+<span class="fc" id="L566">        XMLUtils.createNode(doc, FILE_INFO_FIELD, transfer.getFileInfo()));</span>
+<span class="fc" id="L567">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_INFO_FIELD,</span>
+<span class="fc" id="L568">                                        transfer.getTransferInfo()));</span>
+<span class="fc" id="L569">    res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean.toString(</span>
+<span class="fc" id="L570">        transfer.getIsMoved())));</span>
+<span class="fc" id="L571">    res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer.toString(</span>
+<span class="fc" id="L572">        transfer.getBlockSize())));</span>
+<span class="fc" id="L573">    res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD,</span>
+<span class="fc" id="L574">                                        Integer.toString(</span>
+<span class="fc" id="L575">                                            transfer.getGlobalStep()</span>
+<span class="fc" id="L576">                                                    .ordinal())));</span>
+<span class="fc" id="L577">    res.appendChild(XMLUtils.createNode(doc, GLOBAL_LAST_STEP_FIELD,</span>
+<span class="fc" id="L578">                                        Integer.toString(</span>
+<span class="fc" id="L579">                                            transfer.getLastGlobalStep()</span>
+<span class="fc" id="L580">                                                    .ordinal())));</span>
+<span class="fc" id="L581">    res.appendChild(XMLUtils.createNode(doc, STEP_FIELD,</span>
+<span class="fc" id="L582">                                        Integer.toString(transfer.getStep())));</span>
+<span class="fc" id="L583">    res.appendChild(XMLUtils.createNode(doc, RANK_FIELD,</span>
+<span class="fc" id="L584">                                        Integer.toString(transfer.getRank())));</span>
+<span class="fc" id="L585">    res.appendChild(XMLUtils.createNode(doc, STEP_STATUS_FIELD,</span>
+<span class="fc" id="L586">                                        transfer.getStepStatus().getCode()));</span>
+<span class="fc" id="L587">    res.appendChild(XMLUtils.createNode(doc, INFO_STATUS_FIELD,</span>
+<span class="fc" id="L588">                                        transfer.getInfoStatus().getCode()));</span>
+<span class="fc" id="L589">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_START_FIELD,</span>
+<span class="fc" id="L590">                                        transfer.getStart().toString()));</span>
+<span class="fc" id="L591">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_STOP_FIELD,</span>
+<span class="fc" id="L592">                                        transfer.getStop().toString()));</span>
+<span class="fc" id="L593">    return res;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

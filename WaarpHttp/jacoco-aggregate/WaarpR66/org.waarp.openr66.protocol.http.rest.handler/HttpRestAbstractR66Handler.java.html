@@ -58,14 +58,14 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   /**
    * Internal Logger
    */
-<span class="nc" id="L61">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L62">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
+<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
 
-<span class="nc" id="L64">  public enum ACTIONS_TYPE {</span>
-<span class="nc" id="L65">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
-<span class="nc" id="L66">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
-<span class="nc" id="L67">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
-<span class="nc" id="L68">    CreateTransfer</span>
+<span class="fc" id="L64">  public enum ACTIONS_TYPE {</span>
+<span class="fc" id="L65">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
+<span class="fc" id="L66">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
+<span class="fc" id="L67">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
+<span class="fc" id="L68">    CreateTransfer</span>
   }
 
   /**
@@ -75,20 +75,20 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   protected HttpRestAbstractR66Handler(final String path,
                                        final RestConfiguration config,
                                        final METHOD... method) {
-<span class="nc" id="L78">    super(path, path, true, config, method);</span>
-<span class="nc" id="L79">  }</span>
+<span class="fc" id="L78">    super(path, path, true, config, method);</span>
+<span class="fc" id="L79">  }</span>
 
   @Override
   public final void checkHandlerSessionCorrectness(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result) throws HttpForbiddenRequestException {
     try {
-<span class="nc" id="L86">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L86">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L87">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L88">      throw new HttpForbiddenRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L89">    }</span>
-<span class="nc" id="L90">    logger.debug(&quot;debug&quot;);</span>
-<span class="nc" id="L91">  }</span>
+<span class="fc" id="L89">    }</span>
+<span class="fc" id="L90">    logger.debug(&quot;debug&quot;);</span>
+<span class="fc" id="L91">  }</span>
 
   @Override
   public final void getFileUpload(final HttpRestHandler handler,
@@ -102,10 +102,10 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   protected final void setError(final HttpRestHandler handler,
                                 final RestArgument result,
                                 final HttpResponseStatus code) {
-<span class="nc" id="L105">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
-<span class="nc" id="L106">    handler.setWillClose(false);</span>
-<span class="nc" id="L107">    result.setResult(code);</span>
-<span class="nc" id="L108">  }</span>
+<span class="fc" id="L105">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L106">    handler.setWillClose(false);</span>
+<span class="fc" id="L107">    result.setResult(code);</span>
+<span class="fc" id="L108">  }</span>
 
   protected final void setError(final HttpRestHandler handler,
                                 final RestArgument result,
@@ -125,16 +125,16 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   protected final void setOk(final HttpRestHandler handler,
                              final RestArgument result, final JsonPacket packet,
                              final HttpResponseStatus code) {
-<span class="nc" id="L128">    handler.setStatus(HttpResponseStatus.OK);</span>
-<span class="nc" id="L129">    result.setResult(code);</span>
-<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (packet != null) {</span>
+<span class="fc" id="L128">    handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="fc" id="L129">    result.setResult(code);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">    if (packet != null) {</span>
       try {
-<span class="nc" id="L132">        result.addResult(packet.createObjectNode());</span>
+<span class="fc" id="L132">        result.addResult(packet.createObjectNode());</span>
 <span class="nc" id="L133">      } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L134">        result.setDetail(&quot;serialization impossible&quot;);</span>
-<span class="nc" id="L135">      }</span>
+<span class="fc" id="L135">      }</span>
     }
-<span class="nc" id="L137">  }</span>
+<span class="fc" id="L137">  }</span>
 
   @Override
   public HttpResponseStatus handleException(final HttpRestHandler handler,
@@ -154,24 +154,24 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
                                           final RestArgument result,
                                           final Object body,
                                           final HttpResponseStatus status) {
-<span class="nc" id="L157">    final String answer = result.toString();</span>
-<span class="nc" id="L158">    final ByteBuf buffer =</span>
-<span class="nc" id="L159">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L160">    final HttpResponse response = handler.getResponse(buffer);</span>
-<span class="nc" id="L161">    response.headers()</span>
-<span class="nc" id="L162">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
-<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="fc" id="L157">    final String answer = result.toString();</span>
+<span class="fc" id="L158">    final ByteBuf buffer =</span>
+<span class="fc" id="L159">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L160">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="fc" id="L161">    response.headers()</span>
+<span class="fc" id="L162">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
 <span class="nc" id="L164">      return ctx.writeAndFlush(response);</span>
     }
-<span class="nc" id="L166">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
-<span class="nc" id="L167">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
-<span class="nc" id="L168">    logger.debug(&quot;Will write: {}&quot;, body);</span>
-<span class="nc" id="L169">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (handler.isWillClose()) {</span>
-<span class="nc" id="L171">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
-<span class="nc" id="L172">      return future;</span>
+<span class="fc" id="L166">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="fc" id="L167">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="fc" id="L168">    logger.debug(&quot;Will write: {}&quot;, body);</span>
+<span class="fc" id="L169">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">    if (handler.isWillClose()) {</span>
+<span class="fc" id="L171">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
+<span class="fc" id="L172">      return future;</span>
     }
-<span class="nc" id="L174">    return null;</span>
+<span class="fc" id="L174">    return null;</span>
   }
 
   @Override
@@ -181,13 +181,13 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
       throws HttpIncorrectRequestException {
     final JsonPacket packet;
     try {
-<span class="nc" id="L184">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L184">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
       try {
-<span class="nc" id="L186">        ParametersChecker.checkSanityString(json);</span>
+<span class="fc" id="L186">        ParametersChecker.checkSanityString(json);</span>
 <span class="nc" id="L187">      } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L188">        throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L189">      }</span>
-<span class="nc" id="L190">      packet = JsonPacket.createFromBuffer(json);</span>
+<span class="fc" id="L189">      }</span>
+<span class="fc" id="L190">      packet = JsonPacket.createFromBuffer(json);</span>
 <span class="nc" id="L191">    } catch (final JsonParseException e) {</span>
 <span class="nc" id="L192">      logger.warn(&quot;Error: &quot; + body.toString(WaarpStringUtils.UTF8) + &quot; : {}&quot;,</span>
 <span class="nc" id="L193">                  e.getMessage());</span>
@@ -201,8 +201,8 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
 <span class="nc" id="L201">    } catch (final UnsupportedCharsetException e) {</span>
 <span class="nc" id="L202">      logger.warn(&quot;Error&quot; + &quot; : {}&quot;, e.getMessage());</span>
 <span class="nc" id="L203">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L204">    }</span>
-<span class="nc" id="L205">    return packet;</span>
+<span class="fc" id="L204">    }</span>
+<span class="fc" id="L205">    return packet;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

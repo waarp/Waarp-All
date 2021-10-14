@@ -51,29 +51,29 @@ class BitInputStream {
   public static boolean isEndOfStream(final int startAddress,
                                       final int currentAddress,
                                       final int bitsConsumed) {
-<span class="nc bnc" id="L54" title="All 4 branches missed.">    return startAddress == currentAddress &amp;&amp; bitsConsumed == Long.SIZE;</span>
+<span class="pc bpc" id="L54" title="2 of 4 branches missed.">    return startAddress == currentAddress &amp;&amp; bitsConsumed == Long.SIZE;</span>
   }
 
   static long readTail(final byte[] inputBase, final int inputAddress,
                        final int inputSize) {
-<span class="nc" id="L59">    long bits = inputBase[inputAddress] &amp; 0xFF;</span>
+<span class="fc" id="L59">    long bits = inputBase[inputAddress] &amp; 0xFF;</span>
 
-<span class="nc bnc" id="L61" title="All 7 branches missed.">    switch (inputSize) {</span>
+<span class="pc bpc" id="L61" title="4 of 7 branches missed.">    switch (inputSize) {</span>
       case 7:
-<span class="nc" id="L63">        bits |= (inputBase[inputAddress + 6] &amp; 0xFFL) &lt;&lt; 48;</span>
+<span class="fc" id="L63">        bits |= (inputBase[inputAddress + 6] &amp; 0xFFL) &lt;&lt; 48;</span>
       case 6:
-<span class="nc" id="L65">        bits |= (inputBase[inputAddress + 5] &amp; 0xFFL) &lt;&lt; 40;</span>
+<span class="fc" id="L65">        bits |= (inputBase[inputAddress + 5] &amp; 0xFFL) &lt;&lt; 40;</span>
       case 5:
-<span class="nc" id="L67">        bits |= (inputBase[inputAddress + 4] &amp; 0xFFL) &lt;&lt; 32;</span>
+<span class="fc" id="L67">        bits |= (inputBase[inputAddress + 4] &amp; 0xFFL) &lt;&lt; 32;</span>
       case 4:
-<span class="nc" id="L69">        bits |= (inputBase[inputAddress + 3] &amp; 0xFFL) &lt;&lt; 24;</span>
+<span class="fc" id="L69">        bits |= (inputBase[inputAddress + 3] &amp; 0xFFL) &lt;&lt; 24;</span>
       case 3:
-<span class="nc" id="L71">        bits |= (inputBase[inputAddress + 2] &amp; 0xFFL) &lt;&lt; 16;</span>
+<span class="fc" id="L71">        bits |= (inputBase[inputAddress + 2] &amp; 0xFFL) &lt;&lt; 16;</span>
       case 2:
-<span class="nc" id="L73">        bits |= (inputBase[inputAddress + 1] &amp; 0xFFL) &lt;&lt; 8;</span>
+<span class="fc" id="L73">        bits |= (inputBase[inputAddress + 1] &amp; 0xFFL) &lt;&lt; 8;</span>
     }
 
-<span class="nc" id="L76">    return bits;</span>
+<span class="fc" id="L76">    return bits;</span>
   }
 
   /**
@@ -81,7 +81,7 @@ class BitInputStream {
    */
   public static long peekBits(final int bitsConsumed, final long bitContainer,
                               final int numberOfBits) {
-<span class="nc" id="L84">    return (((bitContainer &lt;&lt; bitsConsumed) &gt;&gt;&gt; 1) &gt;&gt;&gt; (63 - numberOfBits));</span>
+<span class="fc" id="L84">    return (((bitContainer &lt;&lt; bitsConsumed) &gt;&gt;&gt; 1) &gt;&gt;&gt; (63 - numberOfBits));</span>
   }
 
   /**
@@ -92,7 +92,7 @@ class BitInputStream {
   public static long peekBitsFast(final int bitsConsumed,
                                   final long bitContainer,
                                   final int numberOfBits) {
-<span class="nc" id="L95">    return ((bitContainer &lt;&lt; bitsConsumed) &gt;&gt;&gt; (64 - numberOfBits));</span>
+<span class="fc" id="L95">    return ((bitContainer &lt;&lt; bitsConsumed) &gt;&gt;&gt; (64 - numberOfBits));</span>
   }
 
   static class Initializer {
@@ -104,44 +104,44 @@ class BitInputStream {
     private int bitsConsumed;
 
     public Initializer(final byte[] inputBase, final int startAddress,
-<span class="nc" id="L107">                       final int endAddress) {</span>
-<span class="nc" id="L108">      this.inputBase = inputBase;</span>
-<span class="nc" id="L109">      this.startAddress = startAddress;</span>
-<span class="nc" id="L110">      this.endAddress = endAddress;</span>
-<span class="nc" id="L111">    }</span>
+<span class="fc" id="L107">                       final int endAddress) {</span>
+<span class="fc" id="L108">      this.inputBase = inputBase;</span>
+<span class="fc" id="L109">      this.startAddress = startAddress;</span>
+<span class="fc" id="L110">      this.endAddress = endAddress;</span>
+<span class="fc" id="L111">    }</span>
 
     public long getBits() {
-<span class="nc" id="L114">      return bits;</span>
+<span class="fc" id="L114">      return bits;</span>
     }
 
     public int getCurrentAddress() {
-<span class="nc" id="L118">      return currentAddress;</span>
+<span class="fc" id="L118">      return currentAddress;</span>
     }
 
     public int getBitsConsumed() {
-<span class="nc" id="L122">      return bitsConsumed;</span>
+<span class="fc" id="L122">      return bitsConsumed;</span>
     }
 
     public void initialize() {
-<span class="nc bnc" id="L126" title="All 2 branches missed.">      verify(endAddress - startAddress &gt;= 1, startAddress,</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">      verify(endAddress - startAddress &gt;= 1, startAddress,</span>
              &quot;Bitstream is empty&quot;);
 
-<span class="nc" id="L129">      final int lastByte = inputBase[endAddress - 1] &amp; 0xFF;</span>
-<span class="nc bnc" id="L130" title="All 2 branches missed.">      verify(lastByte != 0, endAddress, &quot;Bitstream end mark not present&quot;);</span>
+<span class="fc" id="L129">      final int lastByte = inputBase[endAddress - 1] &amp; 0xFF;</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      verify(lastByte != 0, endAddress, &quot;Bitstream end mark not present&quot;);</span>
 
-<span class="nc" id="L132">      bitsConsumed = SIZE_OF_LONG - highestBit(lastByte);</span>
+<span class="fc" id="L132">      bitsConsumed = SIZE_OF_LONG - highestBit(lastByte);</span>
 
-<span class="nc" id="L134">      final int inputSize = endAddress - startAddress;</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (inputSize &gt;= SIZE_OF_LONG) {  /* normal case */</span>
-<span class="nc" id="L136">        currentAddress = endAddress - SIZE_OF_LONG;</span>
-<span class="nc" id="L137">        bits = getLong(inputBase, currentAddress);</span>
+<span class="fc" id="L134">      final int inputSize = endAddress - startAddress;</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">      if (inputSize &gt;= SIZE_OF_LONG) {  /* normal case */</span>
+<span class="fc" id="L136">        currentAddress = endAddress - SIZE_OF_LONG;</span>
+<span class="fc" id="L137">        bits = getLong(inputBase, currentAddress);</span>
       } else {
-<span class="nc" id="L139">        currentAddress = startAddress;</span>
-<span class="nc" id="L140">        bits = readTail(inputBase, startAddress, inputSize);</span>
+<span class="fc" id="L139">        currentAddress = startAddress;</span>
+<span class="fc" id="L140">        bits = readTail(inputBase, startAddress, inputSize);</span>
 
-<span class="nc" id="L142">        bitsConsumed += (SIZE_OF_LONG - inputSize) * 8;</span>
+<span class="fc" id="L142">        bitsConsumed += (SIZE_OF_LONG - inputSize) * 8;</span>
       }
-<span class="nc" id="L144">    }</span>
+<span class="fc" id="L144">    }</span>
   }
 
   static final class Loader {
@@ -154,58 +154,58 @@ class BitInputStream {
 
     public Loader(final byte[] inputBase, final int startAddress,
                   final int currentAddress, final long bits,
-<span class="nc" id="L157">                  final int bitsConsumed) {</span>
-<span class="nc" id="L158">      this.inputBase = inputBase;</span>
-<span class="nc" id="L159">      this.startAddress = startAddress;</span>
-<span class="nc" id="L160">      this.bits = bits;</span>
-<span class="nc" id="L161">      this.currentAddress = currentAddress;</span>
-<span class="nc" id="L162">      this.bitsConsumed = bitsConsumed;</span>
-<span class="nc" id="L163">    }</span>
+<span class="fc" id="L157">                  final int bitsConsumed) {</span>
+<span class="fc" id="L158">      this.inputBase = inputBase;</span>
+<span class="fc" id="L159">      this.startAddress = startAddress;</span>
+<span class="fc" id="L160">      this.bits = bits;</span>
+<span class="fc" id="L161">      this.currentAddress = currentAddress;</span>
+<span class="fc" id="L162">      this.bitsConsumed = bitsConsumed;</span>
+<span class="fc" id="L163">    }</span>
 
     public long getBits() {
-<span class="nc" id="L166">      return bits;</span>
+<span class="fc" id="L166">      return bits;</span>
     }
 
     public int getCurrentAddress() {
-<span class="nc" id="L170">      return currentAddress;</span>
+<span class="fc" id="L170">      return currentAddress;</span>
     }
 
     public int getBitsConsumed() {
-<span class="nc" id="L174">      return bitsConsumed;</span>
+<span class="fc" id="L174">      return bitsConsumed;</span>
     }
 
     public boolean isOverflow() {
-<span class="nc" id="L178">      return overflow;</span>
+<span class="fc" id="L178">      return overflow;</span>
     }
 
     public boolean load() {
-<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (bitsConsumed &gt; 64) {</span>
-<span class="nc" id="L183">        overflow = true;</span>
-<span class="nc" id="L184">        return true;</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">      } else if (currentAddress == startAddress) {</span>
-<span class="nc" id="L186">        return true;</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">      if (bitsConsumed &gt; 64) {</span>
+<span class="fc" id="L183">        overflow = true;</span>
+<span class="fc" id="L184">        return true;</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">      } else if (currentAddress == startAddress) {</span>
+<span class="fc" id="L186">        return true;</span>
       }
 
-<span class="nc" id="L189">      int bytes = bitsConsumed &gt;&gt;&gt; 3; // divide by 8</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (currentAddress &gt;= startAddress + SIZE_OF_LONG) {</span>
-<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (bytes &gt; 0) {</span>
-<span class="nc" id="L192">          currentAddress -= bytes;</span>
-<span class="nc" id="L193">          bits = getLong(inputBase, currentAddress);</span>
+<span class="fc" id="L189">      int bytes = bitsConsumed &gt;&gt;&gt; 3; // divide by 8</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">      if (currentAddress &gt;= startAddress + SIZE_OF_LONG) {</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (bytes &gt; 0) {</span>
+<span class="fc" id="L192">          currentAddress -= bytes;</span>
+<span class="fc" id="L193">          bits = getLong(inputBase, currentAddress);</span>
         }
-<span class="nc" id="L195">        bitsConsumed &amp;= 0x7;</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">      } else if (currentAddress - bytes &lt; startAddress) {</span>
-<span class="nc" id="L197">        bytes = currentAddress - startAddress;</span>
-<span class="nc" id="L198">        currentAddress = startAddress;</span>
-<span class="nc" id="L199">        bitsConsumed -= bytes * SIZE_OF_LONG;</span>
-<span class="nc" id="L200">        bits = getLong(inputBase, startAddress);</span>
-<span class="nc" id="L201">        return true;</span>
+<span class="fc" id="L195">        bitsConsumed &amp;= 0x7;</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">      } else if (currentAddress - bytes &lt; startAddress) {</span>
+<span class="fc" id="L197">        bytes = currentAddress - startAddress;</span>
+<span class="fc" id="L198">        currentAddress = startAddress;</span>
+<span class="fc" id="L199">        bitsConsumed -= bytes * SIZE_OF_LONG;</span>
+<span class="fc" id="L200">        bits = getLong(inputBase, startAddress);</span>
+<span class="fc" id="L201">        return true;</span>
       } else {
-<span class="nc" id="L203">        currentAddress -= bytes;</span>
-<span class="nc" id="L204">        bitsConsumed -= bytes * SIZE_OF_LONG;</span>
-<span class="nc" id="L205">        bits = getLong(inputBase, currentAddress);</span>
+<span class="fc" id="L203">        currentAddress -= bytes;</span>
+<span class="fc" id="L204">        bitsConsumed -= bytes * SIZE_OF_LONG;</span>
+<span class="fc" id="L205">        bits = getLong(inputBase, currentAddress);</span>
       }
 
-<span class="nc" id="L208">      return false;</span>
+<span class="fc" id="L208">      return false;</span>
     }
   }
 }

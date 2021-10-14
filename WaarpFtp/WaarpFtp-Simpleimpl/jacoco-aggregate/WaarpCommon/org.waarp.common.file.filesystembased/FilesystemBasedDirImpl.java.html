@@ -68,8 +68,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   /**
    * Internal Logger
    */
-<span class="nc" id="L71">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L72">      WaarpLoggerFactory.getLogger(FilesystemBasedDirImpl.class);</span>
+<span class="fc" id="L71">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L72">      WaarpLoggerFactory.getLogger(FilesystemBasedDirImpl.class);</span>
 
   /**
    * Class that handles specifity of one Jdk or another
@@ -80,19 +80,19 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * Initialize the filesystem
    */
   static {
-<span class="nc" id="L83">    initJdkDependent();</span>
-<span class="nc" id="L84">  }</span>
+<span class="fc" id="L83">    initJdkDependent();</span>
+<span class="fc" id="L84">  }</span>
 
   /**
    * Init according to internals of JDK
    */
   private static void initJdkDependent() {
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (DetectionUtils.javaVersion() &gt;= 6) {</span>
-<span class="nc" id="L91">      filesystemBasedFtpDirJdk = new FilesystemBasedDirJdk6();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">    if (DetectionUtils.javaVersion() &gt;= 6) {</span>
+<span class="fc" id="L91">      filesystemBasedFtpDirJdk = new FilesystemBasedDirJdk6();</span>
     } else {
 <span class="nc" id="L93">      filesystemBasedFtpDirJdk = new FilesystemBasedDirJdk5();</span>
     }
-<span class="nc" id="L95">  }</span>
+<span class="fc" id="L95">  }</span>
 
   /**
    * Init the dependant object according to internals of JDK
@@ -112,14 +112,14 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @param optsMLSx
    */
   protected FilesystemBasedDirImpl(final SessionInterface session,
-<span class="nc" id="L115">                                   final OptsMLSxInterface optsMLSx) {</span>
-<span class="nc" id="L116">    this.session = session;</span>
-<span class="nc" id="L117">    this.optsMLSx = optsMLSx;</span>
-<span class="nc" id="L118">    this.optsMLSx.setOptsModify((byte) 1);</span>
-<span class="nc" id="L119">    this.optsMLSx.setOptsPerm((byte) 1);</span>
-<span class="nc" id="L120">    this.optsMLSx.setOptsSize((byte) 1);</span>
-<span class="nc" id="L121">    this.optsMLSx.setOptsType((byte) 1);</span>
-<span class="nc" id="L122">  }</span>
+<span class="fc" id="L115">                                   final OptsMLSxInterface optsMLSx) {</span>
+<span class="fc" id="L116">    this.session = session;</span>
+<span class="fc" id="L117">    this.optsMLSx = optsMLSx;</span>
+<span class="fc" id="L118">    this.optsMLSx.setOptsModify((byte) 1);</span>
+<span class="fc" id="L119">    this.optsMLSx.setOptsPerm((byte) 1);</span>
+<span class="fc" id="L120">    this.optsMLSx.setOptsSize((byte) 1);</span>
+<span class="fc" id="L121">    this.optsMLSx.setOptsType((byte) 1);</span>
+<span class="fc" id="L122">  }</span>
 
   /**
    * Finds all files matching a wildcard expression (based on '?', '~' or
@@ -141,16 +141,16 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   protected final List&lt;String&gt; wildcardFiles(final String pathWithWildcard)
       throws CommandAbstractException {
-<span class="nc" id="L144">    final List&lt;String&gt; resultPaths = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L144">    final List&lt;String&gt; resultPaths = new ArrayList&lt;String&gt;();</span>
     // First check if pathWithWildcard contains wildcards
-<span class="nc bnc" id="L146" title="All 4 branches missed.">    if (!(pathWithWildcard.contains(&quot;*&quot;) || pathWithWildcard.contains(&quot;?&quot;) ||</span>
-<span class="nc bnc" id="L147" title="All 2 branches missed.">          pathWithWildcard.contains(&quot;~&quot;))) {</span>
+<span class="pc bpc" id="L146" title="2 of 4 branches missed.">    if (!(pathWithWildcard.contains(&quot;*&quot;) || pathWithWildcard.contains(&quot;?&quot;) ||</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">          pathWithWildcard.contains(&quot;~&quot;))) {</span>
       // No so simply return the list containing this path after
       // validating it
-<span class="nc bnc" id="L150" title="All 2 branches missed.">      if (getSession().getAuth().isBusinessPathValid(pathWithWildcard)) {</span>
-<span class="nc" id="L151">        resultPaths.add(pathWithWildcard);</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">      if (getSession().getAuth().isBusinessPathValid(pathWithWildcard)) {</span>
+<span class="fc" id="L151">        resultPaths.add(pathWithWildcard);</span>
       }
-<span class="nc" id="L153">      return resultPaths;</span>
+<span class="fc" id="L153">      return resultPaths;</span>
     }
     // Do we support Wildcard path
 <span class="nc bnc" id="L156" title="All 2 branches missed.">    if (!FilesystemBasedDirJdkAbstract.ueApacheCommonsIo) {</span>
@@ -226,14 +226,14 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    */
   protected final File getFileFromPath(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L229">    final String newdir = validatePath(path);</span>
-<span class="nc bnc" id="L230" title="All 2 branches missed.">    if (isAbsolute(newdir)) {</span>
+<span class="fc" id="L229">    final String newdir = validatePath(path);</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">    if (isAbsolute(newdir)) {</span>
 <span class="nc" id="L231">      return new File(newdir);</span>
     }
-<span class="nc" id="L233">    final String truedir =</span>
-<span class="nc" id="L234">        ((FilesystemBasedAuthImpl) getSession().getAuth()).getAbsolutePath(</span>
+<span class="fc" id="L233">    final String truedir =</span>
+<span class="fc" id="L234">        ((FilesystemBasedAuthImpl) getSession().getAuth()).getAbsolutePath(</span>
             newdir);
-<span class="nc" id="L236">    return new File(truedir);</span>
+<span class="fc" id="L236">    return new File(truedir);</span>
   }
 
   /**
@@ -247,20 +247,20 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    */
   protected final File getTrueFile(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L250">    checkIdentify();</span>
-<span class="nc" id="L251">    final String newpath = consolidatePath(path);</span>
-<span class="nc" id="L252">    final List&lt;String&gt; paths = wildcardFiles(normalizePath(newpath));</span>
-<span class="nc bnc" id="L253" title="All 2 branches missed.">    if (paths.size() != 1) {</span>
+<span class="fc" id="L250">    checkIdentify();</span>
+<span class="fc" id="L251">    final String newpath = consolidatePath(path);</span>
+<span class="fc" id="L252">    final List&lt;String&gt; paths = wildcardFiles(normalizePath(newpath));</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">    if (paths.size() != 1) {</span>
 <span class="nc" id="L254">      throw new Reply550Exception(</span>
 <span class="nc" id="L255">          &quot;File not found: &quot; + paths.size() + &quot; founds&quot;);</span>
     }
-<span class="nc" id="L257">    String extDir = paths.get(0);</span>
-<span class="nc" id="L258">    extDir = validatePath(extDir);</span>
-<span class="nc" id="L259">    final File file = getFileFromPath(extDir);</span>
-<span class="nc bnc" id="L260" title="All 2 branches missed.">    if (!file.isFile()) {</span>
+<span class="fc" id="L257">    String extDir = paths.get(0);</span>
+<span class="fc" id="L258">    extDir = validatePath(extDir);</span>
+<span class="fc" id="L259">    final File file = getFileFromPath(extDir);</span>
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">    if (!file.isFile()) {</span>
 <span class="nc" id="L261">      throw new Reply550Exception(&quot;Path is not a file: &quot; + path);</span>
     }
-<span class="nc" id="L263">    return file;</span>
+<span class="fc" id="L263">    return file;</span>
   }
 
   /**
@@ -278,19 +278,19 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public final boolean changeDirectory(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L281">    checkIdentify();</span>
-<span class="nc" id="L282">    final String newpath = consolidatePath(path);</span>
-<span class="nc" id="L283">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
-<span class="nc bnc" id="L284" title="All 2 branches missed.">    if (paths.size() != 1) {</span>
+<span class="fc" id="L281">    checkIdentify();</span>
+<span class="fc" id="L282">    final String newpath = consolidatePath(path);</span>
+<span class="fc" id="L283">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">    if (paths.size() != 1) {</span>
 <span class="nc" id="L285">      logger.warn(&quot;CD error: {}&quot;, newpath);</span>
 <span class="nc" id="L286">      throw new Reply550Exception(</span>
 <span class="nc" id="L287">          DIRECTORY_NOT_FOUND + paths.size() + &quot; founds&quot;);</span>
     }
-<span class="nc" id="L289">    String extDir = paths.get(0);</span>
-<span class="nc" id="L290">    extDir = validatePath(extDir);</span>
-<span class="nc bnc" id="L291" title="All 2 branches missed.">    if (isDirectory(extDir)) {</span>
-<span class="nc" id="L292">      currentDir = extDir;</span>
-<span class="nc" id="L293">      return true;</span>
+<span class="fc" id="L289">    String extDir = paths.get(0);</span>
+<span class="fc" id="L290">    extDir = validatePath(extDir);</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">    if (isDirectory(extDir)) {</span>
+<span class="fc" id="L292">      currentDir = extDir;</span>
+<span class="fc" id="L293">      return true;</span>
     }
 <span class="nc" id="L295">    throw new Reply550Exception(DIRECTORY_NOT_FOUND + extDir);</span>
   }
@@ -315,39 +315,39 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public final String mkdir(final String directory)
       throws CommandAbstractException {
-<span class="nc" id="L318">    checkIdentify();</span>
-<span class="nc" id="L319">    final String newdirectory = consolidatePath(directory);</span>
-<span class="nc" id="L320">    final File dir = new File(newdirectory);</span>
-<span class="nc" id="L321">    final String parent = dir.getParentFile().getPath();</span>
-<span class="nc" id="L322">    final List&lt;String&gt; paths = wildcardFiles(normalizePath(parent));</span>
-<span class="nc bnc" id="L323" title="All 2 branches missed.">    if (paths.size() != 1) {</span>
+<span class="fc" id="L318">    checkIdentify();</span>
+<span class="fc" id="L319">    final String newdirectory = consolidatePath(directory);</span>
+<span class="fc" id="L320">    final File dir = new File(newdirectory);</span>
+<span class="fc" id="L321">    final String parent = dir.getParentFile().getPath();</span>
+<span class="fc" id="L322">    final List&lt;String&gt; paths = wildcardFiles(normalizePath(parent));</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">    if (paths.size() != 1) {</span>
 <span class="nc" id="L324">      throw new Reply550Exception(</span>
 <span class="nc" id="L325">          &quot;Base Directory not found: &quot; + paths.size() + &quot; founds&quot;);</span>
     }
-<span class="nc" id="L327">    String newDir = paths.get(0) + SEPARATOR + dir.getName();</span>
-<span class="nc" id="L328">    newDir = validatePath(newDir);</span>
-<span class="nc" id="L329">    final File newdir = getFileFromPath(newDir);</span>
-<span class="nc bnc" id="L330" title="All 2 branches missed.">    if (newdir.mkdir()) {</span>
-<span class="nc" id="L331">      return newDir;</span>
+<span class="fc" id="L327">    String newDir = paths.get(0) + SEPARATOR + dir.getName();</span>
+<span class="fc" id="L328">    newDir = validatePath(newDir);</span>
+<span class="fc" id="L329">    final File newdir = getFileFromPath(newDir);</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">    if (newdir.mkdir()) {</span>
+<span class="fc" id="L331">      return newDir;</span>
     }
-<span class="nc" id="L333">    throw new Reply550Exception(&quot;Cannot create directory &quot; + newDir);</span>
+<span class="fc" id="L333">    throw new Reply550Exception(&quot;Cannot create directory &quot; + newDir);</span>
   }
 
   @Override
   public final String rmdir(final String directory)
       throws CommandAbstractException {
-<span class="nc" id="L339">    checkIdentify();</span>
-<span class="nc" id="L340">    final String newdirectory = consolidatePath(directory);</span>
-<span class="nc" id="L341">    final List&lt;String&gt; paths = wildcardFiles(normalizePath(newdirectory));</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">    if (paths.size() != 1) {</span>
+<span class="fc" id="L339">    checkIdentify();</span>
+<span class="fc" id="L340">    final String newdirectory = consolidatePath(directory);</span>
+<span class="fc" id="L341">    final List&lt;String&gt; paths = wildcardFiles(normalizePath(newdirectory));</span>
+<span class="pc bpc" id="L342" title="1 of 2 branches missed.">    if (paths.size() != 1) {</span>
 <span class="nc" id="L343">      throw new Reply550Exception(</span>
 <span class="nc" id="L344">          DIRECTORY_NOT_FOUND + paths.size() + &quot; founds&quot;);</span>
     }
-<span class="nc" id="L346">    String extDir = paths.get(0);</span>
-<span class="nc" id="L347">    extDir = validatePath(extDir);</span>
-<span class="nc" id="L348">    final File dir = getFileFromPath(extDir);</span>
-<span class="nc bnc" id="L349" title="All 2 branches missed.">    if (dir.delete()) {</span>
-<span class="nc" id="L350">      return extDir;</span>
+<span class="fc" id="L346">    String extDir = paths.get(0);</span>
+<span class="fc" id="L347">    extDir = validatePath(extDir);</span>
+<span class="fc" id="L348">    final File dir = getFileFromPath(extDir);</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">    if (dir.delete()) {</span>
+<span class="fc" id="L350">      return extDir;</span>
     }
 <span class="nc" id="L352">    throw new Reply550Exception(&quot;Cannot delete directory &quot; + extDir);</span>
   }
@@ -355,25 +355,25 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public final boolean isDirectory(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L358">    checkIdentify();</span>
-<span class="nc" id="L359">    final File dir = getFileFromPath(path);</span>
-<span class="nc" id="L360">    return dir.isDirectory();</span>
+<span class="fc" id="L358">    checkIdentify();</span>
+<span class="fc" id="L359">    final File dir = getFileFromPath(path);</span>
+<span class="fc" id="L360">    return dir.isDirectory();</span>
   }
 
   @Override
   public final boolean isFile(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L366">    checkIdentify();</span>
-<span class="nc" id="L367">    return getFileFromPath(path).isFile();</span>
+<span class="fc" id="L366">    checkIdentify();</span>
+<span class="fc" id="L367">    return getFileFromPath(path).isFile();</span>
   }
 
   @Override
   public final String getModificationTime(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L373">    checkIdentify();</span>
-<span class="nc" id="L374">    final File file = getFileFromPath(path);</span>
-<span class="nc bnc" id="L375" title="All 2 branches missed.">    if (file.exists()) {</span>
-<span class="nc" id="L376">      return getModificationTime(file);</span>
+<span class="fc" id="L373">    checkIdentify();</span>
+<span class="fc" id="L374">    final File file = getFileFromPath(path);</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">    if (file.exists()) {</span>
+<span class="fc" id="L376">      return getModificationTime(file);</span>
     }
 <span class="nc" id="L378">    throw new Reply550Exception('&quot;' + path + &quot;\&quot; does not exist&quot;);</span>
   }
@@ -386,46 +386,46 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @return the Modification time as a String YYYYMMDDHHMMSS.sss
    */
   protected final String getModificationTime(final File file) {
-<span class="nc" id="L389">    final long mstime = file.lastModified();</span>
-<span class="nc" id="L390">    final Calendar calendar = Calendar.getInstance();</span>
-<span class="nc" id="L391">    calendar.setTimeInMillis(mstime);</span>
-<span class="nc" id="L392">    final int year = calendar.get(Calendar.YEAR);</span>
-<span class="nc" id="L393">    final int month = calendar.get(Calendar.MONTH) + 1;</span>
-<span class="nc" id="L394">    final int day = calendar.get(Calendar.DAY_OF_MONTH);</span>
-<span class="nc" id="L395">    final int hour = calendar.get(Calendar.HOUR_OF_DAY);</span>
-<span class="nc" id="L396">    final int minute = calendar.get(Calendar.MINUTE);</span>
-<span class="nc" id="L397">    final int second = calendar.get(Calendar.SECOND);</span>
-<span class="nc" id="L398">    final int ms = calendar.get(Calendar.MILLISECOND);</span>
-<span class="nc" id="L399">    final StringBuilder sb = new StringBuilder(18);</span>
-<span class="nc" id="L400">    sb.append(year);</span>
-<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (month &lt; 10) {</span>
+<span class="fc" id="L389">    final long mstime = file.lastModified();</span>
+<span class="fc" id="L390">    final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L391">    calendar.setTimeInMillis(mstime);</span>
+<span class="fc" id="L392">    final int year = calendar.get(Calendar.YEAR);</span>
+<span class="fc" id="L393">    final int month = calendar.get(Calendar.MONTH) + 1;</span>
+<span class="fc" id="L394">    final int day = calendar.get(Calendar.DAY_OF_MONTH);</span>
+<span class="fc" id="L395">    final int hour = calendar.get(Calendar.HOUR_OF_DAY);</span>
+<span class="fc" id="L396">    final int minute = calendar.get(Calendar.MINUTE);</span>
+<span class="fc" id="L397">    final int second = calendar.get(Calendar.SECOND);</span>
+<span class="fc" id="L398">    final int ms = calendar.get(Calendar.MILLISECOND);</span>
+<span class="fc" id="L399">    final StringBuilder sb = new StringBuilder(18);</span>
+<span class="fc" id="L400">    sb.append(year);</span>
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">    if (month &lt; 10) {</span>
 <span class="nc" id="L402">      sb.append(0);</span>
     }
-<span class="nc" id="L404">    sb.append(month);</span>
-<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (day &lt; 10) {</span>
+<span class="fc" id="L404">    sb.append(month);</span>
+<span class="pc bpc" id="L405" title="1 of 2 branches missed.">    if (day &lt; 10) {</span>
 <span class="nc" id="L406">      sb.append(0);</span>
     }
-<span class="nc" id="L408">    sb.append(day);</span>
-<span class="nc bnc" id="L409" title="All 2 branches missed.">    if (hour &lt; 10) {</span>
+<span class="fc" id="L408">    sb.append(day);</span>
+<span class="pc bpc" id="L409" title="1 of 2 branches missed.">    if (hour &lt; 10) {</span>
 <span class="nc" id="L410">      sb.append(0);</span>
     }
-<span class="nc" id="L412">    sb.append(hour);</span>
-<span class="nc bnc" id="L413" title="All 2 branches missed.">    if (minute &lt; 10) {</span>
+<span class="fc" id="L412">    sb.append(hour);</span>
+<span class="pc bpc" id="L413" title="1 of 2 branches missed.">    if (minute &lt; 10) {</span>
 <span class="nc" id="L414">      sb.append(0);</span>
     }
-<span class="nc" id="L416">    sb.append(minute);</span>
-<span class="nc bnc" id="L417" title="All 2 branches missed.">    if (second &lt; 10) {</span>
+<span class="fc" id="L416">    sb.append(minute);</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">    if (second &lt; 10) {</span>
 <span class="nc" id="L418">      sb.append(0);</span>
     }
-<span class="nc" id="L420">    sb.append(second).append('.');</span>
-<span class="nc bnc" id="L421" title="All 2 branches missed.">    if (ms &lt; 10) {</span>
-<span class="nc" id="L422">      sb.append(0);</span>
+<span class="fc" id="L420">    sb.append(second).append('.');</span>
+<span class="pc bpc" id="L421" title="1 of 2 branches missed.">    if (ms &lt; 10) {</span>
+<span class="fc" id="L422">      sb.append(0);</span>
     }
-<span class="nc bnc" id="L424" title="All 2 branches missed.">    if (ms &lt; 100) {</span>
-<span class="nc" id="L425">      sb.append(0);</span>
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">    if (ms &lt; 100) {</span>
+<span class="fc" id="L425">      sb.append(0);</span>
     }
-<span class="nc" id="L427">    sb.append(ms);</span>
-<span class="nc" id="L428">    return sb.toString();</span>
+<span class="fc" id="L427">    sb.append(ms);</span>
+<span class="fc" id="L428">    return sb.toString();</span>
   }
 
   @Override
@@ -474,13 +474,13 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public final List&lt;String&gt; listFull(final String path, final boolean lsFormat)
       throws CommandAbstractException {
-<span class="nc" id="L477">    checkIdentify();</span>
-<span class="nc" id="L478">    boolean listAllFiles = false;</span>
-<span class="nc" id="L479">    String newpath = path;</span>
-<span class="nc bnc" id="L480" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(newpath)) {</span>
+<span class="fc" id="L477">    checkIdentify();</span>
+<span class="fc" id="L478">    boolean listAllFiles = false;</span>
+<span class="fc" id="L479">    String newpath = path;</span>
+<span class="pc bpc" id="L480" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(newpath)) {</span>
 <span class="nc" id="L481">      newpath = currentDir;</span>
     }
-<span class="nc bnc" id="L483" title="All 4 branches missed.">    if (newpath.startsWith(&quot;-a&quot;) || newpath.startsWith(&quot;-A&quot;)) {</span>
+<span class="pc bpc" id="L483" title="2 of 4 branches missed.">    if (newpath.startsWith(&quot;-a&quot;) || newpath.startsWith(&quot;-A&quot;)) {</span>
 <span class="nc" id="L484">      final String[] args = newpath.split(&quot; &quot;);</span>
 <span class="nc bnc" id="L485" title="All 2 branches missed.">      if (args.length &gt; 1) {</span>
 <span class="nc" id="L486">        newpath = args[1];</span>
@@ -489,27 +489,27 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       }
 <span class="nc" id="L490">      listAllFiles = true;</span>
     }
-<span class="nc" id="L492">    newpath = consolidatePath(newpath);</span>
+<span class="fc" id="L492">    newpath = consolidatePath(newpath);</span>
     // First get all base directories
-<span class="nc" id="L494">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
-<span class="nc bnc" id="L495" title="All 2 branches missed.">    if (paths.isEmpty()) {</span>
+<span class="fc" id="L494">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
+<span class="pc bpc" id="L495" title="1 of 2 branches missed.">    if (paths.isEmpty()) {</span>
 <span class="nc" id="L496">      throw new Reply550Exception(&quot;No files found&quot;);</span>
     }
     // Now if they are directories, list inside them
-<span class="nc" id="L499">    final List&lt;String&gt; newPaths = new ArrayList&lt;String&gt;();</span>
-<span class="nc bnc" id="L500" title="All 2 branches missed.">    for (final String file : paths) {</span>
-<span class="nc" id="L501">      final File dir = getFileFromPath(file);</span>
-<span class="nc bnc" id="L502" title="All 2 branches missed.">      if (dir.exists()) {</span>
-<span class="nc bnc" id="L503" title="All 2 branches missed.">        if (dir.isDirectory()) {</span>
-<span class="nc" id="L504">          final File[] files = dir.listFiles();</span>
-<span class="nc bnc" id="L505" title="All 2 branches missed.">          for (final File finalFile : files) {</span>
-<span class="nc bnc" id="L506" title="All 2 branches missed.">            if (lsFormat) {</span>
-<span class="nc" id="L507">              newPaths.add(lsInfo(finalFile));</span>
+<span class="fc" id="L499">    final List&lt;String&gt; newPaths = new ArrayList&lt;String&gt;();</span>
+<span class="fc bfc" id="L500" title="All 2 branches covered.">    for (final String file : paths) {</span>
+<span class="fc" id="L501">      final File dir = getFileFromPath(file);</span>
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">      if (dir.exists()) {</span>
+<span class="pc bpc" id="L503" title="1 of 2 branches missed.">        if (dir.isDirectory()) {</span>
+<span class="fc" id="L504">          final File[] files = dir.listFiles();</span>
+<span class="fc bfc" id="L505" title="All 2 branches covered.">          for (final File finalFile : files) {</span>
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">            if (lsFormat) {</span>
+<span class="fc" id="L507">              newPaths.add(lsInfo(finalFile));</span>
             } else {
 <span class="nc" id="L509">              newPaths.add(mlsxInfo(finalFile));</span>
             }
           }
-<span class="nc" id="L512">        } else {</span>
+<span class="fc" id="L512">        } else {</span>
 <span class="nc bnc" id="L513" title="All 2 branches missed.">          if (lsFormat) {</span>
 <span class="nc" id="L514">            newPaths.add(lsInfo(dir));</span>
           } else {
@@ -517,8 +517,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
           }
         }
       }
-<span class="nc" id="L520">    }</span>
-<span class="nc bnc" id="L521" title="All 2 branches missed.">    if (listAllFiles) {</span>
+<span class="fc" id="L520">    }</span>
+<span class="pc bpc" id="L521" title="1 of 2 branches missed.">    if (listAllFiles) {</span>
 <span class="nc" id="L522">      final File dir = new File(getFileFromPath(newpath), SEPARATOR + &quot;..&quot;);</span>
 <span class="nc bnc" id="L523" title="All 2 branches missed.">      if (lsFormat) {</span>
 <span class="nc" id="L524">        newPaths.add(lsInfo(dir));</span>
@@ -526,7 +526,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
 <span class="nc" id="L526">        newPaths.add(mlsxInfo(dir));</span>
       }
     }
-<span class="nc" id="L529">    return newPaths;</span>
+<span class="fc" id="L529">    return newPaths;</span>
   }
 
   @Override
@@ -568,26 +568,26 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     // Unix FileInterface type,permissions,hard
     // link(?),owner(?),group(?),size,date
     // and filename
-<span class="nc" id="L571">    final StringBuilder builder =</span>
-<span class="nc bnc" id="L572" title="All 2 branches missed.">        new StringBuilder().append(file.isDirectory()? 'd' : '-')</span>
-<span class="nc bnc" id="L573" title="All 2 branches missed.">                           .append(file.canRead()? 'r' : '-')</span>
-<span class="nc bnc" id="L574" title="All 2 branches missed.">                           .append(file.canWrite()? 'w' : '-');</span>
-<span class="nc bnc" id="L575" title="All 2 branches missed.">    if (filesystemBasedFtpDirJdk != null) {</span>
-<span class="nc bnc" id="L576" title="All 2 branches missed.">      builder.append(filesystemBasedFtpDirJdk.canExecute(file)? 'x' : '-');</span>
+<span class="fc" id="L571">    final StringBuilder builder =</span>
+<span class="pc bpc" id="L572" title="1 of 2 branches missed.">        new StringBuilder().append(file.isDirectory()? 'd' : '-')</span>
+<span class="pc bpc" id="L573" title="1 of 2 branches missed.">                           .append(file.canRead()? 'r' : '-')</span>
+<span class="pc bpc" id="L574" title="1 of 2 branches missed.">                           .append(file.canWrite()? 'w' : '-');</span>
+<span class="pc bpc" id="L575" title="1 of 2 branches missed.">    if (filesystemBasedFtpDirJdk != null) {</span>
+<span class="pc bpc" id="L576" title="1 of 2 branches missed.">      builder.append(filesystemBasedFtpDirJdk.canExecute(file)? 'x' : '-');</span>
     } else {
 <span class="nc" id="L578">      builder.append('-');</span>
     }
     // Group and others not supported
-<span class="nc" id="L581">    builder.append(&quot;---&quot;).append(&quot;---&quot;).append(' ').append(&quot;1 &quot;)// hard link ?</span>
-<span class="nc" id="L582">           .append(&quot;anybody\t&quot;)// owner ?</span>
-<span class="nc" id="L583">           .append(&quot;anygroup\t&quot;)// group ?</span>
-<span class="nc" id="L584">           .append(file.length())// size</span>
-<span class="nc" id="L585">           .append('\t');</span>
-<span class="nc" id="L586">    final long lastmod = file.lastModified();</span>
+<span class="fc" id="L581">    builder.append(&quot;---&quot;).append(&quot;---&quot;).append(' ').append(&quot;1 &quot;)// hard link ?</span>
+<span class="fc" id="L582">           .append(&quot;anybody\t&quot;)// owner ?</span>
+<span class="fc" id="L583">           .append(&quot;anygroup\t&quot;)// group ?</span>
+<span class="fc" id="L584">           .append(file.length())// size</span>
+<span class="fc" id="L585">           .append('\t');</span>
+<span class="fc" id="L586">    final long lastmod = file.lastModified();</span>
     final String fmt;
     // It seems Full Time is not recognized by some FTP client
-<span class="nc" id="L589">    final long currentTime = System.currentTimeMillis();</span>
-<span class="nc bnc" id="L590" title="All 4 branches missed.">    if (currentTime &gt; lastmod + 6L * 30L * 24L * 60L * 60L * 1000L // Old.</span>
+<span class="fc" id="L589">    final long currentTime = System.currentTimeMillis();</span>
+<span class="pc bpc" id="L590" title="2 of 4 branches missed.">    if (currentTime &gt; lastmod + 6L * 30L * 24L * 60L * 60L * 1000L // Old.</span>
         || currentTime &lt; lastmod - 60L * 60L * 1000L) { // In the
       // future.
       // The file is fairly old or in the future.
@@ -598,16 +598,16 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       // Show the year instead of the time of day.
 <span class="nc" id="L599">      fmt = &quot;MMM dd  yyyy&quot;;</span>
     } else {
-<span class="nc" id="L601">      fmt = &quot;MMM dd HH:mm&quot;;</span>
+<span class="fc" id="L601">      fmt = &quot;MMM dd HH:mm&quot;;</span>
     }
-<span class="nc" id="L603">    final SimpleDateFormat dateFormat =</span>
-<span class="nc" id="L604">        (SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG,</span>
+<span class="fc" id="L603">    final SimpleDateFormat dateFormat =</span>
+<span class="fc" id="L604">        (SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG,</span>
                                                           DateFormat.LONG,
                                                           Locale.ENGLISH);
-<span class="nc" id="L607">    dateFormat.applyPattern(fmt);</span>
-<span class="nc" id="L608">    builder.append(dateFormat.format(new Date(lastmod)))// date</span>
-<span class="nc" id="L609">           .append('\t').append(file.getName());</span>
-<span class="nc" id="L610">    return builder.toString();</span>
+<span class="fc" id="L607">    dateFormat.applyPattern(fmt);</span>
+<span class="fc" id="L608">    builder.append(dateFormat.format(new Date(lastmod)))// date</span>
+<span class="fc" id="L609">           .append('\t').append(file.getName());</span>
+<span class="fc" id="L610">    return builder.toString();</span>
   }
 
   /**
@@ -679,10 +679,10 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
 
   @Override
   public final long getFreeSpace() throws CommandAbstractException {
-<span class="nc" id="L682">    checkIdentify();</span>
-<span class="nc" id="L683">    final File directory = getFileFromPath(currentDir);</span>
-<span class="nc bnc" id="L684" title="All 2 branches missed.">    if (filesystemBasedFtpDirJdk != null) {</span>
-<span class="nc" id="L685">      return filesystemBasedFtpDirJdk.getFreeSpace(directory);</span>
+<span class="fc" id="L682">    checkIdentify();</span>
+<span class="fc" id="L683">    final File directory = getFileFromPath(currentDir);</span>
+<span class="pc bpc" id="L684" title="1 of 2 branches missed.">    if (filesystemBasedFtpDirJdk != null) {</span>
+<span class="fc" id="L685">      return filesystemBasedFtpDirJdk.getFreeSpace(directory);</span>
     } else {
 <span class="nc" id="L687">      return Integer.MAX_VALUE;</span>
     }
@@ -724,40 +724,40 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
 
   @Override
   public final long getCRC(final String path) throws CommandAbstractException {
-<span class="nc" id="L727">    final File file = getTrueFile(path);</span>
-<span class="nc" id="L728">    FileInputStream fis = null;</span>
-<span class="nc" id="L729">    CheckedInputStream cis = null;</span>
+<span class="fc" id="L727">    final File file = getTrueFile(path);</span>
+<span class="fc" id="L728">    FileInputStream fis = null;</span>
+<span class="fc" id="L729">    CheckedInputStream cis = null;</span>
     try {
       try {
         // Computer CRC32 checksum
-<span class="nc" id="L733">        fis = new FileInputStream(file);</span>
-<span class="nc" id="L734">        cis = new CheckedInputStream(fis, new CRC32());</span>
+<span class="fc" id="L733">        fis = new FileInputStream(file);</span>
+<span class="fc" id="L734">        cis = new CheckedInputStream(fis, new CRC32());</span>
 <span class="nc" id="L735">      } catch (final FileNotFoundException e) {</span>
 <span class="nc" id="L736">        throw new Reply550Exception(&quot;File not found: &quot; + path);</span>
-<span class="nc" id="L737">      }</span>
-<span class="nc" id="L738">      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];</span>
-<span class="nc bnc" id="L739" title="All 2 branches missed.">      while (cis.read(buf) &gt;= 0) {</span>
+<span class="fc" id="L737">      }</span>
+<span class="fc" id="L738">      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];</span>
+<span class="fc bfc" id="L739" title="All 2 branches covered.">      while (cis.read(buf) &gt;= 0) {</span>
         // nothing
       }
-<span class="nc" id="L742">      return cis.getChecksum().getValue();</span>
+<span class="fc" id="L742">      return cis.getChecksum().getValue();</span>
 <span class="nc" id="L743">    } catch (final IOException e) {</span>
 <span class="nc" id="L744">      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);</span>
     } finally {
-<span class="nc" id="L746">      FileUtils.close(cis);</span>
-<span class="nc" id="L747">      FileUtils.close(fis);</span>
+<span class="fc" id="L746">      FileUtils.close(cis);</span>
+<span class="fc" id="L747">      FileUtils.close(fis);</span>
     }
   }
 
   @Override
   public final byte[] getMD5(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L754">    return getDigest(path, DigestAlgo.MD5.name());</span>
+<span class="fc" id="L754">    return getDigest(path, DigestAlgo.MD5.name());</span>
   }
 
   @Override
   public final byte[] getSHA1(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L760">    return getDigest(path, DigestAlgo.SHA1.name());</span>
+<span class="fc" id="L760">    return getDigest(path, DigestAlgo.SHA1.name());</span>
   }
 
   @Override
@@ -765,13 +765,13 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       throws CommandAbstractException {
     final DigestAlgo digestAlgo;
     try {
-<span class="nc" id="L768">      digestAlgo = DigestAlgo.getFromName(algo);</span>
+<span class="fc" id="L768">      digestAlgo = DigestAlgo.getFromName(algo);</span>
 <span class="nc" id="L769">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L770">      throw new Reply553Exception(&quot;Algorithme unknown: &quot; + algo);</span>
-<span class="nc" id="L771">    }</span>
-<span class="nc" id="L772">    final File file = getTrueFile(path);</span>
+<span class="fc" id="L771">    }</span>
+<span class="fc" id="L772">    final File file = getTrueFile(path);</span>
     try {
-<span class="nc" id="L774">      return FilesystemBasedDigest.getHash(file,</span>
+<span class="fc" id="L774">      return FilesystemBasedDigest.getHash(file,</span>
                                            FilesystemBasedFileParameterImpl.useNio,
                                            digestAlgo);
 <span class="nc" id="L777">    } catch (final IOException e1) {</span>

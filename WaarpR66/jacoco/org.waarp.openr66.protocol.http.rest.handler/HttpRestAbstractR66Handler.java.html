@@ -29,9 +29,12 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
@@ -55,14 +58,14 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L58">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L59">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
+<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
 
-<span class="fc" id="L61">  public enum ACTIONS_TYPE {</span>
-<span class="fc" id="L62">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
-<span class="fc" id="L63">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
-<span class="fc" id="L64">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
-<span class="fc" id="L65">    CreateTransfer</span>
+<span class="fc" id="L64">  public enum ACTIONS_TYPE {</span>
+<span class="fc" id="L65">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
+<span class="fc" id="L66">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
+<span class="fc" id="L67">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
+<span class="fc" id="L68">    CreateTransfer</span>
   }
 
   /**
@@ -72,59 +75,66 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   protected HttpRestAbstractR66Handler(final String path,
                                        final RestConfiguration config,
                                        final METHOD... method) {
-<span class="fc" id="L75">    super(path, path, true, config, method);</span>
-<span class="fc" id="L76">  }</span>
+<span class="fc" id="L78">    super(path, path, true, config, method);</span>
+<span class="fc" id="L79">  }</span>
 
   @Override
-  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
-                                             final RestArgument arguments,
-                                             final RestArgument result) {
-    // no check to do here ?
-<span class="fc" id="L83">    logger.debug(&quot;debug&quot;);</span>
-<span class="fc" id="L84">  }</span>
+  public final void checkHandlerSessionCorrectness(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result) throws HttpForbiddenRequestException {
+    try {
+<span class="fc" id="L86">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="nc" id="L87">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L88">      throw new HttpForbiddenRequestException(&quot;Issue on values&quot;, e);</span>
+<span class="fc" id="L89">    }</span>
+<span class="fc" id="L90">    logger.debug(&quot;debug&quot;);</span>
+<span class="fc" id="L91">  }</span>
 
   @Override
-  public void getFileUpload(final HttpRestHandler handler,
-                            final FileUpload data, final RestArgument arguments,
-                            final RestArgument result) {
+  public final void getFileUpload(final HttpRestHandler handler,
+                                  final FileUpload data,
+                                  final RestArgument arguments,
+                                  final RestArgument result) {
     // should not be
-<span class="nc" id="L91">    logger.debug(&quot;debug: {}:{}&quot;, data.getName(), data.getHttpDataType().name());</span>
-<span class="nc" id="L92">  }</span>
+<span class="nc" id="L99">    logger.debug(&quot;debug: {}:{}&quot;, data.getName(), data.getHttpDataType().name());</span>
+<span class="nc" id="L100">  }</span>
 
-  protected void setError(final HttpRestHandler handler,
-                          final RestArgument result,
-                          final HttpResponseStatus code) {
-<span class="fc" id="L97">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
-<span class="fc" id="L98">    handler.setWillClose(true);</span>
-<span class="fc" id="L99">    result.setResult(code);</span>
-<span class="fc" id="L100">  }</span>
+  protected final void setError(final HttpRestHandler handler,
+                                final RestArgument result,
+                                final HttpResponseStatus code) {
+<span class="fc" id="L105">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L106">    handler.setWillClose(false);</span>
+<span class="fc" id="L107">    result.setResult(code);</span>
+<span class="fc" id="L108">  }</span>
 
-  protected void setError(final HttpRestHandler handler,
-                          final RestArgument result, final JsonPacket packet,
-                          final HttpResponseStatus code) {
-<span class="nc" id="L105">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
-<span class="nc" id="L106">    result.setResult(code);</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (packet != null) {</span>
+  protected final void setError(final HttpRestHandler handler,
+                                final RestArgument result,
+                                final JsonPacket packet,
+                                final HttpResponseStatus code) {
+<span class="nc" id="L114">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L115">    result.setResult(code);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (packet != null) {</span>
       try {
-<span class="nc" id="L109">        result.addResult(packet.createObjectNode());</span>
-<span class="nc" id="L110">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L118">        result.addResult(packet.createObjectNode());</span>
+<span class="nc" id="L119">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L112">      }</span>
+<span class="nc" id="L121">      }</span>
     }
-<span class="nc" id="L114">  }</span>
+<span class="nc" id="L123">  }</span>
 
-  protected void setOk(final HttpRestHandler handler, final RestArgument result,
-                       final JsonPacket packet, final HttpResponseStatus code) {
-<span class="fc" id="L118">    handler.setStatus(HttpResponseStatus.OK);</span>
-<span class="fc" id="L119">    result.setResult(code);</span>
-<span class="fc bfc" id="L120" title="All 2 branches covered.">    if (packet != null) {</span>
+  protected final void setOk(final HttpRestHandler handler,
+                             final RestArgument result, final JsonPacket packet,
+                             final HttpResponseStatus code) {
+<span class="fc" id="L128">    handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="fc" id="L129">    result.setResult(code);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">    if (packet != null) {</span>
       try {
-<span class="fc" id="L122">        result.addResult(packet.createObjectNode());</span>
-<span class="nc" id="L123">      } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L124">        result.setDetail(&quot;serialization impossible&quot;);</span>
-<span class="fc" id="L125">      }</span>
+<span class="fc" id="L132">        result.addResult(packet.createObjectNode());</span>
+<span class="nc" id="L133">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L134">        result.setDetail(&quot;serialization impossible&quot;);</span>
+<span class="fc" id="L135">      }</span>
     }
-<span class="fc" id="L127">  }</span>
+<span class="fc" id="L137">  }</span>
 
   @Override
   public HttpResponseStatus handleException(final HttpRestHandler handler,
@@ -132,60 +142,67 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
                                             final RestArgument result,
                                             final Object body,
                                             final Exception exception) {
-<span class="nc" id="L135">    ((HttpRestR66Handler) handler).getServerHandler().getSession()</span>
-<span class="nc" id="L136">                                  .newState(ERROR);</span>
-<span class="nc" id="L137">    return super.handleException(handler, arguments, result, body, exception);</span>
+<span class="nc" id="L145">    ((HttpRestR66Handler) handler).getServerHandler().getSession()</span>
+<span class="nc" id="L146">                                  .newState(ERROR);</span>
+<span class="nc" id="L147">    return super.handleException(handler, arguments, result, body, exception);</span>
   }
 
   @Override
-  public ChannelFuture sendResponse(final HttpRestHandler handler,
-                                    final ChannelHandlerContext ctx,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final Object body,
-                                    final HttpResponseStatus status) {
-<span class="fc" id="L147">    final String answer = result.toString();</span>
-<span class="fc" id="L148">    final ByteBuf buffer =</span>
-<span class="fc" id="L149">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="fc" id="L150">    final HttpResponse response = handler.getResponse(buffer);</span>
-<span class="fc" id="L151">    response.headers()</span>
-<span class="fc" id="L152">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
-<span class="nc" id="L154">      return ctx.writeAndFlush(response);</span>
+  public final ChannelFuture sendResponse(final HttpRestHandler handler,
+                                          final ChannelHandlerContext ctx,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final Object body,
+                                          final HttpResponseStatus status) {
+<span class="fc" id="L157">    final String answer = result.toString();</span>
+<span class="fc" id="L158">    final ByteBuf buffer =</span>
+<span class="fc" id="L159">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L160">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="fc" id="L161">    response.headers()</span>
+<span class="fc" id="L162">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="nc" id="L164">      return ctx.writeAndFlush(response);</span>
     }
-<span class="fc" id="L156">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
-<span class="fc" id="L157">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
-<span class="fc" id="L158">    logger.debug(&quot;Will write: {}&quot;, body);</span>
-<span class="fc" id="L159">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="fc bfc" id="L160" title="All 2 branches covered.">    if (handler.isWillClose()) {</span>
-<span class="fc" id="L161">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
-<span class="fc" id="L162">      return future;</span>
+<span class="fc" id="L166">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="fc" id="L167">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="fc" id="L168">    logger.debug(&quot;Will write: {}&quot;, body);</span>
+<span class="fc" id="L169">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">    if (handler.isWillClose()) {</span>
+<span class="fc" id="L171">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
+<span class="fc" id="L172">      return future;</span>
     }
-<span class="fc" id="L164">    return null;</span>
+<span class="fc" id="L174">    return null;</span>
   }
 
   @Override
-  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
-                        final RestArgument arguments, final RestArgument result)
+  public final Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                              final RestArgument arguments,
+                              final RestArgument result)
       throws HttpIncorrectRequestException {
     final JsonPacket packet;
     try {
-<span class="fc" id="L173">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
-<span class="fc" id="L174">      packet = JsonPacket.createFromBuffer(json);</span>
-<span class="nc" id="L175">    } catch (final JsonParseException e) {</span>
-<span class="nc" id="L176">      logger.warn(&quot;Error: &quot; + body.toString(WaarpStringUtils.UTF8), e);</span>
-<span class="nc" id="L177">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L178">    } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L179">      logger.warn(&quot;Error&quot;, e);</span>
-<span class="nc" id="L180">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L181">    } catch (final IOException e) {</span>
-<span class="nc" id="L182">      logger.warn(&quot;Error&quot;, e);</span>
-<span class="nc" id="L183">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L184">    } catch (final UnsupportedCharsetException e) {</span>
-<span class="nc" id="L185">      logger.warn(&quot;Error&quot;, e);</span>
-<span class="nc" id="L186">      throw new HttpIncorrectRequestException(e);</span>
-<span class="fc" id="L187">    }</span>
-<span class="fc" id="L188">    return packet;</span>
+<span class="fc" id="L184">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
+      try {
+<span class="fc" id="L186">        ParametersChecker.checkSanityString(json);</span>
+<span class="nc" id="L187">      } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L188">        throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
+<span class="fc" id="L189">      }</span>
+<span class="fc" id="L190">      packet = JsonPacket.createFromBuffer(json);</span>
+<span class="nc" id="L191">    } catch (final JsonParseException e) {</span>
+<span class="nc" id="L192">      logger.warn(&quot;Error: &quot; + body.toString(WaarpStringUtils.UTF8) + &quot; : {}&quot;,</span>
+<span class="nc" id="L193">                  e.getMessage());</span>
+<span class="nc" id="L194">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L195">    } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L196">      logger.warn(&quot;Error&quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L197">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L198">    } catch (final IOException e) {</span>
+<span class="nc" id="L199">      logger.warn(&quot;Error&quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L200">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L201">    } catch (final UnsupportedCharsetException e) {</span>
+<span class="nc" id="L202">      logger.warn(&quot;Error&quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L203">      throw new HttpIncorrectRequestException(e);</span>
+<span class="fc" id="L204">    }</span>
+<span class="fc" id="L205">    return packet;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

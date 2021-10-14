@@ -75,8 +75,8 @@ public class FileConvert extends Thread {
    * @param args
    */
   public static void main(final String[] args) {
-<span class="nc" id="L78">    WaarpLoggerFactory</span>
-<span class="nc" id="L79">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L78">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="nc bnc" id="L80" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L81">      logger = WaarpLoggerFactory.getLogger(FileConvert.class);</span>
     }
@@ -87,13 +87,13 @@ public class FileConvert extends Thread {
 <span class="nc" id="L87">    boolean recursive = false;</span>
 <span class="nc" id="L88">    File tmpDir = null;</span>
 <span class="nc bnc" id="L89" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
-<span class="nc" id="L90">      if (Pattern</span>
-<span class="nc" id="L91">          .compile(&quot;^-(u|-unix2dos|-unixtodos)$&quot;, Pattern.CASE_INSENSITIVE)</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">          .matcher(args[i]).matches()) {</span>
+<span class="nc" id="L90">      if (Pattern.compile(&quot;^-(u|-unix2dos|-unixtodos)$&quot;,</span>
+<span class="nc" id="L91">                          Pattern.CASE_INSENSITIVE).matcher(args[i])</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                 .matches()) {</span>
 <span class="nc" id="L93">        unix2dos = true;</span>
-<span class="nc" id="L94">      } else if (Pattern</span>
-<span class="nc" id="L95">          .compile(&quot;^-(d|-dos2unix|-dostounix)$&quot;, Pattern.CASE_INSENSITIVE)</span>
-<span class="nc bnc" id="L96" title="All 2 branches missed.">          .matcher(args[i]).matches()) {</span>
+<span class="nc" id="L94">      } else if (Pattern.compile(&quot;^-(d|-dos2unix|-dostounix)$&quot;,</span>
+<span class="nc" id="L95">                                 Pattern.CASE_INSENSITIVE).matcher(args[i])</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                        .matches()) {</span>
 <span class="nc" id="L97">        dos2unix = true;</span>
 <span class="nc" id="L98">      } else if (Pattern.compile(&quot;^-(r|-recursive)$&quot;, Pattern.CASE_INSENSITIVE)</span>
 <span class="nc bnc" id="L99" title="All 2 branches missed.">                        .matcher(args[i]).matches()) {</span>
@@ -155,7 +155,7 @@ public class FileConvert extends Thread {
 <span class="fc" id="L155">      FileUtils.copy(source, destination, false, false);</span>
 <span class="fc" id="L156">      return true;</span>
 <span class="nc" id="L157">    } catch (final Reply550Exception e) {</span>
-<span class="nc" id="L158">      logger.error(&quot;FileConvert copy back in error&quot;, e);</span>
+<span class="nc" id="L158">      logger.error(&quot;FileConvert copy back in error: {}&quot;, e.getMessage());</span>
 <span class="nc" id="L159">      return false;</span>
     }
   }
@@ -168,7 +168,7 @@ public class FileConvert extends Thread {
    *
    * @return True if OK
    */
-  public boolean convert(final File input, final boolean unix2dos) {
+  public final boolean convert(final File input, final boolean unix2dos) {
 <span class="fc bfc" id="L172" title="All 2 branches covered.">    if (unix2dos) {</span>
 <span class="fc" id="L173">      logger.info(&quot;unix2Dos conversion of '{}'... &quot;, input);</span>
     } else {
@@ -220,26 +220,28 @@ public class FileConvert extends Thread {
       }
 <span class="fc" id="L221">      return result;</span>
 <span class="nc" id="L222">    } catch (final FileNotFoundException e) {</span>
-<span class="nc" id="L223">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
-<span class="nc" id="L224">      return false;</span>
-<span class="nc" id="L225">    } catch (final IOException e) {</span>
-<span class="nc" id="L226">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
-<span class="nc" id="L227">      return false;</span>
+<span class="nc" id="L223">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos + &quot;: {}&quot;,</span>
+<span class="nc" id="L224">                   e.getMessage());</span>
+<span class="nc" id="L225">      return false;</span>
+<span class="nc" id="L226">    } catch (final IOException e) {</span>
+<span class="nc" id="L227">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos + &quot;: {}&quot;,</span>
+<span class="nc" id="L228">                   e.getMessage());</span>
+<span class="nc" id="L229">      return false;</span>
     } finally {
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">      if (tmpFile != null) {</span>
-<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (!tmpFile.delete()) {</span>
-<span class="nc" id="L231">          logger.debug(&quot;Cannot delete temp file&quot;);</span>
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">      if (tmpFile != null) {</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">        if (!tmpFile.delete()) {</span>
+<span class="nc" id="L233">          logger.debug(&quot;Cannot delete temp file&quot;);</span>
         }
       }
-<span class="fc" id="L234">      FileUtils.close(fis);</span>
-<span class="fc" id="L235">      FileUtils.close(fos);</span>
+<span class="fc" id="L236">      FileUtils.close(fis);</span>
+<span class="fc" id="L237">      FileUtils.close(fos);</span>
     }
   }
 
   private static void syntax() {
-<span class="nc" id="L240">    logger.error(</span>
+<span class="nc" id="L242">    logger.error(</span>
         &quot;Syntax: Covnert -(u|-nix2dos|-unixtodos) | -(d|-dos2unix|-dostounix) -(t|-temporary) directory  -(r|-recursive) file directory&quot;);
-<span class="nc" id="L242">  }</span>
+<span class="nc" id="L244">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

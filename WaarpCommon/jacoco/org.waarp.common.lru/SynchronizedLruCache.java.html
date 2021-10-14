@@ -92,12 +92,12 @@ public class SynchronizedLruCache&lt;K, V&gt; extends AbstractLruCache&lt;K, V&g
   }
 
   @Override
-  public int getCapacity() {
+  public final int getCapacity() {
 <span class="fc" id="L96">    return cacheMap.getCapacity();</span>
   }
 
   @Override
-  protected InterfaceLruCacheEntry&lt;V&gt; getEntry(final K key) {
+  protected final InterfaceLruCacheEntry&lt;V&gt; getEntry(final K key) {
 <span class="fc" id="L101">    return cacheMap.get(key);</span>
   }
 
@@ -112,44 +112,45 @@ public class SynchronizedLruCache&lt;K, V&gt; extends AbstractLruCache&lt;K, V&g
 <span class="fc" id="L112">  }</span>
 
   @Override
-  protected void putEntry(final K key, final InterfaceLruCacheEntry&lt;V&gt; entry) {
-<span class="fc" id="L116">    cacheMap.put(key, entry);</span>
-<span class="fc" id="L117">  }</span>
+  protected final void putEntry(final K key,
+                                final InterfaceLruCacheEntry&lt;V&gt; entry) {
+<span class="fc" id="L117">    cacheMap.put(key, entry);</span>
+<span class="fc" id="L118">  }</span>
 
   @Override
   public synchronized V remove(final K key) {
-<span class="fc" id="L121">    final InterfaceLruCacheEntry&lt;V&gt; cv = cacheMap.remove(key);</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">    if (cv != null) {</span>
-<span class="fc" id="L123">      return cv.getValue();</span>
+<span class="fc" id="L122">    final InterfaceLruCacheEntry&lt;V&gt; cv = cacheMap.remove(key);</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (cv != null) {</span>
+<span class="fc" id="L124">      return cv.getValue();</span>
     }
-<span class="nc" id="L125">    return null;</span>
+<span class="nc" id="L126">    return null;</span>
   }
 
   @Override
-  public Collection&lt;V&gt; values() {
-<span class="nc" id="L130">    final Collection&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; cacheEntry = cacheMap.values();</span>
-<span class="nc" id="L131">    final List&lt;V&gt; list = new ArrayList&lt;V&gt;(cacheEntry.size());</span>
-<span class="nc bnc" id="L132" title="All 2 branches missed.">    for (final InterfaceLruCacheEntry&lt;V&gt; entry : cacheEntry) {</span>
-<span class="nc" id="L133">      list.add(entry.getValue());</span>
-<span class="nc" id="L134">    }</span>
-<span class="nc" id="L135">    return list;</span>
+  public final Collection&lt;V&gt; values() {
+<span class="nc" id="L131">    final Collection&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; cacheEntry = cacheMap.values();</span>
+<span class="nc" id="L132">    final List&lt;V&gt; list = new ArrayList&lt;V&gt;(cacheEntry.size());</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    for (final InterfaceLruCacheEntry&lt;V&gt; entry : cacheEntry) {</span>
+<span class="nc" id="L134">      list.add(entry.getValue());</span>
+<span class="nc" id="L135">    }</span>
+<span class="nc" id="L136">    return list;</span>
   }
 
   @Override
   public synchronized int forceClearOldest() {
-<span class="nc" id="L140">    final long timeRef = System.currentTimeMillis();</span>
-<span class="nc" id="L141">    final Collection&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; collection = cacheMap.values();</span>
-<span class="nc" id="L142">    final Iterator&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; iterator = collection.iterator();</span>
-<span class="nc" id="L143">    int nb = 0;</span>
-<span class="nc bnc" id="L144" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
-<span class="nc" id="L145">      final InterfaceLruCacheEntry&lt;V&gt; v = iterator.next();</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">      if (!v.isStillValid(timeRef)) {</span>
-<span class="nc" id="L147">        iterator.remove();</span>
-<span class="nc" id="L148">        nb++;</span>
+<span class="nc" id="L141">    final long timeRef = System.currentTimeMillis();</span>
+<span class="nc" id="L142">    final Collection&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; collection = cacheMap.values();</span>
+<span class="nc" id="L143">    final Iterator&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; iterator = collection.iterator();</span>
+<span class="nc" id="L144">    int nb = 0;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
+<span class="nc" id="L146">      final InterfaceLruCacheEntry&lt;V&gt; v = iterator.next();</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">      if (!v.isStillValid(timeRef)) {</span>
+<span class="nc" id="L148">        iterator.remove();</span>
+<span class="nc" id="L149">        nb++;</span>
       }
-<span class="nc" id="L150">    }</span>
-<span class="nc" id="L151">    return nb;</span>
+<span class="nc" id="L151">    }</span>
+<span class="nc" id="L152">    return nb;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

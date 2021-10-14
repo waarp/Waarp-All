@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ElasticsearchMonitoringExporterClientImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.elasticsearch</a> &gt; <span class="el_source">ElasticsearchMonitoringExporterClientImpl.java</span></div><h1>ElasticsearchMonitoringExporterClientImpl.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.elasticsearch;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.http.Header;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.joda.time.DateTime;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClient;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
+
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.util.Iterator;
+
+import static org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClientBuilder.*;
+import static org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers.*;
+
+/**
+ * Elasticsearch client for Waarp
+ */
+public class ElasticsearchMonitoringExporterClientImpl
+    implements ElasticsearchMonitoringExporterClient {
+<span class="nc" id="L72">  private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(</span>
+      ElasticsearchMonitoringExporterClientImpl.class);
+
+  protected final String index;
+  protected final RestClientBuilder builder;
+
+  protected RestHighLevelClient client;
+
+  /**
+   * Note that only one among (username/pwd, token, apikey) is allowed and
+   * will be taken into account.
+   *
+   * @param username username to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param pwd password to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param prefix as '/prefix' or null if none
+   * @param index as 'waarpr66monitor' as the index name within
+   *     Elasticsearch, including extra dynamic information
+   * @param compression True to compress REST exchanges between the client
+   *     and the Elasticsearch server
+   * @param httpHosts array of HttpHost
+   */
+  public ElasticsearchMonitoringExporterClientImpl(final String username,
+                                                   final String pwd,
+                                                   final String token,
+                                                   final String apiKey,
+                                                   final String prefix,
+                                                   final String index,
+                                                   final boolean compression,
+<span class="nc" id="L106">                                                   final HttpHost... httpHosts) {</span>
+<span class="nc" id="L107">    this.index = index;</span>
+<span class="nc" id="L108">    builder = RestClient.builder(httpHosts).setCompressionEnabled(compression);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(prefix)) {</span>
+<span class="nc" id="L110">      builder.setPathPrefix(prefix);</span>
+    }
+<span class="nc" id="L112">    int headerLen = 1;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(apiKey, token)) {</span>
+<span class="nc" id="L114">      headerLen = 2;</span>
+    }
+<span class="nc" id="L116">    final Header[] defaultHeaders = new Header[headerLen];</span>
+<span class="nc" id="L117">    headerLen = 0;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(token)) {</span>
+<span class="nc" id="L119">      defaultHeaders[headerLen] =</span>
+          new BasicHeader(&quot;Authorization&quot;, &quot;Bearer &quot; + token);
+<span class="nc" id="L121">      headerLen++;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(apiKey)) {</span>
+<span class="nc" id="L123">      defaultHeaders[headerLen] =</span>
+          new BasicHeader(&quot;Authorization&quot;, &quot;ApiKey &quot; + apiKey);
+<span class="nc" id="L125">      headerLen++;</span>
+    }
+<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (headerLen &gt; 0) {</span>
+<span class="nc" id="L128">      builder.setDefaultHeaders(defaultHeaders);</span>
+    }
+<span class="nc" id="L130">    boolean tls = false;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">    for (final HttpHost httpHost : httpHosts) {</span>
+<span class="nc" id="L132">      tls |= httpHost.getSchemeName().equalsIgnoreCase(&quot;https&quot;);</span>
+    }
+    final SSLContext sslContext;
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (tls) {</span>
+      try {
+<span class="nc" id="L137">        final SSLContextBuilder sslBuilder = SSLContexts.custom()</span>
+<span class="nc" id="L138">                                                        .loadKeyMaterial(</span>
+<span class="nc" id="L139">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L140">                                                                                       .getKeyStore(),</span>
+<span class="nc" id="L141">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L142">                                                                                       .getKeyStorePassword())</span>
+<span class="nc" id="L143">                                                        .loadTrustMaterial(</span>
+<span class="nc" id="L144">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L145">                                                                                       .getKeyTrustStore(),</span>
+                                                            null);
+<span class="nc" id="L147">        sslContext = sslBuilder.build();</span>
+<span class="nc" id="L148">      } catch (final NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {</span>
+<span class="nc" id="L149">        logger.error(e.getMessage());</span>
+<span class="nc" id="L150">        throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L151">      }</span>
+    } else {
+<span class="nc" id="L153">      sslContext = null;</span>
+    }
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(username, pwd)) {</span>
+<span class="nc" id="L156">      final CredentialsProvider credentialsProvider =</span>
+          new BasicCredentialsProvider();
+<span class="nc" id="L158">      credentialsProvider.setCredentials(AuthScope.ANY,</span>
+                                         new UsernamePasswordCredentials(
+                                             username, pwd));
+<span class="nc" id="L161">      builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {</span>
+        @Override
+        public HttpAsyncClientBuilder customizeHttpClient(
+            final HttpAsyncClientBuilder httpClientBuilder) {
+<span class="nc bnc" id="L165" title="All 2 branches missed.">          if (sslContext != null) {</span>
+<span class="nc" id="L166">            return httpClientBuilder.setDefaultCredentialsProvider(</span>
+<span class="nc" id="L167">                credentialsProvider).setSSLContext(sslContext);</span>
+          } else {
+<span class="nc" id="L169">            return httpClientBuilder.setDefaultCredentialsProvider(</span>
+                credentialsProvider);
+          }
+        }
+      });
+    }
+<span class="nc" id="L175">    logger.info(&quot;Elasticsearch client: user {} pwd {} token {} apikey {} &quot; +</span>
+                &quot;prefix {} index {}&quot;, username, pwd, token, apiKey, prefix,
+                index);
+<span class="nc" id="L178">    client = new RestHighLevelClient(builder);</span>
+<span class="nc" id="L179">  }</span>
+
+  @Override
+  public final boolean post(final ObjectNode monitoredTransfers,
+                            final DateTime start, final DateTime stop,
+                            final String serverId) {
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    if (client == null) {</span>
+<span class="nc" id="L186">      client = new RestHighLevelClient(builder);</span>
+    }
+<span class="nc" id="L188">    final String finalIndex = index.replace(ELASTIC_WAARPHOST, serverId)</span>
+<span class="nc" id="L189">                                   .replaceAll(ELASTIC_DATETIME,</span>
+<span class="nc" id="L190">                                               stop.toString(FORMAT_DATETIME))</span>
+<span class="nc" id="L191">                                   .replaceAll(ELASTIC_DATEHOUR,</span>
+<span class="nc" id="L192">                                               stop.toString(FORMAT_DATEHOUR))</span>
+<span class="nc" id="L193">                                   .replaceAll(ELASTIC_DATE,</span>
+<span class="nc" id="L194">                                               stop.toString(FORMAT_DATE))</span>
+<span class="nc" id="L195">                                   .replaceAll(ELASTIC_YEAR_MONTH,</span>
+<span class="nc" id="L196">                                               stop.toString(FORMAT_YEAR_MONTH))</span>
+<span class="nc" id="L197">                                   .replaceAll(ELASTIC_YEAR,</span>
+<span class="nc" id="L198">                                               stop.toString(FORMAT_YEAR))</span>
+<span class="nc" id="L199">                                   .toLowerCase();</span>
+<span class="nc" id="L200">    logger.debug(&quot;Will post to {}&quot;, finalIndex);</span>
+<span class="nc" id="L201">    final BulkRequest bulkRequest = new BulkRequest(finalIndex);</span>
+<span class="nc" id="L202">    final ArrayNode arrayNode = (ArrayNode) monitoredTransfers.get(RESULTS);</span>
+<span class="nc" id="L203">    final Iterator&lt;JsonNode&gt; iterator = arrayNode.elements();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
+<span class="nc" id="L205">      final ObjectNode node = (ObjectNode) iterator.next();</span>
+<span class="nc" id="L206">      final IndexRequest indexRequest =</span>
+<span class="nc" id="L207">          new IndexRequest().id(node.get(UNIQUE_ID).asText());</span>
+<span class="nc" id="L208">      indexRequest.source(</span>
+<span class="nc" id="L209">          JsonUtils.nodeToString(node).getBytes(StandardCharsets.UTF_8),</span>
+          XContentType.JSON);
+<span class="nc" id="L211">      bulkRequest.add(indexRequest);</span>
+<span class="nc" id="L212">    }</span>
+    final BulkResponse bulkResponse;
+    try {
+<span class="nc" id="L215">      bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);</span>
+<span class="nc" id="L216">    } catch (final IOException e) {</span>
+<span class="nc" id="L217">      logger.error(e.getMessage());</span>
+<span class="nc" id="L218">      return false;</span>
+<span class="nc" id="L219">    }</span>
+<span class="nc" id="L220">    logger.debug(&quot;ES failure? {} {}&quot;, bulkResponse.hasFailures(),</span>
+<span class="nc" id="L221">                 bulkResponse.status().getStatus());</span>
+<span class="nc bnc" id="L222" title="All 4 branches missed.">    if (logger.isDebugEnabled() &amp;&amp; bulkResponse.hasFailures()) {</span>
+<span class="nc" id="L223">      final Iterator&lt;BulkItemResponse&gt; iterator1 = bulkResponse.iterator();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      while (iterator1.hasNext()) {</span>
+<span class="nc" id="L225">        final BulkItemResponse response = iterator1.next();</span>
+<span class="nc" id="L226">        logger.debug(&quot;ES item: {}&quot;, response.getFailureMessage());</span>
+<span class="nc" id="L227">      }</span>
+    }
+<span class="nc bnc" id="L229" title="All 2 branches missed.">    return !bulkResponse.hasFailures();</span>
+  }
+
+  @Override
+  public final void close() {
+    try {
+<span class="nc" id="L235">      client.close();</span>
+<span class="nc" id="L236">    } catch (final IOException e) {</span>
+<span class="nc" id="L237">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L238">    }</span>
+<span class="nc" id="L239">    client = null;</span>
+<span class="nc" id="L240">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

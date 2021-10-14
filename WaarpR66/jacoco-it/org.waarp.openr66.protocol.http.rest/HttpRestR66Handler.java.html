@@ -32,6 +32,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
@@ -69,49 +70,49 @@ public class HttpRestR66Handler extends HttpRestHandler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L72">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L73">      WaarpLoggerFactory.getLogger(HttpRestR66Handler.class);</span>
-<span class="fc" id="L74">  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];</span>
+<span class="fc" id="L73">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L74">      WaarpLoggerFactory.getLogger(HttpRestR66Handler.class);</span>
+<span class="fc" id="L75">  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];</span>
 
-<span class="fc" id="L76">  private static final HashMap&lt;String, DbSession&gt; dbSessionFromUser =</span>
+<span class="fc" id="L77">  private static final HashMap&lt;String, DbSession&gt; dbSessionFromUser =</span>
       new HashMap&lt;String, DbSession&gt;();
 
-<span class="fc" id="L79">  public enum RESTHANDLERS {</span>
-<span class="fc" id="L80">    DbHostAuth(DbHostAuthR66RestMethodHandler.BASEURI,</span>
+<span class="fc" id="L80">  public enum RESTHANDLERS {</span>
+<span class="fc" id="L81">    DbHostAuth(DbHostAuthR66RestMethodHandler.BASEURI,</span>
                org.waarp.openr66.database.data.DbHostAuth.class),
-<span class="fc" id="L82">    DbRule(DbRuleR66RestMethodHandler.BASEURI,</span>
+<span class="fc" id="L83">    DbRule(DbRuleR66RestMethodHandler.BASEURI,</span>
            org.waarp.openr66.database.data.DbRule.class),
-<span class="fc" id="L84">    DbTaskRunner(DbTaskRunnerR66RestMethodHandler.BASEURI,</span>
+<span class="fc" id="L85">    DbTaskRunner(DbTaskRunnerR66RestMethodHandler.BASEURI,</span>
                  org.waarp.openr66.database.data.DbTaskRunner.class),
-<span class="fc" id="L86">    DbHostConfiguration(DbHostConfigurationR66RestMethodHandler.BASEURI,</span>
+<span class="fc" id="L87">    DbHostConfiguration(DbHostConfigurationR66RestMethodHandler.BASEURI,</span>
                         org.waarp.openr66.database.data.DbHostConfiguration.class),
-<span class="fc" id="L88">    DbConfiguration(DbConfigurationR66RestMethodHandler.BASEURI,</span>
+<span class="fc" id="L89">    DbConfiguration(DbConfigurationR66RestMethodHandler.BASEURI,</span>
                     org.waarp.openr66.database.data.DbConfiguration.class),
-<span class="fc" id="L90">    Bandwidth(HttpRestBandwidthR66Handler.BASEURI, null),</span>
-<span class="fc" id="L91">    Business(HttpRestBusinessR66Handler.BASEURI, null),</span>
-<span class="fc" id="L92">    Config(HttpRestConfigR66Handler.BASEURI, null),</span>
-<span class="fc" id="L93">    Information(HttpRestInformationR66Handler.BASEURI, null),</span>
-<span class="fc" id="L94">    Log(HttpRestLogR66Handler.BASEURI, null),</span>
-<span class="fc" id="L95">    Server(HttpRestServerR66Handler.BASEURI, null),</span>
-<span class="fc" id="L96">    Control(HttpRestControlR66Handler.BASEURI, null);</span>
+<span class="fc" id="L91">    Bandwidth(HttpRestBandwidthR66Handler.BASEURI, null),</span>
+<span class="fc" id="L92">    Business(HttpRestBusinessR66Handler.BASEURI, null),</span>
+<span class="fc" id="L93">    Config(HttpRestConfigR66Handler.BASEURI, null),</span>
+<span class="fc" id="L94">    Information(HttpRestInformationR66Handler.BASEURI, null),</span>
+<span class="fc" id="L95">    Log(HttpRestLogR66Handler.BASEURI, null),</span>
+<span class="fc" id="L96">    Server(HttpRestServerR66Handler.BASEURI, null),</span>
+<span class="fc" id="L97">    Control(HttpRestControlR66Handler.BASEURI, null);</span>
 
     public final String uri;
     @SuppressWarnings(&quot;rawtypes&quot;)
     public final Class clasz;
 
     @SuppressWarnings(&quot;rawtypes&quot;)
-<span class="fc" id="L103">    RESTHANDLERS(final String uri, final Class clasz) {</span>
-<span class="fc" id="L104">      this.uri = uri;</span>
-<span class="fc" id="L105">      this.clasz = clasz;</span>
-<span class="fc" id="L106">    }</span>
+<span class="fc" id="L104">    RESTHANDLERS(final String uri, final Class clasz) {</span>
+<span class="fc" id="L105">      this.uri = uri;</span>
+<span class="fc" id="L106">      this.clasz = clasz;</span>
+<span class="fc" id="L107">    }</span>
 
     public static RESTHANDLERS getRESTHANDLER(final String baseUri) {
-<span class="nc bnc" id="L109" title="All 2 branches missed.">      for (final RESTHANDLERS resthandler : RESTHANDLERS.values()) {</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (resthandler.uri.equals(baseUri)) {</span>
-<span class="nc" id="L111">          return resthandler;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">      for (final RESTHANDLERS resthandler : RESTHANDLERS.values()) {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (resthandler.uri.equals(baseUri)) {</span>
+<span class="nc" id="L112">          return resthandler;</span>
         }
       }
-<span class="nc" id="L114">      return null;</span>
+<span class="nc" id="L115">      return null;</span>
     }
   }
 
@@ -119,104 +120,103 @@ public class HttpRestR66Handler extends HttpRestHandler {
    * To be called once to ensure default is built
    */
   public static void defaultHandlers() {
-<span class="fc" id="L122">    synchronized (defaultConfiguration) {</span>
-<span class="fc bfc" id="L123" title="All 2 branches covered.">      if (defaultConfiguration.restHashMap.isEmpty()) {</span>
-<span class="fc" id="L124">        defaultConfiguration.setRestAuthenticated(true);</span>
-<span class="fc" id="L125">        defaultConfiguration</span>
-<span class="fc" id="L126">            .setResthandlersCrud(new byte[RESTHANDLERS.values().length]);</span>
-<span class="fc" id="L127">        Arrays.fill(defaultConfiguration.getResthandlersCrud(), (byte) 0x0F);</span>
-<span class="fc" id="L128">        final METHOD[] methods = METHOD.values();</span>
-<span class="fc" id="L129">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbTaskRunner.uri,</span>
+<span class="fc" id="L123">    synchronized (defaultConfiguration) {</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">      if (defaultConfiguration.restHashMap.isEmpty()) {</span>
+<span class="fc" id="L125">        defaultConfiguration.setRestAuthenticated(true);</span>
+<span class="fc" id="L126">        defaultConfiguration.setResthandlersCrud(</span>
+<span class="fc" id="L127">            new byte[RESTHANDLERS.values().length]);</span>
+<span class="fc" id="L128">        Arrays.fill(defaultConfiguration.getResthandlersCrud(), (byte) 0x0F);</span>
+<span class="fc" id="L129">        final METHOD[] methods = METHOD.values();</span>
+<span class="fc" id="L130">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbTaskRunner.uri,</span>
                                              new DbTaskRunnerR66RestMethodHandler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L133">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbHostAuth.uri,</span>
+<span class="fc" id="L134">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbHostAuth.uri,</span>
                                              new DbHostAuthR66RestMethodHandler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L137">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbRule.uri,</span>
+<span class="fc" id="L138">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbRule.uri,</span>
                                              new DbRuleR66RestMethodHandler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L141">        defaultConfiguration.restHashMap</span>
-<span class="fc" id="L142">            .put(RESTHANDLERS.DbHostConfiguration.uri,</span>
-                 new DbHostConfigurationR66RestMethodHandler(
-                     defaultConfiguration, methods));
-<span class="fc" id="L145">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbConfiguration.uri,</span>
+<span class="fc" id="L142">        defaultConfiguration.restHashMap.put(</span>
+            RESTHANDLERS.DbHostConfiguration.uri,
+            new DbHostConfigurationR66RestMethodHandler(defaultConfiguration,
+                                                        methods));
+<span class="fc" id="L146">        defaultConfiguration.restHashMap.put(RESTHANDLERS.DbConfiguration.uri,</span>
                                              new DbConfigurationR66RestMethodHandler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L149">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Bandwidth.uri,</span>
+<span class="fc" id="L150">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Bandwidth.uri,</span>
                                              new HttpRestBandwidthR66Handler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L153">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Business.uri,</span>
+<span class="fc" id="L154">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Business.uri,</span>
                                              new HttpRestBusinessR66Handler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L157">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Config.uri,</span>
+<span class="fc" id="L158">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Config.uri,</span>
                                              new HttpRestConfigR66Handler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L161">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Information.uri,</span>
+<span class="fc" id="L162">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Information.uri,</span>
                                              new HttpRestInformationR66Handler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L165">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Log.uri,</span>
+<span class="fc" id="L166">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Log.uri,</span>
                                              new HttpRestLogR66Handler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L169">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Server.uri,</span>
+<span class="fc" id="L170">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Server.uri,</span>
                                              new HttpRestServerR66Handler(
                                                  defaultConfiguration,
                                                  methods));
-<span class="fc" id="L173">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Control.uri,</span>
+<span class="fc" id="L174">        defaultConfiguration.restHashMap.put(RESTHANDLERS.Control.uri,</span>
                                              new HttpRestControlR66Handler(
                                                  defaultConfiguration,
                                                  methods));
       }
-<span class="fc" id="L178">    }</span>
-<span class="fc" id="L179">  }</span>
+<span class="fc" id="L179">    }</span>
+<span class="fc" id="L180">  }</span>
 
   public HttpRestR66Handler(final RestConfiguration config) {
-<span class="fc" id="L182">    super(config);</span>
-<span class="fc" id="L183">    restHashMap = config.restHashMap;</span>
-<span class="fc" id="L184">  }</span>
+<span class="fc" id="L183">    super(config);</span>
+<span class="fc" id="L184">    restHashMap = config.restHashMap;</span>
+<span class="fc" id="L185">  }</span>
 
   protected static METHOD[] getMethods(final byte check) {
-<span class="fc" id="L187">    final List&lt;METHOD&gt; methods = new ArrayList&lt;METHOD&gt;();</span>
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.CREATE.isValid(check)) {</span>
-<span class="fc" id="L189">      methods.add(METHOD.POST);</span>
+<span class="fc" id="L188">    final List&lt;METHOD&gt; methods = new ArrayList&lt;METHOD&gt;();</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.CREATE.isValid(check)) {</span>
+<span class="fc" id="L190">      methods.add(METHOD.POST);</span>
     }
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.READ.isValid(check)) {</span>
-<span class="fc" id="L192">      methods.add(METHOD.GET);</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.READ.isValid(check)) {</span>
+<span class="fc" id="L193">      methods.add(METHOD.GET);</span>
     }
-<span class="pc bpc" id="L194" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.UPDATE.isValid(check)) {</span>
-<span class="fc" id="L195">      methods.add(METHOD.PUT);</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.UPDATE.isValid(check)) {</span>
+<span class="fc" id="L196">      methods.add(METHOD.PUT);</span>
     }
-<span class="pc bpc" id="L197" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.DELETE.isValid(check)) {</span>
-<span class="fc" id="L198">      methods.add(METHOD.DELETE);</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">    if (RestConfiguration.CRUD.DELETE.isValid(check)) {</span>
+<span class="fc" id="L199">      methods.add(METHOD.DELETE);</span>
     }
-<span class="fc" id="L200">    return methods.toArray(METHOD_0_LENGTH);</span>
+<span class="fc" id="L201">    return methods.toArray(METHOD_0_LENGTH);</span>
   }
 
   public static void instantiateHandlers(
       final RestConfiguration restConfiguration) {
-<span class="fc" id="L205">    defaultHandlers();</span>
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">    if (restConfiguration == null) {</span>
-<span class="nc" id="L207">      return;</span>
+<span class="fc" id="L206">    defaultHandlers();</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">    if (restConfiguration == null) {</span>
+<span class="nc" id="L208">      return;</span>
     }
-<span class="fc" id="L209">    byte check =</span>
-<span class="fc" id="L210">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTaskRunner</span>
-<span class="fc" id="L211">            .ordinal()];</span>
+<span class="fc" id="L210">    byte check =</span>
+<span class="fc" id="L211">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTaskRunner.ordinal()];</span>
 <span class="pc bpc" id="L212" title="1 of 2 branches missed.">    if (check != 0) {</span>
 <span class="fc" id="L213">      final METHOD[] methods = getMethods(check);</span>
 <span class="fc" id="L214">      restConfiguration.restHashMap.put(RESTHANDLERS.DbTaskRunner.uri,</span>
                                         new DbTaskRunnerR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L218">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbHostAuth</span>
-<span class="fc" id="L219">        .ordinal()];</span>
+<span class="fc" id="L218">    check =</span>
+<span class="fc" id="L219">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbHostAuth.ordinal()];</span>
 <span class="pc bpc" id="L220" title="1 of 2 branches missed.">    if (check != 0) {</span>
 <span class="fc" id="L221">      final METHOD[] methods = getMethods(check);</span>
 <span class="fc" id="L222">      restConfiguration.restHashMap.put(RESTHANDLERS.DbHostAuth.uri,</span>
@@ -232,185 +232,176 @@ public class HttpRestR66Handler extends HttpRestHandler {
                                             restConfiguration, methods));
     }
 <span class="fc" id="L234">    check =</span>
-<span class="fc" id="L235">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbHostConfiguration</span>
-<span class="fc" id="L236">            .ordinal()];</span>
-<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L238">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L239">      restConfiguration.restHashMap.put(RESTHANDLERS.DbHostConfiguration.uri,</span>
+<span class="fc" id="L235">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbHostConfiguration.ordinal()];</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L237">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L238">      restConfiguration.restHashMap.put(RESTHANDLERS.DbHostConfiguration.uri,</span>
                                         new DbHostConfigurationR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L243">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbConfiguration</span>
-<span class="fc" id="L244">        .ordinal()];</span>
-<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L246">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L247">      restConfiguration.restHashMap.put(RESTHANDLERS.DbConfiguration.uri,</span>
+<span class="fc" id="L242">    check =</span>
+<span class="fc" id="L243">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbConfiguration.ordinal()];</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L245">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L246">      restConfiguration.restHashMap.put(RESTHANDLERS.DbConfiguration.uri,</span>
                                         new DbConfigurationR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L251">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Bandwidth</span>
-<span class="fc" id="L252">        .ordinal()];</span>
-<span class="pc bpc" id="L253" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L254">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L255">      restConfiguration.restHashMap.put(RESTHANDLERS.Bandwidth.uri,</span>
+<span class="fc" id="L250">    check =</span>
+<span class="fc" id="L251">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Bandwidth.ordinal()];</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L253">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L254">      restConfiguration.restHashMap.put(RESTHANDLERS.Bandwidth.uri,</span>
                                         new HttpRestBandwidthR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L259">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Business</span>
-<span class="fc" id="L260">        .ordinal()];</span>
-<span class="pc bpc" id="L261" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L262">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L263">      restConfiguration.restHashMap.put(RESTHANDLERS.Business.uri,</span>
+<span class="fc" id="L258">    check =</span>
+<span class="fc" id="L259">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Business.ordinal()];</span>
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L261">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L262">      restConfiguration.restHashMap.put(RESTHANDLERS.Business.uri,</span>
                                         new HttpRestBusinessR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L267">    check =</span>
-<span class="fc" id="L268">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Config.ordinal()];</span>
-<span class="pc bpc" id="L269" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L270">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L271">      restConfiguration.restHashMap.put(RESTHANDLERS.Config.uri,</span>
+<span class="fc" id="L266">    check =</span>
+<span class="fc" id="L267">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Config.ordinal()];</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L269">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L270">      restConfiguration.restHashMap.put(RESTHANDLERS.Config.uri,</span>
                                         new HttpRestConfigR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L275">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Information</span>
-<span class="fc" id="L276">        .ordinal()];</span>
-<span class="pc bpc" id="L277" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L278">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L279">      restConfiguration.restHashMap.put(RESTHANDLERS.Information.uri,</span>
+<span class="fc" id="L274">    check =</span>
+<span class="fc" id="L275">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Information.ordinal()];</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L277">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L278">      restConfiguration.restHashMap.put(RESTHANDLERS.Information.uri,</span>
                                         new HttpRestInformationR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L283">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Log.ordinal()];</span>
-<span class="pc bpc" id="L284" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L285">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L286">      restConfiguration.restHashMap.put(RESTHANDLERS.Log.uri,</span>
+<span class="fc" id="L282">    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Log.ordinal()];</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L284">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L285">      restConfiguration.restHashMap.put(RESTHANDLERS.Log.uri,</span>
                                         new HttpRestLogR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L290">    check =</span>
-<span class="fc" id="L291">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Server.ordinal()];</span>
-<span class="pc bpc" id="L292" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L293">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L294">      restConfiguration.restHashMap.put(RESTHANDLERS.Server.uri,</span>
+<span class="fc" id="L289">    check =</span>
+<span class="fc" id="L290">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Server.ordinal()];</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L292">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L293">      restConfiguration.restHashMap.put(RESTHANDLERS.Server.uri,</span>
                                         new HttpRestServerR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L298">    check =</span>
-<span class="fc" id="L299">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Control.ordinal()];</span>
-<span class="pc bpc" id="L300" title="1 of 2 branches missed.">    if (check != 0) {</span>
-<span class="fc" id="L301">      final METHOD[] methods = getMethods(check);</span>
-<span class="fc" id="L302">      restConfiguration.restHashMap.put(RESTHANDLERS.Control.uri,</span>
+<span class="fc" id="L297">    check =</span>
+<span class="fc" id="L298">        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Control.ordinal()];</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">    if (check != 0) {</span>
+<span class="fc" id="L300">      final METHOD[] methods = getMethods(check);</span>
+<span class="fc" id="L301">      restConfiguration.restHashMap.put(RESTHANDLERS.Control.uri,</span>
                                         new HttpRestControlR66Handler(
                                             restConfiguration, methods));
     }
-<span class="fc" id="L306">    logger.debug(&quot;Initialized handler: {}&quot;, RESTHANDLERS.values().length);</span>
-<span class="fc" id="L307">  }</span>
+<span class="fc" id="L305">    logger.debug(&quot;Initialized handler: {}&quot;, RESTHANDLERS.values().length);</span>
+<span class="fc" id="L306">  }</span>
 
   /**
    * Server Actions handler
    */
-<span class="fc" id="L312">  private final ServerActions serverHandler = new ServerActions();</span>
+<span class="fc" id="L311">  private final ServerActions serverHandler = new ServerActions();</span>
 
   @Override
-  protected void checkConnection(final ChannelHandlerContext ctx)
+  protected final void checkConnection(final ChannelHandlerContext ctx)
       throws HttpInvalidAuthenticationException {
-<span class="nc" id="L317">    logger.debug(&quot;Request: {} ### {}&quot;, arguments, response);</span>
+<span class="nc" id="L316">    logger.debug(&quot;Request: {} ### {}&quot;, arguments, response);</span>
     final String user;
-<span class="nc" id="L319">    String key = null;</span>
-<span class="nc bnc" id="L320" title="All 2 branches missed.">    if (restConfiguration.isRestAuthenticated()) {</span>
-<span class="nc" id="L321">      user = arguments.getXAuthUser();</span>
-<span class="nc bnc" id="L322" title="All 4 branches missed.">      if (user == null || user.isEmpty()) {</span>
-<span class="nc" id="L323">        status = HttpResponseStatus.UNAUTHORIZED;</span>
-<span class="nc" id="L324">        throw new HttpInvalidAuthenticationException(&quot;Empty Authentication&quot;);</span>
+<span class="nc" id="L318">    String key = null;</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (restConfiguration.isRestAuthenticated()) {</span>
+<span class="nc" id="L320">      user = arguments.getXAuthUser();</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">      if (ParametersChecker.isEmpty(user)) {</span>
+<span class="nc" id="L322">        status = HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc" id="L323">        throw new HttpInvalidAuthenticationException(&quot;Empty Authentication&quot;);</span>
       }
       final DbHostAuth host;
       try {
-<span class="nc" id="L328">        host = new DbHostAuth(user);</span>
-<span class="nc" id="L329">        key = new String(host.getHostkey(), WaarpStringUtils.UTF8);</span>
-<span class="nc" id="L330">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L327">        host = new DbHostAuth(user);</span>
+<span class="nc" id="L328">        key = new String(host.getHostkey(), WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L329">      } catch (final WaarpDatabaseException e) {</span>
         // might be global Admin
-<span class="nc bnc" id="L332" title="All 2 branches missed.">        if (user.equals(Configuration.configuration.getAdminName())) {</span>
-<span class="nc" id="L333">          key = new String(Configuration.configuration.getServerAdminKey(),</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        if (user.equals(Configuration.configuration.getAdminName())) {</span>
+<span class="nc" id="L332">          key = new String(Configuration.configuration.getServerAdminKey(),</span>
                            WaarpStringUtils.UTF8);
         }
-<span class="nc" id="L336">      }</span>
-<span class="nc bnc" id="L337" title="All 4 branches missed.">      if (key == null || key.isEmpty()) {</span>
-<span class="nc" id="L338">        status = HttpResponseStatus.UNAUTHORIZED;</span>
-<span class="nc" id="L339">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;);</span>
+<span class="nc" id="L335">      }</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">      if (ParametersChecker.isEmpty(key)) {</span>
+<span class="nc" id="L337">        status = HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc" id="L338">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;);</span>
       }
-<span class="nc bnc" id="L341" title="All 2 branches missed.">      if (restConfiguration.isRestSignature()) {</span>
-<span class="nc" id="L342">        arguments.checkBaseAuthent(restConfiguration.getHmacSha256(), key,</span>
-<span class="nc" id="L343">                                   restConfiguration.getRestTimeLimit());</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">      if (restConfiguration.isRestSignature()) {</span>
+<span class="nc" id="L341">        arguments.checkBaseAuthent(restConfiguration.getHmacSha256(), key,</span>
+<span class="nc" id="L342">                                   restConfiguration.getRestTimeLimit());</span>
       } else {
-<span class="nc" id="L345">        arguments.checkTime(restConfiguration.getRestTimeLimit());</span>
+<span class="nc" id="L344">        arguments.checkTime(restConfiguration.getRestTimeLimit());</span>
       }
     } else {
       // User set only for right access, not for signature check
-<span class="nc" id="L349">      user = Configuration.configuration.getAdminName();</span>
-<span class="nc bnc" id="L350" title="All 2 branches missed.">      if (restConfiguration.isRestSignature()) {</span>
-<span class="nc" id="L351">        arguments.checkBaseAuthent(restConfiguration.getHmacSha256(), null,</span>
-<span class="nc" id="L352">                                   restConfiguration.getRestTimeLimit());</span>
+<span class="nc" id="L348">      user = Configuration.configuration.getAdminName();</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">      if (restConfiguration.isRestSignature()) {</span>
+<span class="nc" id="L350">        arguments.checkBaseAuthent(restConfiguration.getHmacSha256(), null,</span>
+<span class="nc" id="L351">                                   restConfiguration.getRestTimeLimit());</span>
       } else {
-<span class="nc" id="L354">        arguments.checkTime(restConfiguration.getRestTimeLimit());</span>
+<span class="nc" id="L353">        arguments.checkTime(restConfiguration.getRestTimeLimit());</span>
       }
     }
-<span class="nc" id="L357">    getServerHandler().newSession();</span>
-<span class="nc" id="L358">    final R66Session session = getServerHandler().getSession();</span>
-<span class="nc bnc" id="L359" title="All 2 branches missed.">    if (!restConfiguration.isRestAuthenticated()) {</span>
+<span class="nc" id="L356">    getServerHandler().newSession();</span>
+<span class="nc" id="L357">    final R66Session session = getServerHandler().getSession();</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">    if (!restConfiguration.isRestAuthenticated()) {</span>
       // Default is Admin
-<span class="nc" id="L361">      session.getAuth().specialNoSessionAuth(true, Configuration.configuration</span>
-<span class="nc" id="L362">          .getHostSslId());</span>
+<span class="nc" id="L360">      session.getAuth().specialNoSessionAuth(true,</span>
+<span class="nc" id="L361">                                             Configuration.configuration.getHostSslId());</span>
     } else {
       // we have one DbSession per connection, only after authentication
-<span class="nc" id="L365">      DbSession temp = getDbSessionFromUser().get(user);</span>
-<span class="nc bnc" id="L366" title="All 2 branches missed.">      if (temp == null) {</span>
+<span class="nc" id="L364">      DbSession temp = getDbSessionFromUser().get(user);</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">      if (temp == null) {</span>
         try {
-<span class="nc" id="L368">          temp = new DbSession(DbConstantR66.admin, false);</span>
-<span class="nc" id="L369">          getDbSessionFromUser().put(user, temp);</span>
-<span class="nc" id="L370">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L367">          temp = new DbSession(DbConstantR66.admin, false);</span>
+<span class="nc" id="L368">          getDbSessionFromUser().put(user, temp);</span>
+<span class="nc" id="L369">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L372">        }</span>
+<span class="nc" id="L371">        }</span>
       }
-<span class="nc bnc" id="L374" title="All 2 branches missed.">      if (temp != null) {</span>
-<span class="nc" id="L375">        temp.useConnection();</span>
-<span class="nc" id="L376">        dbSession = temp;</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">      if (temp != null) {</span>
+<span class="nc" id="L374">        temp.useConnection();</span>
+<span class="nc" id="L375">        dbSession = temp;</span>
       }
-<span class="nc bnc" id="L378" title="All 2 branches missed.">      if (key == null) {</span>
-<span class="nc" id="L379">        status = HttpResponseStatus.UNAUTHORIZED;</span>
-<span class="nc" id="L380">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;);</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">      if (key == null) {</span>
+<span class="nc" id="L378">        status = HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc" id="L379">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;);</span>
       }
       try {
-<span class="nc" id="L383">        session.getAuth().connectionHttps(user, FilesystemBasedDigest</span>
-<span class="nc" id="L384">            .passwdCrypt(key.getBytes(WaarpStringUtils.UTF8)));</span>
-<span class="nc" id="L385">      } catch (final Reply530Exception e) {</span>
-<span class="nc" id="L386">        status = HttpResponseStatus.UNAUTHORIZED;</span>
-<span class="nc" id="L387">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;, e);</span>
-<span class="nc" id="L388">      } catch (final Reply421Exception e) {</span>
-<span class="nc" id="L389">        status = HttpResponseStatus.SERVICE_UNAVAILABLE;</span>
-<span class="nc" id="L390">        throw new HttpInvalidAuthenticationException(&quot;Service unavailable&quot;, e);</span>
-<span class="nc" id="L391">      }</span>
+<span class="nc" id="L382">        session.getAuth().connectionHttps(user,</span>
+<span class="nc" id="L383">                                          FilesystemBasedDigest.passwdCrypt(</span>
+<span class="nc" id="L384">                                              key.getBytes(</span>
+                                                  WaarpStringUtils.UTF8)));
+<span class="nc" id="L386">      } catch (final Reply530Exception e) {</span>
+<span class="nc" id="L387">        status = HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc" id="L388">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;, e);</span>
+<span class="nc" id="L389">      } catch (final Reply421Exception e) {</span>
+<span class="nc" id="L390">        status = HttpResponseStatus.SERVICE_UNAVAILABLE;</span>
+<span class="nc" id="L391">        throw new HttpInvalidAuthenticationException(&quot;Service unavailable&quot;, e);</span>
+<span class="nc" id="L392">      }</span>
     }
-<span class="nc" id="L393">    arguments.setXAuthRole(session.getAuth().getRole());</span>
-<span class="nc" id="L394">    arguments.methodFromUri();</span>
-<span class="nc" id="L395">    arguments.methodFromHeader();</span>
-<span class="nc" id="L396">  }</span>
+<span class="nc" id="L394">    arguments.setXAuthRole(session.getAuth().getRole());</span>
+<span class="nc" id="L395">    arguments.methodFromUri();</span>
+<span class="nc" id="L396">    arguments.methodFromHeader();</span>
+<span class="nc" id="L397">  }</span>
 
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="nc" id="L401">    super.channelInactive(ctx);</span>
-<span class="nc" id="L402">    getServerHandler().channelClosed();</span>
-<span class="nc" id="L403">  }</span>
-
-  /**
-   * Called at the beginning of every new request
-   * &lt;p&gt;
-   * Override if needed
-   */
-  @Override
-  protected void initialize() {
-<span class="nc" id="L412">    super.initialize();</span>
-<span class="nc" id="L413">  }</span>
+<span class="nc" id="L402">    super.channelInactive(ctx);</span>
+<span class="nc" id="L403">    getServerHandler().channelClosed();</span>
+<span class="nc" id="L404">  }</span>
 
   /**
    * Initialize the REST service (server side) for one restConfiguration
@@ -419,57 +410,59 @@ public class HttpRestR66Handler extends HttpRestHandler {
    */
   public static void initializeService(
       final RestConfiguration restConfiguration) {
-<span class="nc" id="L422">    instantiateHandlers(restConfiguration);</span>
-<span class="nc bnc" id="L423" title="All 2 branches missed.">    if (group == null) {</span>
-<span class="nc" id="L424">      group = Configuration.configuration.getHttpChannelGroup();</span>
+<span class="nc" id="L413">    instantiateHandlers(restConfiguration);</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">    if (group == null) {</span>
+<span class="nc" id="L415">      group = Configuration.configuration.getHttpChannelGroup();</span>
     }
     // Configure the server.
-<span class="nc" id="L427">    final ServerBootstrap httpBootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L428">    WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration</span>
-<span class="nc" id="L429">        .getHttpWorkerGroup(), (int) Configuration.configuration</span>
-<span class="nc" id="L430">        .getTimeoutCon());</span>
+<span class="nc" id="L418">    final ServerBootstrap httpBootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L419">    WaarpNettyUtil.setServerBootstrap(httpBootstrap,</span>
+<span class="nc" id="L420">                                      Configuration.configuration.getHttpWorkerGroup(),</span>
+<span class="nc" id="L421">                                      Configuration.configuration.getHttpWorkerGroup(),</span>
+<span class="nc" id="L422">                                      (int) Configuration.configuration.getTimeoutCon());</span>
     // Set up the event pipeline factory.
-<span class="nc bnc" id="L432" title="All 2 branches missed.">    if (restConfiguration.isRestSsl()) {</span>
-<span class="nc" id="L433">      httpBootstrap.childHandler(new HttpRestR66Initializer(false, Configuration</span>
-<span class="nc" id="L434">          .getWaarpSslContextFactory(), restConfiguration));</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    if (restConfiguration.isRestSsl()) {</span>
+<span class="nc" id="L425">      httpBootstrap.childHandler(new HttpRestR66Initializer(false,</span>
+<span class="nc" id="L426">                                                            Configuration.getWaarpSslContextFactory(),</span>
+                                                            restConfiguration));
     } else {
-<span class="nc" id="L436">      httpBootstrap.childHandler(</span>
+<span class="nc" id="L429">      httpBootstrap.childHandler(</span>
           new HttpRestR66Initializer(false, null, restConfiguration));
     }
     // Bind and start to accept incoming connections.
     final ChannelFuture future;
-<span class="nc bnc" id="L441" title="All 2 branches missed.">    if (restConfiguration != null &amp;&amp;</span>
-<span class="nc bnc" id="L442" title="All 2 branches missed.">        restConfiguration.getRestAddress() != null &amp;&amp;</span>
-<span class="nc bnc" id="L443" title="All 2 branches missed.">        !restConfiguration.getRestAddress().isEmpty()) {</span>
-<span class="nc" id="L444">      future = httpBootstrap.bind(</span>
-<span class="nc" id="L445">          new InetSocketAddress(restConfiguration.getRestAddress(),</span>
-<span class="nc" id="L446">                                restConfiguration.getRestPort()));</span>
+<span class="nc bnc" id="L434" title="All 2 branches missed.">    if (restConfiguration != null &amp;&amp;</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        restConfiguration.getRestAddress() != null &amp;&amp;</span>
+<span class="nc bnc" id="L436" title="All 2 branches missed.">        !restConfiguration.getRestAddress().isEmpty()) {</span>
+<span class="nc" id="L437">      future = httpBootstrap.bind(</span>
+<span class="nc" id="L438">          new InetSocketAddress(restConfiguration.getRestAddress(),</span>
+<span class="nc" id="L439">                                restConfiguration.getRestPort()));</span>
     } else {
-<span class="nc" id="L448">      future = httpBootstrap</span>
-<span class="nc" id="L449">          .bind(new InetSocketAddress(restConfiguration.getRestPort()));</span>
+<span class="nc" id="L441">      future = httpBootstrap.bind(</span>
+<span class="nc" id="L442">          new InetSocketAddress(restConfiguration.getRestPort()));</span>
     }
     try {
-<span class="nc" id="L452">      future.await();</span>
-<span class="nc" id="L453">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L454">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L455">    }</span>
-<span class="nc bnc" id="L456" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="nc" id="L457">      group.add(future.channel());</span>
+<span class="nc" id="L445">      future.await();</span>
+<span class="nc" id="L446">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L447">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L448">    }</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="nc" id="L450">      group.add(future.channel());</span>
     }
-<span class="nc" id="L459">  }</span>
+<span class="nc" id="L452">  }</span>
 
   /**
    * @return the dbSessionFromUser
    */
   public static HashMap&lt;String, DbSession&gt; getDbSessionFromUser() {
-<span class="nc" id="L465">    return dbSessionFromUser;</span>
+<span class="nc" id="L458">    return dbSessionFromUser;</span>
   }
 
   /**
    * @return the serverHandler
    */
   public ServerActions getServerHandler() {
-<span class="nc" id="L472">    return serverHandler;</span>
+<span class="nc" id="L465">    return serverHandler;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

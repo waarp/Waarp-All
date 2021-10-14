@@ -39,7 +39,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
 <span class="nc" id="L39">      WaarpLoggerFactory.getLogger(ExecBusinessTask.class);</span>
 
   @Override
-  public void run() {
+  public final void run() {
 <span class="nc bnc" id="L43" title="All 2 branches missed.">    if (callFromBusiness) {</span>
       // Business Request to validate?
 <span class="nc" id="L45">      String validate = &quot;Validated&quot;;</span>
@@ -51,49 +51,50 @@ import org.waarp.openr66.protocol.utils.R66Future;
         String argRule;
         try {
 <span class="nc" id="L53">          newdelay = Integer.parseInt(args[args.length - 1]);</span>
-<span class="nc" id="L54">          argRule = fullarg</span>
-<span class="nc" id="L55">              .substring(fullarg.indexOf(' ') + 1, fullarg.lastIndexOf(' '));</span>
+<span class="nc" id="L54">          argRule = fullarg.substring(fullarg.indexOf(' ') + 1,</span>
+<span class="nc" id="L55">                                      fullarg.lastIndexOf(' '));</span>
 <span class="nc" id="L56">        } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L57">          newdelay = 0;</span>
 <span class="nc" id="L58">          argRule = fullarg.substring(fullarg.indexOf(' ') + 1);</span>
 <span class="nc" id="L59">        }</span>
         try {
-<span class="nc" id="L61">          final AbstractTask task = TaskType</span>
-<span class="nc" id="L62">              .getTaskFromIdForBusiness(operation, argRule, newdelay, session);</span>
-<span class="nc bnc" id="L63" title="All 2 branches missed.">          if (task != null) {</span>
-<span class="nc" id="L64">            task.run();</span>
-<span class="nc" id="L65">            task.getFutureCompletion().awaitOrInterruptible();</span>
-<span class="nc" id="L66">            final R66Future future = task.getFutureCompletion();</span>
-<span class="nc bnc" id="L67" title="All 4 branches missed.">            if (!future.isDone() || future.isFailed()) {</span>
-<span class="nc" id="L68">              invalid();</span>
-<span class="nc" id="L69">              return;</span>
+<span class="nc" id="L61">          final AbstractTask task =</span>
+<span class="nc" id="L62">              TaskType.getTaskFromIdForBusiness(operation, argRule, newdelay,</span>
+                                                session);
+<span class="nc bnc" id="L64" title="All 2 branches missed.">          if (task != null) {</span>
+<span class="nc" id="L65">            task.run();</span>
+<span class="nc" id="L66">            task.getFutureCompletion().awaitOrInterruptible();</span>
+<span class="nc" id="L67">            final R66Future future = task.getFutureCompletion();</span>
+<span class="nc bnc" id="L68" title="All 4 branches missed.">            if (!future.isDone() || future.isFailed()) {</span>
+<span class="nc" id="L69">              invalid();</span>
+<span class="nc" id="L70">              return;</span>
             }
-<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (future.getResult() != null &amp;&amp;</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">                future.getResult().getOther() != null) {</span>
-<span class="nc" id="L73">              validate = future.getResult().getOther().toString();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if (future.getResult() != null &amp;&amp;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                future.getResult().getOther() != null) {</span>
+<span class="nc" id="L74">              validate = future.getResult().getOther().toString();</span>
             }
-<span class="nc" id="L75">          } else {</span>
-<span class="nc" id="L76">            logger.error(&quot;ExecBusiness in error, Task invalid: &quot; + operation);</span>
-<span class="nc" id="L77">            invalid();</span>
-<span class="nc" id="L78">            return;</span>
+<span class="nc" id="L76">          } else {</span>
+<span class="nc" id="L77">            logger.error(&quot;ExecBusiness in error, Task invalid: &quot; + operation);</span>
+<span class="nc" id="L78">            invalid();</span>
+<span class="nc" id="L79">            return;</span>
           }
-<span class="nc" id="L80">        } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L81">          logger.error(&quot;ExecBusiness in error: &quot; + e1);</span>
-<span class="nc" id="L82">          invalid();</span>
-<span class="nc" id="L83">          return;</span>
-<span class="nc" id="L84">        }</span>
-<span class="nc" id="L85">        final BusinessRequestPacket packet =</span>
-<span class="nc" id="L86">            new BusinessRequestPacket(getClass().getName() + &quot; execution ok&quot;,</span>
+<span class="nc" id="L81">        } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L82">          logger.error(&quot;ExecBusiness in error: &quot; + e1);</span>
+<span class="nc" id="L83">          invalid();</span>
+<span class="nc" id="L84">          return;</span>
+<span class="nc" id="L85">        }</span>
+<span class="nc" id="L86">        final BusinessRequestPacket packet =</span>
+<span class="nc" id="L87">            new BusinessRequestPacket(getClass().getName() + &quot; execution ok&quot;,</span>
                                       0);
-<span class="nc" id="L88">        validate(packet);</span>
-<span class="nc" id="L89">        return;</span>
+<span class="nc" id="L89">        validate(packet);</span>
+<span class="nc" id="L90">        return;</span>
       }
-<span class="nc" id="L91">      finalValidate(validate);</span>
-<span class="nc" id="L92">    } else {</span>
+<span class="nc" id="L92">      finalValidate(validate);</span>
+<span class="nc" id="L93">    } else {</span>
       // Rule EXECJAVA based should be used instead
-<span class="nc" id="L94">      status = 2;</span>
-<span class="nc" id="L95">      fullarg = &quot;EXECJAVA should be used instead&quot;;</span>
+<span class="nc" id="L95">      status = 2;</span>
+<span class="nc" id="L96">      fullarg = &quot;EXECJAVA should be used instead&quot;;</span>
     }
-<span class="nc" id="L97">  }</span>
+<span class="nc" id="L98">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

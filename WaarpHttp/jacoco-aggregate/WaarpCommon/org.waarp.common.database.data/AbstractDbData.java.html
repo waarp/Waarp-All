@@ -56,35 +56,35 @@ public abstract class AbstractDbData {
   /**
    * UpdatedInfo status
    */
-<span class="nc" id="L59">  public enum UpdatedInfo {</span>
+<span class="fc" id="L59">  public enum UpdatedInfo {</span>
     /**
      * Unknown run status
      */
-<span class="nc" id="L63">    UNKNOWN,</span>
+<span class="fc" id="L63">    UNKNOWN,</span>
     /**
      * Not updated run status
      */
-<span class="nc" id="L67">    NOTUPDATED,</span>
+<span class="fc" id="L67">    NOTUPDATED,</span>
     /**
      * Interrupted status (stop or cancel)
      */
-<span class="nc" id="L71">    INTERRUPTED,</span>
+<span class="fc" id="L71">    INTERRUPTED,</span>
     /**
      * Updated run status meaning ready to be submitted
      */
-<span class="nc" id="L75">    TOSUBMIT,</span>
+<span class="fc" id="L75">    TOSUBMIT,</span>
     /**
      * In error run status
      */
-<span class="nc" id="L79">    INERROR,</span>
+<span class="fc" id="L79">    INERROR,</span>
     /**
      * Running status
      */
-<span class="nc" id="L83">    RUNNING,</span>
+<span class="fc" id="L83">    RUNNING,</span>
     /**
      * All done run status
      */
-<span class="nc" id="L87">    DONE</span>
+<span class="fc" id="L87">    DONE</span>
   }
 
   /**
@@ -110,18 +110,18 @@ public abstract class AbstractDbData {
    *
    * @param dbSession Deprecated for Waarp R66
    */
-<span class="nc" id="L113">  protected AbstractDbData(final DbSession dbSession) {</span>
-<span class="nc" id="L114">    this.dbSession = dbSession;</span>
-<span class="nc" id="L115">    initObject();</span>
-<span class="nc" id="L116">  }</span>
+<span class="fc" id="L113">  protected AbstractDbData(final DbSession dbSession) {</span>
+<span class="fc" id="L114">    this.dbSession = dbSession;</span>
+<span class="fc" id="L115">    initObject();</span>
+<span class="fc" id="L116">  }</span>
 
   /**
    * Abstract constructor to set the DbSession to use
    */
-<span class="nc" id="L121">  protected AbstractDbData() {</span>
-<span class="nc" id="L122">    dbSession = null;</span>
-<span class="nc" id="L123">    initObject();</span>
-<span class="nc" id="L124">  }</span>
+<span class="fc" id="L121">  protected AbstractDbData() {</span>
+<span class="fc" id="L122">    dbSession = null;</span>
+<span class="fc" id="L123">    initObject();</span>
+<span class="fc" id="L124">  }</span>
 
   /**
    * To setup primaryKey, otherFields, allFields. Note this initObject is
@@ -268,7 +268,7 @@ public abstract class AbstractDbData {
 <span class="nc" id="L268">  }</span>
 
   public final DbValue[] getAllFields() {
-<span class="nc" id="L271">    return allFields;</span>
+<span class="fc" id="L271">    return allFields;</span>
   }
 
   /**
@@ -325,14 +325,14 @@ public abstract class AbstractDbData {
    */
   public static void validateLength(final byte[]... values)
       throws WaarpDatabaseSqlException {
-<span class="nc bnc" id="L328" title="All 2 branches missed.">    for (final byte[] value : values) {</span>
-<span class="nc bnc" id="L329" title="All 4 branches missed.">      if (value != null &amp;&amp; value.length &gt; DbModelAbstract.MAX_BINARY * 2) {</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">    for (final byte[] value : values) {</span>
+<span class="pc bpc" id="L329" title="1 of 4 branches missed.">      if (value != null &amp;&amp; value.length &gt; DbModelAbstract.MAX_BINARY * 2) {</span>
 <span class="nc" id="L330">        throw new WaarpDatabaseSqlException(</span>
             &quot;BINARY value exceed max size: &quot; + value.length + &quot; (&quot; +
             DbModelAbstract.MAX_BINARY + &quot;)&quot;);
       }
     }
-<span class="nc" id="L335">  }</span>
+<span class="fc" id="L335">  }</span>
 
   /**
    * Validate String max length
@@ -344,27 +344,27 @@ public abstract class AbstractDbData {
    */
   public static void validateLength(final int type, final String... values)
       throws WaarpDatabaseSqlException {
-<span class="nc bnc" id="L347" title="All 2 branches missed.">    for (final String value : values) {</span>
-<span class="nc bnc" id="L348" title="All 2 branches missed.">      if (value == null) {</span>
-<span class="nc" id="L349">        continue;</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">    for (final String value : values) {</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">      if (value == null) {</span>
+<span class="fc" id="L349">        continue;</span>
       }
-<span class="nc bnc" id="L351" title="All 4 branches missed.">      switch (type) {</span>
+<span class="pc bpc" id="L351" title="1 of 4 branches missed.">      switch (type) {</span>
         case Types.VARCHAR:
-<span class="nc bnc" id="L353" title="All 2 branches missed.">          if (value.length() &gt; DbModelAbstract.MAX_VARCHAR) {</span>
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">          if (value.length() &gt; DbModelAbstract.MAX_VARCHAR) {</span>
 <span class="nc" id="L354">            throw new WaarpDatabaseSqlException(</span>
 <span class="nc" id="L355">                &quot;VARCHAR value exceed max size: &quot; + value.length() + &quot; (&quot; +</span>
                 DbModelAbstract.MAX_VARCHAR + &quot;)&quot;);
           }
           break;
         case Types.NVARCHAR:
-<span class="nc bnc" id="L360" title="All 2 branches missed.">          if (value.length() &gt; DbModelAbstract.MAX_KEY_VARCHAR) {</span>
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">          if (value.length() &gt; DbModelAbstract.MAX_KEY_VARCHAR) {</span>
 <span class="nc" id="L361">            throw new WaarpDatabaseSqlException(</span>
 <span class="nc" id="L362">                &quot;VARCHAR as KEY value exceed max size: &quot; + value.length() +</span>
                 &quot; (&quot; + DbModelAbstract.MAX_KEY_VARCHAR + &quot;)&quot;);
           }
           break;
         case Types.LONGVARCHAR:
-<span class="nc bnc" id="L367" title="All 2 branches missed.">          if (value.length() &gt; DbModelAbstract.MAX_LONGVARCHAR) {</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">          if (value.length() &gt; DbModelAbstract.MAX_LONGVARCHAR) {</span>
 <span class="nc" id="L368">            throw new WaarpDatabaseSqlException(</span>
 <span class="nc" id="L369">                &quot;LONGVARCHAR value exceed max size: &quot; + value.length() + &quot; (&quot; +</span>
                 DbModelAbstract.MAX_LONGVARCHAR + &quot;)&quot;);
@@ -374,7 +374,7 @@ public abstract class AbstractDbData {
           break;
       }
     }
-<span class="nc" id="L377">  }</span>
+<span class="fc" id="L377">  }</span>
 
   /**
    * Set Value into PreparedStatement

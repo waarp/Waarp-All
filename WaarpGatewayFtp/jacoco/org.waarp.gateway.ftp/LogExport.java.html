@@ -27,6 +27,7 @@ import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
@@ -87,26 +88,26 @@ public class LogExport {
    *     stage, return value will be false
    */
   protected static boolean initialize(final String[] args) {
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (!getParams(args)) {</span>
-<span class="nc" id="L91">      return false;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L92">      return false;</span>
     }
 
-<span class="nc" id="L94">    config = new FileBasedConfiguration(ExecGatewayFtpServer.class,</span>
+<span class="nc" id="L95">    config = new FileBasedConfiguration(ExecGatewayFtpServer.class,</span>
                                         ExecBusinessHandler.class,
                                         FileSystemBasedDataBusinessHandler.class,
                                         new FilesystemBasedFileParameterImpl());
 
-<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (!config.setConfigurationServerFromXml(args[0])) {</span>
-<span class="nc" id="L100">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad main configuration&quot;);</span>
-<span class="nc bnc" id="L101" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
-<span class="nc" id="L102">        DbConstantFtp.gatewayAdmin.close();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (!config.setConfigurationServerFromXml(args[0])) {</span>
+<span class="nc" id="L101">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad main configuration&quot;);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L103">        DbConstantFtp.gatewayAdmin.close();</span>
       }
-<span class="nc" id="L104">      return false;</span>
+<span class="nc" id="L105">      return false;</span>
     }
 
-<span class="nc" id="L107">    FileBasedConfiguration.fileBasedConfiguration = config;</span>
+<span class="nc" id="L108">    FileBasedConfiguration.fileBasedConfiguration = config;</span>
 
-<span class="nc" id="L109">    return setDestinationWriter();</span>
+<span class="nc" id="L110">    return setDestinationWriter();</span>
   }
 
   /**
@@ -122,25 +123,25 @@ public class LogExport {
    * @return a bollean indicating the success in opening the Writer.
    */
   public static boolean setDestinationWriter() {
-<span class="nc bnc" id="L125" title="All 2 branches missed.">    if (destinationPath == null) {</span>
-<span class="nc" id="L126">      destinationPath = config.getBaseDirectory() + DirInterface.SEPARATOR +</span>
-<span class="nc" id="L127">                        config.getAdminName() + DirInterface.SEPARATOR +</span>
-<span class="nc" id="L128">                        config.getHostId() + &quot;_logs_&quot; +</span>
-<span class="nc" id="L129">                        System.currentTimeMillis() + &quot;.xml&quot;;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (destinationPath == null) {</span>
+<span class="nc" id="L127">      destinationPath = config.getBaseDirectory() + DirInterface.SEPARATOR +</span>
+<span class="nc" id="L128">                        config.getAdminName() + DirInterface.SEPARATOR +</span>
+<span class="nc" id="L129">                        config.getHostId() + &quot;_logs_&quot; +</span>
+<span class="nc" id="L130">                        System.currentTimeMillis() + &quot;.xml&quot;;</span>
     }
 
-<span class="nc bnc" id="L132" title="All 2 branches missed.">    if (&quot;-&quot;.equalsIgnoreCase(destinationPath)) {</span>
-<span class="nc" id="L133">      destinationWriter = new OutputStreamWriter(System.out);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (&quot;-&quot;.equalsIgnoreCase(destinationPath)) {</span>
+<span class="nc" id="L134">      destinationWriter = new OutputStreamWriter(System.out);</span>
     } else {
       try {
-<span class="nc" id="L136">        destinationWriter = new FileWriter(destinationPath);</span>
-<span class="nc" id="L137">      } catch (final IOException e) {</span>
-<span class="nc" id="L138">        SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L139">            .syserr(&quot;Cannot open out file &quot; + destinationPath);</span>
-<span class="nc" id="L140">        return false;</span>
-<span class="nc" id="L141">      }</span>
+<span class="nc" id="L137">        destinationWriter = new FileWriter(destinationPath);</span>
+<span class="nc" id="L138">      } catch (final IOException e) {</span>
+<span class="nc" id="L139">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+            &quot;Cannot open out file &quot; + destinationPath);
+<span class="nc" id="L141">        return false;</span>
+<span class="nc" id="L142">      }</span>
     }
-<span class="nc" id="L143">    return true;</span>
+<span class="nc" id="L144">    return true;</span>
   }
 
   /**
@@ -151,46 +152,46 @@ public class LogExport {
    * @return [description]
    */
   protected static boolean getParams(final String[] args) {
-<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L155">      SysErrLogger.FAKE_LOGGER.syserr(USAGE);</span>
-<span class="nc" id="L156">      return false;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L156">      SysErrLogger.FAKE_LOGGER.syserr(USAGE);</span>
+<span class="nc" id="L157">      return false;</span>
     }
 
-<span class="nc bnc" id="L159" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (&quot;-purge&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L161">        purge = true;</span>
-<span class="nc bnc" id="L162" title="All 2 branches missed.">      } else if (&quot;-correctOnly&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L163">        correctOnly = true;</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">      } else if (&quot;-out&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L165">        i++;</span>
-<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
-<span class="nc bnc" id="L167" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
-<span class="nc" id="L168">          SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L169">              .syserr(&quot;Error: -out needs a value.\n\n&quot; + USAGE);</span>
-<span class="nc" id="L170">          return false;</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (&quot;-purge&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L162">        purge = true;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">      } else if (&quot;-correctOnly&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L164">        correctOnly = true;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">      } else if (&quot;-out&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L166">        i++;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
+<span class="nc bnc" id="L168" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
+<span class="nc" id="L169">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+              &quot;Error: -out needs a value.\n\n&quot; + USAGE);
+<span class="nc" id="L171">          return false;</span>
         }
-<span class="nc" id="L172">        destinationPath = args[i].trim();</span>
-<span class="nc bnc" id="L173" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L174">        i++;</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
-<span class="nc bnc" id="L176" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
-<span class="nc" id="L177">          SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L178">              .syserr(&quot;Error: -start needs a value.\n\n&quot; + USAGE);</span>
-<span class="nc" id="L179">          return false;</span>
+<span class="nc" id="L173">        destinationPath = args[i].trim();</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L175">        i++;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
+<span class="nc bnc" id="L177" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
+<span class="nc" id="L178">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+              &quot;Error: -start needs a value.\n\n&quot; + USAGE);
+<span class="nc" id="L180">          return false;</span>
         }
-<span class="nc" id="L181">        start = WaarpStringUtils.fixDate(args[i]);</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">      } else if (&quot;-stop&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L183">        i++;</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
-<span class="nc bnc" id="L185" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
-<span class="nc" id="L186">          SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L187">              .syserr(&quot;Error: -stop needs a value.\n\n&quot; + USAGE);</span>
-<span class="nc" id="L188">          return false;</span>
+<span class="nc" id="L182">        start = WaarpStringUtils.fixDate(args[i]);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">      } else if (&quot;-stop&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L184">        i++;</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
+<span class="nc" id="L187">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+              &quot;Error: -stop needs a value.\n\n&quot; + USAGE);
+<span class="nc" id="L189">          return false;</span>
         }
-<span class="nc" id="L190">        stop = WaarpStringUtils.fixDate(args[i]);</span>
+<span class="nc" id="L191">        stop = WaarpStringUtils.fixDate(args[i]);</span>
       }
     }
-<span class="nc" id="L193">    return true;</span>
+<span class="nc" id="L194">    return true;</span>
   }
 
   /**
@@ -199,16 +200,15 @@ public class LogExport {
    * @return an error message or null
    */
   protected static String run() {
-<span class="nc" id="L202">    ReplyCode status = null;</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">    if (correctOnly) {</span>
-<span class="nc" id="L204">      status = ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION;</span>
+<span class="nc" id="L203">    ReplyCode status = null;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (correctOnly) {</span>
+<span class="nc" id="L205">      status = ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION;</span>
     }
 
     final DbPreparedStatement preparedStatement;
     try {
-<span class="nc" id="L209">      preparedStatement = DbTransferLog</span>
-<span class="nc" id="L210">          .getLogPrepareStament(DbConstantFtp.gatewayAdmin.getSession(), start,</span>
-                                stop, status);
+<span class="nc" id="L210">      preparedStatement = DbTransferLog.getLogPrepareStament(</span>
+<span class="nc" id="L211">          DbConstantFtp.gatewayAdmin.getSession(), start, stop, status);</span>
 
 <span class="nc" id="L213">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L214">      return &quot;An error occured while connecting to the database: &quot; +</span>
@@ -218,8 +218,8 @@ public class LogExport {
 <span class="nc" id="L218">      return &quot;An error occured with the database: &quot; + e.getMessage();</span>
 <span class="nc" id="L219">    }</span>
 
-<span class="nc" id="L221">    return DbTransferLog</span>
-<span class="nc" id="L222">        .saveDbTransferLogFile(preparedStatement, destinationWriter, purge);</span>
+<span class="nc" id="L221">    return DbTransferLog.saveDbTransferLogFile(preparedStatement,</span>
+                                               destinationWriter, purge);
   }
 
   /**
@@ -230,23 +230,24 @@ public class LogExport {
   public static void main(final String[] args) {
     try {
 <span class="nc bnc" id="L232" title="All 2 branches missed.">      if (!initialize(args)) {</span>
-<span class="nc" id="L233">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L233">        WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L234">        return;</span>
       }
 
-<span class="nc" id="L236">      final String message = run();</span>
+<span class="nc" id="L237">      final String message = run();</span>
 
-<span class="nc bnc" id="L238" title="All 2 branches missed.">      if (message.contains(&quot;successfully&quot;)) {</span>
-<span class="nc" id="L239">        System.exit(0);//NOSONAR</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">      if (message.contains(&quot;successfully&quot;)) {</span>
+<span class="nc" id="L240">        WaarpSystemUtil.systemExit(0);</span>
       } else {
-<span class="nc" id="L241">        SysErrLogger.FAKE_LOGGER.syserr(message);</span>
-<span class="nc" id="L242">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L242">        SysErrLogger.FAKE_LOGGER.syserr(message);</span>
+<span class="nc" id="L243">        WaarpSystemUtil.systemExit(1);</span>
       }
 
     } finally {
-<span class="nc bnc" id="L246" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
-<span class="nc" id="L247">        DbConstantFtp.gatewayAdmin.close();</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L248">        DbConstantFtp.gatewayAdmin.close();</span>
       }
     }
-<span class="nc" id="L250">  }</span>
+<span class="nc" id="L251">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

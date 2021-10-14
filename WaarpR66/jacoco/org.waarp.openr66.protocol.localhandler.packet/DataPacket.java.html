@@ -26,6 +26,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.utils.FileUtils;
@@ -38,12 +39,12 @@ import java.util.Arrays;
  * header = packetRank middle = data end = key
  */
 public class DataPacket extends AbstractLocalPacket {
-<span class="fc" id="L41">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L42">      WaarpLoggerFactory.getLogger(DataPacket.class);</span>
+<span class="fc" id="L42">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L43">      WaarpLoggerFactory.getLogger(DataPacket.class);</span>
 
   private final int packetRank;
 
-  private final int lengthPacket;
+  private int lengthPacket;
 
   private byte[] data;
   private ByteBuf dataRecv;
@@ -65,21 +66,21 @@ public class DataPacket extends AbstractLocalPacket {
                                             final int endLength,
                                             final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
-<span class="nc" id="L69">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L70">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (middleLength &lt;= 0) {</span>
-<span class="nc" id="L72">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (middleLength &lt;= 0) {</span>
+<span class="nc" id="L73">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="fc" id="L74">    final int packetRank = buf.readInt();</span>
-<span class="fc" id="L75">    final int index = buf.readerIndex();</span>
-<span class="fc" id="L76">    final ByteBuf recvData = buf.retainedSlice(index, middleLength);</span>
-<span class="fc" id="L77">    buf.skipBytes(middleLength);</span>
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">    final byte[] key = endLength &gt; 0? new byte[endLength] : EMPTY_ARRAY;</span>
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
-<span class="fc" id="L80">      buf.readBytes(key);</span>
+<span class="fc" id="L75">    final int packetRank = buf.readInt();</span>
+<span class="fc" id="L76">    final int index = buf.readerIndex();</span>
+<span class="fc" id="L77">    final ByteBuf recvData = buf.retainedSlice(index, middleLength);</span>
+<span class="fc" id="L78">    buf.skipBytes(middleLength);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">    final byte[] key = endLength &gt; 0? new byte[endLength] : EMPTY_ARRAY;</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="fc" id="L81">      buf.readBytes(key);</span>
     }
-<span class="fc" id="L82">    return new DataPacket(packetRank, recvData, key);</span>
+<span class="fc" id="L83">    return new DataPacket(packetRank, recvData, key);</span>
   }
 
   /**
@@ -88,147 +89,172 @@ public class DataPacket extends AbstractLocalPacket {
    * @param key
    */
   private DataPacket(final int packetRank, final ByteBuf data,
-<span class="fc" id="L91">                     final byte[] key) {</span>
-<span class="fc" id="L92">    this.packetRank = packetRank;</span>
-<span class="fc" id="L93">    this.dataRecv = data;</span>
-<span class="fc" id="L94">    this.data = null;</span>
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    this.key = key == null? EMPTY_ARRAY : key;</span>
-<span class="fc" id="L96">    lengthPacket = dataRecv.readableBytes();</span>
-<span class="fc" id="L97">  }</span>
+<span class="fc" id="L92">                     final byte[] key) {</span>
+<span class="fc" id="L93">    this.packetRank = packetRank;</span>
+<span class="fc" id="L94">    this.dataRecv = data;</span>
+<span class="fc" id="L95">    this.data = null;</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    this.key = key == null? EMPTY_ARRAY : key;</span>
+<span class="fc" id="L97">    lengthPacket = dataRecv.readableBytes();</span>
+<span class="fc" id="L98">  }</span>
 
   /**
    * @param packetRank
    * @param data
+   * @param length
    * @param key
    */
-<span class="fc" id="L104">  public DataPacket(final int packetRank, final byte[] data, final byte[] key) {</span>
-<span class="fc" id="L105">    this.packetRank = packetRank;</span>
-<span class="fc" id="L106">    this.data = data;</span>
-<span class="fc" id="L107">    this.dataRecv = null;</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">    this.key = key == null? EMPTY_ARRAY : key;</span>
-<span class="fc" id="L109">    lengthPacket = data.length;</span>
-<span class="fc" id="L110">  }</span>
+  public DataPacket(final int packetRank, final byte[] data, final int length,
+<span class="fc" id="L107">                    final byte[] key) {</span>
+<span class="fc" id="L108">    this.packetRank = packetRank;</span>
+<span class="fc" id="L109">    this.data = data;</span>
+<span class="fc" id="L110">    this.dataRecv = null;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    this.key = key == null? EMPTY_ARRAY : key;</span>
+<span class="fc" id="L112">    lengthPacket = length;</span>
+<span class="fc" id="L113">  }</span>
+
+  /**
+   * When using compression/decompression, data can be changed
+   *
+   * @param data
+   * @param length
+   */
+  public final void updateFromCompressionCodec(final byte[] data,
+                                               final int length) {
+<span class="fc" id="L123">    this.data = data;</span>
+<span class="fc" id="L124">    lengthPacket = length;</span>
+<span class="fc" id="L125">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
-<span class="fc" id="L114">    return false;</span>
+  public final boolean hasGlobalBuffer() {
+<span class="fc" id="L129">    return false;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
-<span class="nc" id="L120">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
+<span class="nc" id="L135">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr) {
-<span class="fc" id="L125">    end = WaarpNettyUtil.wrappedBuffer(key);</span>
-<span class="fc" id="L126">  }</span>
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr) {
-<span class="fc" id="L130">    header = ByteBufAllocator.DEFAULT.buffer(4, 4);</span>
-<span class="fc" id="L131">    header.writeInt(packetRank);</span>
-<span class="fc" id="L132">  }</span>
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr) {
-<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (dataRecv != null) {</span>
-<span class="nc" id="L137">      middle = dataRecv;</span>
-    } else {
-<span class="fc" id="L139">      middle = WaarpNettyUtil.wrappedBuffer(data);</span>
-    }
+  public final synchronized void createEnd(final LocalChannelReference lcr) {
+<span class="fc" id="L140">    end = WaarpNettyUtil.wrappedBuffer(key);</span>
 <span class="fc" id="L141">  }</span>
 
   @Override
-  public byte getType() {
-<span class="fc" id="L145">    return LocalPacketFactory.DATAPACKET;</span>
+  public final synchronized void createHeader(final LocalChannelReference lcr) {
+<span class="fc" id="L145">    header = ByteBufAllocator.DEFAULT.ioBuffer(4, 4);</span>
+<span class="fc" id="L146">    header.writeInt(packetRank);</span>
+<span class="fc" id="L147">  }</span>
+
+  @Override
+  public final synchronized void createMiddle(final LocalChannelReference lcr) {
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    if (dataRecv != null) {</span>
+<span class="nc" id="L152">      middle = dataRecv;</span>
+    } else {
+<span class="fc" id="L154">      middle = WaarpNettyUtil.wrappedBuffer(data);</span>
+<span class="fc" id="L155">      middle.writerIndex(lengthPacket);</span>
+    }
+<span class="fc" id="L157">  }</span>
+
+  @Override
+  public final byte getType() {
+<span class="fc" id="L161">    return LocalPacketFactory.DATAPACKET;</span>
   }
 
   @Override
-  public String toString() {
-<span class="nc" id="L150">    return &quot;DataPacket: &quot; + packetRank + ':' + lengthPacket;</span>
+  public final String toString() {
+<span class="nc" id="L166">    return &quot;DataPacket: &quot; + packetRank + ':' + lengthPacket;</span>
   }
 
   /**
    * @return the packetRank
    */
-  public int getPacketRank() {
-<span class="fc" id="L157">    return packetRank;</span>
+  public final int getPacketRank() {
+<span class="fc" id="L173">    return packetRank;</span>
   }
 
   /**
    * @return the lengthPacket
    */
-  public int getLengthPacket() {
-<span class="fc" id="L164">    return lengthPacket;</span>
+  public final int getLengthPacket() {
+<span class="fc" id="L180">    return lengthPacket;</span>
   }
 
   /**
-   * Only for Network incoming buffer
+   * Transform the DataPacket to have a byte array instead of ByteBuf
    *
-   * @return the Data ByteBuf
+   * @param session to allow to get reusable buffer
    */
-  public ByteBuf getRecvData() {
-<span class="nc" id="L173">    return dataRecv;</span>
-  }
-
-  public void createByteBufFromRecv(final byte[] buffer) {
-<span class="fc" id="L177">    dataRecv.getBytes(dataRecv.readerIndex(), buffer);</span>
-<span class="fc" id="L178">    data = buffer;</span>
-<span class="fc" id="L179">  }</span>
+  public final synchronized void createByteBufFromRecv(
+      final R66Session session) {
+    // Get reusable buffer and set internal content to byte Array
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (data == null) {</span>
+<span class="fc" id="L192">      final byte[] buffer = session.getReusableDataPacketBuffer(lengthPacket);</span>
+<span class="fc" id="L193">      dataRecv.getBytes(dataRecv.readerIndex(), buffer, 0, lengthPacket);</span>
+<span class="fc" id="L194">      data = buffer;</span>
+<span class="fc" id="L195">      WaarpNettyUtil.release(dataRecv);</span>
+<span class="fc" id="L196">      dataRecv = null;</span>
+    }
+<span class="fc" id="L198">  }</span>
 
   /**
    * @return the data
    */
-  public byte[] getData() {
-<span class="fc" id="L185">    ParametersChecker</span>
-<span class="fc" id="L186">        .checkParameter(&quot;Data is not setup correctly&quot;, data, logger);</span>
-<span class="fc" id="L187">    return data;</span>
+  public final byte[] getData() {
+<span class="fc" id="L204">    ParametersChecker.checkParameter(&quot;Data is not setup correctly&quot;, data,</span>
+                                     logger);
+<span class="fc" id="L206">    return data;</span>
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
-<span class="nc" id="L194">    return key;</span>
+  public final byte[] getKey() {
+<span class="nc" id="L213">    return key;</span>
   }
 
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(final FilesystemBasedDigest digestBlock,
-                            final FilesystemBasedDigest digestGlobal,
-                            final FilesystemBasedDigest digestLocal) {
-<span class="fc" id="L203">    ParametersChecker</span>
-<span class="fc" id="L204">        .checkParameter(&quot;Data is not setup correctly&quot;, data, logger);</span>
-<span class="pc bpc" id="L205" title="2 of 4 branches missed.">    if (key == null || key.length == 0) {</span>
-<span class="nc bnc" id="L206" title="All 4 branches missed.">      if (digestGlobal != null || digestLocal != null) {</span>
-<span class="nc" id="L207">        FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);</span>
+  public final boolean isKeyValid(final FilesystemBasedDigest digestBlock,
+                                  final FilesystemBasedDigest digestGlobal,
+                                  final FilesystemBasedDigest digestLocal) {
+<span class="fc" id="L222">    ParametersChecker.checkParameter(&quot;Data is not setup correctly&quot;, data,</span>
+                                     logger);
+<span class="pc bpc" id="L224" title="2 of 4 branches missed.">    if (key == null || key.length == 0) {</span>
+<span class="nc bnc" id="L225" title="All 4 branches missed.">      if (digestGlobal != null || digestLocal != null) {</span>
+<span class="nc" id="L226">        FileUtils.computeGlobalHash(digestGlobal, digestLocal, data,</span>
+                                    lengthPacket);
       }
-<span class="nc" id="L209">      logger.error(&quot;Should received a Digest but don't&quot;);</span>
-<span class="nc" id="L210">      return false;</span>
+<span class="nc" id="L229">      logger.error(&quot;Should received a Digest but don't&quot;);</span>
+<span class="nc" id="L230">      return false;</span>
     }
-<span class="fc" id="L212">    digestBlock.Update(data, 0, data.length);</span>
-<span class="fc" id="L213">    final byte[] newkey = digestBlock.Final();</span>
-<span class="fc" id="L214">    FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);</span>
-<span class="fc" id="L215">    final boolean equal = Arrays.equals(key, newkey);</span>
-<span class="pc bpc" id="L216" title="1 of 2 branches missed.">    if (!equal) {</span>
-<span class="nc" id="L217">      logger.error(&quot;DIGEST {} != {} for {} bytes using {} at rank {}&quot;,</span>
-<span class="nc" id="L218">                   FilesystemBasedDigest.getHex(key),</span>
-<span class="nc" id="L219">                   FilesystemBasedDigest.getHex(newkey), data.length,</span>
-<span class="nc" id="L220">                   digestBlock.getAlgo(), packetRank);</span>
+<span class="fc" id="L232">    digestBlock.Update(data, 0, lengthPacket);</span>
+<span class="fc" id="L233">    final byte[] newkey = digestBlock.Final();</span>
+<span class="fc" id="L234">    FileUtils.computeGlobalHash(digestGlobal, digestLocal, data, lengthPacket);</span>
+<span class="fc" id="L235">    final boolean equal = Arrays.equals(key, newkey);</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">    if (!equal) {</span>
+<span class="nc" id="L237">      logger.error(&quot;DIGEST {} != {} for {} bytes using {} at rank {}&quot;,</span>
+<span class="nc" id="L238">                   FilesystemBasedDigest.getHex(key),</span>
+<span class="nc" id="L239">                   FilesystemBasedDigest.getHex(newkey), lengthPacket,</span>
+<span class="nc" id="L240">                   digestBlock.getAlgo(), packetRank);</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">    } else if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L242">      logger.debug(&quot;DIGEST {} == {} for {} bytes using {} at rank {}&quot;,</span>
+<span class="nc" id="L243">                   FilesystemBasedDigest.getHex(key),</span>
+<span class="nc" id="L244">                   FilesystemBasedDigest.getHex(newkey), lengthPacket,</span>
+<span class="nc" id="L245">                   digestBlock.getAlgo(), packetRank);</span>
     }
-<span class="fc" id="L222">    return equal;</span>
+<span class="fc" id="L247">    return equal;</span>
   }
 
   @Override
-  public void clear() {
-<span class="fc" id="L227">    super.clear();</span>
-<span class="fc" id="L228">    WaarpNettyUtil.release(dataRecv);</span>
-<span class="fc" id="L229">    dataRecv = null;</span>
-<span class="fc" id="L230">    data = null;</span>
-<span class="fc" id="L231">    key = null;</span>
-<span class="fc" id="L232">  }</span>
+  public final synchronized void clear() {
+<span class="fc" id="L252">    super.clear();</span>
+<span class="fc" id="L253">    WaarpNettyUtil.release(dataRecv);</span>
+<span class="fc" id="L254">    dataRecv = null;</span>
+<span class="fc" id="L255">    data = null;</span>
+<span class="fc" id="L256">    key = null;</span>
+<span class="fc" id="L257">    lengthPacket = 0;</span>
+<span class="fc" id="L258">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

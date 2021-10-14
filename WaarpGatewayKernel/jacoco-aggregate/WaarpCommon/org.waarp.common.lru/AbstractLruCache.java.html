@@ -37,20 +37,20 @@ public abstract class AbstractLruCache&lt;K, V&gt;
    *
    * @throws IllegalArgumentException if ttl is not positive
    */
-<span class="nc" id="L40">  protected AbstractLruCache(final long ttl) {</span>
-<span class="nc bnc" id="L41" title="All 2 branches missed.">    if (ttl &lt;= 0) {</span>
-<span class="nc" id="L42">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
+<span class="fc" id="L40">  protected AbstractLruCache(final long ttl) {</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">    if (ttl &lt;= 0) {</span>
+<span class="fc" id="L42">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
     }
 
-<span class="nc" id="L45">    this.ttl = ttl;</span>
-<span class="nc" id="L46">  }</span>
+<span class="fc" id="L45">    this.ttl = ttl;</span>
+<span class="fc" id="L46">  }</span>
 
   @Override
   public final boolean contains(final K key) {
     // can't use contains because of expiration policy
-<span class="nc" id="L51">    final V value = get(key);</span>
+<span class="fc" id="L51">    final V value = get(key);</span>
 
-<span class="nc bnc" id="L53" title="All 2 branches missed.">    return value != null;</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    return value != null;</span>
   }
 
   /**
@@ -65,45 +65,45 @@ public abstract class AbstractLruCache&lt;K, V&gt;
    */
   protected InterfaceLruCacheEntry&lt;V&gt; createEntry(final V value,
                                                   final long ttl) {
-<span class="nc" id="L68">    return new StrongReferenceCacheEntry&lt;V&gt;(value, ttl);</span>
+<span class="fc" id="L68">    return new StrongReferenceCacheEntry&lt;V&gt;(value, ttl);</span>
   }
 
   @Override
   public V get(final K key) {
-<span class="nc" id="L73">    return getValue(key);</span>
+<span class="fc" id="L73">    return getValue(key);</span>
   }
 
   @Override
   public final V get(final K key, final Callable&lt;V&gt; callback) throws Exception {
-<span class="nc" id="L78">    return get(key, callback, ttl);</span>
+<span class="fc" id="L78">    return get(key, callback, ttl);</span>
   }
 
   @Override
   public final V get(final K key, final Callable&lt;V&gt; callback, final long ttl)
       throws Exception {
-<span class="nc" id="L84">    V value = get(key);</span>
+<span class="fc" id="L84">    V value = get(key);</span>
 
     // if element doesn't exist create it using callback
-<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L88">      value = callback.call();</span>
-<span class="nc" id="L89">      put(key, value, ttl);</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="fc" id="L88">      value = callback.call();</span>
+<span class="fc" id="L89">      put(key, value, ttl);</span>
     }
 
-<span class="nc" id="L92">    return value;</span>
+<span class="fc" id="L92">    return value;</span>
   }
 
   @Override
   public final long getTtl() {
-<span class="nc" id="L97">    return ttl;</span>
+<span class="fc" id="L97">    return ttl;</span>
   }
 
   @Override
   public final void setNewTtl(final long ttl) {
-<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (ttl &lt;= 0) {</span>
-<span class="nc" id="L103">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">    if (ttl &lt;= 0) {</span>
+<span class="fc" id="L103">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
     }
-<span class="nc" id="L105">    this.ttl = ttl;</span>
-<span class="nc" id="L106">  }</span>
+<span class="fc" id="L105">    this.ttl = ttl;</span>
+<span class="fc" id="L106">  }</span>
 
   /**
    * Returns LruCacheEntry mapped by key or null if it does not exist
@@ -116,11 +116,11 @@ public abstract class AbstractLruCache&lt;K, V&gt;
 
   @Override
   public final void updateTtl(final K key) {
-<span class="nc" id="L119">    final InterfaceLruCacheEntry&lt;V&gt; cacheEntry = getEntry(key);</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (cacheEntry != null) {</span>
-<span class="nc" id="L121">      cacheEntry.resetTime(ttl);</span>
+<span class="fc" id="L119">    final InterfaceLruCacheEntry&lt;V&gt; cacheEntry = getEntry(key);</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (cacheEntry != null) {</span>
+<span class="fc" id="L121">      cacheEntry.resetTime(ttl);</span>
     }
-<span class="nc" id="L123">  }</span>
+<span class="fc" id="L123">  }</span>
 
   /**
    * Tries to retrieve value by it's key. Automatically removes entry if it's
@@ -132,38 +132,38 @@ public abstract class AbstractLruCache&lt;K, V&gt;
    * @return Value
    */
   protected final V getValue(final K key) {
-<span class="nc" id="L135">    V value = null;</span>
+<span class="fc" id="L135">    V value = null;</span>
 
-<span class="nc" id="L137">    final InterfaceLruCacheEntry&lt;V&gt; cacheEntry = getEntry(key);</span>
+<span class="fc" id="L137">    final InterfaceLruCacheEntry&lt;V&gt; cacheEntry = getEntry(key);</span>
 
-<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (cacheEntry != null) {</span>
-<span class="nc" id="L140">      value = cacheEntry.getValue();</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">    if (cacheEntry != null) {</span>
+<span class="fc" id="L140">      value = cacheEntry.getValue();</span>
 
       // autoremove entry from cache if it's not valid
-<span class="nc bnc" id="L143" title="All 2 branches missed.">      if (value == null) {</span>
-<span class="nc" id="L144">        remove(key);</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">      if (value == null) {</span>
+<span class="fc" id="L144">        remove(key);</span>
       }
     }
 
-<span class="nc" id="L148">    return value;</span>
+<span class="fc" id="L148">    return value;</span>
   }
 
   @Override
   public final boolean isEmpty() {
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    return size() == 0;</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    return size() == 0;</span>
   }
 
   @Override
   public final void put(final K key, final V value) {
-<span class="nc" id="L158">    put(key, value, ttl);</span>
-<span class="nc" id="L159">  }</span>
+<span class="fc" id="L158">    put(key, value, ttl);</span>
+<span class="fc" id="L159">  }</span>
 
   @Override
   public void put(final K key, final V value, final long ttl) {
-<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (value != null) {</span>
-<span class="nc" id="L164">      putEntry(key, createEntry(value, ttl));</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">    if (value != null) {</span>
+<span class="fc" id="L164">      putEntry(key, createEntry(value, ttl));</span>
     }
-<span class="nc" id="L166">  }</span>
+<span class="fc" id="L166">  }</span>
 
   /**
    * Puts entry into cache

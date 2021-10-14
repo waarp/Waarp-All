@@ -35,28 +35,28 @@ public class Filter {
   private final byte specialOperand;
 
   public Filter(final String key, final String operand,
-<span class="nc" id="L38">                final Object... values) {</span>
-<span class="nc" id="L39">    this.key = key;</span>
-<span class="nc" id="L40">    this.operand = operand;</span>
-<span class="nc bnc" id="L41" title="All 2 branches missed.">    nbArgs = values == null? 0 : values.length;</span>
-<span class="nc bnc" id="L42" title="All 2 branches missed.">    if (nbArgs == 0) {</span>
+<span class="fc" id="L38">                final Object... values) {</span>
+<span class="fc" id="L39">    this.key = key;</span>
+<span class="fc" id="L40">    this.operand = operand;</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">    nbArgs = values == null? 0 : values.length;</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">    if (nbArgs == 0) {</span>
 <span class="nc" id="L43">      this.value = null;</span>
 <span class="nc" id="L44">      specialOperand = B_NONE;</span>
-<span class="nc bnc" id="L45" title="All 2 branches missed.">    } else if (nbArgs == 1) {</span>
-<span class="nc" id="L46">      this.value = values[0];</span>
-<span class="nc" id="L47">      specialOperand = B_SINGLE;</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">    } else if (nbArgs == 1) {</span>
+<span class="fc" id="L46">      this.value = values[0];</span>
+<span class="fc" id="L47">      specialOperand = B_SINGLE;</span>
     } else {
-<span class="nc" id="L49">      this.value = values;</span>
-<span class="nc" id="L50">      specialOperand = B_MULTIPLE;</span>
+<span class="fc" id="L49">      this.value = values;</span>
+<span class="fc" id="L50">      specialOperand = B_MULTIPLE;</span>
     }
-<span class="nc" id="L52">  }</span>
+<span class="fc" id="L52">  }</span>
 
   /**
    * @return the number of values for the operand (-1 for 0, 0 for 1, 1 for 2
    *     or (n-1) for n)
    */
   public final int nbAdditionnalParams() {
-<span class="nc" id="L59">    return nbArgs - 1;</span>
+<span class="fc" id="L59">    return nbArgs - 1;</span>
   }
 
   /**
@@ -67,14 +67,14 @@ public class Filter {
    * @return the associated value
    */
   public final Object append(final StringBuilder builder) {
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (nbArgs == 0) {</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (nbArgs == 0) {</span>
 <span class="nc" id="L71">      builder.append(key).append(' ').append(operand).append(&quot; &quot;);</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">    } else if (nbArgs == 1) {</span>
-<span class="nc" id="L73">      builder.append(key).append(' ').append(operand).append(&quot; ? &quot;);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">    } else if (nbArgs == 1) {</span>
+<span class="fc" id="L73">      builder.append(key).append(' ').append(operand).append(&quot; ? &quot;);</span>
     } else {
-<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (BETWEEN.equalsIgnoreCase(operand)) {</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">      if (BETWEEN.equalsIgnoreCase(operand)) {</span>
         // Object is a Object[2]
-<span class="nc" id="L77">        builder.append(key).append(' ').append(BETWEEN).append(&quot; ? AND ? &quot;);</span>
+<span class="fc" id="L77">        builder.append(key).append(' ').append(BETWEEN).append(&quot; ? AND ? &quot;);</span>
 <span class="nc bnc" id="L78" title="All 2 branches missed.">      } else if (IN.equalsIgnoreCase((operand))) {</span>
         // Object is a Object[n]
 <span class="nc" id="L80">        builder.append(key).append(' ').append(IN).append(&quot;(?&quot;);</span>
@@ -87,7 +87,7 @@ public class Filter {
             &quot;Command seems to not support multiple arguments: &quot; + operand);
       }
     }
-<span class="nc" id="L90">    return value;</span>
+<span class="fc" id="L90">    return value;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

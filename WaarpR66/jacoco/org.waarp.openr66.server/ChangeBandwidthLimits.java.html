@@ -131,10 +131,10 @@ public class ChangeBandwidthLimits implements Runnable {
                                 LocalPacketFactory.BANDWIDTHPACKET);
       }
     }
-<span class="nc" id="L134">    AbstractTransfer</span>
-<span class="nc" id="L135">        .sendValidPacket(host, localChannelReference, valid, future);</span>
-<span class="nc" id="L136">    logger</span>
-<span class="nc bnc" id="L137" title="All 2 branches missed.">        .info(&quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L134">    AbstractTransfer.sendValidPacket(host, localChannelReference, valid,</span>
+                                     future);
+<span class="nc" id="L136">    logger.info(</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
 <span class="nc" id="L138">  }</span>
 
 <span class="nc" id="L140">  protected static long swriteGlobalLimit = -1;</span>
@@ -151,8 +151,8 @@ public class ChangeBandwidthLimits implements Runnable {
 <span class="nc" id="L151">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L152">      return false;</span>
     }
-<span class="nc" id="L154">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
 <span class="nc" id="L156">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L157">      return false;</span>
     }
@@ -187,8 +187,8 @@ public class ChangeBandwidthLimits implements Runnable {
   }
 
   public static void main(final String[] args) {
-<span class="nc" id="L190">    WaarpLoggerFactory</span>
-<span class="nc" id="L191">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L190">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="nc bnc" id="L192" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L193">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
     }
@@ -249,18 +249,22 @@ public class ChangeBandwidthLimits implements Runnable {
         }
 <span class="nc" id="L250">      } else {</span>
 <span class="nc bnc" id="L251" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
-<span class="nc" id="L252">          logger.warn(&quot;Bandwidth is     WARNED&quot;, future.getCause());</span>
+<span class="nc" id="L252">          logger.warn(&quot;Bandwidth is     WARNED&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                      future.getCause() != null?</span>
+<span class="nc" id="L254">                          future.getCause().getMessage() : &quot;&quot;);</span>
         } else {
-<span class="nc" id="L254">          logger.error(&quot;Bandwidth in     FAILURE&quot;, future.getCause());</span>
+<span class="nc" id="L256">          logger.error(&quot;Bandwidth in     FAILURE&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                       future.getCause() != null?</span>
+<span class="nc" id="L258">                           future.getCause().getMessage() : &quot;&quot;);</span>
         }
-<span class="nc" id="L256">        networkTransaction.closeAll();</span>
-<span class="nc" id="L257">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+<span class="nc" id="L260">        networkTransaction.closeAll();</span>
+<span class="nc" id="L261">        System.exit(result.getCode().ordinal());//NOSONAR</span>
       }
     } finally {
-<span class="nc" id="L260">      networkTransaction.closeAll();</span>
-<span class="nc" id="L261">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L264">      networkTransaction.closeAll();</span>
+<span class="nc" id="L265">      System.exit(0);//NOSONAR</span>
     }
-<span class="nc" id="L263">  }</span>
+<span class="nc" id="L267">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

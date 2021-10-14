@@ -55,7 +55,7 @@ class CompressionParameters {
   private final Strategy strategy;
 
   private static final CompressionParameters[][]
-<span class="nc" id="L58">      DEFAULT_COMPRESSION_PARAMETERS = new CompressionParameters[][] {</span>
+<span class="fc" id="L58">      DEFAULT_COMPRESSION_PARAMETERS = new CompressionParameters[][] {</span>
       {
           // default
           new CompressionParameters(19, 12, 13, 1, 6, 1, Strategy.FAST),
@@ -251,81 +251,81 @@ class CompressionParameters {
   }
   };
 
-<span class="nc" id="L254">  public enum Strategy {</span>
+<span class="fc" id="L254">  public enum Strategy {</span>
     // from faster to stronger
 
     // YC: fast is a &quot;single probe&quot; strategy : at every position, we attempt to find a match, and give up if we don't find any. similar to lz4.
-<span class="nc" id="L258">    FAST(BlockCompressor.UNSUPPORTED),</span>
+<span class="fc" id="L258">    FAST(BlockCompressor.UNSUPPORTED),</span>
 
     // YC: double_fast is a 2 attempts strategies. They are not symmetrical by the way. One attempt is &quot;normal&quot; while the second one looks for &quot;long matches&quot;. It was
     // empirically found that this was the best trade off. As can be guessed, it's slower than single-attempt, but find more and better matches, so compresses better.
-<span class="nc" id="L262">    DFAST(new DoubleFastBlockCompressor()),</span>
+<span class="fc" id="L262">    DFAST(new DoubleFastBlockCompressor()),</span>
 
     // YC: greedy uses a hash chain strategy. Every position is hashed, and all positions with same hash are chained. The algorithm goes through all candidates. There are
     // diminishing returns in going deeper and deeper, so after a nb of attempts (which can be selected), it abandons the search. The best (longest) match wins. If there is
     // one winner, it's immediately encoded.
-<span class="nc" id="L267">    GREEDY(BlockCompressor.UNSUPPORTED),</span>
+<span class="fc" id="L267">    GREEDY(BlockCompressor.UNSUPPORTED),</span>
 
     // YC: lazy will do something similar to greedy, but will not encode immediately. It will search again at next position, in case it would find something better.
     // It's actually fairly common to have a small match at position p hiding a more worthy one at position p+1. This obviously increases the search workload. But the
     // resulting compressed stream generally contains larger matches, hence compresses better.
-<span class="nc" id="L272">    LAZY(BlockCompressor.UNSUPPORTED),</span>
+<span class="fc" id="L272">    LAZY(BlockCompressor.UNSUPPORTED),</span>
 
     // YC: lazy2 is same as lazy, but deeper. It will search at P, P+1 and then P+2 in case it would find something even better. More workload. Better matches.
-<span class="nc" id="L275">    LAZY2(BlockCompressor.UNSUPPORTED),</span>
+<span class="fc" id="L275">    LAZY2(BlockCompressor.UNSUPPORTED),</span>
 
     // YC: btlazy2 is like lazy2, but trades the hash chain for a binary tree. This becomes necessary, as the nb of attempts becomes prohibitively expensive. The binary tree
     // complexity increases with log of search depth, instead of proportionally with search depth. So searching deeper in history quickly becomes the dominant operation.
     // btlazy2 cuts into that. But it costs 2x more memory. It's also relatively &quot;slow&quot;, even when trying to cut its parameters to make it perform faster. So it's really
     // a high compression strategy.
-<span class="nc" id="L281">    BTLAZY2(BlockCompressor.UNSUPPORTED),</span>
+<span class="fc" id="L281">    BTLAZY2(BlockCompressor.UNSUPPORTED),</span>
 
     // YC: btopt is, well, a hell of lot more complex.
     // It will compute and find multiple matches per position, will dynamically compare every path from point P to P+N, reverse the graph to find cheapest path, iterate on
     // batches of overlapping matches, etc. It's much more expensive. But the compression ratio is also much better.
-<span class="nc" id="L286">    BTOPT(BlockCompressor.UNSUPPORTED),</span>
+<span class="fc" id="L286">    BTOPT(BlockCompressor.UNSUPPORTED),</span>
 
     // YC: btultra is about the same, but doesn't cut as many corners (btopt &quot;abandons&quot; more quickly unpromising little gains). Slower, stronger.
-<span class="nc" id="L289">    BTULTRA(BlockCompressor.UNSUPPORTED);</span>
+<span class="fc" id="L289">    BTULTRA(BlockCompressor.UNSUPPORTED);</span>
 
     private final BlockCompressor compressor;
 
-<span class="nc" id="L293">    Strategy(final BlockCompressor compressor) {</span>
-<span class="nc" id="L294">      this.compressor = compressor;</span>
-<span class="nc" id="L295">    }</span>
+<span class="fc" id="L293">    Strategy(final BlockCompressor compressor) {</span>
+<span class="fc" id="L294">      this.compressor = compressor;</span>
+<span class="fc" id="L295">    }</span>
 
     public BlockCompressor getCompressor() {
-<span class="nc" id="L298">      return compressor;</span>
+<span class="fc" id="L298">      return compressor;</span>
     }
   }
 
   public CompressionParameters(final int windowLog, final int chainLog,
                                final int hashLog, final int searchLog,
                                final int searchLength, final int targetLength,
-<span class="nc" id="L305">                               final Strategy strategy) {</span>
-<span class="nc" id="L306">    this.windowLog = windowLog;</span>
-<span class="nc" id="L307">    this.chainLog = chainLog;</span>
-<span class="nc" id="L308">    this.hashLog = hashLog;</span>
-<span class="nc" id="L309">    this.searchLog = searchLog;</span>
-<span class="nc" id="L310">    this.searchLength = searchLength;</span>
-<span class="nc" id="L311">    this.targetLength = targetLength;</span>
-<span class="nc" id="L312">    this.strategy = strategy;</span>
-<span class="nc" id="L313">  }</span>
+<span class="fc" id="L305">                               final Strategy strategy) {</span>
+<span class="fc" id="L306">    this.windowLog = windowLog;</span>
+<span class="fc" id="L307">    this.chainLog = chainLog;</span>
+<span class="fc" id="L308">    this.hashLog = hashLog;</span>
+<span class="fc" id="L309">    this.searchLog = searchLog;</span>
+<span class="fc" id="L310">    this.searchLength = searchLength;</span>
+<span class="fc" id="L311">    this.targetLength = targetLength;</span>
+<span class="fc" id="L312">    this.strategy = strategy;</span>
+<span class="fc" id="L313">  }</span>
 
   public int getWindowLog() {
-<span class="nc" id="L316">    return windowLog;</span>
+<span class="fc" id="L316">    return windowLog;</span>
   }
 
   public int getSearchLength() {
-<span class="nc" id="L320">    return searchLength;</span>
+<span class="fc" id="L320">    return searchLength;</span>
   }
 
   public int getChainLog() {
-<span class="nc" id="L324">    return chainLog;</span>
+<span class="fc" id="L324">    return chainLog;</span>
   }
 
   public int getHashLog() {
-<span class="nc" id="L328">    return hashLog;</span>
+<span class="fc" id="L328">    return hashLog;</span>
   }
 
   public int getSearchLog() {
@@ -337,76 +337,76 @@ class CompressionParameters {
   }
 
   public Strategy getStrategy() {
-<span class="nc" id="L340">    return strategy;</span>
+<span class="fc" id="L340">    return strategy;</span>
   }
 
   public static CompressionParameters compute(final int compressionLevel,
                                               final int inputSize) {
-<span class="nc" id="L345">    final CompressionParameters defaultParameters =</span>
-<span class="nc" id="L346">        getDefaultParameters(compressionLevel, inputSize);</span>
+<span class="fc" id="L345">    final CompressionParameters defaultParameters =</span>
+<span class="fc" id="L346">        getDefaultParameters(compressionLevel, inputSize);</span>
 
-<span class="nc" id="L348">    int targetLength = defaultParameters.targetLength;</span>
-<span class="nc" id="L349">    int windowLog = defaultParameters.windowLog;</span>
-<span class="nc" id="L350">    int chainLog = defaultParameters.chainLog;</span>
-<span class="nc" id="L351">    int hashLog = defaultParameters.hashLog;</span>
-<span class="nc" id="L352">    final int searchLog = defaultParameters.searchLog;</span>
-<span class="nc" id="L353">    final int searchLength = defaultParameters.searchLength;</span>
-<span class="nc" id="L354">    final Strategy strategy = defaultParameters.strategy;</span>
+<span class="fc" id="L348">    int targetLength = defaultParameters.targetLength;</span>
+<span class="fc" id="L349">    int windowLog = defaultParameters.windowLog;</span>
+<span class="fc" id="L350">    int chainLog = defaultParameters.chainLog;</span>
+<span class="fc" id="L351">    int hashLog = defaultParameters.hashLog;</span>
+<span class="fc" id="L352">    final int searchLog = defaultParameters.searchLog;</span>
+<span class="fc" id="L353">    final int searchLength = defaultParameters.searchLength;</span>
+<span class="fc" id="L354">    final Strategy strategy = defaultParameters.strategy;</span>
 
-<span class="nc bnc" id="L356" title="All 2 branches missed.">    if (compressionLevel &lt; 0) {</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    if (compressionLevel &lt; 0) {</span>
 <span class="nc" id="L357">      targetLength = -compressionLevel;   // acceleration factor</span>
     }
 
     // resize windowLog if input is small enough, to use less memory
-<span class="nc" id="L361">    final long maxWindowResize = 1L &lt;&lt; (MAX_WINDOW_LOG - 1);</span>
-<span class="nc bnc" id="L362" title="All 2 branches missed.">    if (inputSize &lt; maxWindowResize) {</span>
-<span class="nc" id="L363">      final int hashSizeMin = 1 &lt;&lt; MIN_HASH_LOG;</span>
-<span class="nc bnc" id="L364" title="All 2 branches missed.">      final int inputSizeLog = (inputSize &lt; hashSizeMin)? MIN_HASH_LOG :</span>
-<span class="nc" id="L365">          Util.highestBit(inputSize - 1) + 1;</span>
-<span class="nc bnc" id="L366" title="All 2 branches missed.">      if (windowLog &gt; inputSizeLog) {</span>
-<span class="nc" id="L367">        windowLog = inputSizeLog;</span>
+<span class="fc" id="L361">    final long maxWindowResize = 1L &lt;&lt; (MAX_WINDOW_LOG - 1);</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (inputSize &lt; maxWindowResize) {</span>
+<span class="fc" id="L363">      final int hashSizeMin = 1 &lt;&lt; MIN_HASH_LOG;</span>
+<span class="fc bfc" id="L364" title="All 2 branches covered.">      final int inputSizeLog = (inputSize &lt; hashSizeMin)? MIN_HASH_LOG :</span>
+<span class="fc" id="L365">          Util.highestBit(inputSize - 1) + 1;</span>
+<span class="fc bfc" id="L366" title="All 2 branches covered.">      if (windowLog &gt; inputSizeLog) {</span>
+<span class="fc" id="L367">        windowLog = inputSizeLog;</span>
       }
     }
 
-<span class="nc bnc" id="L371" title="All 2 branches missed.">    if (hashLog &gt; windowLog + 1) {</span>
-<span class="nc" id="L372">      hashLog = windowLog + 1;</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">    if (hashLog &gt; windowLog + 1) {</span>
+<span class="fc" id="L372">      hashLog = windowLog + 1;</span>
     }
 
-<span class="nc" id="L375">    final int cycleLog = Util.cycleLog(chainLog, strategy);</span>
-<span class="nc bnc" id="L376" title="All 2 branches missed.">    if (cycleLog &gt; windowLog) {</span>
-<span class="nc" id="L377">      chainLog -= (cycleLog - windowLog);</span>
+<span class="fc" id="L375">    final int cycleLog = Util.cycleLog(chainLog, strategy);</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">    if (cycleLog &gt; windowLog) {</span>
+<span class="fc" id="L377">      chainLog -= (cycleLog - windowLog);</span>
     }
 
-<span class="nc bnc" id="L380" title="All 2 branches missed.">    if (windowLog &lt; MIN_WINDOW_LOG) {</span>
-<span class="nc" id="L381">      windowLog = MIN_WINDOW_LOG;</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">    if (windowLog &lt; MIN_WINDOW_LOG) {</span>
+<span class="fc" id="L381">      windowLog = MIN_WINDOW_LOG;</span>
     }
 
-<span class="nc" id="L384">    return new CompressionParameters(windowLog, chainLog, hashLog, searchLog,</span>
+<span class="fc" id="L384">    return new CompressionParameters(windowLog, chainLog, hashLog, searchLog,</span>
                                      searchLength, targetLength, strategy);
   }
 
   private static CompressionParameters getDefaultParameters(
       final int compressionLevel, final long estimatedInputSize) {
-<span class="nc" id="L390">    int table = 0;</span>
+<span class="fc" id="L390">    int table = 0;</span>
 
-<span class="nc bnc" id="L392" title="All 2 branches missed.">    if (estimatedInputSize != 0) {</span>
-<span class="nc bnc" id="L393" title="All 2 branches missed.">      if (estimatedInputSize &lt;= 16 * 1024) {</span>
-<span class="nc" id="L394">        table = 3;</span>
-<span class="nc bnc" id="L395" title="All 2 branches missed.">      } else if (estimatedInputSize &lt;= 128 * 1024) {</span>
-<span class="nc" id="L396">        table = 2;</span>
-<span class="nc bnc" id="L397" title="All 2 branches missed.">      } else if (estimatedInputSize &lt;= 256 * 1024) {</span>
-<span class="nc" id="L398">        table = 1;</span>
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">    if (estimatedInputSize != 0) {</span>
+<span class="fc bfc" id="L393" title="All 2 branches covered.">      if (estimatedInputSize &lt;= 16 * 1024) {</span>
+<span class="fc" id="L394">        table = 3;</span>
+<span class="fc bfc" id="L395" title="All 2 branches covered.">      } else if (estimatedInputSize &lt;= 128 * 1024) {</span>
+<span class="fc" id="L396">        table = 2;</span>
+<span class="fc bfc" id="L397" title="All 2 branches covered.">      } else if (estimatedInputSize &lt;= 256 * 1024) {</span>
+<span class="fc" id="L398">        table = 1;</span>
       }
     }
 
-<span class="nc" id="L402">    int row = DEFAULT_COMPRESSION_LEVEL;</span>
+<span class="fc" id="L402">    int row = DEFAULT_COMPRESSION_LEVEL;</span>
 
-<span class="nc bnc" id="L404" title="All 2 branches missed.">    if (compressionLevel !=</span>
+<span class="pc bpc" id="L404" title="1 of 2 branches missed.">    if (compressionLevel !=</span>
         0) { // TODO: figure out better way to indicate default compression level
-<span class="nc" id="L406">      row = Math.min(Math.max(0, compressionLevel), MAX_COMPRESSION_LEVEL);</span>
+<span class="fc" id="L406">      row = Math.min(Math.max(0, compressionLevel), MAX_COMPRESSION_LEVEL);</span>
     }
 
-<span class="nc" id="L409">    return DEFAULT_COMPRESSION_PARAMETERS[table][row];</span>
+<span class="fc" id="L409">    return DEFAULT_COMPRESSION_PARAMETERS[table][row];</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

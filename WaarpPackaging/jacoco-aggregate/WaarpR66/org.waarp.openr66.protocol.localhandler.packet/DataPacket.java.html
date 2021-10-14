@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DataPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">DataPacket.java</span></div><h1>DataPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.utils.FileUtils;
+
+import java.util.Arrays;
+
+/**
+ * Data packet
+ * &lt;p&gt;
+ * header = packetRank middle = data end = key
+ */
+public class DataPacket extends AbstractLocalPacket {
+<span class="fc" id="L42">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L43">      WaarpLoggerFactory.getLogger(DataPacket.class);</span>
+
+  private final int packetRank;
+
+  private int lengthPacket;
+
+  private byte[] data;
+  private ByteBuf dataRecv;
+
+  private byte[] key;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new DataPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static DataPacket createFromBuffer(final int headerLength,
+                                            final int middleLength,
+                                            final int endLength,
+                                            final ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L70">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+    }
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (middleLength &lt;= 0) {</span>
+<span class="nc" id="L73">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+    }
+<span class="fc" id="L75">    final int packetRank = buf.readInt();</span>
+<span class="fc" id="L76">    final int index = buf.readerIndex();</span>
+<span class="fc" id="L77">    final ByteBuf recvData = buf.retainedSlice(index, middleLength);</span>
+<span class="fc" id="L78">    buf.skipBytes(middleLength);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">    final byte[] key = endLength &gt; 0? new byte[endLength] : EMPTY_ARRAY;</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">    if (endLength &gt; 0) {</span>
+<span class="fc" id="L81">      buf.readBytes(key);</span>
+    }
+<span class="fc" id="L83">    return new DataPacket(packetRank, recvData, key);</span>
+  }
+
+  /**
+   * @param packetRank
+   * @param data
+   * @param key
+   */
+  private DataPacket(final int packetRank, final ByteBuf data,
+<span class="fc" id="L92">                     final byte[] key) {</span>
+<span class="fc" id="L93">    this.packetRank = packetRank;</span>
+<span class="fc" id="L94">    this.dataRecv = data;</span>
+<span class="fc" id="L95">    this.data = null;</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    this.key = key == null? EMPTY_ARRAY : key;</span>
+<span class="fc" id="L97">    lengthPacket = dataRecv.readableBytes();</span>
+<span class="fc" id="L98">  }</span>
+
+  /**
+   * @param packetRank
+   * @param data
+   * @param length
+   * @param key
+   */
+  public DataPacket(final int packetRank, final byte[] data, final int length,
+<span class="fc" id="L107">                    final byte[] key) {</span>
+<span class="fc" id="L108">    this.packetRank = packetRank;</span>
+<span class="fc" id="L109">    this.data = data;</span>
+<span class="fc" id="L110">    this.dataRecv = null;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    this.key = key == null? EMPTY_ARRAY : key;</span>
+<span class="fc" id="L112">    lengthPacket = length;</span>
+<span class="fc" id="L113">  }</span>
+
+  /**
+   * When using compression/decompression, data can be changed
+   *
+   * @param data
+   * @param length
+   */
+  public final void updateFromCompressionCodec(final byte[] data,
+                                               final int length) {
+<span class="fc" id="L123">    this.data = data;</span>
+<span class="fc" id="L124">    lengthPacket = length;</span>
+<span class="fc" id="L125">  }</span>
+
+  @Override
+  public final boolean hasGlobalBuffer() {
+<span class="fc" id="L129">    return false;</span>
+  }
+
+  @Override
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
+<span class="nc" id="L135">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
+
+  @Override
+  public final synchronized void createEnd(final LocalChannelReference lcr) {
+<span class="fc" id="L140">    end = WaarpNettyUtil.wrappedBuffer(key);</span>
+<span class="fc" id="L141">  }</span>
+
+  @Override
+  public final synchronized void createHeader(final LocalChannelReference lcr) {
+<span class="fc" id="L145">    header = ByteBufAllocator.DEFAULT.ioBuffer(4, 4);</span>
+<span class="fc" id="L146">    header.writeInt(packetRank);</span>
+<span class="fc" id="L147">  }</span>
+
+  @Override
+  public final synchronized void createMiddle(final LocalChannelReference lcr) {
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    if (dataRecv != null) {</span>
+<span class="nc" id="L152">      middle = dataRecv;</span>
+    } else {
+<span class="fc" id="L154">      middle = WaarpNettyUtil.wrappedBuffer(data);</span>
+<span class="fc" id="L155">      middle.writerIndex(lengthPacket);</span>
+    }
+<span class="fc" id="L157">  }</span>
+
+  @Override
+  public final byte getType() {
+<span class="fc" id="L161">    return LocalPacketFactory.DATAPACKET;</span>
+  }
+
+  @Override
+  public final String toString() {
+<span class="nc" id="L166">    return &quot;DataPacket: &quot; + packetRank + ':' + lengthPacket;</span>
+  }
+
+  /**
+   * @return the packetRank
+   */
+  public final int getPacketRank() {
+<span class="fc" id="L173">    return packetRank;</span>
+  }
+
+  /**
+   * @return the lengthPacket
+   */
+  public final int getLengthPacket() {
+<span class="fc" id="L180">    return lengthPacket;</span>
+  }
+
+  /**
+   * Transform the DataPacket to have a byte array instead of ByteBuf
+   *
+   * @param session to allow to get reusable buffer
+   */
+  public final synchronized void createByteBufFromRecv(
+      final R66Session session) {
+    // Get reusable buffer and set internal content to byte Array
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (data == null) {</span>
+<span class="fc" id="L192">      final byte[] buffer = session.getReusableDataPacketBuffer(lengthPacket);</span>
+<span class="fc" id="L193">      dataRecv.getBytes(dataRecv.readerIndex(), buffer, 0, lengthPacket);</span>
+<span class="fc" id="L194">      data = buffer;</span>
+<span class="fc" id="L195">      WaarpNettyUtil.release(dataRecv);</span>
+<span class="fc" id="L196">      dataRecv = null;</span>
+    }
+<span class="fc" id="L198">  }</span>
+
+  /**
+   * @return the data
+   */
+  public final byte[] getData() {
+<span class="fc" id="L204">    ParametersChecker.checkParameter(&quot;Data is not setup correctly&quot;, data,</span>
+                                     logger);
+<span class="fc" id="L206">    return data;</span>
+  }
+
+  /**
+   * @return the key
+   */
+  public final byte[] getKey() {
+<span class="nc" id="L213">    return key;</span>
+  }
+
+  /**
+   * @return True if the Hashed key is valid (or no key is set)
+   */
+  public final boolean isKeyValid(final FilesystemBasedDigest digestBlock,
+                                  final FilesystemBasedDigest digestGlobal,
+                                  final FilesystemBasedDigest digestLocal) {
+<span class="fc" id="L222">    ParametersChecker.checkParameter(&quot;Data is not setup correctly&quot;, data,</span>
+                                     logger);
+<span class="pc bpc" id="L224" title="2 of 4 branches missed.">    if (key == null || key.length == 0) {</span>
+<span class="nc bnc" id="L225" title="All 4 branches missed.">      if (digestGlobal != null || digestLocal != null) {</span>
+<span class="nc" id="L226">        FileUtils.computeGlobalHash(digestGlobal, digestLocal, data,</span>
+                                    lengthPacket);
+      }
+<span class="nc" id="L229">      logger.error(&quot;Should received a Digest but don't&quot;);</span>
+<span class="nc" id="L230">      return false;</span>
+    }
+<span class="fc" id="L232">    digestBlock.Update(data, 0, lengthPacket);</span>
+<span class="fc" id="L233">    final byte[] newkey = digestBlock.Final();</span>
+<span class="fc" id="L234">    FileUtils.computeGlobalHash(digestGlobal, digestLocal, data, lengthPacket);</span>
+<span class="fc" id="L235">    final boolean equal = Arrays.equals(key, newkey);</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">    if (!equal) {</span>
+<span class="nc" id="L237">      logger.error(&quot;DIGEST {} != {} for {} bytes using {} at rank {}&quot;,</span>
+<span class="nc" id="L238">                   FilesystemBasedDigest.getHex(key),</span>
+<span class="nc" id="L239">                   FilesystemBasedDigest.getHex(newkey), lengthPacket,</span>
+<span class="nc" id="L240">                   digestBlock.getAlgo(), packetRank);</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">    } else if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L242">      logger.debug(&quot;DIGEST {} == {} for {} bytes using {} at rank {}&quot;,</span>
+<span class="nc" id="L243">                   FilesystemBasedDigest.getHex(key),</span>
+<span class="nc" id="L244">                   FilesystemBasedDigest.getHex(newkey), lengthPacket,</span>
+<span class="nc" id="L245">                   digestBlock.getAlgo(), packetRank);</span>
+    }
+<span class="fc" id="L247">    return equal;</span>
+  }
+
+  @Override
+  public final synchronized void clear() {
+<span class="fc" id="L252">    super.clear();</span>
+<span class="fc" id="L253">    WaarpNettyUtil.release(dataRecv);</span>
+<span class="fc" id="L254">    dataRecv = null;</span>
+<span class="fc" id="L255">    data = null;</span>
+<span class="fc" id="L256">    key = null;</span>
+<span class="fc" id="L257">    lengthPacket = 0;</span>
+<span class="fc" id="L258">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

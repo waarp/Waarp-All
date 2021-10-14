@@ -157,44 +157,43 @@ public final class WaarpActionLogger {
 <span class="fc" id="L157">    final String sessionContexte = session.toString();</span>
 <span class="fc" id="L158">    final long specialId = session.getLogid();</span>
 <span class="fc" id="L159">    logger.error(rcode.code() + &quot;:&quot; + message + ' ' + sessionContexte);</span>
-<span class="fc" id="L160">    logger.warn(&quot;To Change to debug Log&quot;, new Exception(&quot;Log&quot;));</span>
-<span class="pc bpc" id="L161" title="3 of 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstantGateway.ILLEGALVALUE) {</span>
-<span class="nc" id="L162">      final PageRole code = session.getCurrentCommand();</span>
-<span class="nc bnc" id="L163" title="All 2 branches missed.">      switch (code) {</span>
+<span class="pc bpc" id="L160" title="3 of 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstantGateway.ILLEGALVALUE) {</span>
+<span class="nc" id="L161">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      switch (code) {</span>
         case DELETE:
         case GETDOWNLOAD:
         case POST:
         case POSTUPLOAD:
         case PUT:
-<span class="nc" id="L169">          break;</span>
+<span class="nc" id="L168">          break;</span>
         case ERROR:
         case HTML:
         case MENU:
         default:
-<span class="nc" id="L174">          return;</span>
+<span class="nc" id="L173">          return;</span>
       }
-<span class="nc" id="L176">      final UpdatedInfo info = UpdatedInfo.INERROR;</span>
+<span class="nc" id="L175">      final UpdatedInfo info = UpdatedInfo.INERROR;</span>
       try {
         // Try load
-<span class="nc" id="L179">        final DbTransferLog log =</span>
-<span class="nc" id="L180">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
-<span class="nc" id="L181">                              session.getAuth().getAccount(), specialId);</span>
-<span class="nc" id="L182">        log.changeUpdatedInfo(info);</span>
-<span class="nc" id="L183">        log.setInfotransf(message);</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (rcode.code() &lt; 400) {</span>
-<span class="nc" id="L185">          log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L178">        final DbTransferLog log =</span>
+<span class="nc" id="L179">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L180">                              session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L181">        log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L182">        log.setInfotransf(message);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (rcode.code() &lt; 400) {</span>
+<span class="nc" id="L184">          log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);</span>
         } else {
-<span class="nc" id="L187">          log.setReplyCodeExecutionStatus(rcode);</span>
+<span class="nc" id="L186">          log.setReplyCodeExecutionStatus(rcode);</span>
         }
-<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (session.getFilename() != null) {</span>
-<span class="nc" id="L190">          log.setFilename(session.getFilename());</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (session.getFilename() != null) {</span>
+<span class="nc" id="L189">          log.setFilename(session.getFilename());</span>
         }
-<span class="nc" id="L192">        log.update();</span>
-<span class="nc" id="L193">        logger.debug(&quot;Update FS: {}&quot;, log);</span>
-<span class="nc" id="L194">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L191">        log.update();</span>
+<span class="nc" id="L192">        logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L193">      } catch (final WaarpDatabaseException e) {</span>
         // Do nothing
-<span class="nc" id="L196">      }</span>
+<span class="nc" id="L195">      }</span>
     }
-<span class="fc" id="L198">  }</span>
+<span class="fc" id="L197">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

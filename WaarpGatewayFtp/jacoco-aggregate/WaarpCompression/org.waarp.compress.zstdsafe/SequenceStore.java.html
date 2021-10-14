@@ -52,18 +52,18 @@ class SequenceStore {
   public LongField longLengthField;
   public int longLengthPosition;
 
-<span class="nc" id="L55">  public enum LongField {</span>
-<span class="nc" id="L56">    LITERAL, MATCH</span>
+<span class="fc" id="L55">  public enum LongField {</span>
+<span class="fc" id="L56">    LITERAL, MATCH</span>
   }
 
-<span class="nc" id="L59">  private static final byte[] LITERAL_LENGTH_CODE = {</span>
+<span class="fc" id="L59">  private static final byte[] LITERAL_LENGTH_CODE = {</span>
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16, 17, 17, 18,
       18, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22,
       22, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24,
       24, 24, 24, 24, 24, 24, 24
   };
 
-<span class="nc" id="L66">  private static final byte[] MATCH_LENGTH_CODE = {</span>
+<span class="fc" id="L66">  private static final byte[] MATCH_LENGTH_CODE = {</span>
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
       21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 32, 33, 33, 34, 34, 35,
       35, 36, 36, 36, 36, 37, 37, 37, 37, 38, 38, 38, 38, 38, 38, 38, 38, 39,
@@ -73,87 +73,87 @@ class SequenceStore {
       42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42
   };
 
-<span class="nc" id="L76">  public SequenceStore(final int blockSize, final int maxSequences) {</span>
-<span class="nc" id="L77">    offsets = new int[maxSequences];</span>
-<span class="nc" id="L78">    literalLengths = new int[maxSequences];</span>
-<span class="nc" id="L79">    matchLengths = new int[maxSequences];</span>
+<span class="fc" id="L76">  public SequenceStore(final int blockSize, final int maxSequences) {</span>
+<span class="fc" id="L77">    offsets = new int[maxSequences];</span>
+<span class="fc" id="L78">    literalLengths = new int[maxSequences];</span>
+<span class="fc" id="L79">    matchLengths = new int[maxSequences];</span>
 
-<span class="nc" id="L81">    literalLengthCodes = new byte[maxSequences];</span>
-<span class="nc" id="L82">    matchLengthCodes = new byte[maxSequences];</span>
-<span class="nc" id="L83">    offsetCodes = new byte[maxSequences];</span>
+<span class="fc" id="L81">    literalLengthCodes = new byte[maxSequences];</span>
+<span class="fc" id="L82">    matchLengthCodes = new byte[maxSequences];</span>
+<span class="fc" id="L83">    offsetCodes = new byte[maxSequences];</span>
 
-<span class="nc" id="L85">    literalsBuffer = new byte[blockSize];</span>
+<span class="fc" id="L85">    literalsBuffer = new byte[blockSize];</span>
 
-<span class="nc" id="L87">    reset();</span>
-<span class="nc" id="L88">  }</span>
+<span class="fc" id="L87">    reset();</span>
+<span class="fc" id="L88">  }</span>
 
   public void appendLiterals(final byte[] inputBase, final int inputAddress,
                              final int inputSize) {
-<span class="nc" id="L92">    copyMemory(inputBase, inputAddress, literalsBuffer, literalsLength,</span>
+<span class="fc" id="L92">    copyMemory(inputBase, inputAddress, literalsBuffer, literalsLength,</span>
                inputSize);
-<span class="nc" id="L94">    literalsLength += inputSize;</span>
-<span class="nc" id="L95">  }</span>
+<span class="fc" id="L94">    literalsLength += inputSize;</span>
+<span class="fc" id="L95">  }</span>
 
   public void storeSequence(final byte[] literalBase, final int literalAddress,
                             final int literalLength, final int offsetCode,
                             final int matchLengthBase) {
-<span class="nc" id="L100">    int input = literalAddress;</span>
-<span class="nc" id="L101">    int output = literalsLength;</span>
-<span class="nc" id="L102">    int copied = 0;</span>
+<span class="fc" id="L100">    int input = literalAddress;</span>
+<span class="fc" id="L101">    int output = literalsLength;</span>
+<span class="fc" id="L102">    int copied = 0;</span>
     do {
-<span class="nc" id="L104">      putLong(literalsBuffer, output, getLong(literalBase, input));</span>
-<span class="nc" id="L105">      input += SIZE_OF_LONG;</span>
-<span class="nc" id="L106">      output += SIZE_OF_LONG;</span>
-<span class="nc" id="L107">      copied += SIZE_OF_LONG;</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">    } while (copied &lt; literalLength);</span>
+<span class="fc" id="L104">      putLong(literalsBuffer, output, getLong(literalBase, input));</span>
+<span class="fc" id="L105">      input += SIZE_OF_LONG;</span>
+<span class="fc" id="L106">      output += SIZE_OF_LONG;</span>
+<span class="fc" id="L107">      copied += SIZE_OF_LONG;</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">    } while (copied &lt; literalLength);</span>
 
-<span class="nc" id="L110">    literalsLength += literalLength;</span>
+<span class="fc" id="L110">    literalsLength += literalLength;</span>
 
-<span class="nc bnc" id="L112" title="All 2 branches missed.">    if (literalLength &gt; 65535) {</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">    if (literalLength &gt; 65535) {</span>
 <span class="nc" id="L113">      longLengthField = LongField.LITERAL;</span>
 <span class="nc" id="L114">      longLengthPosition = sequenceCount;</span>
     }
-<span class="nc" id="L116">    literalLengths[sequenceCount] = literalLength;</span>
+<span class="fc" id="L116">    literalLengths[sequenceCount] = literalLength;</span>
 
-<span class="nc" id="L118">    offsets[sequenceCount] = offsetCode + 1;</span>
+<span class="fc" id="L118">    offsets[sequenceCount] = offsetCode + 1;</span>
 
-<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (matchLengthBase &gt; 65535) {</span>
-<span class="nc" id="L121">      longLengthField = LongField.MATCH;</span>
-<span class="nc" id="L122">      longLengthPosition = sequenceCount;</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">    if (matchLengthBase &gt; 65535) {</span>
+<span class="fc" id="L121">      longLengthField = LongField.MATCH;</span>
+<span class="fc" id="L122">      longLengthPosition = sequenceCount;</span>
     }
 
-<span class="nc" id="L125">    matchLengths[sequenceCount] = matchLengthBase;</span>
+<span class="fc" id="L125">    matchLengths[sequenceCount] = matchLengthBase;</span>
 
-<span class="nc" id="L127">    sequenceCount++;</span>
-<span class="nc" id="L128">  }</span>
+<span class="fc" id="L127">    sequenceCount++;</span>
+<span class="fc" id="L128">  }</span>
 
   public void reset() {
-<span class="nc" id="L131">    literalsLength = 0;</span>
-<span class="nc" id="L132">    sequenceCount = 0;</span>
-<span class="nc" id="L133">    longLengthField = null;</span>
-<span class="nc" id="L134">  }</span>
+<span class="fc" id="L131">    literalsLength = 0;</span>
+<span class="fc" id="L132">    sequenceCount = 0;</span>
+<span class="fc" id="L133">    longLengthField = null;</span>
+<span class="fc" id="L134">  }</span>
 
   public void generateCodes() {
-<span class="nc bnc" id="L137" title="All 2 branches missed.">    for (int i = 0; i &lt; sequenceCount; ++i) {</span>
-<span class="nc" id="L138">      literalLengthCodes[i] = (byte) literalLengthToCode(literalLengths[i]);</span>
-<span class="nc" id="L139">      offsetCodes[i] = (byte) Util.highestBit(offsets[i]);</span>
-<span class="nc" id="L140">      matchLengthCodes[i] = (byte) matchLengthToCode(matchLengths[i]);</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">    for (int i = 0; i &lt; sequenceCount; ++i) {</span>
+<span class="fc" id="L138">      literalLengthCodes[i] = (byte) literalLengthToCode(literalLengths[i]);</span>
+<span class="fc" id="L139">      offsetCodes[i] = (byte) Util.highestBit(offsets[i]);</span>
+<span class="fc" id="L140">      matchLengthCodes[i] = (byte) matchLengthToCode(matchLengths[i]);</span>
     }
 
-<span class="nc bnc" id="L143" title="All 2 branches missed.">    if (longLengthField == LongField.LITERAL) {</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">    if (longLengthField == LongField.LITERAL) {</span>
 <span class="nc" id="L144">      literalLengthCodes[longLengthPosition] =</span>
           Constants.MAX_LITERALS_LENGTH_SYMBOL;
     }
-<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (longLengthField == LongField.MATCH) {</span>
-<span class="nc" id="L148">      matchLengthCodes[longLengthPosition] = Constants.MAX_MATCH_LENGTH_SYMBOL;</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">    if (longLengthField == LongField.MATCH) {</span>
+<span class="fc" id="L148">      matchLengthCodes[longLengthPosition] = Constants.MAX_MATCH_LENGTH_SYMBOL;</span>
     }
-<span class="nc" id="L150">  }</span>
+<span class="fc" id="L150">  }</span>
 
   private static int literalLengthToCode(final int literalLength) {
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (literalLength &gt;= 64) {</span>
-<span class="nc" id="L154">      return Util.highestBit(literalLength) + 19;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">    if (literalLength &gt;= 64) {</span>
+<span class="fc" id="L154">      return Util.highestBit(literalLength) + 19;</span>
     } else {
-<span class="nc" id="L156">      return LITERAL_LENGTH_CODE[literalLength];</span>
+<span class="fc" id="L156">      return LITERAL_LENGTH_CODE[literalLength];</span>
     }
   }
 
@@ -162,10 +162,10 @@ class SequenceStore {
    * (that's how it's stored in SequenceStore)
    */
   private static int matchLengthToCode(final int matchLengthBase) {
-<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (matchLengthBase &gt;= 128) {</span>
-<span class="nc" id="L166">      return Util.highestBit(matchLengthBase) + 36;</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">    if (matchLengthBase &gt;= 128) {</span>
+<span class="fc" id="L166">      return Util.highestBit(matchLengthBase) + 36;</span>
     } else {
-<span class="nc" id="L168">      return MATCH_LENGTH_CODE[matchLengthBase];</span>
+<span class="fc" id="L168">      return MATCH_LENGTH_CODE[matchLengthBase];</span>
     }
   }
 }

@@ -102,17 +102,17 @@ public final class XmlUtils {
   public static &lt;T extends XmlSerializable&gt; T xmlToObject(final String xml,
                                                           final Class&lt;T&gt; clazz) {
     try {
-<span class="nc" id="L105">      ParametersChecker.checkSanityString(xml);</span>
+<span class="fc" id="L105">      ParametersChecker.checkSanityString(xml);</span>
 <span class="nc" id="L106">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L107">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L108">    }</span>
+<span class="fc" id="L108">    }</span>
     try {
-<span class="nc" id="L110">      final StringReader reader = new StringReader(xml);</span>
-<span class="nc" id="L111">      final StreamSource source = new StreamSource(reader);</span>
-<span class="nc" id="L112">      final JAXBContext context = JAXBContext.newInstance(clazz);</span>
-<span class="nc" id="L113">      final Unmarshaller unmarshaller = context.createUnmarshaller();</span>
+<span class="fc" id="L110">      final StringReader reader = new StringReader(xml);</span>
+<span class="fc" id="L111">      final StreamSource source = new StreamSource(reader);</span>
+<span class="fc" id="L112">      final JAXBContext context = JAXBContext.newInstance(clazz);</span>
+<span class="fc" id="L113">      final Unmarshaller unmarshaller = context.createUnmarshaller();</span>
 
-<span class="nc" id="L115">      return unmarshaller.unmarshal(source, clazz).getValue();</span>
+<span class="fc" id="L115">      return unmarshaller.unmarshal(source, clazz).getValue();</span>
 <span class="nc" id="L116">    } catch (final JAXBException e) {</span>
 <span class="nc" id="L117">      throw new InternalServerErrorException(e);</span>
     }
@@ -225,24 +225,26 @@ public final class XmlUtils {
    *     occurred
    */
   private static String pretty(final String input) {
+<span class="nc bnc" id="L228" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(input)) {</span>
+<span class="nc" id="L229">      throw new InternalServerErrorException(&quot;Input empty but should not&quot;);</span>
+    }
     try {
-<span class="nc" id="L229">      final Source xmlInput = new StreamSource(new StringReader(input));</span>
-<span class="nc" id="L230">      final StringWriter stringWriter = new StringWriter();</span>
-<span class="nc" id="L231">      final StreamResult xmlOutput = new StreamResult(stringWriter);</span>
+<span class="nc" id="L232">      final Source xmlInput = new StreamSource(new StringReader(input));</span>
+<span class="nc" id="L233">      final StringWriter stringWriter = new StringWriter();</span>
+<span class="nc" id="L234">      final StreamResult xmlOutput = new StreamResult(stringWriter);</span>
       final TransformerFactory factory =//NOSONAR
-<span class="nc" id="L233">          TransformerFactory.newInstance();//NOSONAR</span>
-<span class="nc" id="L234">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
-<span class="nc" id="L235">      factory.setAttribute(&quot;indent-number&quot;, 2);</span>
-<span class="nc" id="L236">      final Transformer transformer = factory.newTransformer();</span>
-<span class="nc" id="L237">      transformer.setOutputProperty(INDENT, &quot;yes&quot;);</span>
-<span class="nc" id="L238">      transformer.setOutputProperty(OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
-
-<span class="nc" id="L240">      transformer.transform(xmlInput, xmlOutput);</span>
-<span class="nc" id="L241">      return xmlOutput.getWriter().toString();</span>
-<span class="nc" id="L242">    } catch (final TransformerConfigurationException e) {</span>
-<span class="nc" id="L243">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L244">    } catch (final TransformerException e) {</span>
+<span class="nc" id="L236">          TransformerFactory.newInstance();//NOSONAR</span>
+<span class="nc" id="L237">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+<span class="nc" id="L238">      factory.setAttribute(&quot;indent-number&quot;, 2);</span>
+<span class="nc" id="L239">      final Transformer transformer = factory.newTransformer();</span>
+<span class="nc" id="L240">      transformer.setOutputProperty(INDENT, &quot;yes&quot;);</span>
+<span class="nc" id="L241">      transformer.setOutputProperty(OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+<span class="nc" id="L242">      transformer.transform(xmlInput, xmlOutput);</span>
+<span class="nc" id="L243">      return xmlOutput.getWriter().toString();</span>
+<span class="nc" id="L244">    } catch (final TransformerConfigurationException e) {</span>
 <span class="nc" id="L245">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L246">    } catch (final TransformerException e) {</span>
+<span class="nc" id="L247">      throw new InternalServerErrorException(e);</span>
     }
   }
 }

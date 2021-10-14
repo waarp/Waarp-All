@@ -99,29 +99,28 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(LIMIT)
-  public void getLimits(final HttpRequest request,
-                        final HttpResponder responder) {
-
-<span class="fc" id="L105">    LimitDAO limitDAO = null;</span>
+  public final void getLimits(final HttpRequest request,
+                              final HttpResponder responder) {
+<span class="fc" id="L104">    LimitDAO limitDAO = null;</span>
     try {
-<span class="fc" id="L107">      limitDAO = DAO_FACTORY.getLimitDAO();</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">      if (limitDAO.exist(serverName())) {</span>
-<span class="nc" id="L109">        final Limit limits = limitDAO.select(serverName());</span>
+<span class="fc" id="L106">      limitDAO = DAO_FACTORY.getLimitDAO(true);</span>
+<span class="fc" id="L107">      final String host = serverName();</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">      if (limitDAO.exist(host)) {</span>
+<span class="nc" id="L109">        final Limit limits = limitDAO.select(host);</span>
 <span class="nc" id="L110">        final ObjectNode responseObject = LimitsConverter.limitToNode(limits);</span>
 <span class="nc" id="L111">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
-
-<span class="nc" id="L113">        responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L114">      } else {</span>
-<span class="fc" id="L115">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L112">        responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L113">      } else {</span>
+<span class="fc" id="L114">        responder.sendStatus(NOT_FOUND);</span>
       }
-<span class="nc" id="L117">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L118">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L119">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L120">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L116">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L117">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L118">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L119">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="fc" id="L122">      DAOFactory.closeDAO(limitDAO);</span>
+<span class="fc" id="L121">      DAOFactory.closeDAO(limitDAO);</span>
     }
-<span class="fc" id="L124">  }</span>
+<span class="fc" id="L123">  }</span>
 
   /**
    * Method called to initiate the entry for this host in the bandwidth limits
@@ -136,36 +135,36 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(READONLY)
-  public void initializeLimits(final HttpRequest request,
-                               final HttpResponder responder) {
-
-<span class="nc" id="L142">    LimitDAO limitDAO = null;</span>
+  public final void initializeLimits(final HttpRequest request,
+                                     final HttpResponder responder) {
+<span class="nc" id="L140">    LimitDAO limitDAO = null;</span>
     try {
-<span class="nc" id="L144">      limitDAO = DAO_FACTORY.getLimitDAO();</span>
+<span class="nc" id="L142">      limitDAO = DAO_FACTORY.getLimitDAO(false);</span>
 
-<span class="nc bnc" id="L146" title="All 2 branches missed.">      if (!limitDAO.exist(serverName())) {</span>
-<span class="nc" id="L147">        final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
-<span class="nc" id="L148">        final Limit limits = LimitsConverter.nodeToNewLimit(requestObject);</span>
-<span class="nc" id="L149">        limitDAO.insert(limits);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">      if (!limitDAO.exist(serverName())) {</span>
+<span class="nc" id="L145">        final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L146">        checkSanity(requestObject);</span>
+<span class="nc" id="L147">        final Limit limits = LimitsConverter.nodeToNewLimit(requestObject);</span>
+<span class="nc" id="L148">        limitDAO.insert(limits);</span>
 
-<span class="nc" id="L151">        configuration.changeNetworkLimit(limits.getReadGlobalLimit(),</span>
-<span class="nc" id="L152">                                         limits.getWriteGlobalLimit(),</span>
-<span class="nc" id="L153">                                         limits.getReadSessionLimit(),</span>
-<span class="nc" id="L154">                                         limits.getWriteSessionLimit(),</span>
-<span class="nc" id="L155">                                         limits.getDelayLimit());</span>
+<span class="nc" id="L150">        configuration.changeNetworkLimit(limits.getReadGlobalLimit(),</span>
+<span class="nc" id="L151">                                         limits.getWriteGlobalLimit(),</span>
+<span class="nc" id="L152">                                         limits.getReadSessionLimit(),</span>
+<span class="nc" id="L153">                                         limits.getWriteSessionLimit(),</span>
+<span class="nc" id="L154">                                         limits.getDelayLimit());</span>
 
-<span class="nc" id="L157">        final ObjectNode responseObject = LimitsConverter.limitToNode(limits);</span>
-<span class="nc" id="L158">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L159">        responder.sendJson(CREATED, responseText);</span>
-<span class="nc" id="L160">      } else {</span>
-<span class="nc" id="L161">        throw new RestErrorException(ALREADY_EXISTING(serverName()));</span>
+<span class="nc" id="L156">        final ObjectNode responseObject = LimitsConverter.limitToNode(limits);</span>
+<span class="nc" id="L157">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L158">        responder.sendJson(CREATED, responseText);</span>
+<span class="nc" id="L159">      } else {</span>
+<span class="nc" id="L160">        throw new RestErrorException(ALREADY_EXISTING(serverName()));</span>
       }
-<span class="nc" id="L163">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L164">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L162">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L163">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L166">      DAOFactory.closeDAO(limitDAO);</span>
+<span class="nc" id="L165">      DAOFactory.closeDAO(limitDAO);</span>
     }
-<span class="nc" id="L168">  }</span>
+<span class="nc" id="L167">  }</span>
 
   /**
    * Method called to update this host's bandwidth limits in the database and
@@ -178,44 +177,43 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(LIMIT)
-  public void updateLimits(final HttpRequest request,
-                           final HttpResponder responder) {
-
-<span class="nc" id="L184">    LimitDAO limitDAO = null;</span>
+  public final void updateLimits(final HttpRequest request,
+                                 final HttpResponder responder) {
+<span class="nc" id="L182">    LimitDAO limitDAO = null;</span>
     try {
-<span class="nc" id="L186">      limitDAO = DAO_FACTORY.getLimitDAO();</span>
+<span class="nc" id="L184">      limitDAO = DAO_FACTORY.getLimitDAO(false);</span>
 
-<span class="nc bnc" id="L188" title="All 2 branches missed.">      if (!limitDAO.exist(serverName())) {</span>
-<span class="nc" id="L189">        responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L190">        return;</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (!limitDAO.exist(serverName())) {</span>
+<span class="nc" id="L187">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L188">        return;</span>
       }
 
-<span class="nc" id="L193">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L191">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L192">      checkSanity(requestObject);</span>
+<span class="nc" id="L193">      final Limit oldLimits = limitDAO.select(serverName());</span>
+<span class="nc" id="L194">      final Limit newLimits =</span>
+<span class="nc" id="L195">          LimitsConverter.nodeToUpdatedLimit(requestObject, oldLimits);</span>
 
-<span class="nc" id="L195">      final Limit oldLimits = limitDAO.select(serverName());</span>
-<span class="nc" id="L196">      final Limit newLimits =</span>
-<span class="nc" id="L197">          LimitsConverter.nodeToUpdatedLimit(requestObject, oldLimits);</span>
+<span class="nc" id="L197">      limitDAO.update(newLimits);</span>
 
-<span class="nc" id="L199">      limitDAO.update(newLimits);</span>
+<span class="nc" id="L199">      configuration.changeNetworkLimit(newLimits.getReadGlobalLimit(),</span>
+<span class="nc" id="L200">                                       newLimits.getWriteGlobalLimit(),</span>
+<span class="nc" id="L201">                                       newLimits.getReadSessionLimit(),</span>
+<span class="nc" id="L202">                                       newLimits.getWriteSessionLimit(),</span>
+<span class="nc" id="L203">                                       newLimits.getDelayLimit());</span>
 
-<span class="nc" id="L201">      configuration.changeNetworkLimit(newLimits.getReadGlobalLimit(),</span>
-<span class="nc" id="L202">                                       newLimits.getWriteGlobalLimit(),</span>
-<span class="nc" id="L203">                                       newLimits.getReadSessionLimit(),</span>
-<span class="nc" id="L204">                                       newLimits.getWriteSessionLimit(),</span>
-<span class="nc" id="L205">                                       newLimits.getDelayLimit());</span>
+<span class="nc" id="L205">      final ObjectNode responseObject = LimitsConverter.limitToNode(newLimits);</span>
+<span class="nc" id="L206">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L207">      responder.sendJson(CREATED, responseText);</span>
 
-<span class="nc" id="L207">      final ObjectNode responseObject = LimitsConverter.limitToNode(newLimits);</span>
-<span class="nc" id="L208">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L209">      responder.sendJson(CREATED, responseText);</span>
-
-<span class="nc" id="L211">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L212">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L213">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L214">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L209">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L210">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L211">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L212">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L216">      DAOFactory.closeDAO(limitDAO);</span>
+<span class="nc" id="L214">      DAOFactory.closeDAO(limitDAO);</span>
     }
-<span class="nc" id="L218">  }</span>
+<span class="nc" id="L216">  }</span>
 
   /**
    * Method called to remove any bandwidth limits in place on this host. Also
@@ -229,27 +227,27 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(LIMIT)
-  public void deleteLimits(final HttpRequest request,
-                           final HttpResponder responder) {
-<span class="nc" id="L234">    LimitDAO limitDAO = null;</span>
+  public final void deleteLimits(final HttpRequest request,
+                                 final HttpResponder responder) {
+<span class="nc" id="L232">    LimitDAO limitDAO = null;</span>
     try {
-<span class="nc" id="L236">      limitDAO = DAO_FACTORY.getLimitDAO();</span>
+<span class="nc" id="L234">      limitDAO = DAO_FACTORY.getLimitDAO(false);</span>
 
-<span class="nc bnc" id="L238" title="All 2 branches missed.">      if (limitDAO.exist(serverName())) {</span>
-<span class="nc" id="L239">        limitDAO.delete(limitDAO.select(serverName()));</span>
-<span class="nc" id="L240">        configuration.changeNetworkLimit(0, 0, 0, 0, 0);</span>
-<span class="nc" id="L241">        responder.sendStatus(NO_CONTENT);</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      if (limitDAO.exist(serverName())) {</span>
+<span class="nc" id="L237">        limitDAO.delete(limitDAO.select(serverName()));</span>
+<span class="nc" id="L238">        configuration.changeNetworkLimit(0, 0, 0, 0, 0);</span>
+<span class="nc" id="L239">        responder.sendStatus(NO_CONTENT);</span>
       } else {
-<span class="nc" id="L243">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L241">        responder.sendStatus(NOT_FOUND);</span>
       }
-<span class="nc" id="L245">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L246">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L247">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L248">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L243">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L244">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L245">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L246">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L250">      DAOFactory.closeDAO(limitDAO);</span>
+<span class="nc" id="L248">      DAOFactory.closeDAO(limitDAO);</span>
     }
-<span class="nc" id="L252">  }</span>
+<span class="nc" id="L250">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -263,9 +261,9 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
-<span class="nc" id="L268">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L269">  }</span>
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L266">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L267">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

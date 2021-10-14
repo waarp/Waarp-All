@@ -55,7 +55,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
 <span class="nc" id="L55">  private final ReentrantLock lock = new ReentrantLock();</span>
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L60">    createTableMonitoring(session);</span>
 <span class="nc" id="L61">  }</span>
@@ -87,10 +87,10 @@ public class DbModelMysqlKernel extends DbModelMysql {
     try {
 <span class="nc" id="L88">      request.query(action.toString());</span>
 <span class="nc" id="L89">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L90">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L90">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L91">      return;</span>
 <span class="nc" id="L92">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L93">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L93">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
 <span class="nc" id="L96">      request.close();</span>
@@ -107,10 +107,10 @@ public class DbModelMysqlKernel extends DbModelMysql {
     try {
 <span class="nc" id="L108">      request.query(action.toString());</span>
 <span class="nc" id="L109">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L110">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L110">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L111">      return;</span>
 <span class="nc" id="L112">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L113">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L113">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
 <span class="nc" id="L116">      request.close();</span>
@@ -127,10 +127,10 @@ public class DbModelMysqlKernel extends DbModelMysql {
     try {
 <span class="nc" id="L128">      request.query(action.toString());</span>
 <span class="nc" id="L129">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L130">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L130">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L131">      return;</span>
 <span class="nc" id="L132">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L133">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L133">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
 <span class="nc" id="L136">      request.close();</span>
@@ -142,16 +142,16 @@ public class DbModelMysqlKernel extends DbModelMysql {
     try {
 <span class="nc" id="L143">      request.query(action.toString());</span>
 <span class="nc" id="L144">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L145">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L145">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L146">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L147">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L147">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
     } finally {
 <span class="nc" id="L149">      request.close();</span>
     }
 <span class="nc" id="L151">  }</span>
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L156">    resetSequenceMonitoring(session, newvalue);</span>
 <span class="nc" id="L157">  }</span>
@@ -166,10 +166,10 @@ public class DbModelMysqlKernel extends DbModelMysql {
     try {
 <span class="nc" id="L167">      request.query(action);</span>
 <span class="nc" id="L168">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L169">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L169">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L170">      return;</span>
 <span class="nc" id="L171">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L172">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L172">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L173">      return;</span>
     } finally {
 <span class="nc" id="L175">      request.close();</span>
@@ -178,7 +178,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
 <span class="nc" id="L178">  }</span>
 
   @Override
-  public synchronized long nextSequence(final DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
 <span class="nc" id="L184">    return nextSequenceMonitoring(dbSession, lock);</span>
@@ -241,14 +241,16 @@ public class DbModelMysqlKernel extends DbModelMysql {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version) {
-<span class="nc" id="L245">    return false;</span>
+  public final boolean upgradeDb(final DbSession session,
+                                 final String version) {
+<span class="nc" id="L246">    return false;</span>
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix) {
-<span class="nc" id="L251">    return false;</span>
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version,
+                                     final boolean tryFix) {
+<span class="nc" id="L253">    return false;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

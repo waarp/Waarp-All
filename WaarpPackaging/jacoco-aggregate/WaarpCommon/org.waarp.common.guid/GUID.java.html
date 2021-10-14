@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>GUID.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.guid</a> &gt; <span class="el_source">GUID.java</span></div><h1>GUID.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.guid;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.BaseXx;
+import org.waarp.common.utility.SingletonUtils;
+
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = &quot;@class&quot;)
+public class GUID implements Comparable&lt;GUID&gt; {
+  /**
+   * ARK header
+   */
+  public static final String ARK = &quot;ark:/&quot;;
+
+  private static final String ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID =
+      &quot;Attempted to parse malformed ARK GUID: &quot;;
+  /**
+   * Native size of the GUID
+   */
+  static final int KEYSIZE = 21;
+  static final int KEYB64SIZE = 28;
+  static final int KEYB32SIZE = 34;
+  static final int KEYB16SIZE = KEYSIZE * 2;
+  static final int HEADER_POS = 0;
+  static final int HEADER_SIZE = 1;
+  static final int TENANT_POS = 1;
+  static final int TENANT_SIZE = 4;
+  static final int PLATFORM_POS = 5;
+  static final int PLATFORM_SIZE = 4;
+  static final int PID_POS = 9;
+  static final int PID_SIZE = 3;
+  static final int TIME_POS = 12;
+  static final int TIME_SIZE = 6;
+  static final int COUNTER_POS = 18;
+  static final int COUNTER_SIZE = 3;
+  /**
+   * Bits size of Counter
+   */
+  private static final int SIZE_COUNTER = COUNTER_SIZE * 8;
+  /**
+   * Min Counter value
+   */
+  private static final int MIN_COUNTER = 0;
+  /**
+   * Max Counter value
+   */
+  private static final int MAX_COUNTER = (1 &lt;&lt; SIZE_COUNTER) - 1;
+  /**
+   * Version to store (to check correctness if future algorithm) between 0 and
+   * 255
+   */
+  static final int VERSION = 1 &amp; 0xFF;
+
+  static final int BYTE_SIZE = 8;
+  /**
+   * Counter part
+   */
+<span class="fc" id="L84">  private static final AtomicInteger COUNTER = new AtomicInteger(MIN_COUNTER);</span>
+  /**
+   * real GUID
+   */
+  @JsonIgnore
+  private final byte[] bguid;
+
+  static final synchronized int getNewCounter() {
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    if (COUNTER.compareAndSet(MAX_COUNTER, MIN_COUNTER)) {</span>
+<span class="nc" id="L93">      return MAX_COUNTER;</span>
+    } else {
+<span class="fc" id="L95">      return COUNTER.getAndIncrement();</span>
+    }
+  }
+
+  /**
+   * @return the KeySize
+   */
+  public static int getKeySize() {
+<span class="nc" id="L103">    return KEYSIZE;</span>
+  }
+
+
+  /**
+   * Internal constructor
+   *
+   * @param size size of the byte representation
+   */
+<span class="fc" id="L112">  GUID(final int size) {</span>
+<span class="fc" id="L113">    bguid = new byte[size];</span>
+<span class="fc" id="L114">  }</span>
+
+  /**
+   * Constructor that takes a byte array as this GUID's content
+   *
+   * @param bytes GUID content
+   *
+   * @throws InvalidArgumentException
+   */
+  public GUID(final byte[] bytes) throws InvalidArgumentException {
+<span class="fc" id="L124">    this(KEYSIZE);</span>
+<span class="fc" id="L125">    setBytes(bytes, KEYSIZE);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L127">      throw new InvalidArgumentException(</span>
+<span class="nc" id="L128">          &quot;Version is incorrect: &quot; + getVersion());</span>
+    }
+<span class="fc" id="L130">  }</span>
+
+  /**
+   * Build from String key
+   *
+   * @param idsource
+   *
+   * @throws InvalidArgumentException
+   */
+  public GUID(final String idsource) throws InvalidArgumentException {
+<span class="fc" id="L140">    this(KEYSIZE);</span>
+<span class="fc" id="L141">    setString(idsource);</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L143">      throw new InvalidArgumentException(</span>
+<span class="nc" id="L144">          &quot;Version is incorrect: &quot; + getVersion());</span>
+    }
+<span class="fc" id="L146">  }</span>
+
+  /**
+   * Internal function
+   *
+   * @param bytes
+   * @param size size of the byte representation
+   *
+   * @return this
+   *
+   * @throws InvalidArgumentException
+   */
+  @JsonIgnore
+  GUID setBytes(final byte[] bytes, final int size)
+      throws InvalidArgumentException {
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">    if (bytes == null) {</span>
+<span class="nc" id="L162">      throw new InvalidArgumentException(&quot;Empty argument&quot;);</span>
+    }
+<span class="fc bfc" id="L164" title="All 2 branches covered.">    if (bytes.length != size) {</span>
+<span class="fc" id="L165">      throw new InvalidArgumentException(</span>
+          &quot;Attempted to parse malformed GUID: (&quot; + bytes.length + &quot;) &quot; +
+<span class="fc" id="L167">          Arrays.toString(bytes));</span>
+    }
+<span class="fc" id="L169">    System.arraycopy(bytes, 0, bguid, 0, size);</span>
+<span class="fc" id="L170">    return this;</span>
+  }
+
+  /**
+   * Constructor that generates a new GUID using the current process id,
+   * Platform Id and timestamp with no tenant
+   */
+  public GUID() {
+<span class="fc" id="L178">    this(0, JvmProcessId.macAddressAsInt() &amp; 0x7FFFFFFF);</span>
+<span class="fc" id="L179">  }</span>
+
+  /**
+   * Constructor that generates a new GUID using the current process id and
+   * timestamp
+   *
+   * @param tenantId tenant id between 0 and 2^30-1
+   * @param platformId platform Id between 0 and 2^31-1
+   *
+   * @throws IllegalArgumentException if any of the argument are out
+   *     of range
+   */
+  public GUID(final int tenantId, final int platformId) {
+<span class="fc" id="L192">    this(KEYSIZE);</span>
+<span class="pc bpc" id="L193" title="2 of 4 branches missed.">    if (tenantId &lt; 0 || tenantId &gt; 0x3FFFFFFF) {</span>
+<span class="nc" id="L194">      throw new IllegalArgumentException(</span>
+          &quot;DomainId must be between 0 and 2^30-1: &quot; + tenantId);
+    }
+<span class="pc bpc" id="L197" title="2 of 4 branches missed.">    if (platformId &lt; 0 || platformId &gt; 0x7FFFFFFF) {</span>
+<span class="nc" id="L198">      throw new IllegalArgumentException(</span>
+          &quot;PlatformId must be between 0 and 2^31-1: &quot; + platformId);
+    }
+
+    // atomically
+<span class="fc" id="L203">    final long time = System.currentTimeMillis();</span>
+<span class="fc" id="L204">    final int count = getNewCounter();</span>
+    // 1 bytes = Version (8)
+<span class="fc" id="L206">    bguid[HEADER_POS] = (byte) VERSION;</span>
+
+    // 4 bytes - 2 bits = Domain (30)
+<span class="fc" id="L209">    int value = tenantId;</span>
+<span class="fc" id="L210">    bguid[TENANT_POS + 3] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L211">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L212">    bguid[TENANT_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L213">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L214">    bguid[TENANT_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L215">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L216">    bguid[TENANT_POS] = (byte) (value &amp; 0x3F);</span>
+
+    // 4 bytes = -1 bit Platform (31)
+<span class="fc" id="L219">    value = platformId;</span>
+<span class="fc" id="L220">    bguid[PLATFORM_POS + 3] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L221">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L222">    bguid[PLATFORM_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L223">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L224">    bguid[PLATFORM_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L225">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L226">    bguid[PLATFORM_POS] = (byte) (value &amp; 0x7F);</span>
+
+    // 3 bytes = -2 bits JVMPID (22)
+<span class="fc" id="L229">    value = JvmProcessId.JVMPID;</span>
+<span class="fc" id="L230">    bguid[PID_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L231">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L232">    bguid[PID_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L233">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L234">    bguid[PID_POS] = (byte) (value &amp; 0xFF);</span>
+
+    // 6 bytes = timestamp (so up to 8 925 years after Time 0 so year 10
+    // 895)
+<span class="fc" id="L238">    long lvalue = time;</span>
+<span class="fc" id="L239">    bguid[TIME_POS + 5] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="fc" id="L240">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L241">    bguid[TIME_POS + 4] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="fc" id="L242">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L243">    bguid[TIME_POS + 3] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="fc" id="L244">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L245">    bguid[TIME_POS + 2] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="fc" id="L246">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L247">    bguid[TIME_POS + 1] = (byte) (lvalue &amp; 0xFF);</span>
+<span class="fc" id="L248">    lvalue &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L249">    bguid[TIME_POS] = (byte) (lvalue &amp; 0xFF);</span>
+
+    // 3 bytes = counter against collision
+<span class="fc" id="L252">    value = count;</span>
+<span class="fc" id="L253">    bguid[COUNTER_POS + 2] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L254">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L255">    bguid[COUNTER_POS + 1] = (byte) (value &amp; 0xFF);</span>
+<span class="fc" id="L256">    value &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L257">    bguid[COUNTER_POS] = (byte) (value &amp; 0xFF);</span>
+
+<span class="fc" id="L259">  }</span>
+
+  /**
+   * @return the Base32 representation (default of toString)
+   */
+  @JsonIgnore
+  public final String toBase32() {
+<span class="fc" id="L266">    return BaseXx.getBase32(bguid);</span>
+  }
+
+  /**
+   * @return the Base64 representation (default of toString)
+   */
+  @JsonIgnore
+  public final String toBase64() {
+<span class="fc" id="L274">    return BaseXx.getBase64UrlWithoutPadding(bguid);</span>
+  }
+
+  /**
+   * @return the Hexadecimal representation
+   */
+  @JsonIgnore
+  public final String toHex() {
+<span class="fc" id="L282">    return BaseXx.getBase16(bguid);</span>
+  }
+
+  /**
+   * @return the Ark representation of this GUID
+   */
+  @JsonIgnore
+  public final String toArk() {
+<span class="fc" id="L290">    return new StringBuilder(ARK).append(getTenantId()).append('/')</span>
+<span class="fc" id="L291">                                 .append(toArkName()).toString();</span>
+  }
+
+  /**
+   * @return the String representation of this GUID
+   */
+  @JsonGetter(&quot;id&quot;)
+  public final String getId() {
+<span class="fc" id="L299">    return toString();</span>
+  }
+
+  /**
+   * Internal function
+   *
+   * @param idsource
+   *
+   * @return this
+   *
+   * @throws InvalidArgumentException
+   */
+  @JsonSetter(&quot;id&quot;)
+  GUID setString(final String idsource) throws InvalidArgumentException {
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">    if (idsource == null) {</span>
+<span class="nc" id="L314">      throw new InvalidArgumentException(&quot;Empty argument&quot;);</span>
+    }
+<span class="fc" id="L316">    final String id = idsource.trim();</span>
+<span class="fc bfc" id="L317" title="All 2 branches covered.">    if (idsource.startsWith(ARK)) {</span>
+<span class="fc" id="L318">      String ids = idsource;</span>
+<span class="fc" id="L319">      ids = ids.substring(ARK.length());</span>
+<span class="fc" id="L320">      final int separator = ids.indexOf('/');</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">      if (separator &lt;= 0) {</span>
+<span class="fc" id="L322">        throw new InvalidArgumentException(</span>
+            ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
+      }
+      int tenantId;
+      try {
+<span class="fc" id="L327">        tenantId = Integer.parseInt(ids.substring(0, separator));</span>
+<span class="fc" id="L328">      } catch (final NumberFormatException e) {</span>
+<span class="fc" id="L329">        throw new InvalidArgumentException(</span>
+            ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
+<span class="fc" id="L331">      }</span>
+      // BASE32
+<span class="fc" id="L333">      ids = ids.substring(separator + 1);</span>
+<span class="fc" id="L334">      final byte[] base32 = BaseXx.getFromBase32(ids);</span>
+<span class="fc bfc" id="L335" title="All 2 branches covered.">      if (base32.length != KEYSIZE - TENANT_SIZE) {</span>
+<span class="fc" id="L336">        throw new InvalidArgumentException(</span>
+            ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
+      }
+<span class="fc" id="L339">      System.arraycopy(base32, 0, bguid, HEADER_POS, HEADER_SIZE);</span>
+      // GUID Domain default to 0 (from 0 to 2^30-1)
+<span class="fc" id="L341">      bguid[TENANT_POS + 3] = (byte) (tenantId &amp; 0xFF);</span>
+<span class="fc" id="L342">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L343">      bguid[TENANT_POS + 2] = (byte) (tenantId &amp; 0xFF);</span>
+<span class="fc" id="L344">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L345">      bguid[TENANT_POS + 1] = (byte) (tenantId &amp; 0xFF);</span>
+<span class="fc" id="L346">      tenantId &gt;&gt;&gt;= BYTE_SIZE;</span>
+<span class="fc" id="L347">      bguid[TENANT_POS] = (byte) (tenantId &amp; 0x3F);</span>
+      // BASE32
+<span class="fc" id="L349">      System.arraycopy(base32, HEADER_SIZE, bguid, PLATFORM_POS,</span>
+                       PLATFORM_SIZE + PID_SIZE + TIME_SIZE + COUNTER_SIZE);
+<span class="fc" id="L351">      return this;</span>
+    }
+<span class="fc" id="L353">    final int len = id.length();</span>
+    try {
+<span class="fc bfc" id="L355" title="All 2 branches covered.">      if (len == KEYB16SIZE) {</span>
+        // HEXA BASE16
+<span class="fc" id="L357">        System.arraycopy(BaseXx.getFromBase16(idsource), 0, bguid, 0, KEYSIZE);</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">      } else if (len == KEYB32SIZE) {</span>
+        // BASE32
+<span class="fc" id="L360">        System.arraycopy(BaseXx.getFromBase32(idsource), 0, bguid, 0, KEYSIZE);</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">      } else if (len == KEYB64SIZE) {</span>
+        // BASE64
+<span class="fc" id="L363">        System.arraycopy(BaseXx.getFromBase64UrlWithoutPadding(idsource), 0,</span>
+                         bguid, 0, KEYSIZE);
+      } else {
+<span class="fc" id="L366">        throw new InvalidArgumentException(</span>
+            &quot;Attempted to parse malformed GUID: (&quot; + len + &quot;) &quot; + id);
+      }
+<span class="nc" id="L369">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L370">      throw new InvalidArgumentException(</span>
+          &quot;Attempted to parse malformed GUID: &quot; + id, e);
+<span class="fc" id="L372">    }</span>
+<span class="fc" id="L373">    return this;</span>
+  }
+
+  /**
+   * extract version field as a hex char from raw GUID bytes
+   *
+   * @return version char
+   */
+  @JsonIgnore
+  public final int getVersion() {
+<span class="fc" id="L383">    return bguid[HEADER_POS] &amp; 0xFF;</span>
+  }
+
+  /**
+   * @return the Tenant Id of GUID from which it belongs to (default being 0)
+   */
+  @JsonIgnore
+  public final int getTenantId() {
+<span class="fc" id="L391">    return (bguid[TENANT_POS] &amp; 0x3F) &lt;&lt; BYTE_SIZE * 3 |</span>
+           (bguid[TENANT_POS + 1] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |
+           (bguid[TENANT_POS + 2] &amp; 0xFF) &lt;&lt; BYTE_SIZE |
+           bguid[TENANT_POS + 3] &amp; 0xFF;
+  }
+
+  /**
+   * Extract Platform id as int. Could be using partial MAC address.
+   *
+   * @return the Platform id as int, or -1 for unrecognized format
+   */
+  @JsonIgnore
+  public final int getPlatformId() {
+<span class="nc" id="L404">    return (bguid[PLATFORM_POS] &amp; 0x7F) &lt;&lt; BYTE_SIZE * 3 |</span>
+           (bguid[PLATFORM_POS + 1] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |
+           (bguid[PLATFORM_POS + 2] &amp; 0xFF) &lt;&lt; BYTE_SIZE |
+           bguid[PLATFORM_POS + 3] &amp; 0xFF;
+  }
+
+  /**
+   * Extract Platform id as bytes. Could be using partial MAC address.
+   *
+   * @return byte array of GUID fragment, or null for unrecognized format
+   */
+  @JsonIgnore
+  public final byte[] getMacFragment() {
+<span class="nc bnc" id="L417" title="All 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L418">      return SingletonUtils.getSingletonByteArray();</span>
+    }
+<span class="nc" id="L420">    final byte[] x = new byte[6];</span>
+<span class="nc" id="L421">    x[0] = 0;</span>
+<span class="nc" id="L422">    x[1] = 0;</span>
+<span class="nc" id="L423">    x[2] = (byte) (bguid[PLATFORM_POS] &amp; 0x7F);</span>
+<span class="nc" id="L424">    x[3] = bguid[PLATFORM_POS + 1];</span>
+<span class="nc" id="L425">    x[4] = bguid[PLATFORM_POS + 2];</span>
+<span class="nc" id="L426">    x[5] = bguid[PLATFORM_POS + 3];</span>
+<span class="nc" id="L427">    return x;</span>
+  }
+
+  /**
+   * Extract process id and return as int
+   *
+   * @return id of process that generated the GUID, or -1 for unrecognized
+   *     format
+   */
+  @JsonIgnore
+  public final int getProcessId() {
+<span class="nc bnc" id="L438" title="All 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L439">      return -1;</span>
+    }
+<span class="nc" id="L441">    return (bguid[PID_POS] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |</span>
+           (bguid[PID_POS + 1] &amp; 0xFF) &lt;&lt; BYTE_SIZE | bguid[PID_POS + 2] &amp; 0xFF;
+  }
+
+  /**
+   * Extract timestamp and return as long
+   *
+   * @return millisecond UTC timestamp from generation of the GUID, or -1 for
+   *     unrecognized format
+   */
+  @JsonIgnore
+  public final long getTimestamp() {
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">    if (getVersion() != VERSION) {</span>
+<span class="nc" id="L454">      return -1;</span>
+    }
+<span class="fc" id="L456">    long time = 0;</span>
+<span class="fc bfc" id="L457" title="All 2 branches covered.">    for (int i = 0; i &lt; TIME_SIZE; i++) {</span>
+<span class="fc" id="L458">      time &lt;&lt;= BYTE_SIZE;</span>
+<span class="fc" id="L459">      time |= bguid[TIME_POS + i] &amp; 0xFF;</span>
+    }
+<span class="fc" id="L461">    return time;</span>
+  }
+
+  /**
+   * @return the associated counter against collision value
+   */
+  @JsonIgnore
+  public final int getCounter() {
+<span class="fc" id="L469">    return (bguid[COUNTER_POS] &amp; 0xFF) &lt;&lt; BYTE_SIZE * 2 |</span>
+           (bguid[COUNTER_POS + 1] &amp; 0xFF) &lt;&lt; BYTE_SIZE |
+           bguid[COUNTER_POS + 2] &amp; 0xFF;
+  }
+
+  /**
+   * @return the Ark Name part of Ark representation
+   */
+  public final String toArkName() {
+<span class="fc" id="L478">    final byte[] temp = new byte[KEYSIZE - TENANT_SIZE];</span>
+<span class="fc" id="L479">    System.arraycopy(bguid, HEADER_POS, temp, 0, HEADER_SIZE);</span>
+<span class="fc" id="L480">    System.arraycopy(bguid, PLATFORM_POS, temp, HEADER_SIZE,</span>
+                     PLATFORM_SIZE + PID_SIZE + TIME_SIZE + COUNTER_SIZE);
+<span class="fc" id="L482">    return BaseXx.getBase32(temp);</span>
+  }
+
+
+  @Override
+  public String toString() {
+<span class="fc" id="L488">    return toBase32();</span>
+  }
+
+  /**
+   * copy the uuid of this GUID, so that it can't be changed, and return it
+   *
+   * @return raw byte array of GUID
+   */
+  @JsonIgnore
+  public final byte[] getBytes() {
+<span class="fc" id="L498">    return Arrays.copyOf(bguid, bguid.length);</span>
+  }
+
+  @Override
+  @JsonIgnore
+  public final int hashCode() {
+<span class="fc" id="L504">    return Arrays.hashCode(bguid);</span>
+  }
+
+  @Override
+  public final boolean equals(final Object o) {
+<span class="fc bfc" id="L509" title="All 2 branches covered.">    if (!(o instanceof GUID)) {</span>
+<span class="fc" id="L510">      return false;</span>
+    }
+<span class="fc bfc" id="L512" title="All 4 branches covered.">    return this == o || Arrays.equals(bguid, ((GUID) o).bguid);</span>
+  }
+
+  @Override
+  public final int compareTo(final GUID guid) {
+<span class="fc" id="L517">    final int id = getTenantId();</span>
+<span class="fc" id="L518">    final int id2 = guid.getTenantId();</span>
+<span class="pc bpc" id="L519" title="1 of 2 branches missed.">    if (id != id2) {</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">      return id &lt; id2? -1 : 1;</span>
+    }
+<span class="fc" id="L522">    final long ts = getTimestamp();</span>
+<span class="fc" id="L523">    final long ts2 = guid.getTimestamp();</span>
+<span class="pc bpc" id="L524" title="1 of 2 branches missed.">    if (ts == ts2) {</span>
+<span class="fc" id="L525">      final int ct = getCounter();</span>
+<span class="fc" id="L526">      final int ct2 = guid.getCounter();</span>
+<span class="fc bfc" id="L527" title="All 2 branches covered.">      if (ct == ct2) {</span>
+        // then all must be equals, else whatever
+<span class="pc bpc" id="L529" title="1 of 2 branches missed.">        return Arrays.equals(this.bguid, guid.getBytes())? 0 : -1;</span>
+      }
+      // Cannot be equal
+<span class="fc bfc" id="L532" title="All 2 branches covered.">      return ct &lt; ct2? -1 : 1;</span>
+    }
+    // others as ProcessId or Platform are unimportant in comparison
+<span class="nc bnc" id="L535" title="All 2 branches missed.">    return ts &lt; ts2? -1 : 1;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -120,8 +120,8 @@ public class RescheduleTransferTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L123">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L124">      WaarpLoggerFactory.getLogger(RescheduleTransferTask.class);</span>
+<span class="fc" id="L123">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L124">      WaarpLoggerFactory.getLogger(RescheduleTransferTask.class);</span>
 
   /**
    * Delimiter for -count option in Reschedule to be placed in the transfer
@@ -138,11 +138,11 @@ public class RescheduleTransferTask extends AbstractTask {
 
   protected boolean countUsed;
 
-<span class="nc" id="L141">  protected int limitCount = -1;</span>
+<span class="fc" id="L141">  protected int limitCount = -1;</span>
 
   protected int totalCount;
 
-<span class="nc" id="L145">  protected int resetCount = -1;</span>
+<span class="fc" id="L145">  protected int resetCount = -1;</span>
 
   protected DbTaskRunner runner;
 
@@ -155,19 +155,19 @@ public class RescheduleTransferTask extends AbstractTask {
   public RescheduleTransferTask(final String argRule, final int delay,
                                 final String argTransfer,
                                 final R66Session session) {
-<span class="nc" id="L158">    super(TaskType.RESCHEDULE, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L159">  }</span>
+<span class="fc" id="L158">    super(TaskType.RESCHEDULE, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L159">  }</span>
 
   @Override
   public final void run() {
-<span class="nc" id="L163">    logger.info(&quot;Reschedule with {}:{} and {}&quot;, argRule, argTransfer, session);</span>
-<span class="nc" id="L164">    runner = session.getRunner();</span>
-<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (runner == null) {</span>
+<span class="fc" id="L163">    logger.info(&quot;Reschedule with {}:{} and {}&quot;, argRule, argTransfer, session);</span>
+<span class="fc" id="L164">    runner = session.getRunner();</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    if (runner == null) {</span>
 <span class="nc" id="L166">      futureCompletion.setFailure(</span>
           new OpenR66RunnerErrorException(&quot;No valid runner in Reschedule&quot;));
 <span class="nc" id="L168">      return;</span>
     }
-<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (runner.isRescheduledTransfer()) {</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (runner.isRescheduledTransfer()) {</span>
       // Already rescheduled so ignore
 <span class="nc" id="L172">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.Warning, runner);
@@ -176,15 +176,15 @@ public class RescheduleTransferTask extends AbstractTask {
 <span class="nc" id="L176">      futureCompletion.setSuccess();</span>
 <span class="nc" id="L177">      return;</span>
     }
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (runner.isRequestOnRequested()) {</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (runner.isRequestOnRequested()) {</span>
       // Self Requested Request so reschedule is ignored
-<span class="nc" id="L181">      final R66Result result =</span>
+<span class="fc" id="L181">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.LoopSelfRequestedHost,
                         runner);
-<span class="nc" id="L184">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L185">      futureCompletion.setFailure(new OpenR66RunnerErrorException(</span>
+<span class="fc" id="L184">      futureCompletion.setResult(result);</span>
+<span class="fc" id="L185">      futureCompletion.setFailure(new OpenR66RunnerErrorException(</span>
           &quot;No valid runner in Reschedule since Self Requested&quot;));
-<span class="nc" id="L187">      return;</span>
+<span class="fc" id="L187">      return;</span>
     }
 <span class="nc" id="L189">    String finalname = argRule;</span>
 <span class="nc" id="L190">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>

@@ -107,8 +107,8 @@ import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
  * X-WAARP-STOP  (as the waarpMonitor.to)
  */
 public class MonitorExporterTransfers extends Thread implements Closeable {
-<span class="nc" id="L110">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L111">      WaarpLoggerFactory.getLogger(MonitorExporterTransfers.class);</span>
+<span class="fc" id="L110">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L111">      WaarpLoggerFactory.getLogger(MonitorExporterTransfers.class);</span>
 
   public static final boolean MONITOR_KEEP_CONNECTION_DEFAULT = true;
   public static final boolean MONITOR_INTERVAL_INCLUDED_DEFAULT = true;
@@ -167,30 +167,30 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
                                   final boolean keepConnection,
                                   final boolean intervalMonitoringIncluded,
                                   final boolean transformLongAsString,
-<span class="nc" id="L170">                                  final EventLoopGroup group) {</span>
+<span class="fc" id="L170">                                  final EventLoopGroup group) {</span>
     try {
-<span class="nc" id="L172">      ParametersChecker.checkSanityString(remoteBaseUrl, endpoint);</span>
+<span class="fc" id="L172">      ParametersChecker.checkSanityString(remoteBaseUrl, endpoint);</span>
 <span class="nc" id="L173">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L174">      throw new IllegalArgumentException(e);</span>
-<span class="nc" id="L175">    }</span>
-<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(remoteBaseUrl)) {</span>
+<span class="fc" id="L175">    }</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(remoteBaseUrl)) {</span>
 <span class="nc" id="L177">      throw new IllegalArgumentException(&quot;RemoteBaseUrl cannot be null&quot;);</span>
     }
-<span class="nc" id="L179">    this.intervalMonitoringIncluded = intervalMonitoringIncluded;</span>
-<span class="nc" id="L180">    this.transformLongAsString = transformLongAsString;</span>
-<span class="nc" id="L181">    this.asApiRest = true;</span>
-<span class="nc" id="L182">    this.elasticsearchMonitoringExporterClient = null;</span>
-<span class="nc" id="L183">    this.httpMonitoringExporterClient =</span>
+<span class="fc" id="L179">    this.intervalMonitoringIncluded = intervalMonitoringIncluded;</span>
+<span class="fc" id="L180">    this.transformLongAsString = transformLongAsString;</span>
+<span class="fc" id="L181">    this.asApiRest = true;</span>
+<span class="fc" id="L182">    this.elasticsearchMonitoringExporterClient = null;</span>
+<span class="fc" id="L183">    this.httpMonitoringExporterClient =</span>
         new HttpMonitoringExporterClient(remoteBaseUrl, basicAuthent, token,
                                          apiKey, endpoint, keepConnection,
                                          group);
-<span class="nc" id="L187">    DbHostConfiguration temp = null;</span>
+<span class="fc" id="L187">    DbHostConfiguration temp = null;</span>
     try {
-<span class="nc" id="L189">      temp = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="fc" id="L189">      temp = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
 <span class="nc" id="L190">    } catch (final WaarpDatabaseException e) {//NOSONAR</span>
 <span class="nc" id="L191">      logger.error(e.getMessage());</span>
-<span class="nc" id="L192">    }</span>
-<span class="nc bnc" id="L193" title="All 2 branches missed.">    if (temp == null) {</span>
+<span class="fc" id="L192">    }</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">    if (temp == null) {</span>
 <span class="nc" id="L194">      DbHostConfiguration.getLastDateTimeMonitoring(</span>
 <span class="nc" id="L195">          Configuration.configuration.getHostId());</span>
       try {
@@ -199,12 +199,12 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
 <span class="nc" id="L199">        logger.error(e.getMessage());</span>
 <span class="nc" id="L200">      }</span>
     }
-<span class="nc" id="L202">    this.hostConfiguration = temp;</span>
-<span class="nc" id="L203">    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();//NOSONAR</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (lastDateTime != null) {</span>
+<span class="fc" id="L202">    this.hostConfiguration = temp;</span>
+<span class="fc" id="L203">    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();//NOSONAR</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (lastDateTime != null) {</span>
 <span class="nc" id="L205">      lastTimestamp = new Timestamp(lastDateTime.getMillis());</span>
     }
-<span class="nc" id="L207">  }</span>
+<span class="fc" id="L207">  }</span>
 
   /**
    * The index can be a combination of a fixed name and extra dynamic
@@ -313,95 +313,95 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
 
   @Override
   public void run() {
-<span class="nc" id="L316">    final DateTime now = new DateTime();</span>
-<span class="nc" id="L317">    final Timestamp timestamp = new Timestamp(now.getMillis());</span>
-<span class="nc" id="L318">    logger.info(&quot;Start from {} to {}&quot;, lastDateTime, now);</span>
-<span class="nc" id="L319">    final TransferConverter.Order order = TransferConverter.Order.ascId;</span>
-<span class="nc" id="L320">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(2);</span>
-<span class="nc" id="L321">    filters.add(DbTaskRunner.getOwnerFilter());</span>
-<span class="nc bnc" id="L322" title="All 2 branches missed.">    if (lastTimestamp != null) {</span>
-<span class="nc" id="L323">      filters.add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, lastTimestamp,</span>
+<span class="fc" id="L316">    final DateTime now = new DateTime();</span>
+<span class="fc" id="L317">    final Timestamp timestamp = new Timestamp(now.getMillis());</span>
+<span class="fc" id="L318">    logger.info(&quot;Start from {} to {}&quot;, lastDateTime, now);</span>
+<span class="fc" id="L319">    final TransferConverter.Order order = TransferConverter.Order.ascId;</span>
+<span class="fc" id="L320">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(2);</span>
+<span class="fc" id="L321">    filters.add(DbTaskRunner.getOwnerFilter());</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">    if (lastTimestamp != null) {</span>
+<span class="fc" id="L323">      filters.add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, lastTimestamp,</span>
                              timestamp));
     } else {
-<span class="nc" id="L326">      filters.add(new Filter(TRANSFER_STOP_FIELD, &quot;&lt;=&quot;, timestamp));</span>
+<span class="fc" id="L326">      filters.add(new Filter(TRANSFER_STOP_FIELD, &quot;&lt;=&quot;, timestamp));</span>
     }
-<span class="nc" id="L328">    TransferDAO transferDAO = null;</span>
+<span class="fc" id="L328">    TransferDAO transferDAO = null;</span>
     List&lt;Transfer&gt; transferList;
     try {
-<span class="nc" id="L331">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L332">      transferList = transferDAO.find(filters, order.column, order.ascend);</span>
-<span class="nc" id="L333">      logger.debug(&quot;Get List {}&quot;, transferList.size());</span>
+<span class="fc" id="L331">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="fc" id="L332">      transferList = transferDAO.find(filters, order.column, order.ascend);</span>
+<span class="fc" id="L333">      logger.debug(&quot;Get List {}&quot;, transferList.size());</span>
 <span class="nc" id="L334">    } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L335">      logger.error(e.getMessage());</span>
 <span class="nc" id="L336">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L338">      DAOFactory.closeDAO(transferDAO);</span>
+<span class="fc" id="L338">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc bnc" id="L340" title="All 2 branches missed.">    if (transferList.isEmpty()) {</span>
-<span class="nc" id="L341">      logger.info(&quot;No Transfer from {} to {}&quot;, lastDateTime, now);</span>
-<span class="nc" id="L342">      lastDateTime = now;</span>
-<span class="nc" id="L343">      lastTimestamp = timestamp;</span>
-<span class="nc" id="L344">      hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
-<span class="nc" id="L345">      return;</span>
+<span class="fc bfc" id="L340" title="All 2 branches covered.">    if (transferList.isEmpty()) {</span>
+<span class="fc" id="L341">      logger.info(&quot;No Transfer from {} to {}&quot;, lastDateTime, now);</span>
+<span class="fc" id="L342">      lastDateTime = now;</span>
+<span class="fc" id="L343">      lastTimestamp = timestamp;</span>
+<span class="fc" id="L344">      hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
+<span class="fc" id="L345">      return;</span>
     }
-<span class="nc" id="L347">    logger.debug(&quot;Create Json&quot;);</span>
+<span class="fc" id="L347">    logger.debug(&quot;Create Json&quot;);</span>
 
-<span class="nc" id="L349">    final ObjectNode monitoredTransfers = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L350">    final ArrayNode resultList = monitoredTransfers.putArray(RESULTS);</span>
-<span class="nc" id="L351">    final String owner = Configuration.configuration.getHostId();</span>
-<span class="nc bnc" id="L352" title="All 2 branches missed.">    for (final Transfer transfer : transferList) {</span>
-<span class="nc" id="L353">      final ObjectNode item = TransferConverter.transferToNode(transfer);</span>
-<span class="nc" id="L354">      final long specialId = item.get(TransferFields.TRANSFER_ID).asLong();</span>
-<span class="nc" id="L355">      final String transferInfo =</span>
-<span class="nc" id="L356">          item.get(TransferFields.TRANSFER_INFO).asText();</span>
-<span class="nc" id="L357">      final ObjectNode root = JsonHandler.getFromString(transferInfo);</span>
-<span class="nc" id="L358">      long followId = Long.MIN_VALUE;</span>
-<span class="nc" id="L359">      long originalSize = -1;</span>
-<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (root != null) {</span>
-<span class="nc" id="L361">        JsonNode node = root.get(TransferArgs.FOLLOW_JSON_KEY);</span>
-<span class="nc bnc" id="L362" title="All 2 branches missed.">        if (node != null) {</span>
-<span class="nc" id="L363">          followId = node.asLong();</span>
+<span class="fc" id="L349">    final ObjectNode monitoredTransfers = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L350">    final ArrayNode resultList = monitoredTransfers.putArray(RESULTS);</span>
+<span class="fc" id="L351">    final String owner = Configuration.configuration.getHostId();</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">    for (final Transfer transfer : transferList) {</span>
+<span class="fc" id="L353">      final ObjectNode item = TransferConverter.transferToNode(transfer);</span>
+<span class="fc" id="L354">      final long specialId = item.get(TransferFields.TRANSFER_ID).asLong();</span>
+<span class="fc" id="L355">      final String transferInfo =</span>
+<span class="fc" id="L356">          item.get(TransferFields.TRANSFER_INFO).asText();</span>
+<span class="fc" id="L357">      final ObjectNode root = JsonHandler.getFromString(transferInfo);</span>
+<span class="fc" id="L358">      long followId = Long.MIN_VALUE;</span>
+<span class="fc" id="L359">      long originalSize = -1;</span>
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">      if (root != null) {</span>
+<span class="fc" id="L361">        JsonNode node = root.get(TransferArgs.FOLLOW_JSON_KEY);</span>
+<span class="fc bfc" id="L362" title="All 2 branches covered.">        if (node != null) {</span>
+<span class="fc" id="L363">          followId = node.asLong();</span>
         }
-<span class="nc" id="L365">        node = root.get(DbTaskRunner.JSON_ORIGINALSIZE);</span>
-<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (node != null) {</span>
-<span class="nc" id="L367">          originalSize = node.asLong();</span>
+<span class="fc" id="L365">        node = root.get(DbTaskRunner.JSON_ORIGINALSIZE);</span>
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">        if (node != null) {</span>
+<span class="fc" id="L367">          originalSize = node.asLong();</span>
         }
       }
-<span class="nc bnc" id="L370" title="All 2 branches missed.">      if (transformLongAsString) {</span>
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">      if (transformLongAsString) {</span>
 <span class="nc" id="L371">        item.put(SPECIAL_ID, Long.toString(specialId));</span>
 <span class="nc" id="L372">        item.put(FOLLOW_ID, Long.toString(followId));</span>
 <span class="nc" id="L373">        item.put(ORIGINAL_SIZE, Long.toString(originalSize));</span>
       } else {
-<span class="nc" id="L375">        item.put(SPECIAL_ID, specialId);</span>
-<span class="nc" id="L376">        item.put(FOLLOW_ID, followId);</span>
-<span class="nc" id="L377">        item.put(ORIGINAL_SIZE, originalSize);</span>
+<span class="fc" id="L375">        item.put(SPECIAL_ID, specialId);</span>
+<span class="fc" id="L376">        item.put(FOLLOW_ID, followId);</span>
+<span class="fc" id="L377">        item.put(ORIGINAL_SIZE, originalSize);</span>
       }
-<span class="nc" id="L379">      final String uniqueId =</span>
-<span class="nc" id="L380">          owner + &quot;.&quot; + item.get(TransferFields.REQUESTER).asText() + &quot;.&quot; +</span>
-<span class="nc" id="L381">          item.get(TransferFields.REQUESTED).asText() + &quot;.&quot; + specialId;</span>
-<span class="nc" id="L382">      item.put(UNIQUE_ID, uniqueId);</span>
-<span class="nc" id="L383">      item.put(HOST_ID, owner);</span>
-<span class="nc" id="L384">      item.remove(TransferFields.TRANSFER_ID);</span>
-<span class="nc bnc" id="L385" title="All 2 branches missed.">      if (intervalMonitoringIncluded) {</span>
-<span class="nc" id="L386">        final ObjectNode waarpMonitor = item.putObject(WAARP_MONITOR);</span>
-<span class="nc bnc" id="L387" title="All 2 branches missed.">        waarpMonitor.put(FROM_DATE_TIME,</span>
-<span class="nc" id="L388">                         lastDateTime != null? lastDateTime.toString() : &quot;&quot;);</span>
-<span class="nc" id="L389">        waarpMonitor.put(TO_DATE_TIME, now.toString());</span>
-<span class="nc" id="L390">        waarpMonitor.put(INDEX_NAME, owner.toLowerCase());</span>
+<span class="fc" id="L379">      final String uniqueId =</span>
+<span class="fc" id="L380">          owner + &quot;.&quot; + item.get(TransferFields.REQUESTER).asText() + &quot;.&quot; +</span>
+<span class="fc" id="L381">          item.get(TransferFields.REQUESTED).asText() + &quot;.&quot; + specialId;</span>
+<span class="fc" id="L382">      item.put(UNIQUE_ID, uniqueId);</span>
+<span class="fc" id="L383">      item.put(HOST_ID, owner);</span>
+<span class="fc" id="L384">      item.remove(TransferFields.TRANSFER_ID);</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">      if (intervalMonitoringIncluded) {</span>
+<span class="fc" id="L386">        final ObjectNode waarpMonitor = item.putObject(WAARP_MONITOR);</span>
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">        waarpMonitor.put(FROM_DATE_TIME,</span>
+<span class="pc" id="L388">                         lastDateTime != null? lastDateTime.toString() : &quot;&quot;);</span>
+<span class="fc" id="L389">        waarpMonitor.put(TO_DATE_TIME, now.toString());</span>
+<span class="fc" id="L390">        waarpMonitor.put(INDEX_NAME, owner.toLowerCase());</span>
       }
-<span class="nc" id="L392">      resultList.add(item);</span>
-<span class="nc" id="L393">    }</span>
-<span class="nc" id="L394">    final int size = resultList.size();</span>
-<span class="nc" id="L395">    logger.debug(&quot;Create Json {}&quot;, size);</span>
-<span class="nc" id="L396">    transferList.clear();</span>
-<span class="nc bnc" id="L397" title="All 2 branches missed.">    if (asApiRest) {</span>
-<span class="nc bnc" id="L398" title="All 2 branches missed.">      if (httpMonitoringExporterClient.post(monitoredTransfers, lastDateTime,</span>
+<span class="fc" id="L392">      resultList.add(item);</span>
+<span class="fc" id="L393">    }</span>
+<span class="fc" id="L394">    final int size = resultList.size();</span>
+<span class="fc" id="L395">    logger.debug(&quot;Create Json {}&quot;, size);</span>
+<span class="fc" id="L396">    transferList.clear();</span>
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">    if (asApiRest) {</span>
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">      if (httpMonitoringExporterClient.post(monitoredTransfers, lastDateTime,</span>
                                             now,
-<span class="nc" id="L400">                                            Configuration.configuration.getHostId())) {</span>
-<span class="nc" id="L401">        logger.info(&quot;Transferred from {} to {} = {}&quot;, lastDateTime, now, size);</span>
-<span class="nc" id="L402">        lastDateTime = now;</span>
-<span class="nc" id="L403">        lastTimestamp = timestamp;</span>
-<span class="nc" id="L404">        hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
+<span class="fc" id="L400">                                            Configuration.configuration.getHostId())) {</span>
+<span class="fc" id="L401">        logger.info(&quot;Transferred from {} to {} = {}&quot;, lastDateTime, now, size);</span>
+<span class="fc" id="L402">        lastDateTime = now;</span>
+<span class="fc" id="L403">        lastTimestamp = timestamp;</span>
+<span class="fc" id="L404">        hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);</span>
       } else {
 <span class="nc" id="L406">        logger.error(&quot;Not Transferred from {} to {} = {}&quot;, lastDateTime, now,</span>
 <span class="nc" id="L407">                     size);</span>
@@ -417,16 +417,16 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
 <span class="nc" id="L417">      logger.error(&quot;ES Not Transferred from {} to {} = {}&quot;, lastDateTime, now,</span>
 <span class="nc" id="L418">                   size);</span>
     }
-<span class="nc" id="L420">  }</span>
+<span class="fc" id="L420">  }</span>
 
   @Override
   public void close() throws IOException {
-<span class="nc bnc" id="L424" title="All 2 branches missed.">    if (httpMonitoringExporterClient != null) {</span>
-<span class="nc" id="L425">      httpMonitoringExporterClient.close();</span>
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">    if (httpMonitoringExporterClient != null) {</span>
+<span class="fc" id="L425">      httpMonitoringExporterClient.close();</span>
     }
-<span class="nc bnc" id="L427" title="All 2 branches missed.">    if (elasticsearchMonitoringExporterClient != null) {</span>
+<span class="pc bpc" id="L427" title="1 of 2 branches missed.">    if (elasticsearchMonitoringExporterClient != null) {</span>
 <span class="nc" id="L428">      elasticsearchMonitoringExporterClient.close();</span>
     }
-<span class="nc" id="L430">  }</span>
+<span class="fc" id="L430">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

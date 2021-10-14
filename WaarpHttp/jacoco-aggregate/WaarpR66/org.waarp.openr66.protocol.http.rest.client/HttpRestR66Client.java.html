@@ -74,8 +74,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
                               final String user, final String pwd,
                               final Map&lt;String, String&gt; uriArgs,
                               final String json) {
-<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (config.isRestSignature()) {</span>
-<span class="nc" id="L78">      return sendQuery(config.getHmacSha256(), channel, method, host, addedUri,</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">    if (config.isRestSignature()) {</span>
+<span class="fc" id="L78">      return sendQuery(config.getHmacSha256(), channel, method, host, addedUri,</span>
                        user, pwd, uriArgs, json);
     } else {
 <span class="nc" id="L81">      return sendQuery(channel, method, host, addedUri, user, uriArgs, json);</span>
@@ -94,8 +94,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
   public HttpRestR66Client(final String baseUri,
                            final ChannelInitializer&lt;SocketChannel&gt; initializer,
                            final int client, final long timeout) {
-<span class="nc" id="L97">    super(baseUri, client, timeout, initializer);</span>
-<span class="nc" id="L98">  }</span>
+<span class="fc" id="L97">    super(baseUri, client, timeout, initializer);</span>
+<span class="fc" id="L98">  }</span>
 
   /**
    * @param bodyResponse
@@ -103,11 +103,11 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @return the associated RESTHANDLERS if any, else null
    */
   public RESTHANDLERS getRestHandler(final RestArgument bodyResponse) {
-<span class="nc" id="L106">    final ObjectNode node = bodyResponse.getAnswer();</span>
-<span class="nc" id="L107">    final String model = node.path(AbstractDbData.JSON_MODEL).asText();</span>
+<span class="fc" id="L106">    final ObjectNode node = bodyResponse.getAnswer();</span>
+<span class="fc" id="L107">    final String model = node.path(AbstractDbData.JSON_MODEL).asText();</span>
     try {
-<span class="nc bnc" id="L109" title="All 2 branches missed.">      if (ParametersChecker.isNotEmpty(model)) {</span>
-<span class="nc" id="L110">        return RESTHANDLERS.valueOf(model);</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">      if (ParametersChecker.isNotEmpty(model)) {</span>
+<span class="fc" id="L110">        return RESTHANDLERS.valueOf(model);</span>
       }
 <span class="nc" id="L112">    } catch (final Exception ignored) {</span>
       // nothing
@@ -122,13 +122,13 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *     bodyResponse), else null
    */
   public String getPrimaryProperty(final RestArgument bodyResponse) {
-<span class="nc" id="L125">    final ObjectNode answer = bodyResponse.getAnswer();</span>
-<span class="nc" id="L126">    final String model = answer.path(AbstractDbData.JSON_MODEL).asText();</span>
-<span class="nc" id="L127">    final String property = getPrimaryPropertyName(model);</span>
-<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (property == null) {</span>
+<span class="fc" id="L125">    final ObjectNode answer = bodyResponse.getAnswer();</span>
+<span class="fc" id="L126">    final String model = answer.path(AbstractDbData.JSON_MODEL).asText();</span>
+<span class="fc" id="L127">    final String property = getPrimaryPropertyName(model);</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (property == null) {</span>
 <span class="nc" id="L129">      return null;</span>
     }
-<span class="nc" id="L131">    return answer.path(property).asText();</span>
+<span class="fc" id="L131">    return answer.path(property).asText();</span>
   }
 
   /**
@@ -138,12 +138,12 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    */
   public String getPrimaryPropertyName(final String model) {
     try {
-<span class="nc bnc" id="L141" title="All 2 branches missed.">      if (ParametersChecker.isNotEmpty(model)) {</span>
-<span class="nc" id="L142">        final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);</span>
-<span class="nc" id="L143">        final DataModelRestMethodHandler&lt;?&gt; handler =</span>
-<span class="nc" id="L144">            (DataModelRestMethodHandler&lt;?&gt;) HttpRestHandler.defaultConfiguration.restHashMap.get(</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">      if (ParametersChecker.isNotEmpty(model)) {</span>
+<span class="fc" id="L142">        final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);</span>
+<span class="fc" id="L143">        final DataModelRestMethodHandler&lt;?&gt; handler =</span>
+<span class="fc" id="L144">            (DataModelRestMethodHandler&lt;?&gt;) HttpRestHandler.defaultConfiguration.restHashMap.get(</span>
                 dbdata.uri);
-<span class="nc" id="L146">        return handler.getPrimaryPropertyName();</span>
+<span class="fc" id="L146">        return handler.getPrimaryPropertyName();</span>
       }
 <span class="nc" id="L148">    } catch (final Exception ignored) {</span>
       // ignore

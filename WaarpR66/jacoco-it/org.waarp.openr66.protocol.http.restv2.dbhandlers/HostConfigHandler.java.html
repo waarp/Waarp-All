@@ -98,13 +98,13 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getConfig(final HttpRequest request,
-                        final HttpResponder responder) {
-
-<span class="nc" id="L104">    BusinessDAO businessDAO = null;</span>
+  public final void getConfig(final HttpRequest request,
+                              final HttpResponder responder) {
+<span class="nc" id="L103">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L106">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="nc" id="L107">      final Business business = businessDAO.select(serverName());</span>
+<span class="nc" id="L105">      businessDAO = DAO_FACTORY.getBusinessDAO(true);</span>
+<span class="nc" id="L106">      final String host = serverName();</span>
+<span class="nc" id="L107">      final Business business = businessDAO.select(host);</span>
 <span class="nc bnc" id="L108" title="All 2 branches missed.">      if (business != null) {</span>
 <span class="nc" id="L109">        final ObjectNode responseObject =</span>
 <span class="nc" id="L110">            HostConfigConverter.businessToNode(business);</span>
@@ -136,15 +136,15 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(CONFIGADMIN)
-  public void initializeConfig(final HttpRequest request,
-                               final HttpResponder responder) {
-
-<span class="nc" id="L142">    BusinessDAO businessDAO = null;</span>
+  public final void initializeConfig(final HttpRequest request,
+                                     final HttpResponder responder) {
+<span class="nc" id="L141">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L144">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="nc" id="L143">      businessDAO = DAO_FACTORY.getBusinessDAO(false);</span>
 
-<span class="nc bnc" id="L146" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
-<span class="nc" id="L147">        final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
+<span class="nc" id="L146">        final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L147">        checkSanity(requestObject);</span>
 <span class="nc" id="L148">        final Business config =</span>
 <span class="nc" id="L149">            HostConfigConverter.nodeToNewBusiness(requestObject);</span>
 <span class="nc" id="L150">        businessDAO.insert(config);</span>
@@ -174,19 +174,19 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(CONFIGADMIN)
-  public void updateConfig(final HttpRequest request,
-                           final HttpResponder responder) {
-
-<span class="nc" id="L180">    BusinessDAO businessDAO = null;</span>
+  public final void updateConfig(final HttpRequest request,
+                                 final HttpResponder responder) {
+<span class="nc" id="L179">    BusinessDAO businessDAO = null;</span>
 
     try {
-<span class="nc" id="L183">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="nc" id="L182">      businessDAO = DAO_FACTORY.getBusinessDAO(false);</span>
 
-<span class="nc bnc" id="L185" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
-<span class="nc" id="L186">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
+<span class="nc" id="L185">        responder.sendStatus(NOT_FOUND);</span>
       }
 
-<span class="nc" id="L189">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L188">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L189">      checkSanity(requestObject);</span>
 <span class="nc" id="L190">      final Business oldConfig = businessDAO.select(serverName());</span>
 <span class="nc" id="L191">      final Business newConfig =</span>
 <span class="nc" id="L192">          HostConfigConverter.nodeToUpdatedBusiness(requestObject, oldConfig);</span>
@@ -206,7 +206,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
 <span class="nc" id="L206">  }</span>
 
   /**
-   * Method called to delete a host's configuration entry in the database.
+   * Method called to delete the current host's configuration entry in the database.
    *
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -215,26 +215,25 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(CONFIGADMIN)
-  public void deleteConfig(final HttpRequest request,
-                           final HttpResponder responder) {
-
-<span class="nc" id="L221">    BusinessDAO businessDAO = null;</span>
+  public final void deleteConfig(final HttpRequest request,
+                                 final HttpResponder responder) {
+<span class="nc" id="L220">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L223">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="nc bnc" id="L224" title="All 2 branches missed.">      if (businessDAO.exist(serverName())) {</span>
-<span class="nc" id="L225">        businessDAO.delete(businessDAO.select(serverName()));</span>
-<span class="nc" id="L226">        responder.sendStatus(NO_CONTENT);</span>
+<span class="nc" id="L222">      businessDAO = DAO_FACTORY.getBusinessDAO(false);</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">      if (businessDAO.exist(serverName())) {</span>
+<span class="nc" id="L224">        businessDAO.delete(businessDAO.select(serverName()));</span>
+<span class="nc" id="L225">        responder.sendStatus(NO_CONTENT);</span>
       } else {
-<span class="nc" id="L228">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L227">        responder.sendStatus(NOT_FOUND);</span>
       }
-<span class="nc" id="L230">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L231">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L232">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L233">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L229">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L230">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L231">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L232">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L235">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="nc" id="L234">      DAOFactory.closeDAO(businessDAO);</span>
     }
-<span class="nc" id="L237">  }</span>
+<span class="nc" id="L236">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -248,9 +247,9 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
-<span class="nc" id="L253">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L254">  }</span>
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L252">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L253">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

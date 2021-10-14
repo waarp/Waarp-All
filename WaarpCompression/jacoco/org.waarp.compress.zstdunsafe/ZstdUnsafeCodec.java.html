@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZstdUnsafeCodec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Compression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdunsafe</a> &gt; <span class="el_source">ZstdUnsafeCodec.java</span></div><h1>ZstdUnsafeCodec.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdunsafe;
+
+import com.google.common.io.ByteStreams;
+import org.waarp.common.file.FileUtils;
+import org.waarp.compress.CompressorCodec;
+import org.waarp.compress.MalformedInputException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+
+import static org.waarp.compress.zstdunsafe.Constants.*;
+import static sun.misc.Unsafe.*;
+
+/**
+ * ZSTD Unsafe Codec implementation
+ */
+<span class="fc" id="L54">public class ZstdUnsafeCodec implements CompressorCodec {</span>
+<span class="fc" id="L55">  private final ZstdFrameDecompressor decompressor =</span>
+      new ZstdFrameDecompressor();
+
+  @Override
+  public final int getDecompressedSize(final byte[] input, final int length) {
+<span class="fc" id="L60">    final long baseAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="fc" id="L61">    return (int) ZstdFrameDecompressor.getDecompressedSize(input, baseAddress,</span>
+                                                           baseAddress +
+                                                           length);
+  }
+
+  @Override
+  public final int maxCompressedLength(final int uncompressedSize) {
+<span class="fc" id="L68">    long result = (long) uncompressedSize + (uncompressedSize &gt;&gt;&gt; 8);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">    if (uncompressedSize &lt; MAX_BLOCK_SIZE) {</span>
+<span class="fc" id="L70">      result += (MAX_BLOCK_SIZE - uncompressedSize) &gt;&gt;&gt; 11;</span>
+    }
+<span class="fc" id="L72">    return (int) result;</span>
+  }
+
+  @Override
+  public final byte[] compress(final byte[] input, final int length) {
+    try {
+<span class="fc" id="L78">      final int len = maxCompressedLength(length);</span>
+<span class="fc" id="L79">      final byte[] temp = new byte[len];</span>
+<span class="fc" id="L80">      final int finalLen = compress(input, input.length, temp, len);</span>
+<span class="fc" id="L81">      return Arrays.copyOf(temp, finalLen);</span>
+<span class="nc" id="L82">    } catch (final Exception e) {</span>
+<span class="nc" id="L83">      throw new MalformedInputException(e);</span>
+    }
+  }
+
+  @Override
+  public final int compress(final byte[] input, final int inputLength,
+                            final byte[] output, final int maxOutputLength) {
+    try {
+<span class="fc" id="L91">      final long inputAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="fc" id="L92">      final long outputAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="fc" id="L93">      return ZstdFrameCompressor.compress(input, inputAddress,</span>
+                                          inputAddress + inputLength, output,
+                                          outputAddress,
+                                          outputAddress + maxOutputLength,
+                                          CompressionParameters.DEFAULT_COMPRESSION_LEVEL);
+<span class="nc" id="L98">    } catch (final Exception e) {</span>
+<span class="nc" id="L99">      throw new MalformedInputException(e);</span>
+    }
+  }
+
+  @Override
+  public final byte[] decompress(final byte[] input, final int length)
+      throws MalformedInputException {
+    try {
+<span class="fc" id="L107">      final int finalLen = getDecompressedSize(input, length);</span>
+<span class="fc" id="L108">      final byte[] decompressed = new byte[finalLen];</span>
+<span class="fc" id="L109">      decompress(input, input.length, decompressed, finalLen);</span>
+<span class="fc" id="L110">      return decompressed;</span>
+<span class="nc" id="L111">    } catch (final Exception e) {</span>
+<span class="nc" id="L112">      throw new MalformedInputException(e);</span>
+    }
+  }
+
+  @Override
+  public final long compress(final File input, final File output)
+      throws MalformedInputException {
+<span class="fc" id="L119">    InputStream inputStream = null;</span>
+<span class="fc" id="L120">    OutputStream outputStream = null;</span>
+    try {
+      final byte[] buffer;
+<span class="fc" id="L123">      inputStream = new FileInputStream(input);</span>
+<span class="fc" id="L124">      buffer = ByteStreams.toByteArray(inputStream);</span>
+<span class="fc" id="L125">      outputStream = new FileOutputStream(output);</span>
+<span class="fc" id="L126">      final byte[] bufferCompression =</span>
+<span class="fc" id="L127">          new byte[maxCompressedLength(buffer.length)];</span>
+<span class="fc" id="L128">      final int length = compress(buffer, buffer.length, bufferCompression,</span>
+                                  bufferCompression.length);
+<span class="fc" id="L130">      outputStream.write(bufferCompression, 0, length);</span>
+<span class="fc" id="L131">      outputStream.flush();</span>
+<span class="fc" id="L132">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L133">      outputStream = null;</span>
+<span class="fc" id="L134">      return output.length();</span>
+<span class="nc" id="L135">    } catch (final Exception e) {</span>
+<span class="nc" id="L136">      throw new MalformedInputException(e);</span>
+    } finally {
+<span class="fc" id="L138">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L139">      FileUtils.close(outputStream);</span>
+    }
+  }
+
+  @Override
+  public final int decompress(final byte[] input, final int inputLength,
+                              final byte[] output, final int maxOutputLength)
+      throws MalformedInputException {
+    try {
+<span class="fc" id="L148">      final long inputAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="fc" id="L149">      final long inputLimit = inputAddress + inputLength;</span>
+<span class="fc" id="L150">      final long outputAddress = ARRAY_BYTE_BASE_OFFSET;</span>
+<span class="fc" id="L151">      final long outputLimit = outputAddress + maxOutputLength;</span>
+
+<span class="fc" id="L153">      return decompressor.decompress(input, inputAddress, inputLimit, output,</span>
+                                     outputAddress, outputLimit);
+<span class="nc" id="L155">    } catch (final Exception e) {</span>
+<span class="nc" id="L156">      throw new MalformedInputException(e);</span>
+    }
+  }
+
+  @Override
+  public final long decompress(final File input, final File output)
+      throws MalformedInputException {
+<span class="fc" id="L163">    InputStream inputStream = null;</span>
+<span class="fc" id="L164">    OutputStream outputStream = null;</span>
+    try {
+      final byte[] buffer;
+<span class="fc" id="L167">      inputStream = new FileInputStream(input);</span>
+<span class="fc" id="L168">      final byte[] sourceArray = ByteStreams.toByteArray(inputStream);</span>
+<span class="fc" id="L169">      outputStream = new FileOutputStream(output);</span>
+<span class="fc" id="L170">      buffer = new byte[getDecompressedSize(sourceArray, sourceArray.length)];</span>
+<span class="fc" id="L171">      final int length =</span>
+<span class="fc" id="L172">          decompress(sourceArray, sourceArray.length, buffer, buffer.length);</span>
+<span class="fc" id="L173">      outputStream.write(buffer, 0, length);</span>
+<span class="fc" id="L174">      outputStream.flush();</span>
+<span class="fc" id="L175">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L176">      outputStream = null;</span>
+<span class="fc" id="L177">      return output.length();</span>
+<span class="nc" id="L178">    } catch (final Exception e) {</span>
+<span class="nc" id="L179">      throw new MalformedInputException(e);</span>
+    } finally {
+<span class="fc" id="L181">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L182">      FileUtils.close(outputStream);</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

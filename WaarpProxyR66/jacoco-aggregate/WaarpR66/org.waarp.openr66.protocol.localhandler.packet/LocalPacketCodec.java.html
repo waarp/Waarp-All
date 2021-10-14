@@ -30,25 +30,25 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
   public static AbstractLocalPacket decodeNetworkPacket(final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     // Mark the current buffer position
-<span class="nc" id="L33">    buf.markReaderIndex();</span>
+<span class="fc" id="L33">    buf.markReaderIndex();</span>
     // Read the length field
-<span class="nc" id="L35">    final int length = buf.readInt();</span>
-<span class="nc bnc" id="L36" title="All 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
+<span class="fc" id="L35">    final int length = buf.readInt();</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
 <span class="nc" id="L37">      buf.resetReaderIndex();</span>
 <span class="nc" id="L38">      return null;</span>
     }
     // Now we can read the header
     // Header: Header length field (4 bytes) = Middle length field (4
     // bytes), End length field (4 bytes), type field (1 byte), ...
-<span class="nc" id="L43">    final int middleLength = buf.readInt();</span>
-<span class="nc" id="L44">    final int endLength = buf.readInt();</span>
+<span class="fc" id="L43">    final int middleLength = buf.readInt();</span>
+<span class="fc" id="L44">    final int endLength = buf.readInt();</span>
     // check if the packet is complete
-<span class="nc bnc" id="L46" title="All 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
 <span class="nc" id="L47">      buf.resetReaderIndex();</span>
 <span class="nc" id="L48">      return null;</span>
     }
     // createPacketFromByteBuf read the buffer
-<span class="nc" id="L51">    return LocalPacketFactory.createPacketFromByteBuf(length - 8, middleLength,</span>
+<span class="fc" id="L51">    return LocalPacketFactory.createPacketFromByteBuf(length - 8, middleLength,</span>
                                                       endLength, buf);
   }
 

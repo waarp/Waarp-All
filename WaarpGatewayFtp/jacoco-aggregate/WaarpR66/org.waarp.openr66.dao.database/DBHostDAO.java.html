@@ -77,101 +77,101 @@ public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO 
    * Hashmap for Host
    */
   private static final SynchronizedLruCache&lt;String, Host&gt;
-<span class="nc" id="L80">      reentrantConcurrentHashMap =</span>
+<span class="fc" id="L80">      reentrantConcurrentHashMap =</span>
       new SynchronizedLruCache&lt;String, Host&gt;(500, 180000);
 
   public DBHostDAO(final Connection con) {
-<span class="nc" id="L84">    super(con);</span>
-<span class="nc" id="L85">  }</span>
+<span class="fc" id="L84">    super(con);</span>
+<span class="fc" id="L85">  }</span>
 
   @Override
   protected final boolean isCachedEnable() {
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
   }
 
   @Override
   protected final SynchronizedLruCache&lt;String, Host&gt; getCache() {
-<span class="nc" id="L94">    return reentrantConcurrentHashMap;</span>
+<span class="fc" id="L94">    return reentrantConcurrentHashMap;</span>
   }
 
   @Override
   protected final String getId(final Host e1) {
-<span class="nc" id="L99">    return e1.getHostid();</span>
+<span class="fc" id="L99">    return e1.getHostid();</span>
   }
 
   @Override
   protected final String getSelectRequest() {
-<span class="nc" id="L104">    return SQL_SELECT;</span>
+<span class="fc" id="L104">    return SQL_SELECT;</span>
   }
 
   @Override
   protected final String getGetAllRequest() {
-<span class="nc" id="L109">    return SQL_GET_ALL;</span>
+<span class="fc" id="L109">    return SQL_GET_ALL;</span>
   }
 
   @Override
   protected final String getCountRequest() {
-<span class="nc" id="L114">    return SQL_COUNT_ALL;</span>
+<span class="fc" id="L114">    return SQL_COUNT_ALL;</span>
   }
 
   @Override
   protected final String getExistRequest() {
-<span class="nc" id="L119">    return SQL_EXIST;</span>
+<span class="fc" id="L119">    return SQL_EXIST;</span>
   }
 
   @Override
   protected final Object[] getInsertValues(final Host host)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L125">    host.checkValues();</span>
-<span class="nc" id="L126">    return new Object[] {</span>
-<span class="nc" id="L127">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
-<span class="nc" id="L128">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
-<span class="nc" id="L129">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
+<span class="fc" id="L125">    host.checkValues();</span>
+<span class="fc" id="L126">    return new Object[] {</span>
+<span class="fc" id="L127">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L128">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L129">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
   protected final String getInsertRequest() {
-<span class="nc" id="L135">    return SQL_INSERT;</span>
+<span class="fc" id="L135">    return SQL_INSERT;</span>
   }
 
   @Override
   protected final Object[] getUpdateValues(final Host host)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L141">    host.checkValues();</span>
-<span class="nc" id="L142">    return new Object[] {</span>
-<span class="nc" id="L143">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
-<span class="nc" id="L144">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
-<span class="nc" id="L145">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
+<span class="fc" id="L141">    host.checkValues();</span>
+<span class="fc" id="L142">    return new Object[] {</span>
+<span class="fc" id="L143">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L144">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L145">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
     };
   }
 
   @Override
   protected final String getUpdateRequest() {
-<span class="nc" id="L151">    return SQL_UPDATE;</span>
+<span class="fc" id="L151">    return SQL_UPDATE;</span>
   }
 
   @Override
   protected final String getDeleteRequest() {
-<span class="nc" id="L156">    return SQL_DELETE;</span>
+<span class="fc" id="L156">    return SQL_DELETE;</span>
   }
 
   @Override
   protected final String getDeleteAllRequest() {
-<span class="nc" id="L161">    return SQL_DELETE_ALL;</span>
+<span class="fc" id="L161">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
   public final Host getFromResultSet(final ResultSet set) throws SQLException {
     try {
-<span class="nc" id="L167">      return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
-<span class="nc" id="L168">                      set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
-<span class="nc" id="L169">                      set.getBoolean(IS_SSL_FIELD),</span>
-<span class="nc" id="L170">                      set.getBoolean(IS_CLIENT_FIELD),</span>
-<span class="nc" id="L171">                      set.getBoolean(IS_PROXIFIED_FIELD),</span>
-<span class="nc" id="L172">                      set.getBoolean(ADMINROLE_FIELD),</span>
-<span class="nc" id="L173">                      set.getBoolean(IS_ACTIVE_FIELD),</span>
-<span class="nc" id="L174">                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="fc" id="L167">      return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
+<span class="fc" id="L168">                      set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
+<span class="fc" id="L169">                      set.getBoolean(IS_SSL_FIELD),</span>
+<span class="fc" id="L170">                      set.getBoolean(IS_CLIENT_FIELD),</span>
+<span class="fc" id="L171">                      set.getBoolean(IS_PROXIFIED_FIELD),</span>
+<span class="fc" id="L172">                      set.getBoolean(ADMINROLE_FIELD),</span>
+<span class="fc" id="L173">                      set.getBoolean(IS_ACTIVE_FIELD),</span>
+<span class="fc" id="L174">                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
 <span class="nc" id="L175">    } catch (final WaarpDatabaseSqlException e) {</span>
 <span class="nc" id="L176">      throw new SQLException(e);</span>
     }
@@ -179,7 +179,7 @@ public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO 
 
   @Override
   protected final boolean isDbTransfer() {
-<span class="nc" id="L182">    return false;</span>
+<span class="fc" id="L182">    return false;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

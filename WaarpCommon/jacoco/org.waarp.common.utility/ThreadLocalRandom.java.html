@@ -79,7 +79,7 @@ import java.util.Random;
 <span class="fc" id="L79">  private static final ThreadLocal&lt;ThreadLocalRandom&gt; localRandom =//NOSONAR</span>
 <span class="fc" id="L80">      new ThreadLocal&lt;ThreadLocalRandom&gt;() {</span>
         @Override
-        protected ThreadLocalRandom initialValue() {
+        protected final ThreadLocalRandom initialValue() {
 <span class="fc" id="L83">          return new ThreadLocalRandom();</span>
         }
       };//NOSONAR
@@ -100,7 +100,7 @@ import java.util.Random;
    * @throws UnsupportedOperationException always
    */
   @Override
-  public void setSeed(final long seed) {//NOSONAR
+  public final void setSeed(final long seed) {//NOSONAR
     // We rely on the fact that the superclass no-arg constructor
     // invokes setSeed exactly once to initialize.
 <span class="pc bpc" id="L106" title="1 of 2 branches missed.">    if (initialized) {</span>
@@ -111,11 +111,11 @@ import java.util.Random;
 <span class="fc" id="L111">  }</span>
 
   @Override
-  protected int next(final int bits) {
+  protected final int next(final int bits) {
 <span class="fc" id="L115">    rnd = rnd * MULTIPLIER + ADDEND &amp; MASK;</span>
 <span class="fc" id="L116">    return (int) (rnd &gt;&gt;&gt; 48 - bits);</span>
   }
 
   private static final long serialVersionUID = -5851777807851030925L;
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

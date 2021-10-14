@@ -66,34 +66,33 @@ public class LocalExecClient {
     // Configure the client.
 <span class="nc" id="L67">    bootstrapLocalExec = new Bootstrap();</span>
 <span class="nc" id="L68">    WaarpNettyUtil.setBootstrap(bootstrapLocalExec, localPipelineExecutor,</span>
-                                (int) Configuration.configuration
-<span class="nc" id="L70">                                    .getTimeoutCon());</span>
+<span class="nc" id="L69">                                (int) Configuration.configuration.getTimeoutCon());</span>
     // Configure the pipeline factory.
-<span class="nc" id="L72">    localExecClientInitializer = new LocalExecClientInitializer();</span>
-<span class="nc" id="L73">    bootstrapLocalExec.handler(localExecClientInitializer);</span>
-<span class="nc" id="L74">  }</span>
+<span class="nc" id="L71">    localExecClientInitializer = new LocalExecClientInitializer();</span>
+<span class="nc" id="L72">    bootstrapLocalExec.handler(localExecClientInitializer);</span>
+<span class="nc" id="L73">  }</span>
 
   /**
    * To be called when the server is shutting down to release the resources
    */
   public static void releaseResources() {
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (bootstrapLocalExec == null) {</span>
-<span class="nc" id="L81">      return;</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">    if (bootstrapLocalExec == null) {</span>
+<span class="nc" id="L80">      return;</span>
     }
     // Shut down all thread pools to exit.
-<span class="nc" id="L84">    bootstrapLocalExec.config().group().shutdownGracefully();</span>
-<span class="nc" id="L85">    localExecClientInitializer.releaseResources();</span>
-<span class="nc" id="L86">  }</span>
+<span class="nc" id="L83">    bootstrapLocalExec.config().group().shutdownGracefully();</span>
+<span class="nc" id="L84">    localExecClientInitializer.releaseResources();</span>
+<span class="nc" id="L85">  }</span>
 
   private Channel channel;
   private LocalExecResult result;
 
-<span class="nc" id="L91">  public LocalExecClient() {</span>
+<span class="nc" id="L90">  public LocalExecClient() {</span>
     // nothing
-<span class="nc" id="L93">  }</span>
+<span class="nc" id="L92">  }</span>
 
-  public LocalExecResult getLocalExecResult() {
-<span class="nc" id="L96">    return result;</span>
+  public final LocalExecResult getLocalExecResult() {
+<span class="nc" id="L95">    return result;</span>
   }
 
   /**
@@ -106,74 +105,74 @@ public class LocalExecClient {
    * @param delay
    * @param futureCompletion
    */
-  public void runOneCommand(final String command, final long delay,
-                            final WaarpFuture futureCompletion) {
+  public final void runOneCommand(final String command, final long delay,
+                                  final WaarpFuture futureCompletion) {
     // Initialize the command context
-<span class="nc" id="L112">    final LocalExecClientHandler clientHandler =</span>
-<span class="nc" id="L113">        (LocalExecClientHandler) channel.pipeline().last();</span>
+<span class="nc" id="L111">    final LocalExecClientHandler clientHandler =</span>
+<span class="nc" id="L112">        (LocalExecClientHandler) channel.pipeline().last();</span>
     // Command to execute
-<span class="nc" id="L115">    clientHandler.initExecClient(delay, command);</span>
+<span class="nc" id="L114">    clientHandler.initExecClient(delay, command);</span>
     // Wait for the end of the exec command
-<span class="nc" id="L117">    result = clientHandler.waitFor(delay * 2);</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (futureCompletion == null) {</span>
-<span class="nc" id="L119">      return;</span>
+<span class="nc" id="L116">    result = clientHandler.waitFor(delay * 2);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (futureCompletion == null) {</span>
+<span class="nc" id="L118">      return;</span>
     }
-<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (result.getStatus() == 0) {</span>
-<span class="nc" id="L122">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L123">      logger.info(&quot;Exec OK with {}&quot;, command);</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    } else if (result.getStatus() == 1) {</span>
-<span class="nc" id="L125">      logger.warn(&quot;Exec in warning with {}&quot;, command);</span>
-<span class="nc" id="L126">      futureCompletion.setSuccess();</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (result.getStatus() == 0) {</span>
+<span class="nc" id="L121">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L122">      logger.info(&quot;Exec OK with {}&quot;, command);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    } else if (result.getStatus() == 1) {</span>
+<span class="nc" id="L124">      logger.warn(&quot;Exec in warning with {}&quot;, command);</span>
+<span class="nc" id="L125">      futureCompletion.setSuccess();</span>
     } else {
-<span class="nc" id="L128">      logger.error(</span>
-<span class="nc" id="L129">          &quot;Status: &quot; + result.getStatus() + &quot; Exec in error with &quot; + command +</span>
-<span class="nc" id="L130">          '\n' + result.getResult());</span>
-<span class="nc" id="L131">      futureCompletion.cancel();</span>
+<span class="nc" id="L127">      logger.error(</span>
+<span class="nc" id="L128">          &quot;Status: &quot; + result.getStatus() + &quot; Exec in error with &quot; + command +</span>
+<span class="nc" id="L129">          '\n' + result.getResult());</span>
+<span class="nc" id="L130">      futureCompletion.cancel();</span>
     }
-<span class="nc" id="L133">  }</span>
+<span class="nc" id="L132">  }</span>
 
   /**
    * Connect to the Server
    */
-  public boolean connect() {
+  public final boolean connect() {
     // Start the connection attempt.
-<span class="nc" id="L140">    final ChannelFuture future = bootstrapLocalExec.connect(getAddress());</span>
+<span class="nc" id="L139">    final ChannelFuture future = bootstrapLocalExec.connect(getAddress());</span>
 
     // Wait until the connection attempt succeeds or fails.
     try {
-<span class="nc" id="L144">      channel = future.await().sync().channel();</span>
-<span class="nc" id="L145">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L146">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L147">    }</span>
-<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (!future.isSuccess()) {</span>
-<span class="nc" id="L149">      logger.error(&quot;Client Not Connected&quot;, future.cause());</span>
-<span class="nc" id="L150">      return false;</span>
+<span class="nc" id="L143">      channel = future.await().sync().channel();</span>
+<span class="nc" id="L144">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L145">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L146">    }</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (!future.isSuccess()) {</span>
+<span class="nc" id="L148">      logger.error(&quot;Client Not Connected&quot;, future.cause());</span>
+<span class="nc" id="L149">      return false;</span>
     }
-<span class="nc" id="L152">    return true;</span>
+<span class="nc" id="L151">    return true;</span>
   }
 
   /**
    * Disconnect from the server
    */
-  public void disconnect() {
+  public final void disconnect() {
     // Close the connection. Make sure the close operation ends because
     // all I/O operations are asynchronous in Netty.
-<span class="nc" id="L161">    WaarpNettyUtil</span>
-<span class="nc" id="L162">        .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(channel));</span>
-<span class="nc" id="L163">  }</span>
+<span class="nc" id="L160">    WaarpNettyUtil.awaitOrInterrupted(</span>
+<span class="nc" id="L161">        WaarpSslUtility.closingSslChannel(channel));</span>
+<span class="nc" id="L162">  }</span>
 
   /**
    * @return the address
    */
   public static InetSocketAddress getAddress() {
-<span class="nc" id="L169">    return address;</span>
+<span class="nc" id="L168">    return address;</span>
   }
 
   /**
    * @param address the address to set
    */
   public static void setAddress(final InetSocketAddress address) {
-<span class="nc" id="L176">    LocalExecClient.address = address;</span>
-<span class="nc" id="L177">  }</span>
+<span class="nc" id="L175">    LocalExecClient.address = address;</span>
+<span class="nc" id="L176">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

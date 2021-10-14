@@ -99,14 +99,14 @@ public abstract class KeyObject {
   /**
    * @return the key associated with this object
    */
-  public Key getSecretKey() {
+  public final Key getSecretKey() {
 <span class="nc" id="L103">    return secretKey;</span>
   }
 
   /**
    * @return True if this key is ready to be used
    */
-  public boolean keyReady() {
+  public final boolean keyReady() {
 <span class="pc bpc" id="L110" title="1 of 2 branches missed.">    return secretKey != null;</span>
   }
 
@@ -117,7 +117,7 @@ public abstract class KeyObject {
    *
    * @return the key as an array of bytes (or null if not ready)
    */
-  public byte[] getSecretKeyInBytes() {
+  public final byte[] getSecretKeyInBytes() {
 <span class="pc bpc" id="L121" title="1 of 2 branches missed.">    if (keyReady()) {</span>
 <span class="fc" id="L122">      return secretKey.getEncoded();</span>
     } else {
@@ -130,14 +130,14 @@ public abstract class KeyObject {
    *
    * @param secretKey
    */
-  public void setSecretKey(final Key secretKey) {
+  public final void setSecretKey(final Key secretKey) {
 <span class="nc" id="L134">    this.secretKey = secretKey;</span>
 <span class="nc" id="L135">  }</span>
 
   /**
    * Reconstruct a key from an array of bytes
    */
-  public void setSecretKey(final byte[] keyData) {
+  public final void setSecretKey(final byte[] keyData) {
 <span class="fc" id="L141">    secretKey = new SecretKeySpec(keyData, getAlgorithm());</span>
 <span class="fc" id="L142">  }</span>
 
@@ -149,7 +149,7 @@ public abstract class KeyObject {
    * @throws CryptoException
    * @throws IOException
    */
-  public void setSecretKey(final File file)
+  public final void setSecretKey(final File file)
       throws CryptoException, IOException {
 <span class="nc bnc" id="L154" title="All 2 branches missed.">    if (file.canRead()) {</span>
 <span class="nc" id="L155">      final int len = (int) file.length();</span>
@@ -176,7 +176,7 @@ public abstract class KeyObject {
    * @throws CryptoException
    * @throws IOException
    */
-  public void saveSecretKey(final File file)
+  public final void saveSecretKey(final File file)
       throws CryptoException, IOException {
 <span class="nc bnc" id="L181" title="All 6 branches missed.">    if (keyReady() &amp;&amp; (!file.exists() || file.canWrite())) {</span>
 <span class="nc" id="L182">      final byte[] key = getSecretKeyInBytes();</span>
@@ -197,7 +197,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public void generateKey() throws Exception {
+  public final void generateKey() throws Exception {
     try {
 <span class="fc" id="L202">      final KeyGenerator keyGen = KeyGenerator.getInstance(getAlgorithm());</span>
 <span class="fc" id="L203">      keyGen.init(getKeySize());</span>
@@ -258,7 +258,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String cryptToHex(final byte[] plaintext) throws Exception {
+  public final String cryptToHex(final byte[] plaintext) throws Exception {
 <span class="fc" id="L262">    final byte[] result = crypt(plaintext);</span>
 <span class="fc" id="L263">    return encodeHex(result);</span>
   }
@@ -272,7 +272,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] crypt(final String plaintext) throws Exception {
+  public final byte[] crypt(final String plaintext) throws Exception {
 <span class="fc" id="L276">    return crypt(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
   }
 
@@ -285,7 +285,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String cryptToHex(final String plaintext) throws Exception {
+  public final String cryptToHex(final String plaintext) throws Exception {
 <span class="fc" id="L289">    return cryptToHex(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
   }
 
@@ -339,8 +339,9 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String decryptInString(final byte[] ciphertext) throws Exception {
-<span class="fc" id="L343">    return new String(decrypt(ciphertext), WaarpStringUtils.UTF8);</span>
+  public final String decryptInString(final byte[] ciphertext)
+      throws Exception {
+<span class="fc" id="L344">    return new String(decrypt(ciphertext), WaarpStringUtils.UTF8);</span>
   }
 
   /**
@@ -354,9 +355,10 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decryptHexInBytes(final String ciphertext) throws Exception {
-<span class="fc" id="L358">    final byte[] arrayBytes = decodeHex(ciphertext);</span>
-<span class="fc" id="L359">    return decrypt(arrayBytes);</span>
+  public final byte[] decryptHexInBytes(final String ciphertext)
+      throws Exception {
+<span class="fc" id="L360">    final byte[] arrayBytes = decodeHex(ciphertext);</span>
+<span class="fc" id="L361">    return decrypt(arrayBytes);</span>
   }
 
   /**
@@ -370,10 +372,11 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decryptHexInBytes(final byte[] ciphertext) throws Exception {
-<span class="nc" id="L374">    final byte[] arrayBytes =</span>
-<span class="nc" id="L375">        decodeHex(new String(ciphertext, WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L376">    return decrypt(arrayBytes);</span>
+  public final byte[] decryptHexInBytes(final byte[] ciphertext)
+      throws Exception {
+<span class="nc" id="L377">    final byte[] arrayBytes =</span>
+<span class="nc" id="L378">        decodeHex(new String(ciphertext, WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L379">    return decrypt(arrayBytes);</span>
   }
 
   /**
@@ -386,8 +389,9 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String decryptHexInString(final String ciphertext) throws Exception {
-<span class="fc" id="L390">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
+  public final String decryptHexInString(final String ciphertext)
+      throws Exception {
+<span class="fc" id="L394">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
   }
 
   /**
@@ -400,8 +404,9 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String decryptHexInString(final byte[] ciphertext) throws Exception {
-<span class="nc" id="L404">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
+  public final String decryptHexInString(final byte[] ciphertext)
+      throws Exception {
+<span class="nc" id="L409">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
   }
 
   /**
@@ -413,26 +418,26 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decryptHexFile(final File file) throws Exception {
-<span class="nc bnc" id="L417" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
-<span class="nc" id="L418">      throw new IOException(</span>
+  public final byte[] decryptHexFile(final File file) throws Exception {
+<span class="nc bnc" id="L422" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L423">      throw new IOException(</span>
           &quot;File too big to be decoded into an array of bytes&quot;);
     }
-<span class="nc" id="L421">    byte[] byteKeys = new byte[(int) file.length()];</span>
-<span class="nc" id="L422">    FileInputStream inputStream = null;</span>
-<span class="nc" id="L423">    DataInputStream dis = null;</span>
+<span class="nc" id="L426">    byte[] byteKeys = new byte[(int) file.length()];</span>
+<span class="nc" id="L427">    FileInputStream inputStream = null;</span>
+<span class="nc" id="L428">    DataInputStream dis = null;</span>
     try {
-<span class="nc" id="L425">      inputStream = new FileInputStream(file);</span>
-<span class="nc" id="L426">      dis = new DataInputStream(inputStream);</span>
-<span class="nc" id="L427">      dis.readFully(byteKeys);</span>
-<span class="nc" id="L428">      FileUtils.close(dis);</span>
-<span class="nc" id="L429">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L430">      inputStream = new FileInputStream(file);</span>
+<span class="nc" id="L431">      dis = new DataInputStream(inputStream);</span>
+<span class="nc" id="L432">      dis.readFully(byteKeys);</span>
+<span class="nc" id="L433">      FileUtils.close(dis);</span>
+<span class="nc" id="L434">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
       // decrypt it
-<span class="nc" id="L431">      byteKeys = decryptHexInBytes(skey);</span>
-<span class="nc" id="L432">      return byteKeys;</span>
+<span class="nc" id="L436">      byteKeys = decryptHexInBytes(skey);</span>
+<span class="nc" id="L437">      return byteKeys;</span>
     } finally {
-<span class="nc" id="L434">      FileUtils.close(dis);</span>
-<span class="nc" id="L435">      FileUtils.close(inputStream);</span>
+<span class="nc" id="L439">      FileUtils.close(dis);</span>
+<span class="nc" id="L440">      FileUtils.close(inputStream);</span>
     }
   }
 
@@ -441,8 +446,8 @@ public abstract class KeyObject {
    *
    * @return the array of bytes from encoded String (HEX)
    */
-  public byte[] decodeHex(final String encoded) {
-<span class="fc" id="L445">    return FilesystemBasedDigest.getFromHex(encoded);</span>
+  public final byte[] decodeHex(final String encoded) {
+<span class="fc" id="L450">    return FilesystemBasedDigest.getFromHex(encoded);</span>
   }
 
   /**
@@ -450,8 +455,8 @@ public abstract class KeyObject {
    *
    * @return The encoded array of bytes in HEX
    */
-  public String encodeHex(final byte[] bytes) {
-<span class="fc" id="L454">    return FilesystemBasedDigest.getHex(bytes);</span>
+  public final String encodeHex(final byte[] bytes) {
+<span class="fc" id="L459">    return FilesystemBasedDigest.getHex(bytes);</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

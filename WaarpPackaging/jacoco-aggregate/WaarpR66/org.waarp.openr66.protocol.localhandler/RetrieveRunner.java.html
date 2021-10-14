@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RetrieveRunner.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler</a> &gt; <span class="el_source">RetrieveRunner.java</span></div><h1>RetrieveRunner.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler;
+
+import io.netty.channel.ChannelFuture;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.file.DataBlock;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.filesystem.R66File;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66Exception;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.localhandler.packet.EndRequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * Retrieve transfer runner
+ */
+public class RetrieveRunner extends Thread {
+  private static final String END_RETRIEVE_IN_ERROR = &quot;End Retrieve in Error&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L54">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L55">      WaarpLoggerFactory.getLogger(RetrieveRunner.class);</span>
+
+  private final R66Session session;
+
+  private final LocalChannelReference localChannelReference;
+
+  private boolean done;
+
+<span class="pc" id="L63">  protected final AtomicBoolean running = new AtomicBoolean(true);</span>
+  private final String nameThread;
+
+<span class="nc" id="L66">  protected RetrieveRunner() {</span>
+    // empty constructor
+<span class="nc" id="L68">    session = null;</span>
+<span class="nc" id="L69">    localChannelReference = null;</span>
+<span class="nc" id="L70">    nameThread = &quot;RetrieveRunner: None&quot;;</span>
+<span class="nc" id="L71">    setName(nameThread);</span>
+<span class="nc" id="L72">    setDaemon(true);</span>
+<span class="nc" id="L73">  }</span>
+
+  /**
+   * @param session
+   */
+<span class="fc" id="L78">  public RetrieveRunner(final R66Session session) {</span>
+<span class="fc" id="L79">    this.session = session;</span>
+<span class="fc" id="L80">    localChannelReference = this.session.getLocalChannelReference();</span>
+<span class="fc" id="L81">    nameThread = &quot;RetrieveRunner: &quot; + localChannelReference.getLocalId();</span>
+<span class="fc" id="L82">    setName(nameThread);</span>
+<span class="fc" id="L83">    setDaemon(true);</span>
+<span class="fc" id="L84">  }</span>
+
+  /**
+   * Try to stop the runner
+   */
+  public final void stopRunner() {
+<span class="fc" id="L90">    running.set(false);</span>
+<span class="fc" id="L91">  }</span>
+
+  @Override
+  public void run() {
+<span class="fc" id="L95">    boolean requestValidDone = false;</span>
+<span class="fc" id="L96">    setName(nameThread);</span>
+    try {
+      try {
+<span class="fc" id="L99">        if (session.getRunner().getGloballaststep() ==</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">            TASKSTEP.POSTTASK.ordinal()) {</span>
+<span class="nc" id="L101">          logger.warn(&quot;Restart from POSTTASK: EndTransfer&quot;);</span>
+          // restart from PostTask global step so just end now
+          try {
+<span class="nc" id="L104">            ChannelUtils.writeEndTransfer(localChannelReference);</span>
+<span class="nc" id="L105">          } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L106">            transferInError(e);</span>
+<span class="nc" id="L107">            logger.error(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L108">            return;</span>
+<span class="nc" id="L109">          }</span>
+        } else {
+<span class="fc" id="L111">          logger.debug(&quot;Start retrieve operation (send)&quot;);</span>
+<span class="fc" id="L112">          final R66File r66File = session.getFile();</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">          if (r66File == null) {</span>
+<span class="nc" id="L114">            logger.error(&quot;R66File null : {}&quot;, r66File);</span>
+<span class="nc" id="L115">            transferInError(</span>
+                new OpenR66RunnerErrorException(&quot;R66File not setup&quot;));
+<span class="nc" id="L117">            logger.info(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L118">            return;</span>
+          } else {
+<span class="fc" id="L120">            r66File.retrieveBlocking(running);</span>
+          }
+        }
+<span class="nc" id="L123">      } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L124">        transferInError(e);</span>
+<span class="nc" id="L125">        logger.info(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L126">        return;</span>
+<span class="nc" id="L127">      } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L128">        transferInError(e);</span>
+<span class="nc" id="L129">        logger.info(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L130">        return;</span>
+<span class="nc" id="L131">      } catch (final Exception e) {</span>
+<span class="nc" id="L132">        logger.info(&quot;TRACE for unknown Exception &quot;, e);</span>
+<span class="nc" id="L133">        transferInError(new OpenR66RunnerErrorException(e));</span>
+<span class="nc" id="L134">        logger.info(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L135">        return;</span>
+<span class="fc" id="L136">      }</span>
+<span class="fc" id="L137">      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();</span>
+<span class="fc" id="L138">      logger.debug(&quot;Await future End Transfer done: {}&quot;,</span>
+<span class="fc" id="L139">                   localChannelReference.getFutureEndTransfer().isSuccess());</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">      if (localChannelReference.getFutureEndTransfer().isDone() &amp;&amp;</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">          localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
+        // send a validation
+<span class="fc" id="L143">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
+<span class="fc" id="L144">        final EndRequestPacket validPacket =</span>
+<span class="fc" id="L145">            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        if (session.getExtendedProtocol() &amp;&amp;</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">            session.getBusinessObject() != null &amp;&amp;</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">            session.getBusinessObject().getInfo(session) != null) {</span>
+<span class="nc" id="L149">          validPacket.setOptional(session.getBusinessObject().getInfo(session));</span>
+        }
+        try {
+<span class="fc" id="L152">          ChannelUtils.writeAbstractLocalPacket(localChannelReference,</span>
+                                                validPacket, false);
+<span class="fc" id="L154">          requestValidDone = true;</span>
+<span class="nc" id="L155">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="fc" id="L157">        }</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (!localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
+<span class="fc" id="L159">            Configuration.configuration.getTimeoutCon()) ||</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">            Thread.interrupted()) {</span>
+          // valid it however
+<span class="fc" id="L162">          finalizeInternal();</span>
+        }
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        if (session.getRunner() != null &amp;&amp;</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">            session.getRunner().isRequestOnRequested()) {</span>
+<span class="nc" id="L166">          localChannelReference.close();</span>
+        }
+<span class="fc" id="L168">        done = true;</span>
+<span class="fc" id="L169">      } else {</span>
+<span class="fc" id="L170">        checkDoneNotAnswered();</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="fc" id="L172">          R66Result result =</span>
+<span class="fc" id="L173">              localChannelReference.getFutureEndTransfer().getResult();</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">          if (result == null) {</span>
+<span class="fc" id="L175">            result = new R66Result(session, false, ErrorCode.TransferError,</span>
+<span class="fc" id="L176">                                   session.getRunner());</span>
+          }
+<span class="fc" id="L178">          localChannelReference.invalidateRequest(result);</span>
+        }
+<span class="fc" id="L180">        done = true;</span>
+<span class="fc" id="L181">        logger.info(END_RETRIEVE_IN_ERROR);</span>
+      }
+    } finally {
+      try {
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        if (!done) {</span>
+<span class="nc" id="L186">          finalizeRequestDone(requestValidDone);</span>
+        }
+<span class="fc" id="L188">        NetworkTransaction.normalEndRetrieve(localChannelReference);</span>
+      } finally {
+<span class="fc" id="L190">        setName(&quot;Finished_&quot; + nameThread);</span>
+      }
+    }
+<span class="fc" id="L193">  }</span>
+
+  private void finalizeInternal() {
+<span class="fc" id="L196">    session.getRunner().setAllDone();</span>
+    try {
+<span class="fc" id="L198">      session.getRunner().saveStatus();</span>
+<span class="nc" id="L199">    } catch (final OpenR66RunnerErrorException e) {</span>
+      // ignore
+<span class="fc" id="L201">    }</span>
+<span class="fc" id="L202">    localChannelReference.validateRequest(</span>
+<span class="fc" id="L203">        localChannelReference.getFutureEndTransfer().getResult());</span>
+<span class="fc" id="L204">  }</span>
+
+  private boolean checkDoneNotAnswered() {
+<span class="fc bfc" id="L207" title="All 2 branches covered.">    if (localChannelReference.getFutureEndTransfer().isDone()) {</span>
+      // Done and Not Success =&gt; error
+<span class="fc" id="L209">      if (!localChannelReference.getFutureEndTransfer().getResult()</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">                                .isAnswered()) {</span>
+<span class="nc" id="L211">        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L212">        final ErrorPacket error =</span>
+<span class="nc" id="L213">            new ErrorPacket(localChannelReference.getErrorMessage(),</span>
+<span class="nc" id="L214">                            localChannelReference.getFutureEndTransfer()</span>
+<span class="nc" id="L215">                                                 .getResult().getCode()</span>
+<span class="nc" id="L216">                                                 .getCode(),</span>
+                            ErrorPacket.FORWARDCLOSECODE);
+        try {
+<span class="nc" id="L219">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                                false);
+<span class="nc" id="L221">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // ignore
+<span class="nc" id="L223">        }</span>
+      }
+<span class="fc" id="L225">      return true;</span>
+    }
+<span class="fc" id="L227">    return false;</span>
+  }
+
+  private void finalizeRequestDone(final boolean requestValidDone) {
+<span class="nc bnc" id="L231" title="All 2 branches missed.">    if (localChannelReference.getFutureEndTransfer().isDone() &amp;&amp;</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (!requestValidDone) {</span>
+<span class="nc" id="L234">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
+<span class="nc" id="L235">        final EndRequestPacket validPacket =</span>
+<span class="nc" id="L236">            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (session.getExtendedProtocol() &amp;&amp;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            session.getBusinessObject() != null &amp;&amp;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">            session.getBusinessObject().getInfo(session) != null) {</span>
+<span class="nc" id="L240">          validPacket.setOptional(session.getBusinessObject().getInfo(session));</span>
+        }
+        try {
+<span class="nc" id="L243">          ChannelUtils.writeAbstractLocalPacket(localChannelReference,</span>
+                                                validPacket, false);
+<span class="nc" id="L245">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L247">        }</span>
+      }
+<span class="nc" id="L249">      finalizeInternal();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">      if (session.getRunner() != null &amp;&amp;</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">          session.getRunner().isRequestOnRequested()) {</span>
+<span class="nc" id="L252">        localChannelReference.close();</span>
+      }
+    } else {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">      if (!checkDoneNotAnswered()) {</span>
+<span class="nc" id="L256">        R66Result result =</span>
+<span class="nc" id="L257">            localChannelReference.getFutureEndTransfer().getResult();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if (result == null) {</span>
+<span class="nc" id="L259">          result = new R66Result(session, false, ErrorCode.TransferError,</span>
+<span class="nc" id="L260">                                 session.getRunner());</span>
+        }
+<span class="nc" id="L262">        localChannelReference.invalidateRequest(result);</span>
+      }
+    }
+<span class="nc" id="L265">  }</span>
+
+  private void transferInError(final OpenR66Exception e) {
+<span class="nc" id="L268">    final R66Result result =</span>
+        new R66Result(e, session, true, ErrorCode.TransferError,
+<span class="nc" id="L270">                      session.getRunner());</span>
+<span class="nc" id="L271">    logger.error(&quot;Transfer in error&quot;, e);</span>
+<span class="nc" id="L272">    session.newState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L273">    final ErrorPacket error =</span>
+<span class="nc" id="L274">        new ErrorPacket(&quot;Transfer in error&quot;, ErrorCode.TransferError.getCode(),</span>
+                        ErrorPacket.FORWARDCLOSECODE);
+    try {
+<span class="nc" id="L277">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,</span>
+                                            false);
+<span class="nc" id="L279">    } catch (final OpenR66ProtocolPacketException ignored) {</span>
+      // ignore
+<span class="nc" id="L281">    }</span>
+<span class="nc" id="L282">    localChannelReference.invalidateRequest(result);</span>
+<span class="nc" id="L283">    localChannelReference.close();</span>
+<span class="nc" id="L284">    done = true;</span>
+<span class="nc" id="L285">  }</span>
+
+  /**
+   * Write the next block when the channel is ready to prevent OOM
+   *
+   * @param block
+   * @param localChannelReference
+   * @param digestGlobal
+   * @param digestBlock
+   *
+   * @return the ChannelFuture on the write operation
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static ChannelFuture writeWhenPossible(final DataBlock block,
+                                                final LocalChannelReference localChannelReference,
+                                                final FilesystemBasedDigest digestGlobal,
+                                                final FilesystemBasedDigest digestBlock)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L304">    return ChannelUtils.writeBackDataBlock(localChannelReference, digestGlobal,</span>
+                                           block, digestBlock);
+  }
+
+  public final int getLocalId() {
+<span class="nc" id="L309">    return localChannelReference.getLocalId();</span>
+  }
+
+
+  /**
+   * When submit RetrieveRunner cannot be done since Executor is already stopped
+   */
+  public final void notStartRunner() {
+<span class="nc" id="L317">    transferInError(</span>
+        new OpenR66RunnerErrorException(&quot;Cannot Start Runner: &quot; + session));
+<span class="nc" id="L319">    stopRunner();</span>
+<span class="nc" id="L320">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

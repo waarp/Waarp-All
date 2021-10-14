@@ -225,17 +225,17 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 <span class="fc" id="L225">  }</span>
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
+  public final void setAgent(final WaarpSnmpAgent agent) {
 <span class="fc" id="L229">    this.agent = agent;</span>
 <span class="fc" id="L230">  }</span>
 
   @Override
-  public OID getBaseOidStartOrShutdown() {
+  public final OID getBaseOidStartOrShutdown() {
 <span class="fc" id="L234">    return rootOIDWaarpNotifStartOrShutdown;</span>
   }
 
   @Override
-  public SNMPv2MIB getSNMPv2MIB() {
+  public final SNMPv2MIB getSNMPv2MIB() {
 <span class="fc" id="L239">    return snmpv2;</span>
   }
 
@@ -245,71 +245,72 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    *
    * @throws DuplicateRegistrationException
    */
-  protected void agentRegisterSystem() throws DuplicateRegistrationException {
+  protected final void agentRegisterSystem()
+      throws DuplicateRegistrationException {
     // Since BaseAgent registers some mibs by default we need to unregister
     // one before we register our own sysDescr. Normally you would
     // override that method and register the mibs that you need
 
-<span class="fc" id="L253">    agent.unregisterManagedObject(agent.getSnmpv2MIB());</span>
+<span class="fc" id="L254">    agent.unregisterManagedObject(agent.getSnmpv2MIB());</span>
 
     // Register a system description, use one from you product environment
     // to test with
-<span class="fc" id="L257">    snmpv2 = new SNMPv2MIB(new OctetString(textualSysDecr), ggObjectId,</span>
+<span class="fc" id="L258">    snmpv2 = new SNMPv2MIB(new OctetString(textualSysDecr), ggObjectId,</span>
                            new Integer32(service));
-<span class="fc" id="L259">    snmpv2.setContact(new OctetString(contactName));</span>
-<span class="fc" id="L260">    snmpv2.setLocation(new OctetString(address));</span>
-<span class="fc" id="L261">    snmpv2.setName(new OctetString(textualName));</span>
-<span class="fc" id="L262">    snmpv2.registerMOs(agent.getServer(), null);</span>
-<span class="pc bpc" id="L263" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L264">      logger.debug(&quot;SNMPV2: {}:{}:{}:{}:{}:{}:{}&quot;, snmpv2.getContact(),</span>
-<span class="nc" id="L265">                   snmpv2.getDescr(), snmpv2.getLocation(), snmpv2.getName(),</span>
-<span class="nc" id="L266">                   snmpv2.getObjectID(), snmpv2.getServices(),</span>
-<span class="nc" id="L267">                   snmpv2.getUpTime());</span>
+<span class="fc" id="L260">    snmpv2.setContact(new OctetString(contactName));</span>
+<span class="fc" id="L261">    snmpv2.setLocation(new OctetString(address));</span>
+<span class="fc" id="L262">    snmpv2.setName(new OctetString(textualName));</span>
+<span class="fc" id="L263">    snmpv2.registerMOs(agent.getServer(), null);</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L265">      logger.debug(&quot;SNMPV2: {}:{}:{}:{}:{}:{}:{}&quot;, snmpv2.getContact(),</span>
+<span class="nc" id="L266">                   snmpv2.getDescr(), snmpv2.getLocation(), snmpv2.getName(),</span>
+<span class="nc" id="L267">                   snmpv2.getObjectID(), snmpv2.getServices(),</span>
+<span class="nc" id="L268">                   snmpv2.getUpTime());</span>
     }
     // Save UpTime reference since used everywhere
-<span class="fc" id="L270">    upTime = snmpv2.getSysUpTime();</span>
-<span class="fc" id="L271">  }</span>
+<span class="fc" id="L271">    upTime = snmpv2.getSysUpTime();</span>
+<span class="fc" id="L272">  }</span>
 
   /**
    * Register this MIB
    *
    * @throws DuplicateRegistrationException
    */
-  protected void defaultAgentRegisterWaarpMib()
+  protected final void defaultAgentRegisterWaarpMib()
       throws DuplicateRegistrationException {
     // register Static info
-<span class="fc" id="L281">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
-<span class="fc" id="L282">                             MibLevel.staticInfo.ordinal());</span>
-<span class="fc" id="L283">    rowInfo.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L282">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
+<span class="fc" id="L283">                             MibLevel.staticInfo.ordinal());</span>
+<span class="fc" id="L284">    rowInfo.registerMOs(agent.getServer(), null);</span>
     // register General info
-<span class="fc" id="L285">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
-<span class="fc" id="L286">                               MibLevel.globalInfo.ordinal());</span>
-<span class="fc" id="L287">    WaarpMOScalar memoryScalar =</span>
-<span class="fc" id="L288">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
-<span class="fc" id="L289">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
-<span class="fc" id="L290">    memoryScalar =</span>
-<span class="fc" id="L291">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
-<span class="fc" id="L292">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
-<span class="fc" id="L293">    memoryScalar =</span>
-<span class="fc" id="L294">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
-<span class="fc" id="L295">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
-<span class="fc" id="L296">    rowGlobal.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L286">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
+<span class="fc" id="L287">                               MibLevel.globalInfo.ordinal());</span>
+<span class="fc" id="L288">    WaarpMOScalar memoryScalar =</span>
+<span class="fc" id="L289">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
+<span class="fc" id="L290">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
+<span class="fc" id="L291">    memoryScalar =</span>
+<span class="fc" id="L292">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
+<span class="fc" id="L293">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
+<span class="fc" id="L294">    memoryScalar =</span>
+<span class="fc" id="L295">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
+<span class="fc" id="L296">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
+<span class="fc" id="L297">    rowGlobal.registerMOs(agent.getServer(), null);</span>
     // setup UpTime to SysUpTime and change status
-<span class="fc" id="L298">    scalarUptime =</span>
-<span class="fc" id="L299">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
-<span class="fc" id="L300">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
-<span class="fc" id="L301">    changeStatus(OperStatus.restarting);</span>
-<span class="fc" id="L302">    changeStatus(OperStatus.up);</span>
+<span class="fc" id="L299">    scalarUptime =</span>
+<span class="fc" id="L300">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
+<span class="fc" id="L301">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
+<span class="fc" id="L302">    changeStatus(OperStatus.restarting);</span>
+<span class="fc" id="L303">    changeStatus(OperStatus.up);</span>
     // register Detailed info
-<span class="fc" id="L304">    rowDetailed =</span>
+<span class="fc" id="L305">    rowDetailed =</span>
         new WaarpMORow(this, rootOIDWaarpDetailed, WaarpDetailedValues,
-<span class="fc" id="L306">                       MibLevel.detailedInfo.ordinal());</span>
-<span class="fc" id="L307">    rowDetailed.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L307">                       MibLevel.detailedInfo.ordinal());</span>
+<span class="fc" id="L308">    rowDetailed.registerMOs(agent.getServer(), null);</span>
     // register Error info
-<span class="fc" id="L309">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
-<span class="fc" id="L310">                              MibLevel.errorInfo.ordinal());</span>
-<span class="fc" id="L311">    rowError.registerMOs(agent.getServer(), null);</span>
-<span class="fc" id="L312">  }</span>
+<span class="fc" id="L310">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
+<span class="fc" id="L311">                              MibLevel.errorInfo.ordinal());</span>
+<span class="fc" id="L312">    rowError.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L313">  }</span>
 
   /**
    * Register this MIB
@@ -322,49 +323,51 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Unregister this MIB
    */
-  protected void agentUnregisterMibs() {
-<span class="nc" id="L326">    logger.debug(&quot;UnRegisterWaarp&quot;);</span>
-<span class="nc" id="L327">    rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L328">    rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L329">    rowDetailed.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L330">    rowError.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L331">  }</span>
+  protected final void agentUnregisterMibs() {
+<span class="nc" id="L327">    logger.debug(&quot;UnRegisterWaarp&quot;);</span>
+<span class="nc" id="L328">    rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L329">    rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L330">    rowDetailed.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L331">    rowError.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L332">  }</span>
 
   @Override
-  public void registerMOs(final MOServer server, final OctetString context)
+  public final void registerMOs(final MOServer server,
+                                final OctetString context)
       throws DuplicateRegistrationException {
-<span class="fc" id="L336">    agentRegisterSystem();</span>
-<span class="fc" id="L337">    agentRegisterWaarpMib();</span>
-<span class="fc" id="L338">  }</span>
+<span class="fc" id="L338">    agentRegisterSystem();</span>
+<span class="fc" id="L339">    agentRegisterWaarpMib();</span>
+<span class="fc" id="L340">  }</span>
 
   @Override
-  public void unregisterMOs(final MOServer server, final OctetString context) {
-<span class="nc" id="L342">    agentUnregisterMibs();</span>
-<span class="nc" id="L343">  }</span>
+  public final void unregisterMOs(final MOServer server,
+                                  final OctetString context) {
+<span class="nc" id="L345">    agentUnregisterMibs();</span>
+<span class="nc" id="L346">  }</span>
 
   /**
    * Change the status and the LastChange Timeticks
    *
    * @param status
    */
-  public void changeStatus(final OperStatus status) {
-<span class="fc" id="L351">    final WaarpMOScalar statusScalar =</span>
-<span class="fc" id="L352">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];</span>
-<span class="fc" id="L353">    final Integer32 var = (Integer32) statusScalar.getValue();</span>
-<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (var.getValue() != status.status) {</span>
-<span class="fc" id="L355">      var.setValue(status.status);</span>
-<span class="fc" id="L356">      final WaarpMOScalar lastTimeScalar =</span>
-<span class="fc" id="L357">          rowGlobal.getRow()[WaarpGlobalValuesIndex.applLastChange.ordinal()];</span>
-<span class="fc" id="L358">      final TimeTicks time = (TimeTicks) lastTimeScalar.getValue();</span>
-<span class="fc" id="L359">      time.setValue(upTime.get().getValue());</span>
+  public final void changeStatus(final OperStatus status) {
+<span class="fc" id="L354">    final WaarpMOScalar statusScalar =</span>
+<span class="fc" id="L355">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];</span>
+<span class="fc" id="L356">    final Integer32 var = (Integer32) statusScalar.getValue();</span>
+<span class="pc bpc" id="L357" title="1 of 2 branches missed.">    if (var.getValue() != status.status) {</span>
+<span class="fc" id="L358">      var.setValue(status.status);</span>
+<span class="fc" id="L359">      final WaarpMOScalar lastTimeScalar =</span>
+<span class="fc" id="L360">          rowGlobal.getRow()[WaarpGlobalValuesIndex.applLastChange.ordinal()];</span>
+<span class="fc" id="L361">      final TimeTicks time = (TimeTicks) lastTimeScalar.getValue();</span>
+<span class="fc" id="L362">      time.setValue(upTime.get().getValue());</span>
     }
-<span class="fc" id="L361">  }</span>
+<span class="fc" id="L364">  }</span>
 
   /**
    * MIB entry levels
    */
-<span class="fc" id="L366">  public enum MibLevel {</span>
-<span class="fc" id="L367">    staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo</span>
+<span class="fc" id="L369">  public enum MibLevel {</span>
+<span class="fc" id="L370">    staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo</span>
   }
 
   // From now the MIB definition
@@ -372,55 +375,55 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Notification Elements
    */
-<span class="fc" id="L375">  public enum NotificationElements {</span>
-<span class="fc" id="L376">    TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),</span>
-<span class="fc" id="L377">    InfoTask(5);</span>
+<span class="fc" id="L378">  public enum NotificationElements {</span>
+<span class="fc" id="L379">    TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),</span>
+<span class="fc" id="L380">    InfoTask(5);</span>
 
     public final int[] oid;
 
-<span class="fc" id="L381">    NotificationElements(final int oid) {</span>
-<span class="fc" id="L382">      this.oid = new int[] { oid };</span>
-<span class="fc" id="L383">    }</span>
+<span class="fc" id="L384">    NotificationElements(final int oid) {</span>
+<span class="fc" id="L385">      this.oid = new int[] { oid };</span>
+<span class="fc" id="L386">    }</span>
 
-    public OID getOID(final OID oidBase) {
-<span class="fc" id="L386">      return new OID(oidBase.getValue(), oid);</span>
+    public final OID getOID(final OID oidBase) {
+<span class="fc" id="L389">      return new OID(oidBase.getValue(), oid);</span>
     }
 
-    public OID getOID(final OID oidBase, final int rank) {
-<span class="fc" id="L390">      final int[] ids = { oid[0], rank };</span>
-<span class="fc" id="L391">      return new OID(oidBase.getValue(), ids);</span>
+    public final OID getOID(final OID oidBase, final int rank) {
+<span class="fc" id="L393">      final int[] ids = { oid[0], rank };</span>
+<span class="fc" id="L394">      return new OID(oidBase.getValue(), ids);</span>
     }
   }
 
   /**
    * Notification for a task trap
    */
-<span class="fc" id="L398">  public enum NotificationTasks {</span>
-<span class="fc" id="L399">    globalStepInfo, stepInfo, rankFileInfo, stepStatusInfo, filenameInfo,</span>
-<span class="fc" id="L400">    originalNameInfo, idRuleInfo, modeTransInfo, retrieveModeInfo,</span>
-<span class="fc" id="L401">    startTransInfo, infoStatusInfo, requesterInfo, requestedInfo, specialIdInfo;</span>
+<span class="fc" id="L401">  public enum NotificationTasks {</span>
+<span class="fc" id="L402">    globalStepInfo, stepInfo, rankFileInfo, stepStatusInfo, filenameInfo,</span>
+<span class="fc" id="L403">    originalNameInfo, idRuleInfo, modeTransInfo, retrieveModeInfo,</span>
+<span class="fc" id="L404">    startTransInfo, infoStatusInfo, requesterInfo, requestedInfo, specialIdInfo;</span>
 
-    public int getOID() {
-<span class="fc" id="L404">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="fc" id="L407">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Definition part
    */
-<span class="nc" id="L411">  public enum WaarpDefinitionIndex {</span>
-<span class="nc" id="L412">    applName, applServerName, applVersion, applDescription, applURL,</span>
-<span class="nc" id="L413">    applApplicationProtocol;</span>
+<span class="nc" id="L414">  public enum WaarpDefinitionIndex {</span>
+<span class="nc" id="L415">    applName, applServerName, applVersion, applDescription, applURL,</span>
+<span class="nc" id="L416">    applApplicationProtocol;</span>
 
-    public int getOID() {
-<span class="nc" id="L416">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L419">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Definition part
    */
-<span class="fc" id="L423">  public static final WaarpEntry[] WaarpDefinition = {</span>
+<span class="fc" id="L426">  public static final WaarpEntry[] WaarpDefinition = {</span>
       // applName
       new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -444,26 +447,26 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Global part
    */
-<span class="fc" id="L447">  public enum WaarpGlobalValuesIndex {</span>
-<span class="fc" id="L448">    applUptime, applOperStatus, applLastChange, applInboundAssociations,</span>
-<span class="fc" id="L449">    applOutboundAssociations, applAccumInboundAssociations,</span>
-<span class="fc" id="L450">    applAccumOutboundAssociations, applLastInboundActivity,</span>
-<span class="fc" id="L451">    applLastOutboundActivity, applRejectedInboundAssociations,</span>
-<span class="fc" id="L452">    applFailedOutboundAssociations, applInboundBandwidthKBS,</span>
-<span class="fc" id="L453">    applOutboundBandwidthKBS, nbInfoUnknown, nbInfoNotUpdated,</span>
-<span class="fc" id="L454">    nbInfoInterrupted, nbInfoToSubmit, nbInfoError, nbInfoRunning, nbInfoDone,</span>
-<span class="fc" id="L455">    nbStepAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,</span>
-<span class="fc" id="L456">    nbNetworkConnection;</span>
+<span class="fc" id="L450">  public enum WaarpGlobalValuesIndex {</span>
+<span class="fc" id="L451">    applUptime, applOperStatus, applLastChange, applInboundAssociations,</span>
+<span class="fc" id="L452">    applOutboundAssociations, applAccumInboundAssociations,</span>
+<span class="fc" id="L453">    applAccumOutboundAssociations, applLastInboundActivity,</span>
+<span class="fc" id="L454">    applLastOutboundActivity, applRejectedInboundAssociations,</span>
+<span class="fc" id="L455">    applFailedOutboundAssociations, applInboundBandwidthKBS,</span>
+<span class="fc" id="L456">    applOutboundBandwidthKBS, nbInfoUnknown, nbInfoNotUpdated,</span>
+<span class="fc" id="L457">    nbInfoInterrupted, nbInfoToSubmit, nbInfoError, nbInfoRunning, nbInfoDone,</span>
+<span class="fc" id="L458">    nbStepAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,</span>
+<span class="fc" id="L459">    nbNetworkConnection;</span>
 
-    public int getOID() {
-<span class="fc" id="L459">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="fc" id="L462">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Global part
    */
-<span class="fc" id="L466">  public static final WaarpEntry[] WaarpGlobalValues = {</span>
+<span class="fc" id="L469">  public static final WaarpEntry[] WaarpGlobalValues = {</span>
       // applUptime
       new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -549,21 +552,21 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Detailed part
    */
-<span class="nc" id="L552">  public enum WaarpDetailedValuesIndex {</span>
-<span class="nc" id="L553">    nbStepNotask, nbStepPretask, nbStepTransfer, nbStepPosttask, nbStepAllDone,</span>
-<span class="nc" id="L554">    nbStepError, nbAllRunningStep, nbRunningStep, nbInitOkStep,</span>
-<span class="nc" id="L555">    nbPreProcessingOkStep, nbTransferOkStep, nbPostProcessingOkStep,</span>
-<span class="nc" id="L556">    nbCompleteOkStep;</span>
+<span class="nc" id="L555">  public enum WaarpDetailedValuesIndex {</span>
+<span class="nc" id="L556">    nbStepNotask, nbStepPretask, nbStepTransfer, nbStepPosttask, nbStepAllDone,</span>
+<span class="nc" id="L557">    nbStepError, nbAllRunningStep, nbRunningStep, nbInitOkStep,</span>
+<span class="nc" id="L558">    nbPreProcessingOkStep, nbTransferOkStep, nbPostProcessingOkStep,</span>
+<span class="nc" id="L559">    nbCompleteOkStep;</span>
 
-    public int getOID() {
-<span class="nc" id="L559">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L562">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Detailed part
    */
-<span class="fc" id="L566">  public static final WaarpEntry[] WaarpDetailedValues = {</span>
+<span class="fc" id="L569">  public static final WaarpEntry[] WaarpDetailedValues = {</span>
       // nbStepNotask
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -608,26 +611,26 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Error part
    */
-<span class="nc" id="L611">  public enum WaarpErrorValuesIndex {</span>
-<span class="nc" id="L612">    nbStatusConnectionImpossible, nbStatusServerOverloaded, nbStatusBadAuthent,</span>
-<span class="nc" id="L613">    nbStatusExternalOp, nbStatusTransferError, nbStatusMD5Error,</span>
-<span class="nc" id="L614">    nbStatusDisconnection, nbStatusFinalOp, nbStatusUnimplemented,</span>
-<span class="nc" id="L615">    nbStatusInternal, nbStatusWarning, nbStatusQueryAlreadyFinished,</span>
-<span class="nc" id="L616">    nbStatusQueryStillRunning, nbStatusNotKnownHost,</span>
-<span class="nc" id="L617">    nbStatusQueryRemotelyUnknown, nbStatusCommandNotFound,</span>
-<span class="nc" id="L618">    nbStatusPassThroughMode, nbStatusRemoteShutdown, nbStatusShutdown,</span>
-<span class="nc" id="L619">    nbStatusRemoteError, nbStatusStopped, nbStatusCanceled,</span>
-<span class="nc" id="L620">    nbStatusFileNotFound, nbStatusUnknown;</span>
+<span class="nc" id="L614">  public enum WaarpErrorValuesIndex {</span>
+<span class="nc" id="L615">    nbStatusConnectionImpossible, nbStatusServerOverloaded, nbStatusBadAuthent,</span>
+<span class="nc" id="L616">    nbStatusExternalOp, nbStatusTransferError, nbStatusMD5Error,</span>
+<span class="nc" id="L617">    nbStatusDisconnection, nbStatusFinalOp, nbStatusUnimplemented,</span>
+<span class="nc" id="L618">    nbStatusInternal, nbStatusWarning, nbStatusQueryAlreadyFinished,</span>
+<span class="nc" id="L619">    nbStatusQueryStillRunning, nbStatusNotKnownHost,</span>
+<span class="nc" id="L620">    nbStatusQueryRemotelyUnknown, nbStatusCommandNotFound,</span>
+<span class="nc" id="L621">    nbStatusPassThroughMode, nbStatusRemoteShutdown, nbStatusShutdown,</span>
+<span class="nc" id="L622">    nbStatusRemoteError, nbStatusStopped, nbStatusCanceled,</span>
+<span class="nc" id="L623">    nbStatusFileNotFound, nbStatusUnknown;</span>
 
-    public int getOID() {
-<span class="nc" id="L623">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L626">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Error part
    */
-<span class="fc" id="L630">  public static final WaarpEntry[] WaarpErrorValues = {</span>
+<span class="fc" id="L633">  public static final WaarpEntry[] WaarpErrorValues = {</span>
       // Error Status on all transfers
       // nbStatusConnectionImpossible
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
@@ -705,14 +708,14 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Oper Status (as defined in Net Application SNMP)
    */
-<span class="fc" id="L708">  public enum OperStatus {</span>
-<span class="fc" id="L709">    up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);</span>
+<span class="fc" id="L711">  public enum OperStatus {</span>
+<span class="fc" id="L712">    up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);</span>
 
     public final int status;
 
-<span class="fc" id="L713">    OperStatus(final int status) {</span>
-<span class="fc" id="L714">      this.status = status;</span>
-<span class="fc" id="L715">    }</span>
+<span class="fc" id="L716">    OperStatus(final int status) {</span>
+<span class="fc" id="L717">      this.status = status;</span>
+<span class="fc" id="L718">    }</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -48,86 +48,86 @@ import java.util.regex.Pattern;
  * -digest ADLER32|CRC32|MD2|MD5|SHA1|SHA256|SHA384|SHA512 [-format
  * (-/+)##DIGEST##]&lt;/path&gt;&lt;/task&gt;
  */
-<span class="nc" id="L51">public class AddDigestJavaTask extends AbstractExecJavaTask {</span>
+<span class="fc" id="L51">public class AddDigestJavaTask extends AbstractExecJavaTask {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L55">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L56">      WaarpLoggerFactory.getLogger(AddDigestJavaTask.class);</span>
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(AddDigestJavaTask.class);</span>
 
   private static final String S_DIGEST = &quot;#DIGEST#&quot;;
-<span class="nc" id="L59">  private static final Pattern DIGEST_PATTERN =</span>
-<span class="nc" id="L60">      Pattern.compile(S_DIGEST, Pattern.LITERAL);</span>
+<span class="fc" id="L59">  private static final Pattern DIGEST_PATTERN =</span>
+<span class="fc" id="L60">      Pattern.compile(S_DIGEST, Pattern.LITERAL);</span>
 
   @Override
   public final void run() {
-<span class="nc" id="L64">    logger.debug(&quot;{}&quot;, this);</span>
-<span class="nc" id="L65">    final String[] args = BLANK.split(fullarg);</span>
+<span class="fc" id="L64">    logger.debug(&quot;{}&quot;, this);</span>
+<span class="fc" id="L65">    final String[] args = BLANK.split(fullarg);</span>
     final String fileInfo;
-<span class="nc" id="L67">    String format = &quot;-##DIGEST##&quot;;</span>
-<span class="nc" id="L68">    String algo = &quot;MD5&quot;;</span>
-<span class="nc" id="L69">    int way = -1;</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (&quot;-format&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L72">        format = args[i + 1];</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (format.charAt(0) == '-') {</span>
-<span class="nc" id="L74">          way = -1;</span>
-<span class="nc" id="L75">          format = format.substring(1);</span>
+<span class="fc" id="L67">    String format = &quot;-##DIGEST##&quot;;</span>
+<span class="fc" id="L68">    String algo = &quot;MD5&quot;;</span>
+<span class="fc" id="L69">    int way = -1;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">      if (&quot;-format&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L72">        format = args[i + 1];</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (format.charAt(0) == '-') {</span>
+<span class="fc" id="L74">          way = -1;</span>
+<span class="fc" id="L75">          format = format.substring(1);</span>
 <span class="nc bnc" id="L76" title="All 2 branches missed.">        } else if (format.charAt(0) == '+') {</span>
 <span class="nc" id="L77">          way = 1;</span>
 <span class="nc" id="L78">          format = format.substring(1);</span>
         }
-<span class="nc" id="L80">        i++;</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">      } else if (&quot;-digest&quot;.equals(args[i])) {</span>
-<span class="nc" id="L82">        algo = args[i + 1].toUpperCase();</span>
-<span class="nc" id="L83">        i++;</span>
+<span class="fc" id="L80">        i++;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">      } else if (&quot;-digest&quot;.equals(args[i])) {</span>
+<span class="fc" id="L82">        algo = args[i + 1].toUpperCase();</span>
+<span class="fc" id="L83">        i++;</span>
       }
     }
     final DigestAlgo digest;
     try {
-<span class="nc" id="L88">      digest = DigestAlgo.valueOf(algo);</span>
+<span class="fc" id="L88">      digest = DigestAlgo.valueOf(algo);</span>
 <span class="nc" id="L89">    } catch (final Exception e) {</span>
 <span class="nc" id="L90">      logger.error(&quot;Bad algorithm format: &quot; + algo);</span>
 <span class="nc" id="L91">      status = 3;</span>
 <span class="nc" id="L92">      return;</span>
-<span class="nc" id="L93">    }</span>
+<span class="fc" id="L93">    }</span>
     final String key;
     try {
-<span class="nc" id="L96">      key = FilesystemBasedDigest.getHex(</span>
-<span class="nc" id="L97">          FilesystemBasedDigest.getHash(session.getFile().getTrueFile(), true,</span>
+<span class="fc" id="L96">      key = FilesystemBasedDigest.getHex(</span>
+<span class="fc" id="L97">          FilesystemBasedDigest.getHash(session.getFile().getTrueFile(), true,</span>
                                         digest));
 <span class="nc" id="L99">    } catch (final IOException e1) {</span>
 <span class="nc" id="L100">      logger.error(&quot;Digest not correctly computed: &quot; + algo + &quot;: {}&quot;,</span>
 <span class="nc" id="L101">                   e1.getMessage());</span>
 <span class="nc" id="L102">      status = 4;</span>
 <span class="nc" id="L103">      return;</span>
-<span class="nc" id="L104">    }</span>
-<span class="nc" id="L105">    logger.debug(&quot;Replace Digest in {} way: {} digest: {} key: {}&quot;, format, way,</span>
+<span class="fc" id="L104">    }</span>
+<span class="fc" id="L105">    logger.debug(&quot;Replace Digest in {} way: {} digest: {} key: {}&quot;, format, way,</span>
                  algo, key);
-<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (format.isEmpty()) {</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">    if (format.isEmpty()) {</span>
 <span class="nc" id="L108">      fileInfo = session.getRunner().getFileInformation();</span>
     } else {
-<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (way &lt; 0) {</span>
-<span class="nc" id="L111">        fileInfo = DIGEST_PATTERN.matcher(format)</span>
-<span class="nc" id="L112">                                 .replaceAll(Matcher.quoteReplacement(key)) +</span>
-<span class="nc" id="L113">                   ' ' + session.getRunner().getFileInformation();</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">      if (way &lt; 0) {</span>
+<span class="fc" id="L111">        fileInfo = DIGEST_PATTERN.matcher(format)</span>
+<span class="fc" id="L112">                                 .replaceAll(Matcher.quoteReplacement(key)) +</span>
+<span class="fc" id="L113">                   ' ' + session.getRunner().getFileInformation();</span>
       } else {
 <span class="nc" id="L115">        fileInfo = session.getRunner().getFileInformation() + ' ' +</span>
 <span class="nc" id="L116">                   DIGEST_PATTERN.matcher(format)</span>
 <span class="nc" id="L117">                                 .replaceAll(Matcher.quoteReplacement(key));</span>
       }
     }
-<span class="nc" id="L120">    session.getRunner().setFileInformation(fileInfo);</span>
-<span class="nc" id="L121">    session.getRunner().addToTransferMap(&quot;digest&quot;, key);</span>
+<span class="fc" id="L120">    session.getRunner().setFileInformation(fileInfo);</span>
+<span class="fc" id="L121">    session.getRunner().addToTransferMap(&quot;digest&quot;, key);</span>
     try {
-<span class="nc" id="L123">      session.getRunner().update();</span>
+<span class="fc" id="L123">      session.getRunner().update();</span>
 <span class="nc" id="L124">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L125">      logger.error(&quot;Digest cannot be saved to fileInformation:&quot; + fileInfo);</span>
 <span class="nc" id="L126">      status = 2;</span>
 <span class="nc" id="L127">      return;</span>
-<span class="nc" id="L128">    }</span>
-<span class="nc" id="L129">    logger.debug(&quot;Digest saved to fileInformation: {}&quot;, fileInfo);</span>
-<span class="nc" id="L130">    status = 0;</span>
-<span class="nc" id="L131">  }</span>
+<span class="fc" id="L128">    }</span>
+<span class="fc" id="L129">    logger.debug(&quot;Digest saved to fileInformation: {}&quot;, fileInfo);</span>
+<span class="fc" id="L130">    status = 0;</span>
+<span class="fc" id="L131">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

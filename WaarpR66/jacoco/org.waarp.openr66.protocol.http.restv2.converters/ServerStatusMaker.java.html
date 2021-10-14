@@ -20,10 +20,10 @@
 
 package org.waarp.openr66.protocol.http.restv2.converters;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
 
 import static org.waarp.openr66.protocol.configuration.Configuration.*;
@@ -37,7 +37,7 @@ public final class ServerStatusMaker {
   /**
    * Date of the last time the server status was requested.
    */
-  private static volatile DateTime lastRun;
+  private static DateTime lastRun;
 
   /**
    * Makes the default constructor of this utility class inaccessible.
@@ -63,7 +63,7 @@ public final class ServerStatusMaker {
 <span class="fc" id="L63">    final int seconds = period.toStandardSeconds().getSeconds();</span>
 <span class="fc" id="L64">    final Monitoring mon = configuration.getMonitoring();</span>
 <span class="fc" id="L65">    mon.run(seconds, true);</span>
-<span class="fc" id="L66">    final ObjectNode server = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="fc" id="L66">    final ObjectNode server = JsonHandler.createObjectNode();</span>
 
 <span class="fc" id="L68">    server.put(&quot;serverName&quot;, serverName());</span>
 <span class="fc" id="L69">    server.put(&quot;date&quot;, DateTime.now().toString());</span>
@@ -143,4 +143,4 @@ public final class ServerStatusMaker {
 <span class="fc" id="L143">    return server;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

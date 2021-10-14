@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestVersionHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.resthandlers</a> &gt; <span class="el_source">RestVersionHandler.java</span></div><h1>RestVersionHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.resthandlers;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.FullHttpRequest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * Handles the dispatching of incoming request between version 1 and 2 of the
+ * REST API. By default, the
+ * pipeline continues with the v2 handler, but if the request URI does not match
+ * the pattern of a v2 entry
+ * point, then the pipeline will switch to the v1 handler.
+ */
+public class RestVersionHandler
+    extends SimpleChannelInboundHandler&lt;FullHttpRequest&gt; {
+
+  /**
+   * Logger for all unexpected execution events.
+   */
+<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(RestVersionHandler.class);</span>
+
+  /**
+   * Name of this handler in the Netty pipeline.
+   */
+  public static final String HANDLER_NAME = &quot;version_handler&quot;;
+
+  /**
+   * Name of the RESTv1 handler in the Netty pipeline.
+   */
+  private static final String V1_HANDLER = &quot;v1_handler&quot;;
+
+  /**
+   * The RESTv1 handler.
+   */
+  private final HttpRestR66Handler restV1Handler;
+
+  /**
+   * Initializes the REST version splitter and handler with the given {@link
+   * RestConfiguration}
+   *
+   * @param restConfiguration the RestConfiguration object
+   */
+  public RestVersionHandler(final RestConfiguration restConfiguration) {
+<span class="fc" id="L71">    super(false);</span>
+<span class="fc" id="L72">    HttpRestR66Handler.instantiateHandlers(restConfiguration);</span>
+<span class="fc" id="L73">    restV1Handler = new HttpRestR66Handler(restConfiguration);</span>
+<span class="fc" id="L74">  }</span>
+
+  /**
+   * Dispatches the incoming request to the corresponding v1 or v2 REST
+   * handler.
+   *
+   * @param ctx the Netty pipeline context
+   * @param request the incoming request
+   */
+  @Override
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest request) {
+<span class="fc" id="L86">    logger.debug(&quot;{} received on {}&quot;, request.method(), request.uri());</span>
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">    if (request.uri().startsWith(VERSION_PREFIX)) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">      if (ctx.pipeline().get(V1_HANDLER) != null) {</span>
+<span class="fc" id="L90">        ctx.pipeline().remove(V1_HANDLER);</span>
+      }
+
+<span class="fc" id="L93">      ctx.fireChannelRead(request);</span>
+    } else {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">      if (ctx.pipeline().get(V1_HANDLER) == null) {</span>
+<span class="fc" id="L96">        ctx.pipeline().addAfter(HANDLER_NAME, V1_HANDLER, restV1Handler);</span>
+      }
+<span class="fc" id="L98">      ctx.fireChannelRead(request);</span>
+    }
+<span class="fc" id="L100">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

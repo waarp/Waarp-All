@@ -115,10 +115,10 @@ public class DbModelOracleKernel extends DbModelOracle {
     }
 
     // cptrunner
-<span class="nc" id="L118">    action = new StringBuilder(</span>
+<span class="nc" id="L118">    final long minimalValue = System.currentTimeMillis() + 1;</span>
+<span class="nc" id="L119">    action = new StringBuilder(</span>
         &quot;CREATE SEQUENCE &quot; + DbTransferLog.fieldseq + &quot; MINVALUE &quot; +
-        (DbConstantGateway.ILLEGALVALUE + 1) + &quot; START WITH &quot; +
-        (DbConstantGateway.ILLEGALVALUE + 1));
+        (DbConstantGateway.ILLEGALVALUE + 1) + &quot; START WITH &quot; + minimalValue);
 <span class="nc" id="L122">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
 <span class="nc" id="L124">      request.query(action.toString());</span>
@@ -171,7 +171,7 @@ public class DbModelOracleKernel extends DbModelOracle {
   public static long nextSequenceMonitoring(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L174">    long result = DbConstantGateway.ILLEGALVALUE;</span>
+    long result;
 <span class="nc" id="L175">    final String action =</span>
         &quot;SELECT &quot; + DbTransferLog.fieldseq + &quot;.NEXTVAL FROM DUAL&quot;;
 <span class="nc" id="L177">    final DbPreparedStatement preparedStatement =</span>

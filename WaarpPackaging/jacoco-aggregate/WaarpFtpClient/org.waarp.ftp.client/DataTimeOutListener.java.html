@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DataTimeOutListener.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtpClient</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.client</a> &gt; <span class="el_source">DataTimeOutListener.java</span></div><h1>DataTimeOutListener.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.client;
+
+import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPDataTransferListener;
+import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * Timeout listener for Data connection for FTP4J model
+ */
+public class DataTimeOutListener implements FTPDataTransferListener {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L40">      WaarpLoggerFactory.getLogger(DataTimeOutListener.class);</span>
+
+  private final FTPClient client;
+  private final Timer timer;
+  private final long timeout;
+<span class="nc" id="L45">  private long last = System.currentTimeMillis();</span>
+  private boolean finished;
+  private final String command;
+  private final String file;
+
+  public DataTimeOutListener(final FTPClient client, final long timeout,
+<span class="nc" id="L51">                             final String command, final String file) {</span>
+<span class="nc" id="L52">    this.client = client;</span>
+<span class="nc" id="L53">    timer = new Timer(true);</span>
+<span class="nc" id="L54">    this.timeout = timeout;</span>
+<span class="nc" id="L55">    this.command = command;</span>
+<span class="nc" id="L56">    this.file = file;</span>
+<span class="nc" id="L57">  }</span>
+
+  private void renewTask() {
+<span class="nc" id="L60">    final TimerTask task = new TimerTask() {</span>
+      @Override
+      public void run() {
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (finished) {</span>
+<span class="nc" id="L64">          return;</span>
+        }
+<span class="nc" id="L66">        final long now = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (now - last - timeout &gt; 0) {</span>
+          try {
+<span class="nc" id="L69">            logger.warn(</span>
+<span class="nc" id="L70">                &quot;Timeout during file transfer: &quot; + command + ' ' + file);</span>
+<span class="nc" id="L71">            client.abortCurrentDataTransfer(true);</span>
+<span class="nc" id="L72">          } catch (final IOException ignored) {</span>
+            // nothing
+<span class="nc" id="L74">          } catch (final FTPIllegalReplyException ignored) {</span>
+            // nothing
+<span class="nc" id="L76">          }</span>
+        } else {
+<span class="nc" id="L78">          renewTask();</span>
+        }
+<span class="nc" id="L80">      }</span>
+    };
+<span class="nc" id="L82">    timer.schedule(task, timeout);</span>
+<span class="nc" id="L83">  }</span>
+
+  @Override
+  public void started() {
+<span class="nc" id="L87">    renewTask();</span>
+<span class="nc" id="L88">    last = System.currentTimeMillis();</span>
+<span class="nc" id="L89">  }</span>
+
+  @Override
+  public void transferred(final int length) {
+<span class="nc" id="L93">    last = System.currentTimeMillis();</span>
+<span class="nc" id="L94">  }</span>
+
+  @Override
+  public void completed() {
+<span class="nc" id="L98">    finished = true;</span>
+<span class="nc" id="L99">    last = System.currentTimeMillis();</span>
+<span class="nc" id="L100">    timer.cancel();</span>
+<span class="nc" id="L101">  }</span>
+
+  @Override
+  public void aborted() {
+<span class="nc" id="L105">    completed();</span>
+<span class="nc" id="L106">  }</span>
+
+  @Override
+  public void failed() {
+<span class="nc" id="L110">    completed();</span>
+<span class="nc" id="L111">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SimpleAuth.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.file</a> &gt; <span class="el_source">SimpleAuth.java</span></div><h1>SimpleAuth.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.gateway.ftp.file;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.ftp.exec.AbstractExecutor.CommandExecutor;
+
+/**
+ * Simple Authentication based on a previously load XML file.
+ */
+public class SimpleAuth {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L34">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L35">      WaarpLoggerFactory.getLogger(SimpleAuth.class);</span>
+
+  /**
+   * User name
+   */
+  private String user;
+
+  /**
+   * Password
+   */
+  private String password;
+
+  /**
+   * Multiple accounts
+   */
+  private String[] accounts;
+
+  /**
+   * Is the current user an administrator (which can shutdown or change
+   * bandwidth limitation)
+   */
+  private boolean isAdmin;
+  /**
+   * Specific Store command for this user
+   */
+  private String storCmd;
+  /**
+   * Specific Store command delay for this user
+   */
+  private long storDelay;
+  /**
+   * Specific Retrieve command for this user
+   */
+  private String retrCmd;
+  /**
+   * Specific Retrieve command delay for this user
+   */
+  private long retrDelay;
+
+  private CommandExecutor commandExecutor;
+
+  /**
+   * @param user
+   * @param password
+   * @param accounts
+   * @param storCmd
+   * @param storDelay
+   * @param retrCmd
+   * @param retrDelay
+   */
+  public SimpleAuth(final String user, final String password,
+                    final String[] accounts, final String storCmd,
+                    final long storDelay, final String retrCmd,
+<span class="fc" id="L88">                    final long retrDelay) {</span>
+<span class="fc" id="L89">    setUser(user);</span>
+<span class="fc" id="L90">    setPassword(password);</span>
+<span class="fc" id="L91">    setAccounts(accounts);</span>
+<span class="fc" id="L92">    setStorCmd(storCmd);</span>
+<span class="fc" id="L93">    setStorDelay(storDelay);</span>
+<span class="fc" id="L94">    setRetrCmd(retrCmd);</span>
+<span class="fc" id="L95">    setRetrDelay(retrDelay);</span>
+<span class="fc" id="L96">    setCommandExecutor(</span>
+        new CommandExecutor(retrCmd, retrDelay, storCmd, storDelay));
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L99">      logger.info(&quot;Executor for &quot; + user + &quot; configured as [RETR: &quot; +</span>
+<span class="nc" id="L100">                  getCommandExecutor().getRetrType() + ':' +</span>
+<span class="nc" id="L101">                  getCommandExecutor().pretrCMD + ':' +</span>
+<span class="nc" id="L102">                  getCommandExecutor().getPretrDelay() + ':' +</span>
+<span class="nc" id="L103">                  getCommandExecutor().isPretrRefused() + &quot;] [STOR: &quot; +</span>
+<span class="nc" id="L104">                  getCommandExecutor().getStorType() + ':' +</span>
+<span class="nc" id="L105">                  getCommandExecutor().pstorCMD + ':' +</span>
+<span class="nc" id="L106">                  getCommandExecutor().getPstorDelay() + ':' +</span>
+<span class="nc" id="L107">                  getCommandExecutor().isPstorRefused() + ']');</span>
+    }
+<span class="fc" id="L109">  }</span>
+
+  /**
+   * Is the given password a valid one
+   *
+   * @param newpassword
+   *
+   * @return True if the password is valid (or any password is valid)
+   */
+  public final boolean isPasswordValid(final String newpassword) {
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">    if (getPassword() == null) {</span>
+<span class="nc" id="L120">      return true;</span>
+    }
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">    if (newpassword == null) {</span>
+<span class="nc" id="L123">      return false;</span>
+    }
+<span class="fc" id="L125">    return getPassword().equals(newpassword);</span>
+  }
+
+  /**
+   * Is the given account a valid one
+   *
+   * @param account
+   *
+   * @return True if the account is valid (or any account is valid)
+   */
+  public final boolean isAccountValid(final String account) {
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (getAccounts() == null) {</span>
+<span class="nc" id="L137">      logger.debug(&quot;No account needed&quot;);</span>
+<span class="nc" id="L138">      return true;</span>
+    }
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (account == null) {</span>
+<span class="nc" id="L141">      logger.info(&quot;No account given&quot;);</span>
+<span class="nc" id="L142">      return false;</span>
+    }
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">    for (final String acct : getAccounts()) {</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">      if (acct.equals(account)) {</span>
+<span class="fc" id="L146">        logger.debug(&quot;Account found&quot;);</span>
+<span class="fc" id="L147">        return true;</span>
+      }
+    }
+<span class="nc" id="L150">    logger.info(&quot;No account found&quot;);</span>
+<span class="nc" id="L151">    return false;</span>
+  }
+
+  /**
+   * @param isAdmin True if the user should be an administrator
+   */
+  public final void setAdmin(final boolean isAdmin) {
+<span class="fc" id="L158">    this.isAdmin = isAdmin;</span>
+<span class="fc" id="L159">  }</span>
+
+  /**
+   * @return the user
+   */
+  public final String getUser() {
+<span class="fc" id="L165">    return user;</span>
+  }
+
+  /**
+   * @param user the user to set
+   */
+  private void setUser(final String user) {
+<span class="fc" id="L172">    this.user = user;</span>
+<span class="fc" id="L173">  }</span>
+
+  /**
+   * @return the password
+   */
+  public final String getPassword() {
+<span class="fc" id="L179">    return password;</span>
+  }
+
+  /**
+   * @param password the password to set
+   */
+  private void setPassword(final String password) {
+<span class="fc" id="L186">    this.password = password;</span>
+<span class="fc" id="L187">  }</span>
+
+  /**
+   * @return the accounts
+   */
+  public final String[] getAccounts() {
+<span class="fc" id="L193">    return accounts;</span>
+  }
+
+  /**
+   * @param accounts the accounts to set
+   */
+  private void setAccounts(final String[] accounts) {
+<span class="fc" id="L200">    this.accounts = accounts;</span>
+<span class="fc" id="L201">  }</span>
+
+  /**
+   * @return the isAdmin
+   */
+  public final boolean isAdmin() {
+<span class="fc" id="L207">    return isAdmin;</span>
+  }
+
+  /**
+   * @return the storCmd
+   */
+  public final String getStorCmd() {
+<span class="fc" id="L214">    return storCmd;</span>
+  }
+
+  /**
+   * @param storCmd the storCmd to set
+   */
+  private void setStorCmd(final String storCmd) {
+<span class="fc" id="L221">    this.storCmd = storCmd;</span>
+<span class="fc" id="L222">  }</span>
+
+  /**
+   * @return the storDelay
+   */
+  public final long getStorDelay() {
+<span class="fc" id="L228">    return storDelay;</span>
+  }
+
+  /**
+   * @param storDelay the storDelay to set
+   */
+  private void setStorDelay(final long storDelay) {
+<span class="fc" id="L235">    this.storDelay = storDelay;</span>
+<span class="fc" id="L236">  }</span>
+
+  /**
+   * @return the retrCmd
+   */
+  public final String getRetrCmd() {
+<span class="fc" id="L242">    return retrCmd;</span>
+  }
+
+  /**
+   * @param retrCmd the retrCmd to set
+   */
+  private void setRetrCmd(final String retrCmd) {
+<span class="fc" id="L249">    this.retrCmd = retrCmd;</span>
+<span class="fc" id="L250">  }</span>
+
+  /**
+   * @return the retrDelay
+   */
+  public final long getRetrDelay() {
+<span class="fc" id="L256">    return retrDelay;</span>
+  }
+
+  /**
+   * @param retrDelay the retrDelay to set
+   */
+  private void setRetrDelay(final long retrDelay) {
+<span class="fc" id="L263">    this.retrDelay = retrDelay;</span>
+<span class="fc" id="L264">  }</span>
+
+  /**
+   * @return the commandExecutor
+   */
+  public final CommandExecutor getCommandExecutor() {
+<span class="fc" id="L270">    return commandExecutor;</span>
+  }
+
+  /**
+   * @param commandExecutor the commandExecutor to set
+   */
+  private void setCommandExecutor(final CommandExecutor commandExecutor) {
+<span class="fc" id="L277">    this.commandExecutor = commandExecutor;</span>
+<span class="fc" id="L278">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

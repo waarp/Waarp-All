@@ -73,13 +73,13 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   private static final HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="nc" id="L76">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="nc" id="L77">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="nc" id="L78">    allow.add(HttpMethod.GET);</span>
-<span class="nc" id="L79">    allow.add(HttpMethod.DELETE);</span>
-<span class="nc" id="L80">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="nc" id="L81">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="nc" id="L82">  }</span>
+<span class="fc" id="L76">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L77">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L78">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L79">    allow.add(HttpMethod.DELETE);</span>
+<span class="fc" id="L80">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L81">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L82">  }</span>
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -87,8 +87,8 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    * @param crud the CRUD mask for this handler
    */
   public TransferIdHandler(final byte crud) {
-<span class="nc" id="L90">    super(crud);</span>
-<span class="nc" id="L91">  }</span>
+<span class="fc" id="L90">    super(crud);</span>
+<span class="fc" id="L91">  }</span>
 
   /**
    * Method called to obtain the information on the transfer whose id was
@@ -114,31 +114,31 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                                 final HttpResponder responder,
                                 @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
-<span class="nc" id="L117">    checkSanity(uri);</span>
-<span class="nc" id="L118">    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());</span>
-<span class="nc" id="L119">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
-<span class="nc" id="L120">    final Matcher matcher = pattern.matcher(key);</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="fc" id="L117">    checkSanity(uri);</span>
+<span class="fc" id="L118">    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());</span>
+<span class="fc" id="L119">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="fc" id="L120">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    if (!matcher.find()) {</span>
 <span class="nc" id="L122">      responder.sendStatus(NOT_FOUND);</span>
 <span class="nc" id="L123">      return;</span>
     }
-<span class="nc" id="L125">    final String id = matcher.group(1);</span>
-<span class="nc" id="L126">    final String requested = matcher.group(2);</span>
+<span class="fc" id="L125">    final String id = matcher.group(1);</span>
+<span class="fc" id="L126">    final String requested = matcher.group(2);</span>
 
-<span class="nc" id="L128">    TransferDAO transferDAO = null;</span>
+<span class="fc" id="L128">    TransferDAO transferDAO = null;</span>
     try {
-<span class="nc" id="L130">      final long transID = Long.parseLong(id);</span>
-<span class="nc" id="L131">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
-<span class="nc" id="L133">                             serverName())) {</span>
+<span class="fc" id="L130">      final long transID = Long.parseLong(id);</span>
+<span class="fc" id="L131">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
+<span class="fc" id="L133">                             serverName())) {</span>
 <span class="nc" id="L134">        responder.sendStatus(NOT_FOUND);</span>
       } else {
-<span class="nc" id="L136">        final Transfer transfer =</span>
-<span class="nc" id="L137">            transferDAO.select(transID, serverName(requested), requested,</span>
-<span class="nc" id="L138">                               serverName());</span>
-<span class="nc" id="L139">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
-<span class="nc" id="L140">        final String responseText = JsonUtils.nodeToString(response);</span>
-<span class="nc" id="L141">        responder.sendJson(OK, responseText);</span>
+<span class="fc" id="L136">        final Transfer transfer =</span>
+<span class="fc" id="L137">            transferDAO.select(transID, serverName(requested), requested,</span>
+<span class="fc" id="L138">                               serverName());</span>
+<span class="fc" id="L139">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="fc" id="L140">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="fc" id="L141">        responder.sendJson(OK, responseText);</span>
       }
 <span class="nc" id="L143">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L144">      responder.sendStatus(NOT_FOUND);</span>
@@ -147,9 +147,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
 <span class="nc" id="L147">    } catch (final DAONoDataException e) {</span>
 <span class="nc" id="L148">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L150">      DAOFactory.closeDAO(transferDAO);</span>
+<span class="fc" id="L150">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc" id="L152">  }</span>
+<span class="fc" id="L152">  }</span>
 
   /**
    * Method called to restart a paused transfer.

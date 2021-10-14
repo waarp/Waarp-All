@@ -24,7 +24,7 @@ import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.servlet.HttpAuthent;
 import org.waarp.openr66.context.R66BusinessInterface;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -56,7 +56,7 @@ public class HttpDeleteSession extends HttpSessionAbstract {
 <span class="nc" id="L56">    super(authent);</span>
 <span class="nc" id="L57">    this.identifier = identifier;</span>
     final DbTaskRunner runner;
-<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (!DetectionUtils.isJunit()) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (!WaarpSystemUtil.isJunit()) {</span>
 <span class="nc" id="L60">      checkAuthentR66Business(this, session, authent);</span>
 <span class="nc" id="L61">      runner = getDbTaskRunner(authent.getUserId(), identifier);</span>
       try {
@@ -116,32 +116,33 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   /**
    * @return the File
    */
-  public File getFile() {
+  public final File getFile() {
 <span class="nc" id="L120">    return file;</span>
   }
 
   /**
    * @return the identifier
    */
-  public String getIdentifier() {
+  public final String getIdentifier() {
 <span class="nc" id="L127">    return identifier;</span>
   }
 
   @Override
-  public void error(final Exception e, final R66BusinessInterface business)
+  public final void error(final Exception e,
+                          final R66BusinessInterface business)
       throws IllegalArgumentException {
-<span class="nc" id="L133">    logger.error(e);</span>
-<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (business != null) {</span>
-<span class="nc" id="L135">      business.checkAtError(session);</span>
+<span class="nc" id="L134">    logger.error(e.getMessage());</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (business != null) {</span>
+<span class="nc" id="L136">      business.checkAtError(session);</span>
     }
-<span class="nc" id="L137">    session.newState(R66FiniteDualStates.ERROR);</span>
-<span class="nc" id="L138">    throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L138">    session.newState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L139">    throw new IllegalArgumentException(e);</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L143">    return &quot;DS: {&quot; + session.toString() + &quot;, &quot; + identifier + &quot;, &quot; +</span>
-<span class="nc" id="L144">           file.getAbsolutePath() + &quot;}&quot;;</span>
+<span class="nc" id="L144">    return &quot;DS: {&quot; + session.toString() + &quot;, &quot; + identifier + &quot;, &quot; +</span>
+<span class="nc" id="L145">           file.getAbsolutePath() + &quot;}&quot;;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

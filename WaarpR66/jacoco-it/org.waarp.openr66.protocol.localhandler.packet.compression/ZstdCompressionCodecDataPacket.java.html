@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZstdCompressionCodecDataPacket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet.compression</a> &gt; <span class="el_source">ZstdCompressionCodecDataPacket.java</span></div><h1>ZstdCompressionCodecDataPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.localhandler.packet.compression;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.compress.WaarpZstdCodec;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.packet.DataPacket;
+
+import java.util.Arrays;
+
+/**
+ * ZSTD efficient compression mode (JNI, Unsafe or Safe mode)
+ */
+<span class="nc" id="L35">public class ZstdCompressionCodecDataPacket {</span>
+<span class="nc" id="L36">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L37">      WaarpLoggerFactory.getLogger(ZstdCompressionCodecDataPacket.class);</span>
+<span class="nc" id="L38">  private final WaarpZstdCodec waarpZstdCodec = new WaarpZstdCodec();</span>
+
+  /**
+   * @param dataPacket the DataPacket to compress in place
+   */
+  public final void compress(final DataPacket dataPacket,
+                             final R66Session session)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L46">    final byte[] data = dataPacket.getData();</span>
+<span class="nc" id="L47">    final int originalSize = dataPacket.getLengthPacket();</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (originalSize == 0) {</span>
+<span class="nc" id="L49">      return;</span>
+    }
+<span class="nc" id="L51">    byte[] toCompress =</span>
+<span class="nc" id="L52">        session.getSessionReusableCompressionBuffer(originalSize);</span>
+    try {
+      // Try using default half max buffer
+<span class="nc" id="L55">      final int length = waarpZstdCodec.getCompressorCodec()</span>
+<span class="nc" id="L56">                                       .compress(data, originalSize, toCompress,</span>
+                                                 toCompress.length);
+<span class="nc bnc" id="L58" title="All 2 branches missed.">      if (length &lt; toCompress.length) {</span>
+<span class="nc" id="L59">        final byte[] bytes = Arrays.copyOfRange(toCompress, 0, length);</span>
+<span class="nc" id="L60">        toCompress = bytes;</span>
+      }
+<span class="nc" id="L62">      logger.debug(&quot;DataPacket Compression is {} on {} for BlockSize {}&quot;,</span>
+<span class="nc" id="L63">                   toCompress.length, originalSize, data.length);</span>
+<span class="nc" id="L64">      dataPacket.updateFromCompressionCodec(toCompress, length);</span>
+<span class="nc" id="L65">    } catch (final Exception e) {</span>
+      // Might be because toCompress is not enough wide
+<span class="nc" id="L67">      logger.error(&quot;DataPacket Compression to {} on {} for BlockSize {}&quot;,</span>
+<span class="nc" id="L68">                   toCompress.length, dataPacket.getLengthPacket(),</span>
+<span class="nc" id="L69">                   dataPacket.getData().length, e);</span>
+<span class="nc" id="L70">      throw new OpenR66ProtocolPacketException(e);</span>
+<span class="nc" id="L71">    }</span>
+<span class="nc" id="L72">  }</span>
+
+  /**
+   * @param dataPacket the DataPacket to uncompress in place
+   */
+  public final void uncompress(final DataPacket dataPacket,
+                               final R66Session session)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L80">    final byte[] data = dataPacket.getData();</span>
+<span class="nc" id="L81">    final int originalSize = dataPacket.getLengthPacket();</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (originalSize == 0) {</span>
+<span class="nc" id="L83">      return;</span>
+    }
+    try {
+<span class="nc" id="L86">      byte[] toDeCompress = session.getReusableBuffer(</span>
+<span class="nc" id="L87">          waarpZstdCodec.getCompressorCodec()</span>
+<span class="nc" id="L88">                        .getDecompressedSize(data, originalSize));</span>
+<span class="nc" id="L89">      final int length = waarpZstdCodec.getCompressorCodec()</span>
+<span class="nc" id="L90">                                       .decompress(data, originalSize,</span>
+                                                   toDeCompress,
+                                                   toDeCompress.length);
+<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (length != toDeCompress.length) {</span>
+<span class="nc" id="L94">        toDeCompress = Arrays.copyOf(toDeCompress, length);</span>
+      }
+<span class="nc" id="L96">      logger.debug(&quot;DataPacket Decompression is {} on {} for BlockSize {}&quot;,</span>
+<span class="nc" id="L97">                   originalSize, length, data.length);</span>
+<span class="nc" id="L98">      dataPacket.updateFromCompressionCodec(toDeCompress, length);</span>
+<span class="nc" id="L99">    } catch (final Exception e) {</span>
+<span class="nc" id="L100">      logger.error(&quot;DataPacket Decompression was {} on {} for BlockSize {}&quot;,</span>
+<span class="nc" id="L101">                   originalSize, data.length, session.getBlockSize(), e);</span>
+<span class="nc" id="L102">      throw new OpenR66ProtocolPacketException(e);</span>
+<span class="nc" id="L103">    }</span>
+<span class="nc" id="L104">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

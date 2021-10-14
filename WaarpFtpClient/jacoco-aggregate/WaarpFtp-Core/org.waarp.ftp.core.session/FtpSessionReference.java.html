@@ -46,22 +46,22 @@ public class FtpSessionReference {
   /**
    * Internal Logger
    */
-<span class="nc" id="L49">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L50">      WaarpLoggerFactory.getLogger(FtpSessionReference.class);</span>
+<span class="fc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L50">      WaarpLoggerFactory.getLogger(FtpSessionReference.class);</span>
 
-<span class="nc" id="L52">  private static final byte[] LOOPBACK = { 0, 0, 0, 0 };</span>
-<span class="nc" id="L53">  private static final byte[] LOOPBACK2 = { 127, 0, 0, 1 };</span>
+<span class="fc" id="L52">  private static final byte[] LOOPBACK = { 0, 0, 0, 0 };</span>
+<span class="fc" id="L53">  private static final byte[] LOOPBACK2 = { 127, 0, 0, 1 };</span>
   private static final InetAddress LOOPBACK_ADDRESS;
 
   static {
-<span class="nc" id="L57">    InetAddress address = null;</span>
+<span class="fc" id="L57">    InetAddress address = null;</span>
     try {
-<span class="nc" id="L59">      address = InetAddress.getByAddress(LOOPBACK2);</span>
+<span class="fc" id="L59">      address = InetAddress.getByAddress(LOOPBACK2);</span>
 <span class="nc" id="L60">    } catch (final UnknownHostException e) {</span>
 <span class="nc" id="L61">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L62">    }</span>
-<span class="nc" id="L63">    LOOPBACK_ADDRESS = address;</span>
-<span class="nc" id="L64">  }</span>
+<span class="fc" id="L62">    }</span>
+<span class="fc" id="L63">    LOOPBACK_ADDRESS = address;</span>
+<span class="fc" id="L64">  }</span>
 
   /**
    * Index of FtpSession References
@@ -77,27 +77,27 @@ public class FtpSessionReference {
      */
     public final InetSocketAddress fullIp;
 
-<span class="nc" id="L80">    public final long creationTime = System.currentTimeMillis();</span>
+<span class="fc" id="L80">    public final long creationTime = System.currentTimeMillis();</span>
 
     /**
      * Constructor from Channel
      *
      * @param channel
      */
-<span class="nc" id="L87">    public P2PAddress(final Channel channel) {</span>
-<span class="nc" id="L88">      InetAddress ip = FtpChannelUtils.getRemoteInetAddress(channel);</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (isLoopback(ip)) {</span>
-<span class="nc" id="L90">        ipOnly = LOOPBACK_ADDRESS;</span>
+<span class="fc" id="L87">    public P2PAddress(final Channel channel) {</span>
+<span class="fc" id="L88">      InetAddress ip = FtpChannelUtils.getRemoteInetAddress(channel);</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">      if (isLoopback(ip)) {</span>
+<span class="fc" id="L90">        ipOnly = LOOPBACK_ADDRESS;</span>
       } else {
 <span class="nc" id="L92">        ipOnly = ip;</span>
       }
-<span class="nc" id="L94">      InetSocketAddress isa = (InetSocketAddress) channel.localAddress();</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (isLoopback(isa.getAddress())) {</span>
-<span class="nc" id="L96">        fullIp = new InetSocketAddress(LOOPBACK_ADDRESS, isa.getPort());</span>
+<span class="fc" id="L94">      InetSocketAddress isa = (InetSocketAddress) channel.localAddress();</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">      if (isLoopback(isa.getAddress())) {</span>
+<span class="fc" id="L96">        fullIp = new InetSocketAddress(LOOPBACK_ADDRESS, isa.getPort());</span>
       } else {
 <span class="nc" id="L98">        fullIp = isa;</span>
       }
-<span class="nc" id="L100">    }</span>
+<span class="fc" id="L100">    }</span>
 
     /**
      * Constructor from addresses
@@ -106,45 +106,45 @@ public class FtpSessionReference {
      * @param inetSocketAddress
      */
     public P2PAddress(final InetAddress address,
-<span class="nc" id="L109">                      final InetSocketAddress inetSocketAddress) {</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (isLoopback(address)) {</span>
-<span class="nc" id="L111">        ipOnly = LOOPBACK_ADDRESS;</span>
+<span class="fc" id="L109">                      final InetSocketAddress inetSocketAddress) {</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">      if (isLoopback(address)) {</span>
+<span class="fc" id="L111">        ipOnly = LOOPBACK_ADDRESS;</span>
       } else {
 <span class="nc" id="L113">        ipOnly = address;</span>
       }
-<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (isLoopback(inetSocketAddress.getAddress())) {</span>
-<span class="nc" id="L116">        fullIp = new InetSocketAddress(LOOPBACK_ADDRESS,</span>
-<span class="nc" id="L117">                                       inetSocketAddress.getPort());</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">      if (isLoopback(inetSocketAddress.getAddress())) {</span>
+<span class="fc" id="L116">        fullIp = new InetSocketAddress(LOOPBACK_ADDRESS,</span>
+<span class="fc" id="L117">                                       inetSocketAddress.getPort());</span>
       } else {
 <span class="nc" id="L119">        fullIp = inetSocketAddress;</span>
       }
-<span class="nc" id="L121">    }</span>
+<span class="fc" id="L121">    }</span>
 
     /**
      * @return True if the P2Paddress is valid
      */
     private final boolean isValid() {
-<span class="nc bnc" id="L127" title="All 4 branches missed.">      return ipOnly != null &amp;&amp; fullIp != null;</span>
+<span class="pc bpc" id="L127" title="2 of 4 branches missed.">      return ipOnly != null &amp;&amp; fullIp != null;</span>
     }
 
     @Override
     public final boolean equals(final Object o) {
-<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (o == null) {</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">      if (o == null) {</span>
 <span class="nc" id="L133">        return false;</span>
       }
-<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (o instanceof P2PAddress) {</span>
-<span class="nc" id="L136">        final P2PAddress p2paddress = (P2PAddress) o;</span>
-<span class="nc bnc" id="L137" title="All 4 branches missed.">        if (p2paddress.isValid() &amp;&amp; isValid()) {</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">          boolean equal = p2paddress.fullIp.equals(fullIp) &amp;&amp;</span>
-<span class="nc bnc" id="L139" title="All 2 branches missed.">                          p2paddress.ipOnly.equals(ipOnly);</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">          if (!equal) {</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">      if (o instanceof P2PAddress) {</span>
+<span class="fc" id="L136">        final P2PAddress p2paddress = (P2PAddress) o;</span>
+<span class="pc bpc" id="L137" title="2 of 4 branches missed.">        if (p2paddress.isValid() &amp;&amp; isValid()) {</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">          boolean equal = p2paddress.fullIp.equals(fullIp) &amp;&amp;</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">                          p2paddress.ipOnly.equals(ipOnly);</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">          if (!equal) {</span>
 <span class="nc" id="L141">            boolean sameIp =</span>
 <span class="nc bnc" id="L142" title="All 2 branches missed.">                p2paddress.fullIp.getAddress().equals(fullIp.getAddress()) ||</span>
 <span class="nc bnc" id="L143" title="All 2 branches missed.">                (isLoopback(fullIp.getAddress()) &amp;&amp;</span>
 <span class="nc bnc" id="L144" title="All 2 branches missed.">                 isLoopback(p2paddress.fullIp.getAddress()));</span>
 <span class="nc bnc" id="L145" title="All 4 branches missed.">            equal = sameIp &amp;&amp; p2paddress.fullIp.getPort() == fullIp.getPort();</span>
           }
-<span class="nc" id="L147">          return equal;</span>
+<span class="fc" id="L147">          return equal;</span>
         }
       }
 <span class="nc" id="L150">      return false;</span>
@@ -152,7 +152,7 @@ public class FtpSessionReference {
 
     @Override
     public final int hashCode() {
-<span class="nc" id="L155">      return fullIp.hashCode() + ipOnly.hashCode();</span>
+<span class="fc" id="L155">      return fullIp.hashCode() + ipOnly.hashCode();</span>
     }
 
     @Override
@@ -162,40 +162,40 @@ public class FtpSessionReference {
   }
 
   private static boolean isLoopback(final InetAddress inetAddress) {
-<span class="nc bnc" id="L165" title="All 2 branches missed.">    return Arrays.equals(inetAddress.getAddress(), LOOPBACK2) ||</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    return Arrays.equals(inetAddress.getAddress(), LOOPBACK2) ||</span>
 <span class="nc bnc" id="L166" title="All 2 branches missed.">           Arrays.equals(inetAddress.getAddress(), LOOPBACK) ||</span>
-<span class="nc bnc" id="L167" title="All 4 branches missed.">           inetAddress.isAnyLocalAddress() || inetAddress.isLoopbackAddress();</span>
+<span class="pc bnc" id="L167" title="All 4 branches missed.">           inetAddress.isAnyLocalAddress() || inetAddress.isLoopbackAddress();</span>
   }
 
   /**
    * Reference of FtpSession from InetSocketAddress
    */
-<span class="nc" id="L173">  private final ConcurrentHashMap&lt;P2PAddress, FtpSession&gt; hashMap =</span>
+<span class="fc" id="L173">  private final ConcurrentHashMap&lt;P2PAddress, FtpSession&gt; hashMap =</span>
       new ConcurrentHashMap&lt;P2PAddress, FtpSession&gt;();
 
   /**
    * Constructor
    */
-<span class="nc" id="L179">  public FtpSessionReference() {</span>
+<span class="fc" id="L179">  public FtpSessionReference() {</span>
     // nothing
-<span class="nc" id="L181">  }</span>
+<span class="fc" id="L181">  }</span>
 
   private void cleanFtpSession() {
     // 10 minutes ago
-<span class="nc" id="L185">    final long nowInPast = System.currentTimeMillis() - 10 * 60 * 1000;</span>
-<span class="nc" id="L186">    ArrayList&lt;P2PAddress&gt; list = new ArrayList&lt;P2PAddress&gt;();</span>
-<span class="nc" id="L187">    Enumeration&lt;P2PAddress&gt; enumeration = hashMap.keys();</span>
-<span class="nc bnc" id="L188" title="All 2 branches missed.">    while (enumeration.hasMoreElements()) {</span>
-<span class="nc" id="L189">      final P2PAddress entry = enumeration.nextElement();</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (entry.creationTime &lt; nowInPast) {</span>
+<span class="fc" id="L185">    final long nowInPast = System.currentTimeMillis() - 10 * 60 * 1000;</span>
+<span class="fc" id="L186">    ArrayList&lt;P2PAddress&gt; list = new ArrayList&lt;P2PAddress&gt;();</span>
+<span class="fc" id="L187">    Enumeration&lt;P2PAddress&gt; enumeration = hashMap.keys();</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">    while (enumeration.hasMoreElements()) {</span>
+<span class="fc" id="L189">      final P2PAddress entry = enumeration.nextElement();</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">      if (entry.creationTime &lt; nowInPast) {</span>
 <span class="nc" id="L191">        list.add(entry);</span>
       }
-<span class="nc" id="L193">    }</span>
-<span class="nc bnc" id="L194" title="All 2 branches missed.">    for (P2PAddress pAddress : list) {</span>
+<span class="fc" id="L193">    }</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">    for (P2PAddress pAddress : list) {</span>
 <span class="nc" id="L195">      hashMap.remove(pAddress);</span>
 <span class="nc" id="L196">    }</span>
-<span class="nc" id="L197">    list.clear();</span>
-<span class="nc" id="L198">  }</span>
+<span class="fc" id="L197">    list.clear();</span>
+<span class="fc" id="L198">  }</span>
 
   /**
    * Add a session from a couple of addresses
@@ -207,15 +207,15 @@ public class FtpSessionReference {
   public final void setNewFtpSession(final InetAddress ipOnly,
                                      final InetSocketAddress fullIp,
                                      final FtpSession session) {
-<span class="nc" id="L210">    cleanFtpSession();</span>
-<span class="nc" id="L211">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
-<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L210">    cleanFtpSession();</span>
+<span class="fc" id="L211">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L213">      logger.error(</span>
           &quot;Couple invalid in setNewFtpSession: &quot; + ipOnly + &quot; : &quot; + fullIp);
 <span class="nc" id="L215">      return;</span>
     }
-<span class="nc" id="L217">    hashMap.put(pAddress, session);</span>
-<span class="nc" id="L218">  }</span>
+<span class="fc" id="L217">    hashMap.put(pAddress, session);</span>
+<span class="fc" id="L218">  }</span>
 
   /**
    * Return and remove the FtpSession
@@ -225,14 +225,14 @@ public class FtpSessionReference {
    * @return the FtpSession if it exists associated to this channel
    */
   public final FtpSession getPassiveFtpSession(final Channel channel) {
-<span class="nc" id="L228">    cleanFtpSession();</span>
+<span class="fc" id="L228">    cleanFtpSession();</span>
     // First check passive connection
-<span class="nc" id="L230">    final P2PAddress pAddress = new P2PAddress(channel);</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L230">    final P2PAddress pAddress = new P2PAddress(channel);</span>
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L232">      logger.error(&quot;Couple invalid in getPassiveFtpSession: &quot; + channel);</span>
 <span class="nc" id="L233">      return null;</span>
     }
-<span class="nc" id="L235">    return hashMap.remove(pAddress);</span>
+<span class="fc" id="L235">    return hashMap.remove(pAddress);</span>
   }
 
   /**
@@ -290,15 +290,15 @@ public class FtpSessionReference {
    */
   public final void delFtpSession(final InetAddress ipOnly,
                                   final InetSocketAddress fullIp) {
-<span class="nc" id="L293">    cleanFtpSession();</span>
-<span class="nc" id="L294">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
-<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L293">    cleanFtpSession();</span>
+<span class="fc" id="L294">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L296">      logger.error(</span>
           &quot;Couple invalid in delFtpSession: &quot; + ipOnly + &quot; : &quot; + fullIp);
 <span class="nc" id="L298">      return;</span>
     }
-<span class="nc" id="L300">    hashMap.remove(pAddress);</span>
-<span class="nc" id="L301">  }</span>
+<span class="fc" id="L300">    hashMap.remove(pAddress);</span>
+<span class="fc" id="L301">  }</span>
 
   /**
    * @return the number of active sessions

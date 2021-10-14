@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>Business.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.pojo</a> &gt; <span class="el_source">Business.java</span></div><h1>Business.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.pojo;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+
+import java.sql.Types;
+
+import static org.waarp.common.database.data.AbstractDbData.*;
+
+/**
+ * Business data object
+ */
+public class Business {
+
+  @JsonProperty(&quot;HOSTID&quot;)
+  private String hostid;
+
+  @JsonProperty(&quot;BUSINESS&quot;)
+  private String business;
+
+  @JsonProperty(&quot;ROLES&quot;)
+  private String roles;
+
+  @JsonProperty(&quot;ALIASES&quot;)
+  private String aliases;
+
+  @JsonProperty(&quot;OTHERS&quot;)
+  private String others;
+
+<span class="fc" id="L51">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
+  private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L57">  public Business() {</span>
+    // Nothing
+<span class="fc" id="L59">  }</span>
+
+  public Business(final String hostid, final String business,
+                  final String roles, final String aliases, final String others,
+                  final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L65">    this(hostid, business, roles, aliases, others);</span>
+<span class="fc" id="L66">    this.updatedInfo = updatedInfo;</span>
+<span class="fc" id="L67">  }</span>
+
+  public Business(final String hostid, final String business,
+                  final String roles, final String aliases, final String others)
+<span class="fc" id="L71">      throws WaarpDatabaseSqlException {</span>
+<span class="fc" id="L72">    this.hostid = hostid;</span>
+<span class="fc" id="L73">    this.business = business;</span>
+<span class="fc" id="L74">    this.roles = roles;</span>
+<span class="fc" id="L75">    this.aliases = aliases;</span>
+<span class="fc" id="L76">    this.others = others;</span>
+<span class="fc" id="L77">    checkValues();</span>
+<span class="fc" id="L78">  }</span>
+
+  @JsonIgnore
+  public final void checkValues() throws WaarpDatabaseSqlException {
+<span class="fc" id="L82">    validateLength(Types.LONGVARCHAR, business, roles, aliases, others);</span>
+<span class="fc" id="L83">    validateLength(Types.NVARCHAR, hostid);</span>
+<span class="fc" id="L84">  }</span>
+
+  public final String getHostid() {
+<span class="fc" id="L87">    return hostid;</span>
+  }
+
+  public final void setHostid(final String hostid) {
+<span class="fc" id="L91">    this.hostid = hostid;</span>
+<span class="fc" id="L92">  }</span>
+
+  public final String getBusiness() {
+<span class="fc" id="L95">    return business;</span>
+  }
+
+  public final void setBusiness(final String business) {
+<span class="fc" id="L99">    this.business = business;</span>
+<span class="fc" id="L100">  }</span>
+
+  public final String getRoles() {
+<span class="fc" id="L103">    return roles;</span>
+  }
+
+  public final void setRoles(final String roles) {
+<span class="fc" id="L107">    this.roles = roles;</span>
+<span class="fc" id="L108">  }</span>
+
+  public final String getAliases() {
+<span class="fc" id="L111">    return aliases;</span>
+  }
+
+  public final void setAliases(final String aliases) {
+<span class="fc" id="L115">    this.aliases = aliases;</span>
+<span class="fc" id="L116">  }</span>
+
+  public final String getOthers() {
+<span class="fc" id="L119">    return others;</span>
+  }
+
+  public final void setOthers(final String others) {
+<span class="fc" id="L123">    this.others = others;</span>
+<span class="fc" id="L124">  }</span>
+
+  public final UpdatedInfo getUpdatedInfo() {
+<span class="fc" id="L127">    return updatedInfo;</span>
+  }
+
+  public final void setUpdatedInfo(final UpdatedInfo info) {
+<span class="fc" id="L131">    updatedInfo = info;</span>
+<span class="fc" id="L132">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -20,7 +20,6 @@
 
 package org.waarp.common.database;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.waarp.common.database.properties.DbProperties;
 import org.waarp.common.database.properties.H2Properties;
@@ -31,6 +30,7 @@ import org.waarp.common.database.properties.PostgreSQLProperties;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.Version;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -87,7 +87,7 @@ public class ConnectionFactory {
   /**
    * The datasource for connection pooling
    */
-  private final BasicDataSource ds;
+  private final WaarpBasicDataSource ds;
 
   /**
    * @param server the connection url of the database
@@ -172,41 +172,45 @@ public class ConnectionFactory {
 <span class="nc" id="L172">    this.password = password;</span>
 <span class="nc" id="L173">    this.properties = properties;</span>
 
-<span class="nc" id="L175">    ds = new BasicDataSource();</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">    if (Version.version().contains(&quot;-jre&quot;)) {</span>
+<span class="nc" id="L176">      ds = new WaarpBasicDataSourceJava8();</span>
+    } else {
+<span class="nc" id="L178">      ds = new WaarpBasicDataSourceJava6();</span>
+    }
 
     // Initialize DataSource
-<span class="nc" id="L178">    ds.setDriverClassName(this.properties.getDriverName());</span>
-<span class="nc" id="L179">    ds.setUrl(this.server);</span>
-<span class="nc" id="L180">    ds.setUsername(this.user);</span>
-<span class="nc" id="L181">    ds.setPassword(this.password);</span>
-<span class="nc" id="L182">    ds.setDefaultAutoCommit(AUTOCOMMIT);</span>
-<span class="nc" id="L183">    ds.setDefaultReadOnly(READONLY);</span>
-<span class="nc" id="L184">    ds.setValidationQuery(this.properties.getValidationQuery());</span>
+<span class="nc" id="L182">    ds.setDriverClassName(this.properties.getDriverName());</span>
+<span class="nc" id="L183">    ds.setUrl(this.server);</span>
+<span class="nc" id="L184">    ds.setUsername(this.user);</span>
+<span class="nc" id="L185">    ds.setPassword(this.password);</span>
+<span class="nc" id="L186">    ds.setDefaultAutoCommit(AUTOCOMMIT);</span>
+<span class="nc" id="L187">    ds.setDefaultReadOnly(READONLY);</span>
+<span class="nc" id="L188">    ds.setValidationQuery(this.properties.getValidationQuery());</span>
 
     // Get maximum connections
-<span class="nc" id="L187">    Connection con = null;</span>
+<span class="nc" id="L191">    Connection con = null;</span>
     // default
-<span class="nc" id="L189">    maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
+<span class="nc" id="L193">    maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
     try {
-<span class="nc" id="L191">      con = getConnection();</span>
+<span class="nc" id="L195">      con = getConnection();</span>
       // Max of user value (if not set, default 10) and current maximum
       // connections
-<span class="nc" id="L194">      maxConnections = Math.min(properties.getMaximumConnections(con),</span>
-<span class="nc" id="L195">                                SystemPropertyUtil.get(</span>
+<span class="nc" id="L198">      maxConnections = Math.min(properties.getMaximumConnections(con),</span>
+<span class="nc" id="L199">                                SystemPropertyUtil.get(</span>
                                     SystemPropertyUtil.WAARP_DATABASE_CONNECTION_MAX,
                                     MAX_CONNECTIONS_DEFAULT));
-<span class="nc" id="L198">    } catch (final SQLException e) {</span>
-<span class="nc" id="L199">      logger.warn(</span>
+<span class="nc" id="L202">    } catch (final SQLException e) {</span>
+<span class="nc" id="L203">      logger.warn(</span>
           &quot;Cannot fetch maximum connection allowed from database&quot; + &quot; : {}&quot;,
-<span class="nc" id="L201">          e.getMessage());</span>
+<span class="nc" id="L205">          e.getMessage());</span>
     } finally {
-<span class="nc bnc" id="L203" title="All 2 branches missed.">      if (con != null) {</span>
-<span class="nc" id="L204">        con.close();</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">      if (con != null) {</span>
+<span class="nc" id="L208">        con.close();</span>
       }
     }
-<span class="nc" id="L207">    setMaxConnections(maxConnections);</span>
-<span class="nc" id="L208">    logger.info(&quot;{}&quot;, this);</span>
-<span class="nc" id="L209">  }</span>
+<span class="nc" id="L211">    setMaxConnections(maxConnections);</span>
+<span class="nc" id="L212">    logger.info(&quot;{}&quot;, this);</span>
+<span class="nc" id="L213">  }</span>
 
   /**
    * Mainly for Junit
@@ -215,26 +219,22 @@ public class ConnectionFactory {
    */
   public void setMaxConnections(final int max) {
     // Minimal value should be 2
-<span class="nc" id="L218">    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);</span>
-<span class="nc" id="L219">    ds.setMaxActive(maxConnections);</span>
-<span class="nc" id="L220">    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT * 2),</span>
+<span class="nc" id="L222">    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);</span>
+<span class="nc" id="L223">    ds.setMaxActive(maxConnections);</span>
+<span class="nc" id="L224">    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT * 2),</span>
                        maxConnections);
-<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (maxIdle &lt; GenericObjectPool.DEFAULT_MAX_IDLE) {</span>
-<span class="nc" id="L223">      ds.setMaxIdle(maxIdle);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (maxIdle &lt; GenericObjectPool.DEFAULT_MAX_IDLE) {</span>
+<span class="nc" id="L227">      ds.setMaxIdle(maxIdle);</span>
     }
-<span class="nc" id="L225">    ds.setInitialSize(MAX_IDLE_DEFAULT);</span>
-<span class="nc" id="L226">  }</span>
+<span class="nc" id="L229">    ds.setInitialSize(MAX_IDLE_DEFAULT);</span>
+<span class="nc" id="L230">  }</span>
 
   /**
    * Closes and releases all registered connections and connection pool
    */
   public void close() {
-<span class="nc" id="L232">    logger.info(&quot;Closing ConnectionFactory&quot;);</span>
-    try {
-<span class="nc" id="L234">      ds.close();</span>
-<span class="nc" id="L235">    } catch (final SQLException e) {</span>
-<span class="nc" id="L236">      logger.debug(&quot;Cannot close properly the connection pool&quot;, e);</span>
-<span class="nc" id="L237">    }</span>
+<span class="nc" id="L236">    logger.info(&quot;Closing ConnectionFactory&quot;);</span>
+<span class="nc" id="L237">    ds.close();</span>
 <span class="nc" id="L238">  }</span>
 
   /**

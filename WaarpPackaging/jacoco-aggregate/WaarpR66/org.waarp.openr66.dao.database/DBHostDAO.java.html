@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DBHostDAO.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.dao.database</a> &gt; <span class="el_source">DBHostDAO.java</span></div><h1>DBHostDAO.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.dao.database;
+
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.lru.SynchronizedLruCache;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Implementation of HostDAO for standard SQL databases
+ */
+public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO {
+
+  protected static final String TABLE = &quot;hosts&quot;;
+
+  public static final String HOSTID_FIELD = &quot;hostid&quot;;
+  public static final String ADDRESS_FIELD = &quot;address&quot;;
+  public static final String PORT_FIELD = &quot;port&quot;;
+  public static final String IS_SSL_FIELD = &quot;isssl&quot;;
+  public static final String IS_CLIENT_FIELD = &quot;isclient&quot;;
+  public static final String IS_ACTIVE_FIELD = &quot;isactive&quot;;
+  public static final String IS_PROXIFIED_FIELD = &quot;isproxified&quot;;
+  public static final String HOSTKEY_FIELD = &quot;hostkey&quot;;
+  public static final String ADMINROLE_FIELD = &quot;adminrole&quot;;
+  public static final String UPDATED_INFO_FIELD = &quot;updatedinfo&quot;;
+
+  protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
+  protected static final String SQL_DELETE =
+      &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
+  protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
+  protected static final String SQL_EXIST =
+      &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
+  protected static final String SQL_SELECT =
+      &quot;SELECT * FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
+  protected static final String SQL_INSERT =
+      &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + HOSTID_FIELD + &quot;, &quot; + ADDRESS_FIELD +
+      &quot;, &quot; + PORT_FIELD + &quot;, &quot; + IS_SSL_FIELD + &quot;, &quot; + IS_CLIENT_FIELD + &quot;, &quot; +
+      IS_ACTIVE_FIELD + &quot;, &quot; + IS_PROXIFIED_FIELD + &quot;, &quot; + HOSTKEY_FIELD +
+      &quot;, &quot; + ADMINROLE_FIELD + &quot;, &quot; + UPDATED_INFO_FIELD +
+      &quot;) VALUES (?,?,?,?,?,?,?,?,?,?)&quot;;
+  protected static final String SQL_UPDATE =
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + PARAMETER_COMMA +
+      ADDRESS_FIELD + PARAMETER_COMMA + PORT_FIELD + PARAMETER_COMMA +
+      IS_SSL_FIELD + PARAMETER_COMMA + IS_CLIENT_FIELD + PARAMETER_COMMA +
+      IS_ACTIVE_FIELD + PARAMETER_COMMA + IS_PROXIFIED_FIELD + PARAMETER_COMMA +
+      HOSTKEY_FIELD + PARAMETER_COMMA + ADMINROLE_FIELD + PARAMETER_COMMA +
+      UPDATED_INFO_FIELD + &quot; = ? WHERE &quot; + HOSTID_FIELD + PARAMETER;
+
+
+  /**
+   * Hashmap for Host
+   */
+  private static final SynchronizedLruCache&lt;String, Host&gt;
+<span class="fc" id="L80">      reentrantConcurrentHashMap =</span>
+      new SynchronizedLruCache&lt;String, Host&gt;(500, 180000);
+
+  public DBHostDAO(final Connection con) {
+<span class="fc" id="L84">    super(con);</span>
+<span class="fc" id="L85">  }</span>
+
+  @Override
+  protected final boolean isCachedEnable() {
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
+  }
+
+  @Override
+  protected final SynchronizedLruCache&lt;String, Host&gt; getCache() {
+<span class="fc" id="L94">    return reentrantConcurrentHashMap;</span>
+  }
+
+  @Override
+  protected final String getId(final Host e1) {
+<span class="fc" id="L99">    return e1.getHostid();</span>
+  }
+
+  @Override
+  protected final String getSelectRequest() {
+<span class="fc" id="L104">    return SQL_SELECT;</span>
+  }
+
+  @Override
+  protected final String getGetAllRequest() {
+<span class="fc" id="L109">    return SQL_GET_ALL;</span>
+  }
+
+  @Override
+  protected final String getCountRequest() {
+<span class="fc" id="L114">    return SQL_COUNT_ALL;</span>
+  }
+
+  @Override
+  protected final String getExistRequest() {
+<span class="fc" id="L119">    return SQL_EXIST;</span>
+  }
+
+  @Override
+  protected final Object[] getInsertValues(final Host host)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L125">    host.checkValues();</span>
+<span class="fc" id="L126">    return new Object[] {</span>
+<span class="fc" id="L127">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L128">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L129">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
+    };
+  }
+
+  @Override
+  protected final String getInsertRequest() {
+<span class="fc" id="L135">    return SQL_INSERT;</span>
+  }
+
+  @Override
+  protected final Object[] getUpdateValues(final Host host)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L141">    host.checkValues();</span>
+<span class="fc" id="L142">    return new Object[] {</span>
+<span class="fc" id="L143">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L144">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L145">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
+    };
+  }
+
+  @Override
+  protected final String getUpdateRequest() {
+<span class="fc" id="L151">    return SQL_UPDATE;</span>
+  }
+
+  @Override
+  protected final String getDeleteRequest() {
+<span class="fc" id="L156">    return SQL_DELETE;</span>
+  }
+
+  @Override
+  protected final String getDeleteAllRequest() {
+<span class="fc" id="L161">    return SQL_DELETE_ALL;</span>
+  }
+
+  @Override
+  public final Host getFromResultSet(final ResultSet set) throws SQLException {
+    try {
+<span class="fc" id="L167">      return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
+<span class="fc" id="L168">                      set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
+<span class="fc" id="L169">                      set.getBoolean(IS_SSL_FIELD),</span>
+<span class="fc" id="L170">                      set.getBoolean(IS_CLIENT_FIELD),</span>
+<span class="fc" id="L171">                      set.getBoolean(IS_PROXIFIED_FIELD),</span>
+<span class="fc" id="L172">                      set.getBoolean(ADMINROLE_FIELD),</span>
+<span class="fc" id="L173">                      set.getBoolean(IS_ACTIVE_FIELD),</span>
+<span class="fc" id="L174">                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="nc" id="L175">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L176">      throw new SQLException(e);</span>
+    }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+<span class="fc" id="L182">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

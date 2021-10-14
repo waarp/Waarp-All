@@ -59,7 +59,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
 <span class="fc" id="L59">  }</span>
 
   @Override
-  protected void businessClean() {
+  protected final void businessClean() {
 <span class="fc" id="L63">    currentAuth = null;</span>
 <span class="fc" id="L64">  }</span>
 
@@ -76,11 +76,11 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessUser(final String user)
+  protected final NextCommandReply setBusinessUser(final String user)
       throws Reply530Exception {
 <span class="fc" id="L81">    final SimpleAuth auth =</span>
-<span class="fc" id="L82">        ((FileBasedConfiguration) ((FtpSession) getSession())</span>
-<span class="fc" id="L83">            .getConfiguration()).getSimpleAuth(user);</span>
+<span class="fc" id="L82">        ((FileBasedConfiguration) ((FtpSession) getSession()).getConfiguration()).getSimpleAuth(</span>
+            user);
 <span class="pc bpc" id="L84" title="1 of 2 branches missed.">    if (auth == null) {</span>
 <span class="nc" id="L85">      setIsIdentified(false);</span>
 <span class="nc" id="L86">      currentAuth = null;</span>
@@ -110,7 +110,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessPassword(final String password)
+  protected final NextCommandReply setBusinessPassword(final String password)
       throws Reply421Exception, Reply530Exception {
 <span class="pc bpc" id="L115" title="1 of 2 branches missed.">    if (currentAuth == null) {</span>
 <span class="nc" id="L116">      setIsIdentified(false);</span>
@@ -150,7 +150,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessAccount(final String account)
+  protected final NextCommandReply setBusinessAccount(final String account)
       throws Reply530Exception {
 <span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (currentAuth == null) {</span>
 <span class="nc" id="L156">      throw new Reply530Exception(&quot;ACCT needs a USER first&quot;);</span>
@@ -166,7 +166,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  public boolean isBusinessPathValid(final String newPath) {
+  public final boolean isBusinessPathValid(final String newPath) {
 <span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (newPath == null) {</span>
 <span class="nc" id="L171">      return false;</span>
     }
@@ -174,7 +174,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  protected String setBusinessRootFromAuth() throws Reply421Exception {
+  protected final String setBusinessRootFromAuth() throws Reply421Exception {
     final String path;
 <span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (account == null) {</span>
 <span class="nc" id="L180">      path = DirInterface.SEPARATOR + user;</span>
@@ -190,8 +190,8 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
 <span class="fc" id="L194">    return currentAuth.isAdmin();</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

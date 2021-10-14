@@ -95,7 +95,7 @@ public abstract class WaarpShutdownHook extends Thread {
   /**
    * @return the current ShutdownConfiguration
    */
-  public ShutdownConfiguration getShutdownConfiguration() {
+  public final ShutdownConfiguration getShutdownConfiguration() {
 <span class="nc" id="L99">    return shutdownConfiguration;</span>
   }
 
@@ -321,8 +321,8 @@ public abstract class WaarpShutdownHook extends Thread {
   /**
    * Extra call to ensure exit after long delay
    */
-  public void launchFinalExit() {
-<span class="pc bpc" id="L325" title="1 of 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
+  public final void launchFinalExit() {
+<span class="pc bpc" id="L325" title="1 of 2 branches missed.">    if (WaarpSystemUtil.isJunit()) {</span>
 <span class="fc" id="L326">      return;</span>
     }
 <span class="nc" id="L328">    final Timer timer = new Timer(&quot;WaarpFinalExit&quot;, true);</span>
@@ -337,7 +337,7 @@ public abstract class WaarpShutdownHook extends Thread {
    */
   private static String getArgs() {
 <span class="nc" id="L339">    final String test = System.getProperty(SUN_JAVA_COMMAND);</span>
-<span class="nc bnc" id="L340" title="All 4 branches missed.">    if (test != null &amp;&amp; !test.isEmpty()) {</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(test)) {</span>
       // compute args directly
       // program main and program arguments
 <span class="nc" id="L343">      final String[] mainCommand = test.split(&quot; &quot;);</span>
@@ -383,7 +383,7 @@ public abstract class WaarpShutdownHook extends Thread {
     }
 <span class="fc" id="L384">    final String path = ManagementFactory.getRuntimeMXBean().getClassPath();</span>
 <span class="fc" id="L385">    final StringBuilder newArgs = new StringBuilder();</span>
-<span class="pc bpc" id="L386" title="2 of 4 branches missed.">    if (path != null &amp;&amp; !path.isEmpty()) {</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(path)) {</span>
 <span class="fc" id="L387">      newArgs.append(&quot;-cp &quot;).append(path);</span>
     }
 <span class="fc" id="L389">    newArgs.append(' ').append(main.getName());</span>
@@ -404,8 +404,8 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="nc" id="L404">        }</span>
       }
       // Already stopped
-<span class="nc" id="L407">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L408">          .syserr(&quot;Halt System now - services already stopped -&quot;);</span>
+<span class="nc" id="L407">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+          &quot;Halt System now - services already stopped -&quot;);
       //FBGEXIT DetectionUtils.SystemExit(0)
 <span class="nc" id="L410">      return;</span>
     }
@@ -469,4 +469,4 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="fc" id="L469">    }</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

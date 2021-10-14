@@ -86,10 +86,10 @@ public final class TransferUtils {
 <span class="nc bnc" id="L86" title="All 2 branches missed.">        if (taskRunner.restart(true)) {</span>
 <span class="nc" id="L87">          taskRunner.forceSaveStatus();</span>
 <span class="nc" id="L88">          finalResult.setCode(ErrorCode.PreProcessingOk);</span>
-<span class="nc" id="L89">          finalResult</span>
-<span class="nc" id="L90">              .setOther(Messages.getString(&quot;TransferUtils.1&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L89">          finalResult.setOther(</span>
+<span class="nc" id="L90">              Messages.getString(&quot;TransferUtils.1&quot;)); //$NON-NLS-1$</span>
         } else {
-<span class="nc bnc" id="L92" title="All 2 branches missed.">          if (taskRunner.isSelfRequested() &amp;&amp;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">          if (taskRunner.isRequestOnRequested() &amp;&amp;</span>
 <span class="nc bnc" id="L93" title="All 2 branches missed.">              taskRunner.getGloballaststep() &lt; TASKSTEP.POSTTASK.ordinal()) {</span>
             // send a VALID packet with VALID code to the requester except if client
 <span class="nc" id="L95">            final DbHostAuth host =</span>
@@ -110,9 +110,9 @@ public final class TransferUtils {
 <span class="nc" id="L110">                  new RequestTransfer(result, taskRunner.getSpecialId(),</span>
 <span class="nc" id="L111">                                      taskRunner.getRequested(),</span>
 <span class="nc" id="L112">                                      taskRunner.getRequester(), false, false,</span>
-                                      true, Configuration.configuration
-<span class="nc" id="L114">                                          .getInternalRunner()</span>
-<span class="nc" id="L115">                                          .getNetworkTransaction());</span>
+                                      true,
+<span class="nc" id="L114">                                      Configuration.configuration.getInternalRunner()</span>
+<span class="nc" id="L115">                                                                 .getNetworkTransaction());</span>
 <span class="nc" id="L116">              requestTransfer.run();</span>
 <span class="nc" id="L117">              result.awaitOrInterruptible();</span>
 <span class="nc bnc" id="L118" title="All 2 branches missed.">              if (!result.isDone()) {</span>
@@ -162,8 +162,8 @@ public final class TransferUtils {
             }
 <span class="nc" id="L163">          } else {</span>
 <span class="nc" id="L164">            finalResult.setCode(ErrorCode.CompleteOk);</span>
-<span class="nc" id="L165">            finalResult</span>
-<span class="nc" id="L166">                .setOther(Messages.getString(&quot;TransferUtils.11&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L165">            finalResult.setOther(</span>
+<span class="nc" id="L166">                Messages.getString(&quot;TransferUtils.11&quot;)); //$NON-NLS-1$</span>
 <span class="nc" id="L167">            taskRunner.setPostTask();</span>
 <span class="nc" id="L168">            finalizeTaskWithNoSession(taskRunner, null);</span>
 <span class="nc" id="L169">            taskRunner.setErrorExecutionStatus(ErrorCode.QueryAlreadyFinished);</span>
@@ -172,8 +172,8 @@ public final class TransferUtils {
         }
 <span class="nc" id="L173">      } catch (final OpenR66RunnerErrorException e) {</span>
 <span class="nc" id="L174">        finalResult.setCode(ErrorCode.PreProcessingOk);</span>
-<span class="nc" id="L175">        finalResult</span>
-<span class="nc" id="L176">            .setOther(Messages.getString(&quot;TransferUtils.1&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L175">        finalResult.setOther(</span>
+<span class="nc" id="L176">            Messages.getString(&quot;TransferUtils.1&quot;)); //$NON-NLS-1$</span>
 <span class="nc" id="L177">      }</span>
     }
 <span class="nc" id="L179">    return finalResult;</span>
@@ -190,10 +190,10 @@ public final class TransferUtils {
   public static void finalizeTaskWithNoSession(final DbTaskRunner taskRunner,
                                                final LocalChannelReference localChannelReference)
       throws OpenR66RunnerErrorException {
-<span class="nc" id="L193">    final R66Session session = new R66Session();</span>
+<span class="nc" id="L193">    final R66Session session = new R66Session(false);</span>
 <span class="nc" id="L194">    session.setStatus(50);</span>
 <span class="nc" id="L195">    final String remoteId =</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">        taskRunner.isSelfRequested()? taskRunner.getRequester() :</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        taskRunner.isRequestOnRequested()? taskRunner.getRequester() :</span>
 <span class="nc" id="L197">            taskRunner.getRequested();</span>
 <span class="nc" id="L198">    session.getAuth().specialNoSessionAuth(false, remoteId);</span>
 <span class="nc" id="L199">    session.setNoSessionRunner(taskRunner, localChannelReference);</span>
@@ -238,8 +238,8 @@ public final class TransferUtils {
 <span class="nc" id="L238">    finalValue.setRunner(taskRunner);</span>
 <span class="nc" id="L239">    taskRunner.finishTransferTask(ErrorCode.TransferOk);</span>
     try {
-<span class="nc" id="L241">      taskRunner</span>
-<span class="nc" id="L242">          .finalizeTransfer(localChannelReference, file, finalValue, true);</span>
+<span class="nc" id="L241">      taskRunner.finalizeTransfer(localChannelReference, file, finalValue,</span>
+                                  true);
 <span class="nc" id="L243">    } catch (final OpenR66ProtocolSystemException e) {</span>
 <span class="nc" id="L244">      logger.error(Messages.getString(&quot;TransferUtils.29&quot;),</span>
 <span class="nc" id="L245">                   taskRunner.toShortString()); //$NON-NLS-1$</span>
@@ -276,7 +276,7 @@ public final class TransferUtils {
         // inform local instead of remote
 <span class="nc" id="L277">        LocalServerHandler.channelRead0(lcr, perror);</span>
 <span class="nc" id="L278">      } catch (final Exception e) {</span>
-<span class="nc" id="L279">        logger.warn(&quot;Write local packet error&quot;, e);</span>
+<span class="nc" id="L279">        logger.warn(&quot;Write local packet error&quot; + &quot; : {}&quot;, e.getMessage());</span>
 <span class="nc" id="L280">      }</span>
 <span class="nc" id="L281">      result = ErrorCode.StoppedTransfer;</span>
 <span class="nc" id="L282">    } else {</span>
@@ -296,21 +296,19 @@ public final class TransferUtils {
 <span class="nc" id="L296">    taskRunner.setErrorExecutionStatus(result);</span>
 <span class="nc bnc" id="L297" title="All 2 branches missed.">    if (map != null) {</span>
 <span class="nc bnc" id="L298" title="All 2 branches missed.">      if (map instanceof Map) {</span>
-<span class="nc" id="L299">        ((Map&lt;String, String&gt;) map)</span>
-<span class="nc" id="L300">            .put(taskRunner.getKey(), taskRunner.getJsonAsString());</span>
+<span class="nc" id="L299">        ((Map&lt;String, String&gt;) map).put(taskRunner.getKey(),</span>
+<span class="nc" id="L300">                                        taskRunner.getJsonAsString());</span>
 <span class="nc bnc" id="L301" title="All 2 branches missed.">      } else if (map instanceof StringBuilder) {</span>
 <span class="nc bnc" id="L302" title="All 2 branches missed.">        ((StringBuilder) map).append(taskRunner.toSpecializedHtml(session, body,</span>
                                                                   lcr != null?
-                                                                      Messages
-<span class="nc" id="L305">                                                                          .getString(</span>
-                                                                              &quot;HttpSslHandler.Active&quot;) :
-                                                                      Messages
-<span class="nc" id="L308">                                                                          .getString(</span>
-                                                                              &quot;HttpSslHandler.NotActive&quot;)));
+<span class="nc" id="L304">                                                                      Messages.getString(</span>
+                                                                          &quot;HttpSslHandler.Active&quot;) :
+<span class="nc" id="L306">                                                                      Messages.getString(</span>
+                                                                          &quot;HttpSslHandler.NotActive&quot;)));
       }
     }
-<span class="nc" id="L312">    taskRunner.setErrorExecutionStatus(last);</span>
-<span class="nc" id="L313">  }</span>
+<span class="nc" id="L310">    taskRunner.setErrorExecutionStatus(last);</span>
+<span class="nc" id="L311">  }</span>
 
   /**
    * Stop all selected transfers
@@ -344,10 +342,10 @@ public final class TransferUtils {
                                            final boolean pending,
                                            final boolean transfer,
                                            final boolean error) {
-<span class="fc" id="L347">    stopSelectedTransfers(dbSession, limit, map, session, body, startid, stopid,</span>
+<span class="fc" id="L345">    stopSelectedTransfers(dbSession, limit, map, session, body, startid, stopid,</span>
                           tstart, tstop, rule, req, pending, transfer, error,
                           null);
-<span class="fc" id="L350">  }</span>
+<span class="fc" id="L348">  }</span>
 
   public static void stopSelectedTransfers(final DbSession dbSession,
                                            final int limit, final Object map,
@@ -362,40 +360,41 @@ public final class TransferUtils {
                                            final boolean transfer,
                                            final boolean error,
                                            final String host) {
-<span class="pc bpc" id="L365" title="1 of 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="pc bpc" id="L363" title="1 of 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
       // do it without DB
-<span class="pc bpc" id="L367" title="1 of 2 branches missed.">      if (ClientRunner.activeRunners != null) {</span>
-<span class="nc bnc" id="L368" title="All 2 branches missed.">        for (final ClientRunner runner : ClientRunner.activeRunners) {</span>
-<span class="nc" id="L369">          final DbTaskRunner taskRunner = runner.getTaskRunner();</span>
-<span class="nc" id="L370">          stopOneTransfer(taskRunner, map, session, body);</span>
-<span class="nc" id="L371">        }</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">      if (ClientRunner.activeRunners != null) {</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        for (final ClientRunner runner : ClientRunner.activeRunners) {</span>
+<span class="nc" id="L367">          final DbTaskRunner taskRunner = runner.getTaskRunner();</span>
+<span class="nc" id="L368">          stopOneTransfer(taskRunner, map, session, body);</span>
+<span class="nc" id="L369">        }</span>
       }
-<span class="pc bpc" id="L373" title="1 of 2 branches missed.">      if (CommanderNoDb.todoList != null) {</span>
-<span class="fc" id="L374">        CommanderNoDb.todoList.clear();</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">      if (CommanderNoDb.todoList != null) {</span>
+<span class="fc" id="L372">        CommanderNoDb.todoList.clear();</span>
       }
-<span class="fc" id="L376">      return;</span>
+<span class="fc" id="L374">      return;</span>
     }
-<span class="fc" id="L378">    DbPreparedStatement preparedStatement = null;</span>
+<span class="fc" id="L376">    DbPreparedStatement preparedStatement = null;</span>
     try {
-<span class="fc" id="L380">      preparedStatement = DbTaskRunner</span>
-<span class="fc" id="L381">          .getFilterPrepareStatement(dbSession, limit, true, startid, stopid,</span>
-                                     tstart, tstop, rule, req, pending,
-                                     transfer, error, false, false, host);
-<span class="fc" id="L384">      preparedStatement.executeQuery();</span>
-<span class="pc bpc" id="L385" title="1 of 2 branches missed.">      while (preparedStatement.getNext()) {</span>
-<span class="nc" id="L386">        final DbTaskRunner taskRunner =</span>
-<span class="nc" id="L387">            DbTaskRunner.getFromStatement(preparedStatement);</span>
-<span class="nc" id="L388">        stopOneTransfer(taskRunner, map, session, body);</span>
-<span class="nc" id="L389">      }</span>
-<span class="fc" id="L390">      preparedStatement.realClose();</span>
-<span class="fc" id="L391">    } catch (final WaarpDatabaseException e) {</span>
-<span class="pc bpc" id="L392" title="1 of 2 branches missed.">      if (preparedStatement != null) {</span>
-<span class="nc" id="L393">        preparedStatement.realClose();</span>
+<span class="fc" id="L378">      preparedStatement =</span>
+<span class="fc" id="L379">          DbTaskRunner.getFilterPrepareStatement(dbSession, limit, true,</span>
+                                                 startid, stopid, tstart, tstop,
+                                                 rule, req, pending, transfer,
+                                                 error, false, false, host);
+<span class="fc" id="L383">      preparedStatement.executeQuery();</span>
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">      while (preparedStatement.getNext()) {</span>
+<span class="nc" id="L385">        final DbTaskRunner taskRunner =</span>
+<span class="nc" id="L386">            DbTaskRunner.getFromStatement(preparedStatement);</span>
+<span class="nc" id="L387">        stopOneTransfer(taskRunner, map, session, body);</span>
+<span class="nc" id="L388">      }</span>
+<span class="fc" id="L389">      preparedStatement.realClose();</span>
+<span class="fc" id="L390">    } catch (final WaarpDatabaseException e) {</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">      if (preparedStatement != null) {</span>
+<span class="nc" id="L392">        preparedStatement.realClose();</span>
       }
-<span class="fc" id="L395">      logger.error(Messages.getString(&quot;TransferUtils.14&quot;),</span>
-<span class="fc" id="L396">                   e.getMessage()); //$NON-NLS-1$</span>
-<span class="fc" id="L397">    }</span>
-<span class="fc" id="L398">  }</span>
+<span class="fc" id="L394">      logger.error(Messages.getString(&quot;TransferUtils.14&quot;),</span>
+<span class="fc" id="L395">                   e.getMessage()); //$NON-NLS-1$</span>
+<span class="fc" id="L396">    }</span>
+<span class="fc" id="L397">  }</span>
 
   /**
    * Method to delete the temporary file
@@ -410,59 +409,57 @@ public final class TransferUtils {
                                       final Object map,
                                       final R66Session session,
                                       final String body) {
-<span class="nc bnc" id="L413" title="All 4 branches missed.">    if (!taskRunner.isSender() &amp;&amp; !taskRunner.isAllDone()) {</span>
-<span class="nc" id="L414">      String name = null;</span>
+<span class="nc bnc" id="L412" title="All 4 branches missed.">    if (!taskRunner.isSender() &amp;&amp; !taskRunner.isAllDone()) {</span>
+<span class="nc" id="L413">      String name = null;</span>
       try {
-<span class="nc bnc" id="L416" title="All 2 branches missed.">        if (session != null) {</span>
-<span class="nc" id="L417">          session.getDir().changeDirectory(&quot;/&quot;);</span>
-<span class="nc" id="L418">          session.setBadRunner(taskRunner, ErrorCode.QueryAlreadyFinished);</span>
-<span class="nc" id="L419">          final R66File file = session.getFile();</span>
-<span class="nc bnc" id="L420" title="All 2 branches missed.">          if (file != null) {</span>
-<span class="nc" id="L421">            name = file.getFile();</span>
-<span class="nc bnc" id="L422" title="All 2 branches missed.">            if (file.exists()) {</span>
-<span class="nc" id="L423">              logger.info(&quot;{}{}&quot;, Messages.getString(&quot;TransferUtils.18&quot;),</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if (session != null) {</span>
+<span class="nc" id="L416">          session.getDir().changeDirectory(&quot;/&quot;);</span>
+<span class="nc" id="L417">          session.setBadRunner(taskRunner, ErrorCode.QueryAlreadyFinished);</span>
+<span class="nc" id="L418">          final R66File file = session.getFile();</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">          if (file != null) {</span>
+<span class="nc" id="L420">            name = file.getFile();</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">            if (file.exists()) {</span>
+<span class="nc" id="L422">              logger.info(&quot;{}{}&quot;, Messages.getString(&quot;TransferUtils.18&quot;),</span>
                           file); //$NON-NLS-1$
-<span class="nc bnc" id="L425" title="All 2 branches missed.">              if (!file.delete()) {</span>
-<span class="nc" id="L426">                logger.warn(Messages.getString(&quot;TransferUtils.19&quot;) +</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">              if (!file.delete()) {</span>
+<span class="nc" id="L425">                logger.warn(Messages.getString(&quot;TransferUtils.19&quot;) +</span>
                             file); //$NON-NLS-1$
               } else {
-<span class="nc" id="L429">                taskRunner.setRankAtStartup(0);</span>
-<span class="nc" id="L430">                taskRunner.setFilename(&quot;###FILE DELETED### &quot; + name);</span>
-<span class="nc" id="L431">                taskRunner.update();</span>
+<span class="nc" id="L428">                taskRunner.setRankAtStartup(0);</span>
+<span class="nc" id="L429">                taskRunner.setFilename(&quot;###FILE DELETED### &quot; + name);</span>
+<span class="nc" id="L430">                taskRunner.update();</span>
               }
-<span class="nc bnc" id="L433" title="All 2 branches missed.">            } else if (!name.contains(&quot;###FILE DELETED### &quot;)) {</span>
-<span class="nc" id="L434">              taskRunner.setRankAtStartup(0);</span>
-<span class="nc" id="L435">              taskRunner.setFilename(&quot;###FILE DELETED### &quot; + name);</span>
-<span class="nc" id="L436">              taskRunner.update();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">            } else if (!name.contains(&quot;###FILE DELETED### &quot;)) {</span>
+<span class="nc" id="L433">              taskRunner.setRankAtStartup(0);</span>
+<span class="nc" id="L434">              taskRunner.setFilename(&quot;###FILE DELETED### &quot; + name);</span>
+<span class="nc" id="L435">              taskRunner.update();</span>
             }
           }
         }
-<span class="nc" id="L440">      } catch (final CommandAbstractException e1) {</span>
-<span class="nc" id="L441">        logger.warn(Messages.getString(&quot;TransferUtils.19&quot;) + name,</span>
-                    e1); //$NON-NLS-1$
-<span class="nc" id="L443">      } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L439">      } catch (final CommandAbstractException e1) {</span>
+<span class="nc" id="L440">        logger.warn(Messages.getString(&quot;TransferUtils.19&quot;) + name + &quot; : {}&quot;,</span>
+<span class="nc" id="L441">                    e1.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L442">      } catch (final WaarpDatabaseException ignored) {</span>
         // nothing
-<span class="nc" id="L445">      }</span>
+<span class="nc" id="L444">      }</span>
     }
-<span class="nc bnc" id="L447" title="All 2 branches missed.">    if (map != null) {</span>
-<span class="nc bnc" id="L448" title="All 2 branches missed.">      if (map instanceof Map) {</span>
-<span class="nc" id="L449">        ((Map&lt;String, String&gt;) map)</span>
-<span class="nc" id="L450">            .put(taskRunner.getKey(), taskRunner.getJsonAsString());</span>
-<span class="nc bnc" id="L451" title="All 2 branches missed.">      } else if (map instanceof StringBuilder) {</span>
-<span class="nc" id="L452">        final LocalChannelReference lcr =</span>
-<span class="nc" id="L453">            Configuration.configuration.getLocalTransaction()</span>
-<span class="nc" id="L454">                                       .getFromRequest(taskRunner.getKey());</span>
-<span class="nc bnc" id="L455" title="All 2 branches missed.">        ((StringBuilder) map).append(taskRunner.toSpecializedHtml(session, body,</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (map != null) {</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">      if (map instanceof Map) {</span>
+<span class="nc" id="L448">        ((Map&lt;String, String&gt;) map).put(taskRunner.getKey(),</span>
+<span class="nc" id="L449">                                        taskRunner.getJsonAsString());</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">      } else if (map instanceof StringBuilder) {</span>
+<span class="nc" id="L451">        final LocalChannelReference lcr =</span>
+<span class="nc" id="L452">            Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L453">                                       .getFromRequest(taskRunner.getKey());</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">        ((StringBuilder) map).append(taskRunner.toSpecializedHtml(session, body,</span>
                                                                   lcr != null?
-                                                                      Messages
-<span class="nc" id="L458">                                                                          .getString(</span>
-                                                                              &quot;HttpSslHandler.Active&quot;) :
-                                                                      Messages
-<span class="nc" id="L461">                                                                          .getString(</span>
-                                                                              &quot;HttpSslHandler.NotActive&quot;)));
+<span class="nc" id="L456">                                                                      Messages.getString(</span>
+                                                                          &quot;HttpSslHandler.Active&quot;) :
+<span class="nc" id="L458">                                                                      Messages.getString(</span>
+                                                                          &quot;HttpSslHandler.NotActive&quot;)));
       }
     }
-<span class="nc" id="L465">  }</span>
+<span class="nc" id="L462">  }</span>
 
   /**
    * Clean all selected transfers
@@ -499,42 +496,43 @@ public final class TransferUtils {
                                             final boolean transfer,
                                             final boolean error,
                                             final String host) {
-<span class="nc bnc" id="L502" title="All 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="nc bnc" id="L499" title="All 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
       // do it without DB
-<span class="nc bnc" id="L504" title="All 2 branches missed.">      if (ClientRunner.activeRunners != null) {</span>
-<span class="nc bnc" id="L505" title="All 2 branches missed.">        for (final ClientRunner runner : ClientRunner.activeRunners) {</span>
-<span class="nc" id="L506">          final DbTaskRunner taskRunner = runner.getTaskRunner();</span>
-<span class="nc" id="L507">          stopOneTransfer(taskRunner, null, session, null);</span>
-<span class="nc" id="L508">          cleanOneTransfer(taskRunner, map, session, body);</span>
-<span class="nc" id="L509">        }</span>
+<span class="nc bnc" id="L501" title="All 2 branches missed.">      if (ClientRunner.activeRunners != null) {</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">        for (final ClientRunner runner : ClientRunner.activeRunners) {</span>
+<span class="nc" id="L503">          final DbTaskRunner taskRunner = runner.getTaskRunner();</span>
+<span class="nc" id="L504">          stopOneTransfer(taskRunner, null, session, null);</span>
+<span class="nc" id="L505">          cleanOneTransfer(taskRunner, map, session, body);</span>
+<span class="nc" id="L506">        }</span>
       }
-<span class="nc bnc" id="L511" title="All 2 branches missed.">      if (CommanderNoDb.todoList != null) {</span>
-<span class="nc" id="L512">        CommanderNoDb.todoList.clear();</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">      if (CommanderNoDb.todoList != null) {</span>
+<span class="nc" id="L509">        CommanderNoDb.todoList.clear();</span>
       }
-<span class="nc" id="L514">      return;</span>
+<span class="nc" id="L511">      return;</span>
     }
-<span class="nc" id="L516">    DbPreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L513">    DbPreparedStatement preparedStatement = null;</span>
     try {
-<span class="nc" id="L518">      preparedStatement = DbTaskRunner</span>
-<span class="nc" id="L519">          .getFilterPrepareStatement(dbSession, limit, true, startid, stopid,</span>
-                                     tstart, tstop, rule, req, pending,
-                                     transfer, error, false, false, host);
-<span class="nc" id="L522">      preparedStatement.executeQuery();</span>
-<span class="nc bnc" id="L523" title="All 2 branches missed.">      while (preparedStatement.getNext()) {</span>
-<span class="nc" id="L524">        final DbTaskRunner taskRunner =</span>
-<span class="nc" id="L525">            DbTaskRunner.getFromStatement(preparedStatement);</span>
-<span class="nc" id="L526">        stopOneTransfer(taskRunner, null, session, null);</span>
-<span class="nc" id="L527">        cleanOneTransfer(taskRunner, map, session, body);</span>
-<span class="nc" id="L528">      }</span>
-<span class="nc" id="L529">      preparedStatement.realClose();</span>
-<span class="nc" id="L530">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc bnc" id="L531" title="All 2 branches missed.">      if (preparedStatement != null) {</span>
-<span class="nc" id="L532">        preparedStatement.realClose();</span>
+<span class="nc" id="L515">      preparedStatement =</span>
+<span class="nc" id="L516">          DbTaskRunner.getFilterPrepareStatement(dbSession, limit, true,</span>
+                                                 startid, stopid, tstart, tstop,
+                                                 rule, req, pending, transfer,
+                                                 error, false, false, host);
+<span class="nc" id="L520">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">      while (preparedStatement.getNext()) {</span>
+<span class="nc" id="L522">        final DbTaskRunner taskRunner =</span>
+<span class="nc" id="L523">            DbTaskRunner.getFromStatement(preparedStatement);</span>
+<span class="nc" id="L524">        stopOneTransfer(taskRunner, null, session, null);</span>
+<span class="nc" id="L525">        cleanOneTransfer(taskRunner, map, session, body);</span>
+<span class="nc" id="L526">      }</span>
+<span class="nc" id="L527">      preparedStatement.realClose();</span>
+<span class="nc" id="L528">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">      if (preparedStatement != null) {</span>
+<span class="nc" id="L530">        preparedStatement.realClose();</span>
       }
-<span class="nc" id="L534">      logger.error(Messages.getString(&quot;TransferUtils.14&quot;),</span>
-<span class="nc" id="L535">                   e.getMessage()); //$NON-NLS-1$</span>
-<span class="nc" id="L536">    }</span>
-<span class="nc" id="L537">  }</span>
+<span class="nc" id="L532">      logger.error(Messages.getString(&quot;TransferUtils.14&quot;),</span>
+<span class="nc" id="L533">                   e.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L534">    }</span>
+<span class="nc" id="L535">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

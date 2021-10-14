@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpBC.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpDigest</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.digest</a> &gt; <span class="el_source">WaarpBC.java</span></div><h1>WaarpBC.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.digest;
+
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.OpenSsl;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.X509Certificate;
+
+public class WaarpBC {
+  public static final String PROTOCOL = &quot;TLS&quot;;
+  public static final long DEFAULT_SESSIONCACHE_TIMEOUTSEC = 60;
+  public static final long DEFAULT_SESSIONCACHE_SIZE = 20480;
+<span class="fc" id="L42">  private static volatile boolean initialized = false;</span>
+<span class="fc" id="L43">  private static boolean specialSecureRandom = false;</span>
+
+  static {
+<span class="fc" id="L46">    initializedTlsContext();</span>
+<span class="fc" id="L47">  }</span>
+
+  public static void initializedTlsContext() {
+    try {
+<span class="fc bfc" id="L51" title="All 2 branches covered.">      if (!initialized) {</span>
+<span class="fc" id="L52">        addBcProvider();</span>
+<span class="fc" id="L53">        registerRandomSecure();</span>
+<span class="fc" id="L54">        initialized = true;</span>
+      }
+<span class="nc" id="L56">    } catch (final Throwable throwable) {//NOSONAR</span>
+<span class="nc" id="L57">      throwable.printStackTrace();//NOSONAR</span>
+<span class="nc" id="L58">      System.err //NOSONAR</span>
+<span class="nc" id="L59">                 .println(&quot;Error occurs at startup: &quot; +//NOSONAR</span>
+<span class="nc" id="L60">                          throwable.getMessage());//NOSONAR</span>
+<span class="fc" id="L61">    }</span>
+<span class="fc" id="L62">  }</span>
+
+  /**
+   * Called at first
+   */
+  private static void addBcProvider() {
+<span class="fc" id="L68">    OpenSsl.isAvailable();</span>
+<span class="fc" id="L69">  }</span>
+
+  /**
+   * To fix issue on SecureRandom using bad algotithm
+   * &lt;/br&gt;
+   * Called at second place
+   */
+  private static void registerRandomSecure() {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">    if (System.getProperty(&quot;os.name&quot;).contains(&quot;Windows&quot;)) {</span>
+<span class="nc" id="L78">      final Provider provider = Security.getProvider(&quot;SunMSCAPI&quot;);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      if (provider != null) {</span>
+<span class="nc" id="L80">        Security.removeProvider(provider.getName());</span>
+<span class="nc" id="L81">        Security.insertProviderAt(provider, 1);</span>
+<span class="nc" id="L82">        specialSecureRandom = true;</span>
+      }
+<span class="nc" id="L84">    } else {</span>
+<span class="fc" id="L85">      System.setProperty(&quot;java.security.egd&quot;, &quot;file:/dev/./urandom&quot;);</span>
+<span class="fc" id="L86">      final Provider provider = Security.getProvider(&quot;SUN&quot;);</span>
+<span class="fc" id="L87">      final String type = &quot;SecureRandom&quot;;</span>
+<span class="fc" id="L88">      final String alg = &quot;NativePRNGNonBlocking&quot;;</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">      if (provider != null) {</span>
+<span class="fc" id="L90">        final String name = String.format(&quot;%s.%s&quot;, type, alg);</span>
+<span class="fc" id="L91">        final Provider.Service service = provider.getService(type, alg);</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (service != null) {</span>
+<span class="fc" id="L93">          Security.insertProviderAt(new Provider(name, provider.getVersion(),</span>
+<span class="fc" id="L94">                                                 &quot;Waarp quick fix for SecureRandom using urandom&quot;) {</span>
+            private static final long serialVersionUID = 1001L;
+
+            {
+<span class="fc" id="L98">              System.setProperty(name, service.getClassName());</span>
+<span class="fc" id="L99">            }</span>
+
+          }, 1);
+<span class="fc" id="L102">          specialSecureRandom = true;</span>
+        }
+      }
+    }
+<span class="fc" id="L106">  }</span>
+
+  public static SecureRandom getSecureRandom() {
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">    if (!specialSecureRandom) {</span>
+<span class="nc" id="L110">      return new SecureRandom();</span>
+    }
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">    if (System.getProperty(&quot;os.name&quot;).contains(&quot;Windows&quot;)) {</span>
+      try {
+<span class="nc" id="L114">        return SecureRandom.getInstance(&quot;Windows-PRNG&quot;, &quot;SunMSCAPI&quot;);</span>
+<span class="nc" id="L115">      } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L116">        return new SecureRandom();</span>
+<span class="nc" id="L117">      } catch (final NoSuchProviderException e) {</span>
+<span class="nc" id="L118">        return new SecureRandom();</span>
+      }
+    } else {
+      try {
+<span class="fc" id="L122">        return SecureRandom.getInstance(&quot;NativePRNGNonBlocking&quot;, &quot;SUN&quot;);</span>
+<span class="nc" id="L123">      } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L124">        return new SecureRandom();</span>
+<span class="nc" id="L125">      } catch (final NoSuchProviderException e) {</span>
+<span class="nc" id="L126">        return new SecureRandom();</span>
+      }
+    }
+  }
+
+  public static SslContext getInstanceForServer(
+      final KeyManagerFactory keyManagerFactory,
+      final X509Certificate[] x509Certificates,
+      final boolean clientNeedAuthentication, final boolean startTls)
+      throws SSLException {
+<span class="fc" id="L136">    final SslContextBuilder builder =</span>
+<span class="fc" id="L137">        SslContextBuilder.forServer(keyManagerFactory)</span>
+<span class="fc" id="L138">                         .sslProvider(SslContext.defaultServerProvider());</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">    if (x509Certificates != null) {</span>
+<span class="fc" id="L140">      builder.trustManager(x509Certificates);</span>
+    }
+<span class="fc bfc" id="L142" title="All 2 branches covered.">    builder.clientAuth(</span>
+        clientNeedAuthentication? ClientAuth.REQUIRE : ClientAuth.NONE);
+<span class="fc" id="L144">    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)</span>
+<span class="fc" id="L145">           .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC).startTls(startTls);</span>
+<span class="fc" id="L146">    return builder.build();</span>
+  }
+
+  public static SslContext getInstanceForClient(
+      final KeyManagerFactory keyManagerFactory,
+      final X509Certificate[] x509Certificates)
+      throws NoSuchAlgorithmException, NoSuchProviderException, SSLException {
+<span class="fc" id="L153">    final SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(</span>
+<span class="fc" id="L154">        SslContext.defaultClientProvider()).keyManager(keyManagerFactory);</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (x509Certificates != null) {</span>
+<span class="fc" id="L156">      builder.trustManager(x509Certificates);</span>
+    }
+<span class="fc" id="L158">    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)</span>
+<span class="fc" id="L159">           .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);</span>
+<span class="fc" id="L160">    return builder.build();</span>
+  }
+
+  public static SSLContext getInstanceJDK() throws NoSuchAlgorithmException {
+<span class="fc" id="L164">    return SSLContext.getInstance(PROTOCOL);</span>
+  }
+
+  private WaarpBC() {
+    // Nothing
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

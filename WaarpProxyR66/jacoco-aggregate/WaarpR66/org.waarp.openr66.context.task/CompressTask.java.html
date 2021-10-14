@@ -37,8 +37,8 @@ public class CompressTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L40">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L41">      WaarpLoggerFactory.getLogger(CompressTask.class);</span>
+<span class="fc" id="L40">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L41">      WaarpLoggerFactory.getLogger(CompressTask.class);</span>
 
   /**
    * @param argRule
@@ -48,18 +48,18 @@ public class CompressTask extends AbstractTask {
    */
   public CompressTask(final String argRule, final int delay,
                       final String argTransfer, final R66Session session) {
-<span class="nc" id="L51">    super(TaskType.COMPRESS, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L52">  }</span>
+<span class="fc" id="L51">    super(TaskType.COMPRESS, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L52">  }</span>
 
   @Override
   public void run() {
-<span class="nc" id="L56">    String finalname = argRule;</span>
-<span class="nc" id="L57">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer)).trim()</span>
-<span class="nc" id="L58">                                                                     .replace(</span>
+<span class="fc" id="L56">    String finalname = argRule;</span>
+<span class="fc" id="L57">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer)).trim()</span>
+<span class="fc" id="L58">                                                                     .replace(</span>
                                                                          '\\',
                                                                          '/');
-<span class="nc" id="L61">    final File from = session.getFile().getTrueFile();</span>
-<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(finalname)) {</span>
+<span class="fc" id="L61">    final File from = session.getFile().getTrueFile();</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(finalname)) {</span>
 <span class="nc" id="L63">      finalname = from.getParent() + &quot;/&quot; + session.getFile().getBasename();</span>
 <span class="nc bnc" id="L64" title="All 2 branches missed.">      if (delay == 0) {</span>
 <span class="nc" id="L65">        finalname += &quot;.zstd&quot;;</span>
@@ -67,20 +67,20 @@ public class CompressTask extends AbstractTask {
 <span class="nc" id="L67">        finalname += &quot;.unzstd&quot;;</span>
       }
     }
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    logger.debug(&quot;{} and &quot; + &quot;Rename to {} with {}:{} and {}&quot;,</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    logger.debug(&quot;{} and &quot; + &quot;Rename to {} with {}:{} and {}&quot;,</span>
                  (delay == 1? &quot;Decompress&quot; : &quot;Compress&quot;), finalname, argRule,
                  argTransfer, session);
-<span class="nc" id="L73">    final File to = new File(finalname);</span>
-<span class="nc" id="L74">    logger.debug(&quot;From {} {} to {} {} using {}&quot;, from, from.canRead(), to,</span>
-<span class="nc bnc" id="L75" title="All 2 branches missed.">                 to.canRead(), (delay == 1? &quot;Decompress&quot; : &quot;Compress&quot;));</span>
+<span class="fc" id="L73">    final File to = new File(finalname);</span>
+<span class="fc" id="L74">    logger.debug(&quot;From {} {} to {} {} using {}&quot;, from, from.canRead(), to,</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">                 to.canRead(), (delay == 1? &quot;Decompress&quot; : &quot;Compress&quot;));</span>
     try {
-<span class="nc" id="L77">      final WaarpZstdCodec zstdCodec = new WaarpZstdCodec();</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">      if (delay == 1) {</span>
-<span class="nc" id="L79">        zstdCodec.decompress(from, to);</span>
+<span class="fc" id="L77">      final WaarpZstdCodec zstdCodec = new WaarpZstdCodec();</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">      if (delay == 1) {</span>
+<span class="fc" id="L79">        zstdCodec.decompress(from, to);</span>
       } else {
-<span class="nc" id="L81">        zstdCodec.compress(from, to);</span>
+<span class="fc" id="L81">        zstdCodec.compress(from, to);</span>
       }
-<span class="nc bnc" id="L83" title="All 2 branches missed.">      if (!from.delete()) {</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">      if (!from.delete()) {</span>
 <span class="nc" id="L84">        logger.warn(&quot;File {} not correctly deleted&quot;, from);</span>
       }
 <span class="nc" id="L86">    } catch (final MalformedInputException e) {</span>
@@ -89,21 +89,21 @@ public class CompressTask extends AbstractTask {
 <span class="nc" id="L89">                   &quot; and &quot; + session + &quot;: {}&quot;, e.getMessage());</span>
 <span class="nc" id="L90">      futureCompletion.setFailure(e);</span>
 <span class="nc" id="L91">      return;</span>
-<span class="nc" id="L92">    }</span>
+<span class="fc" id="L92">    }</span>
     try {
-<span class="nc" id="L94">      session.getFile().replaceFilename(finalname, true);</span>
+<span class="fc" id="L94">      session.getFile().replaceFilename(finalname, true);</span>
 <span class="nc" id="L95">    } catch (final CommandAbstractException e) {</span>
 <span class="nc" id="L96">      logger.error(</span>
           &quot;Replace with Compressed file as &quot; + finalname + &quot; with &quot; + argRule +
 <span class="nc" id="L98">          ':' + argTransfer + &quot; and &quot; + session + &quot;: {}&quot;, e.getMessage());</span>
 <span class="nc" id="L99">      futureCompletion.setFailure(new OpenR66ProtocolSystemException(e));</span>
 <span class="nc" id="L100">      return;</span>
-<span class="nc" id="L101">    }</span>
-<span class="nc" id="L102">    session.getRunner().setFileMoved(finalname, true);</span>
-<span class="nc" id="L103">    logger.debug(&quot;From {} {} to {} {} using {}&quot;, from, from.canRead(), to,</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">                 to.canRead(), (delay == 1? &quot;Decompress&quot; : &quot;Compress&quot;));</span>
-<span class="nc" id="L105">    futureCompletion.setSuccess();</span>
-<span class="nc" id="L106">  }</span>
+<span class="fc" id="L101">    }</span>
+<span class="fc" id="L102">    session.getRunner().setFileMoved(finalname, true);</span>
+<span class="fc" id="L103">    logger.debug(&quot;From {} {} to {} {} using {}&quot;, from, from.canRead(), to,</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">                 to.canRead(), (delay == 1? &quot;Decompress&quot; : &quot;Compress&quot;));</span>
+<span class="fc" id="L105">    futureCompletion.setSuccess();</span>
+<span class="fc" id="L106">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

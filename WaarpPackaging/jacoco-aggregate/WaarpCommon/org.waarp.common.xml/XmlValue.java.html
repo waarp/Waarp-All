@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>XmlValue.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.xml</a> &gt; <span class="el_source">XmlValue.java</span></div><h1>XmlValue.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.xml;
+
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.WaarpStringUtils;
+
+import java.io.InvalidObjectException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * XmlValue base element
+ */
+public class XmlValue {
+
+  private static final String CAN_NOT_CONVERT_VALUE = &quot;Can not convert value &quot;;
+
+  private static final String TO_TYPE = &quot; to type &quot;;
+
+  private static final String CAN_NOT_CONVERT_VALUE_FROM =
+      &quot;Can not convert value from &quot;;
+
+  private final XmlDecl decl;
+
+  private Object value;
+
+  private List&lt;?&gt; values;
+
+  private XmlValue[] subXml;
+
+<span class="fc" id="L55">  public XmlValue(final XmlDecl decl) {</span>
+<span class="fc" id="L56">    this.decl = decl;</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">    if (this.decl.isSubXml()) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">      if (this.decl.isMultiple()) {</span>
+<span class="fc" id="L59">        value = null;</span>
+<span class="fc" id="L60">        values = new ArrayList&lt;XmlValue&gt;();</span>
+<span class="fc" id="L61">        subXml = null;</span>
+<span class="fc" id="L62">        return;</span>
+      }
+<span class="fc" id="L64">      final int len = this.decl.getSubXmlSize();</span>
+<span class="fc" id="L65">      final XmlDecl[] newDecls = this.decl.getSubXml();</span>
+<span class="fc" id="L66">      subXml = new XmlValue[len];</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">      for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L68">        subXml[i] = new XmlValue(newDecls[i]);</span>
+      }
+<span class="fc" id="L70">      value = null;</span>
+<span class="fc" id="L71">      values = null;</span>
+<span class="fc" id="L72">      return;</span>
+    }
+<span class="fc bfc" id="L74" title="All 2 branches covered.">    if (this.decl.isMultiple()) {</span>
+<span class="fc" id="L75">      value = null;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">      switch (getType()) {</span>
+        case BOOLEAN:
+        case STRING:
+        case TIMESTAMP:
+        case SQLDATE:
+        case SHORT:
+        case DOUBLE:
+        case LONG:
+        case BYTE:
+        case CHARACTER:
+        case FLOAT:
+        case INTEGER:
+<span class="fc" id="L88">          values = new ArrayList&lt;Boolean&gt;();</span>
+<span class="fc" id="L89">          break;</span>
+        case XVAL:
+        case EMPTY:
+        default:
+          break;
+      }
+    }
+<span class="fc" id="L96">  }</span>
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public XmlValue(final XmlValue from) {
+<span class="fc" id="L100">    this(from.decl);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">    if (decl.isSubXml()) {</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      if (decl.isMultiple()) {</span>
+<span class="nc" id="L103">        final List&lt;XmlValue[]&gt; subvalues = (List&lt;XmlValue[]&gt;) from.values;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        for (final XmlValue[] xmlValues : subvalues) {</span>
+<span class="nc" id="L105">          final XmlValue[] newValues = new XmlValue[xmlValues.length];</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">          for (int i = 0; i &lt; xmlValues.length; i++) {</span>
+<span class="nc" id="L107">            newValues[i] = new XmlValue(xmlValues[i]);</span>
+          }
+<span class="nc" id="L109">          ((Collection&lt;XmlValue[]&gt;) values).add(newValues);</span>
+<span class="nc" id="L110">        }</span>
+<span class="nc" id="L111">      } else {</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        for (int i = 0; i &lt; from.subXml.length; i++) {</span>
+<span class="nc" id="L113">          subXml[i] = new XmlValue(from.subXml[i]);</span>
+        }
+      }
+<span class="fc bfc" id="L116" title="All 2 branches covered.">    } else if (decl.isMultiple()) {</span>
+<span class="fc" id="L117">      final List&lt;Object&gt; subvalues = (List&lt;Object&gt;) from.values;</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">      for (final Object object : subvalues) {</span>
+        try {
+<span class="fc" id="L120">          addValue(getCloneValue(getType(), object));</span>
+<span class="nc" id="L121">        } catch (final InvalidObjectException e) {</span>
+          // nothing
+<span class="fc" id="L123">        }</span>
+<span class="fc" id="L124">      }</span>
+<span class="fc" id="L125">    } else {</span>
+      try {
+<span class="fc" id="L127">        setValue(from.getCloneValue());</span>
+<span class="nc" id="L128">      } catch (final InvalidObjectException e) {</span>
+        // Nothing
+<span class="fc" id="L130">      }</span>
+    }
+<span class="fc" id="L132">  }</span>
+
+  /**
+   * @return the decl
+   */
+  public final XmlDecl getDecl() {
+<span class="nc" id="L138">    return decl;</span>
+  }
+
+  /**
+   * Get Java field name
+   *
+   * @return the field name
+   */
+  public final String getName() {
+<span class="fc" id="L147">    return decl.getName();</span>
+  }
+
+  /**
+   * @return the type
+   */
+  public final Class&lt;?&gt; getClassType() {
+<span class="fc" id="L154">    return decl.getClassType();</span>
+  }
+
+  /**
+   * @return the type
+   */
+  public final XmlType getType() {
+<span class="fc" id="L161">    return decl.getType();</span>
+  }
+
+  /**
+   * @return the xmlPath
+   */
+  public final String getXmlPath() {
+<span class="fc" id="L168">    return decl.getXmlPath();</span>
+  }
+
+  /**
+   * @return True if this Value is a subXml
+   */
+  public final boolean isSubXml() {
+<span class="fc" id="L175">    return decl.isSubXml();</span>
+  }
+
+  /**
+   * @return the associated SubXML with the XmlValue (might be null if
+   *     singleton
+   *     or Multiple)
+   */
+  public final XmlValue[] getSubXml() {
+<span class="fc" id="L184">    return subXml;</span>
+  }
+
+  /**
+   * @return True if the Value are list of values
+   */
+  public final boolean isMultiple() {
+<span class="fc" id="L191">    return decl.isMultiple();</span>
+  }
+
+  /**
+   * @return the associated list with the XmlValues (might be null if
+   *     singleton
+   *     or SubXml)
+   */
+  public final List&lt;?&gt; getList() {
+<span class="fc" id="L200">    return values;</span>
+  }
+
+  /**
+   * Add a value into the Multiple values from the String (not compatible with
+   * subXml)
+   *
+   * @param valueOrig
+   *
+   * @throws InvalidObjectException
+   * @throws InvalidArgumentException
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public final void addFromString(final String valueOrig)
+      throws InvalidObjectException, InvalidArgumentException {
+<span class="fc" id="L215">    final String valueNew = XmlUtil.getExtraTrimed(valueOrig);</span>
+<span class="pc bpc" id="L216" title="4 of 14 branches missed.">    switch (getType()) {</span>
+      case BOOLEAN:
+<span class="fc" id="L218">        ((Collection&lt;Boolean&gt;) values).add(</span>
+<span class="fc" id="L219">            (Boolean) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L220">        break;</span>
+      case INTEGER:
+<span class="fc" id="L222">        ((Collection&lt;Integer&gt;) values).add(</span>
+<span class="fc" id="L223">            (Integer) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L224">        break;</span>
+      case FLOAT:
+<span class="fc" id="L226">        ((Collection&lt;Float&gt;) values).add(</span>
+<span class="fc" id="L227">            (Float) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L228">        break;</span>
+      case CHARACTER:
+<span class="fc" id="L230">        ((Collection&lt;Character&gt;) values).add(</span>
+<span class="fc" id="L231">            (Character) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L232">        break;</span>
+      case BYTE:
+<span class="pc" id="L234">        ((Collection&lt;Byte&gt;) values).add(</span>
+<span class="nc" id="L235">            (Byte) convert(getClassType(), valueNew));</span>
+<span class="nc" id="L236">        break;</span>
+      case LONG:
+<span class="fc" id="L238">        ((Collection&lt;Long&gt;) values).add(</span>
+<span class="fc" id="L239">            (Long) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L240">        break;</span>
+      case DOUBLE:
+<span class="fc" id="L242">        ((Collection&lt;Double&gt;) values).add(</span>
+<span class="fc" id="L243">            (Double) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L244">        break;</span>
+      case SHORT:
+<span class="fc" id="L246">        ((Collection&lt;Short&gt;) values).add(</span>
+<span class="fc" id="L247">            (Short) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L248">        break;</span>
+      case SQLDATE:
+<span class="nc" id="L250">        ((Collection&lt;Date&gt;) values).add(</span>
+<span class="nc" id="L251">            (Date) convert(getClassType(), valueNew));</span>
+<span class="nc" id="L252">        break;</span>
+      case TIMESTAMP:
+<span class="nc" id="L254">        ((Collection&lt;Timestamp&gt;) values).add(</span>
+<span class="nc" id="L255">            (Timestamp) convert(getClassType(), valueNew));</span>
+<span class="nc" id="L256">        break;</span>
+      case STRING:
+<span class="fc" id="L258">        ((Collection&lt;String&gt;) values).add(</span>
+<span class="fc" id="L259">            (String) convert(getClassType(), valueNew));</span>
+<span class="fc" id="L260">        break;</span>
+      case XVAL:
+<span class="nc" id="L262">        throw new InvalidObjectException(</span>
+            &quot;XVAL cannot be assigned from String directly&quot;);
+        // ((List&lt;XmlValue&gt;) this.values).add((XmlValue) value)
+      case EMPTY:
+<span class="fc" id="L266">        throw new InvalidObjectException(&quot;EMPTY cannot be assigned&quot;);</span>
+    }
+<span class="fc" id="L268">  }</span>
+
+  /**
+   * Add a value into the Multiple values from the Object
+   *
+   * @param value
+   *
+   * @throws InvalidObjectException
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public final void addValue(final Object value) throws InvalidObjectException {
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">    if (getType().isNativelyCompatible(value)) {</span>
+<span class="pc bpc" id="L280" title="11 of 13 branches missed.">      switch (getType()) {</span>
+        case BOOLEAN:
+<span class="nc" id="L282">          ((Collection&lt;Boolean&gt;) values).add((Boolean) value);</span>
+<span class="nc" id="L283">          break;</span>
+        case INTEGER:
+<span class="nc" id="L285">          ((Collection&lt;Integer&gt;) values).add((Integer) value);</span>
+<span class="nc" id="L286">          break;</span>
+        case FLOAT:
+<span class="fc" id="L288">          ((Collection&lt;Float&gt;) values).add((Float) value);</span>
+<span class="fc" id="L289">          break;</span>
+        case CHARACTER:
+<span class="nc" id="L291">          ((Collection&lt;Character&gt;) values).add((Character) value);</span>
+<span class="nc" id="L292">          break;</span>
+        case BYTE:
+<span class="nc" id="L294">          ((Collection&lt;Byte&gt;) values).add((Byte) value);</span>
+<span class="nc" id="L295">          break;</span>
+        case LONG:
+<span class="nc" id="L297">          ((Collection&lt;Long&gt;) values).add((Long) value);</span>
+<span class="nc" id="L298">          break;</span>
+        case DOUBLE:
+<span class="nc" id="L300">          ((Collection&lt;Double&gt;) values).add((Double) value);</span>
+<span class="nc" id="L301">          break;</span>
+        case SHORT:
+<span class="nc" id="L303">          ((Collection&lt;Short&gt;) values).add((Short) value);</span>
+<span class="nc" id="L304">          break;</span>
+        case SQLDATE:
+<span class="nc bnc" id="L306" title="All 2 branches missed.">          if (Date.class.isAssignableFrom(value.getClass())) {</span>
+<span class="nc" id="L307">            ((Collection&lt;Date&gt;) values).add((Date) value);</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">          } else if (java.util.Date.class.isAssignableFrom(value.getClass())) {</span>
+<span class="nc" id="L309">            ((Collection&lt;Date&gt;) values).add(</span>
+<span class="nc" id="L310">                new Date(((java.util.Date) value).getTime()));</span>
+          }
+          break;
+        case TIMESTAMP:
+<span class="nc" id="L314">          ((Collection&lt;Timestamp&gt;) values).add((Timestamp) value);</span>
+<span class="nc" id="L315">          break;</span>
+        case STRING:
+<span class="nc" id="L317">          ((Collection&lt;String&gt;) values).add(</span>
+<span class="nc" id="L318">              XmlUtil.getExtraTrimed((String) value));</span>
+<span class="nc" id="L319">          break;</span>
+        case XVAL:
+<span class="fc" id="L321">          ((Collection&lt;XmlValue[]&gt;) values).add((XmlValue[]) value);</span>
+<span class="fc" id="L322">          break;</span>
+        default:
+<span class="nc" id="L324">          throw new InvalidObjectException(</span>
+<span class="nc" id="L325">              CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +</span>
+<span class="nc" id="L326">              getClassType());</span>
+      }
+    } else {
+<span class="nc" id="L329">      throw new InvalidObjectException(</span>
+<span class="nc" id="L330">          CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +</span>
+<span class="nc" id="L331">          getClassType());</span>
+    }
+<span class="fc" id="L333">  }</span>
+
+  /**
+   * @return the value as Object (might be null if multiple)
+   */
+  public final Object getValue() {
+<span class="nc" id="L339">    return value;</span>
+  }
+
+  /**
+   * Utility function to get a clone of a value
+   *
+   * @param type
+   * @param value
+   *
+   * @return the clone Object
+   *
+   * @throws InvalidObjectException
+   */
+  public static Object getCloneValue(final XmlType type, final Object value)
+      throws InvalidObjectException {
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L355">      throw new InvalidObjectException(</span>
+          &quot;Can not convert value from null to type &quot; + type.classType);
+    }
+<span class="pc bpc" id="L358" title="11 of 13 branches missed.">    switch (type) {</span>
+      case BOOLEAN:
+<span class="fc" id="L360">        return value;</span>
+      case INTEGER:
+<span class="nc" id="L362">        return value;</span>
+      case FLOAT:
+<span class="fc" id="L364">        return value;</span>
+      case CHARACTER:
+<span class="nc" id="L366">        return value;</span>
+      case BYTE:
+<span class="nc" id="L368">        return value;</span>
+      case LONG:
+<span class="nc" id="L370">        return value;</span>
+      case DOUBLE:
+<span class="nc" id="L372">        return value;</span>
+      case SHORT:
+<span class="nc" id="L374">        return value;</span>
+      case SQLDATE:
+<span class="nc" id="L376">        return new Date(((Date) value).getTime());</span>
+      case TIMESTAMP:
+<span class="nc" id="L378">        return new Timestamp(((Timestamp) value).getTime());</span>
+      case STRING:
+<span class="nc" id="L380">        return value;</span>
+      case XVAL:
+<span class="nc" id="L382">        return new XmlValue((XmlValue) value);</span>
+      case EMPTY:
+      default:
+<span class="nc" id="L385">        throw new InvalidObjectException(</span>
+<span class="nc" id="L386">            CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +</span>
+            type.classType);
+    }
+  }
+
+  /**
+   * @return a clone of the value as Object (might be null if multiple)
+   *
+   * @throws InvalidObjectException
+   */
+  public final Object getCloneValue() throws InvalidObjectException {
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">    if (getType() == XmlType.EMPTY) {</span>
+<span class="nc" id="L398">      return new XmlValue(decl);</span>
+    }
+<span class="fc" id="L400">    return getCloneValue(getType(), value);</span>
+  }
+
+  /**
+   * @return the value as a string
+   */
+  public final String getString() {
+<span class="pc bpc" id="L407" title="1 of 2 branches missed.">    if (getType().isString()) {</span>
+<span class="fc" id="L408">      return XmlUtil.getExtraTrimed((String) value);</span>
+    }
+<span class="nc" id="L410">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L411">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type String&quot;);</span>
+  }
+
+  /**
+   * @return the value as an integer
+   */
+  public final int getInteger() {
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">    if (getType().isInteger()) {</span>
+<span class="fc" id="L419">      return (Integer) value;</span>
+    }
+<span class="nc" id="L421">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L422">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Integer&quot;);</span>
+  }
+
+  /**
+   * @return the value as a boolean
+   */
+  public final boolean getBoolean() {
+<span class="pc bpc" id="L429" title="1 of 2 branches missed.">    if (getType().isBoolean()) {</span>
+<span class="fc" id="L430">      return (Boolean) value;</span>
+    }
+<span class="nc" id="L432">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L433">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Boolean&quot;);</span>
+  }
+
+  /**
+   * @return the value as a long
+   */
+  public final long getLong() {
+<span class="pc bpc" id="L440" title="1 of 2 branches missed.">    if (getType().isLong()) {</span>
+<span class="fc" id="L441">      return (Long) value;</span>
+    }
+<span class="nc" id="L443">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L444">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Long&quot;);</span>
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final float getFloat() {
+<span class="pc bpc" id="L451" title="1 of 2 branches missed.">    if (getType().isFloat()) {</span>
+<span class="fc" id="L452">      return (Float) value;</span>
+    }
+<span class="nc" id="L454">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L455">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Float&quot;);</span>
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final char getCharacter() {
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">    if (getType().isCharacter()) {</span>
+<span class="fc" id="L463">      return (Character) value;</span>
+    }
+<span class="nc" id="L465">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L466">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() +</span>
+        &quot; to type Character&quot;);
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final byte getByte() {
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">    if (getType().isByte()) {</span>
+<span class="fc" id="L475">      return (Byte) value;</span>
+    }
+<span class="nc" id="L477">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L478">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Byte&quot;);</span>
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final double getDouble() {
+<span class="pc bpc" id="L485" title="1 of 2 branches missed.">    if (getType().isDouble()) {</span>
+<span class="fc" id="L486">      return (Double) value;</span>
+    }
+<span class="nc" id="L488">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L489">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Double&quot;);</span>
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final short getShort() {
+<span class="pc bpc" id="L496" title="1 of 2 branches missed.">    if (getType().isShort()) {</span>
+<span class="fc" id="L497">      return (Short) value;</span>
+    }
+<span class="nc" id="L499">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L500">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Short&quot;);</span>
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final Date getDate() {
+<span class="nc bnc" id="L507" title="All 2 branches missed.">    if (getType().isDate()) {</span>
+<span class="nc" id="L508">      return (Date) value;</span>
+    }
+<span class="nc" id="L510">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L511">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + &quot; to type Date&quot;);</span>
+  }
+
+  /**
+   * @return the value as a float
+   */
+  public final Timestamp getTimestamp() {
+<span class="nc bnc" id="L518" title="All 2 branches missed.">    if (getType().isTimestamp()) {</span>
+<span class="nc" id="L519">      return (Timestamp) value;</span>
+    }
+<span class="nc" id="L521">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L522">        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() +</span>
+        &quot; to type Timestamp&quot;);
+  }
+
+  /**
+   * Set a value from String
+   *
+   * @param value
+   *
+   * @throws InvalidArgumentException
+   */
+  public final void setFromString(final String value)
+      throws InvalidArgumentException {
+<span class="fc" id="L535">    this.value = convert(getClassType(), XmlUtil.getExtraTrimed(value));</span>
+<span class="fc" id="L536">  }</span>
+
+  /**
+   * Test if the Value is empty. If it is a SubXml or isMultiple, check if
+   * subnodes are present but not if those
+   * nodes are empty.
+   *
+   * @return True if the Value is Empty
+   */
+  public final boolean isEmpty() {
+<span class="fc bfc" id="L546" title="All 2 branches covered.">    if (isSubXml()) {</span>
+<span class="pc bpc" id="L547" title="1 of 2 branches missed.">      if (isMultiple()) {</span>
+<span class="nc" id="L548">        return values.isEmpty();</span>
+      } else {
+<span class="pc bpc" id="L550" title="1 of 2 branches missed.">        return subXml.length == 0;</span>
+      }
+    }
+<span class="fc bfc" id="L553" title="All 2 branches covered.">    if (isMultiple()) {</span>
+<span class="fc" id="L554">      return values.isEmpty();</span>
+    } else {
+<span class="fc bfc" id="L556" title="All 2 branches covered.">      return value == null;</span>
+    }
+  }
+
+  /**
+   * Get a value into a String
+   *
+   * @return the value in String format
+   */
+  public final String getIntoString() {
+<span class="pc bpc" id="L566" title="2 of 4 branches missed.">    if (!isMultiple() &amp;&amp; !isSubXml()) {</span>
+<span class="pc bpc" id="L567" title="1 of 2 branches missed.">      if (value != null) {</span>
+<span class="fc" id="L568">        return value.toString();</span>
+      } else {
+<span class="nc" id="L570">        return &quot;&quot;;</span>
+      }
+    } else {
+<span class="nc" id="L573">      throw new IllegalArgumentException(</span>
+          &quot;Cannot convert Multiple values to single String&quot;);
+    }
+  }
+
+  /**
+   * @param value the value to set
+   *
+   * @throws InvalidObjectException
+   * @throws NumberFormatException
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public final void setValue(final Object value) throws InvalidObjectException {
+<span class="pc bpc" id="L586" title="1 of 2 branches missed.">    if (getType().isNativelyCompatible(value)) {</span>
+<span class="pc bpc" id="L587" title="2 of 5 branches missed.">      switch (getType()) {</span>
+        case BOOLEAN:
+        case TIMESTAMP:
+        case SHORT:
+        case DOUBLE:
+        case LONG:
+        case BYTE:
+        case CHARACTER:
+        case FLOAT:
+        case INTEGER:
+<span class="fc" id="L597">          this.value = value;</span>
+<span class="fc" id="L598">          break;</span>
+        case SQLDATE:
+<span class="nc bnc" id="L600" title="All 2 branches missed.">          if (Date.class.isAssignableFrom(value.getClass())) {</span>
+<span class="nc" id="L601">            this.value = value;</span>
+<span class="nc bnc" id="L602" title="All 2 branches missed.">          } else if (java.util.Date.class.isAssignableFrom(value.getClass())) {</span>
+<span class="nc" id="L603">            this.value = new Date(((java.util.Date) value).getTime());</span>
+          }
+          break;
+        case STRING:
+<span class="fc" id="L607">          this.value = XmlUtil.getExtraTrimed((String) value);</span>
+<span class="fc" id="L608">          break;</span>
+        case XVAL:
+<span class="fc" id="L610">          final XmlValue[] newValue = (XmlValue[]) value;</span>
+<span class="pc bpc" id="L611" title="1 of 2 branches missed.">          if (isSubXml()) {</span>
+            // should check also internal XmlDecl equality but
+            // can only check size
+<span class="pc bpc" id="L614" title="1 of 2 branches missed.">            if (decl.getSubXmlSize() != newValue.length) {</span>
+<span class="nc" id="L615">              throw new InvalidObjectException(</span>
+                  &quot;XmlDecl are not compatible from Array of XmlValue&quot; +
+<span class="nc" id="L617">                  TO_TYPE + getClassType());</span>
+            }
+<span class="pc bpc" id="L619" title="1 of 2 branches missed.">            if (isMultiple()) {</span>
+<span class="nc" id="L620">              ((List&lt;XmlValue[]&gt;) values).add(newValue);</span>
+            } else {
+<span class="fc" id="L622">              subXml = newValue;</span>
+            }
+          } else {
+<span class="nc" id="L625">            throw new InvalidObjectException(</span>
+                &quot;Can not convert value from Array of XmlValue&quot; + TO_TYPE +
+<span class="nc" id="L627">                getClassType());</span>
+          }
+          break;
+        default:
+<span class="nc" id="L631">          throw new InvalidObjectException(</span>
+<span class="nc" id="L632">              CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +</span>
+<span class="nc" id="L633">              getClassType());</span>
+      }
+    } else {
+<span class="nc" id="L636">      throw new InvalidObjectException(</span>
+<span class="nc" id="L637">          CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +</span>
+<span class="nc" id="L638">          getClassType());</span>
+    }
+<span class="fc" id="L640">  }</span>
+
+  /**
+   * Convert String value to the specified type. Throws
+   * InvalidArgumentException
+   * if type is unrecognized.
+   *
+   * @throws InvalidArgumentException
+   */
+  protected static Object convert(final Class&lt;?&gt; type, final String value)
+      throws InvalidArgumentException {
+    try {
+      // test from specific to general
+      //
+<span class="fc bfc" id="L654" title="All 2 branches covered.">      if (String.class.isAssignableFrom(type)) {</span>
+<span class="fc" id="L655">        return value;</span>
+      }
+      // primitives
+      //
+<span class="fc bfc" id="L659" title="All 2 branches covered.">      else if (type.equals(Boolean.TYPE)) {</span>
+<span class="fc bfc" id="L660" title="All 2 branches covered.">        if (&quot;1&quot;.equals(value)) {</span>
+<span class="fc" id="L661">          return Boolean.TRUE;</span>
+        }
+<span class="fc" id="L663">        return Boolean.valueOf(value);</span>
+<span class="fc bfc" id="L664" title="All 2 branches covered.">      } else if (type.equals(Integer.TYPE)) {</span>
+<span class="fc" id="L665">        return Integer.valueOf(value);</span>
+<span class="fc bfc" id="L666" title="All 2 branches covered.">      } else if (type.equals(Float.TYPE)) {</span>
+<span class="fc" id="L667">        return Float.valueOf(value);</span>
+<span class="fc bfc" id="L668" title="All 2 branches covered.">      } else if (type.equals(Character.TYPE)) {</span>
+<span class="fc" id="L669">        return Character.valueOf(value.charAt(0));</span>
+<span class="fc bfc" id="L670" title="All 2 branches covered.">      } else if (type.equals(Byte.TYPE)) {</span>
+<span class="fc" id="L671">        return Byte.valueOf(value);</span>
+<span class="fc bfc" id="L672" title="All 2 branches covered.">      } else if (type.equals(Long.TYPE)) {</span>
+<span class="fc" id="L673">        return Long.valueOf(value);</span>
+<span class="fc bfc" id="L674" title="All 2 branches covered.">      } else if (type.equals(Double.TYPE)) {</span>
+<span class="fc" id="L675">        return Double.valueOf(value);</span>
+<span class="fc bfc" id="L676" title="All 2 branches covered.">      } else if (type.equals(Short.TYPE)) {</span>
+<span class="fc" id="L677">        return Short.valueOf(value);</span>
+      }
+      // primitive wrappers
+      //
+<span class="pc bpc" id="L681" title="1 of 2 branches missed.">      else if (Boolean.class.isAssignableFrom(type)) {</span>
+<span class="nc bnc" id="L682" title="All 2 branches missed.">        if (&quot;true&quot;.equalsIgnoreCase(value)) {</span>
+<span class="nc" id="L683">          return Boolean.TRUE;</span>
+        } else {
+<span class="nc" id="L685">          return Boolean.FALSE;</span>
+        }
+<span class="pc bpc" id="L687" title="1 of 2 branches missed.">      } else if (Character.class.isAssignableFrom(type)) {</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">        if (value.length() == 1) {</span>
+<span class="nc" id="L689">          return Character.valueOf(value.charAt(0));</span>
+        } else {
+<span class="nc" id="L691">          throw new IllegalArgumentException(</span>
+              CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
+        }
+<span class="pc bpc" id="L694" title="1 of 2 branches missed.">      } else if (Number.class.isAssignableFrom(type)) {</span>
+<span class="nc bnc" id="L695" title="All 2 branches missed.">        if (Double.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L696">          return Double.valueOf(value);</span>
+<span class="nc bnc" id="L697" title="All 2 branches missed.">        } else if (Float.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L698">          return Float.valueOf(value);</span>
+<span class="nc bnc" id="L699" title="All 2 branches missed.">        } else if (Integer.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L700">          return Integer.valueOf(value);</span>
+<span class="nc bnc" id="L701" title="All 2 branches missed.">        } else if (Long.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L702">          return Long.valueOf(value);</span>
+<span class="nc bnc" id="L703" title="All 2 branches missed.">        } else if (Short.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L704">          return Short.valueOf(value);</span>
+        }
+        // other primitive-like classes
+        //
+<span class="nc bnc" id="L708" title="All 2 branches missed.">        else if (BigDecimal.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L709">          throw new IllegalArgumentException(&quot;Can not use type &quot; + type);</span>
+<span class="nc bnc" id="L710" title="All 2 branches missed.">        } else if (BigInteger.class.isAssignableFrom(type)) {</span>
+<span class="nc" id="L711">          throw new IllegalArgumentException(&quot;Can not use type &quot; + type);</span>
+        } else {
+<span class="nc" id="L713">          throw new IllegalArgumentException(</span>
+              CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
+        }
+      }
+      //
+      // Time and date. We stick close to the JDBC representations
+      // for time and date, but add the &quot;GMT&quot; timezone so XML files
+      // can be transferred across timezones without ambiguity. See
+      // java.sql.Date.toString() and java.sql.Timestamp.toString().
+      //
+<span class="fc bfc" id="L723" title="All 2 branches covered.">      else if (Date.class.isAssignableFrom(type)) {</span>
+<span class="pc" id="L724">        return new Date(</span>
+<span class="nc" id="L725">            WaarpStringUtils.getDateFormat().parse(value).getTime());</span>
+<span class="fc bfc" id="L726" title="All 2 branches covered.">      } else if (Timestamp.class.isAssignableFrom(type)) {</span>
+<span class="fc" id="L727">        final int dotIndex = value.indexOf('.');</span>
+<span class="fc" id="L728">        final int spaceIndex = value.indexOf(' ', dotIndex);</span>
+<span class="pc bpc" id="L729" title="2 of 4 branches missed.">        if (dotIndex &lt; 0 || spaceIndex &lt; 0) {</span>
+<span class="fc" id="L730">          throw new IllegalArgumentException(</span>
+              CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
+        }
+<span class="nc" id="L733">        final Timestamp ts = new Timestamp(WaarpStringUtils.getTimestampFormat()</span>
+<span class="nc" id="L734">                                                           .parse(</span>
+<span class="nc" id="L735">                                                               value.substring(</span>
+                                                                   0, dotIndex))
+<span class="nc" id="L737">                                                           .getTime());</span>
+<span class="nc" id="L738">        final int nanos =</span>
+<span class="nc" id="L739">            Integer.parseInt(value.substring(dotIndex + 1, spaceIndex));</span>
+<span class="nc" id="L740">        ts.setNanos(nanos);</span>
+
+<span class="nc" id="L742">        return ts;</span>
+<span class="pc bpc" id="L743" title="1 of 2 branches missed.">      } else if (java.util.Date.class.isAssignableFrom(type)) {</span>
+        // Should not be
+<span class="nc" id="L745">        return new Date(</span>
+<span class="nc" id="L746">            WaarpStringUtils.getTimeFormat().parse(value).getTime());</span>
+      } else {
+<span class="fc" id="L748">        throw new IllegalArgumentException(</span>
+            CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
+      }
+<span class="fc" id="L751">    } catch (final NumberFormatException e) {</span>
+<span class="fc" id="L752">      throw new InvalidArgumentException(</span>
+          CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
+<span class="fc" id="L754">    } catch (final IllegalArgumentException e) {</span>
+<span class="fc" id="L755">      throw new InvalidArgumentException(</span>
+          CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type, e);
+<span class="fc" id="L757">    } catch (final ParseException e) {</span>
+<span class="fc" id="L758">      throw new InvalidArgumentException(</span>
+          CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
+    }
+  }
+
+  @Override
+  public String toString() {
+<span class="nc bnc" id="L765" title="All 4 branches missed.">    return &quot;Val: &quot; + (isMultiple()? values.size() + &quot; elements&quot; :</span>
+<span class="nc bnc" id="L766" title="All 2 branches missed.">        value != null? value.toString() :</span>
+            subXml != null? &quot;subXml&quot; : &quot;no value&quot;) + ' ' + decl;
+  }
+
+  public final String toFullString() {
+<span class="nc bnc" id="L771" title="All 2 branches missed.">    final StringBuilder detail = new StringBuilder(&quot;Val: &quot; + (isMultiple()?</span>
+<span class="nc bnc" id="L772" title="All 4 branches missed.">        values.size() + &quot; elements&quot; : value != null? value.toString() :</span>
+        subXml != null? &quot;subXml&quot; : &quot;no value&quot;) + ' ' + decl);
+<span class="nc bnc" id="L774" title="All 2 branches missed.">    if (decl.isSubXml()) {</span>
+<span class="nc bnc" id="L775" title="All 2 branches missed.">      if (isMultiple()) {</span>
+<span class="nc" id="L776">        detail.append('[');</span>
+<span class="nc bnc" id="L777" title="All 2 branches missed.">        for (final Object obj : values) {</span>
+<span class="nc bnc" id="L778" title="All 2 branches missed.">          if (obj instanceof XmlValue) {</span>
+<span class="nc" id="L779">            detail.append(((XmlValue) obj).toFullString()).append(&quot;, &quot;);</span>
+          } else {
+<span class="nc" id="L781">            detail.append('[');</span>
+<span class="nc bnc" id="L782" title="All 2 branches missed.">            for (final XmlValue obj2 : (XmlValue[]) obj) {</span>
+<span class="nc" id="L783">              detail.append(obj2.toFullString()).append(&quot;, &quot;);</span>
+            }
+<span class="nc" id="L785">            detail.append(&quot;], &quot;);</span>
+          }
+<span class="nc" id="L787">        }</span>
+<span class="nc" id="L788">        detail.append(']');</span>
+      } else {
+<span class="nc" id="L790">        detail.append('[');</span>
+<span class="nc bnc" id="L791" title="All 2 branches missed.">        for (final XmlValue obj : subXml) {</span>
+<span class="nc" id="L792">          detail.append(obj.toFullString()).append(&quot;, &quot;);</span>
+        }
+<span class="nc" id="L794">        detail.append(']');</span>
+      }
+    }
+<span class="nc" id="L797">    return detail.toString();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

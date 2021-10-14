@@ -48,8 +48,8 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   /**
    * Internal Logger
    */
-<span class="nc" id="L51">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L52">      WaarpLoggerFactory.getLogger(FileBasedAuth.class);</span>
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(FileBasedAuth.class);</span>
 
   /**
    * Current authentication
@@ -59,19 +59,19 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   /**
    * Special Id for the current transfer
    */
-<span class="nc" id="L62">  private long specialId = DbConstant.ILLEGALVALUE;</span>
+<span class="fc" id="L62">  private long specialId = DbConstant.ILLEGALVALUE;</span>
 
   /**
    * @param session
    */
   public FileBasedAuth(final FtpSession session) {
-<span class="nc" id="L68">    super(session);</span>
-<span class="nc" id="L69">  }</span>
+<span class="fc" id="L68">    super(session);</span>
+<span class="fc" id="L69">  }</span>
 
   @Override
   protected final void businessClean() {
-<span class="nc" id="L73">    currentAuth = null;</span>
-<span class="nc" id="L74">  }</span>
+<span class="fc" id="L73">    currentAuth = null;</span>
+<span class="fc" id="L74">  }</span>
 
   /**
    * @param user the user to set
@@ -88,16 +88,16 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   @Override
   protected final NextCommandReply setBusinessUser(final String user)
       throws Reply530Exception {
-<span class="nc" id="L91">    final SimpleAuth auth =</span>
-<span class="nc" id="L92">        ((FileBasedConfiguration) ((FtpSession) getSession()).getConfiguration()).getSimpleAuth(</span>
+<span class="fc" id="L91">    final SimpleAuth auth =</span>
+<span class="fc" id="L92">        ((FileBasedConfiguration) ((FtpSession) getSession()).getConfiguration()).getSimpleAuth(</span>
             user);
-<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (auth == null) {</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (auth == null) {</span>
 <span class="nc" id="L95">      setIsIdentified(false);</span>
 <span class="nc" id="L96">      currentAuth = null;</span>
 <span class="nc" id="L97">      throw new Reply530Exception(&quot;User name not allowed&quot;);</span>
     }
-<span class="nc" id="L99">    currentAuth = auth;</span>
-<span class="nc" id="L100">    return new NextCommandReply(FtpCommandCode.PASS,</span>
+<span class="fc" id="L99">    currentAuth = auth;</span>
+<span class="fc" id="L100">    return new NextCommandReply(FtpCommandCode.PASS,</span>
                                 ReplyCode.REPLY_331_USER_NAME_OKAY_NEED_PASSWORD,
                                 null);
   }
@@ -121,12 +121,12 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   @Override
   protected final NextCommandReply setBusinessPassword(final String password)
       throws Reply530Exception {
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (currentAuth == null) {</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">    if (currentAuth == null) {</span>
 <span class="nc" id="L125">      setIsIdentified(false);</span>
 <span class="nc" id="L126">      throw new Reply530Exception(&quot;PASS needs a USER first&quot;);</span>
     }
-<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (currentAuth.isPasswordValid(password)) {</span>
-<span class="nc" id="L129">      return new NextCommandReply(FtpCommandCode.ACCT,</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (currentAuth.isPasswordValid(password)) {</span>
+<span class="fc" id="L129">      return new NextCommandReply(FtpCommandCode.ACCT,</span>
                                   ReplyCode.REPLY_332_NEED_ACCOUNT_FOR_LOGIN,
                                   null);
     }
@@ -153,13 +153,13 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   @Override
   protected final NextCommandReply setBusinessAccount(final String account)
       throws Reply530Exception {
-<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (currentAuth == null) {</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">    if (currentAuth == null) {</span>
 <span class="nc" id="L157">      throw new Reply530Exception(&quot;ACCT needs a USER first&quot;);</span>
     }
-<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (currentAuth.isAccountValid(account)) {</span>
-<span class="nc" id="L160">      setIsIdentified(true);</span>
-<span class="nc" id="L161">      logger.info(&quot;User {} is authentified with account {}&quot;, user, account);</span>
-<span class="nc" id="L162">      return new NextCommandReply(FtpCommandCode.NOOP,</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">    if (currentAuth.isAccountValid(account)) {</span>
+<span class="fc" id="L160">      setIsIdentified(true);</span>
+<span class="fc" id="L161">      logger.info(&quot;User {} is authentified with account {}&quot;, user, account);</span>
+<span class="fc" id="L162">      return new NextCommandReply(FtpCommandCode.NOOP,</span>
                                   ReplyCode.REPLY_230_USER_LOGGED_IN, null);
     }
 <span class="nc" id="L165">    throw new Reply530Exception(&quot;Account is not valid&quot;);</span>
@@ -167,34 +167,34 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
 
   @Override
   public final boolean isBusinessPathValid(final String newPath) {
-<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (newPath == null) {</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (newPath == null) {</span>
 <span class="nc" id="L171">      return false;</span>
     }
-<span class="nc" id="L173">    return newPath.startsWith(getBusinessPath());</span>
+<span class="fc" id="L173">    return newPath.startsWith(getBusinessPath());</span>
   }
 
   @Override
   protected final String setBusinessRootFromAuth() throws Reply421Exception {
     final String path;
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (account == null) {</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (account == null) {</span>
 <span class="nc" id="L180">      path = DirInterface.SEPARATOR + user;</span>
     } else {
-<span class="nc" id="L182">      path = DirInterface.SEPARATOR + user + DirInterface.SEPARATOR + account;</span>
+<span class="fc" id="L182">      path = DirInterface.SEPARATOR + user + DirInterface.SEPARATOR + account;</span>
     }
-<span class="nc" id="L184">    final String fullpath = getAbsolutePath(path);</span>
-<span class="nc" id="L185">    final File file = new File(fullpath);</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">    if (!file.isDirectory()) {</span>
-<span class="nc" id="L187">      throw new Reply421Exception(&quot;Filesystem not ready&quot;);</span>
+<span class="fc" id="L184">    final String fullpath = getAbsolutePath(path);</span>
+<span class="fc" id="L185">    final File file = new File(fullpath);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">    if (!file.isDirectory()) {</span>
+<span class="fc" id="L187">      throw new Reply421Exception(&quot;Filesystem not ready&quot;);</span>
     }
-<span class="nc" id="L189">    return path;</span>
+<span class="fc" id="L189">    return path;</span>
   }
 
   @Override
   public final boolean isAdmin() {
-<span class="nc bnc" id="L194" title="All 2 branches missed.">    if (currentAuth == null) {</span>
-<span class="nc" id="L195">      return false;</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">    if (currentAuth == null) {</span>
+<span class="fc" id="L195">      return false;</span>
     }
-<span class="nc" id="L197">    return currentAuth.isAdmin();</span>
+<span class="fc" id="L197">    return currentAuth.isAdmin();</span>
   }
 
   /**
@@ -203,45 +203,45 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    * @param hostid
    */
   public final void specialNoSessionAuth(final String hostid) {
-<span class="nc" id="L206">    isIdentified = true;</span>
-<span class="nc" id="L207">    final SimpleAuth auth =</span>
+<span class="fc" id="L206">    isIdentified = true;</span>
+<span class="fc" id="L207">    final SimpleAuth auth =</span>
         new SimpleAuth(hostid, hostid, null, null, 0, null, 0);
-<span class="nc" id="L209">    currentAuth = auth;</span>
-<span class="nc" id="L210">    setIsIdentified(true);</span>
-<span class="nc" id="L211">    user = auth.getUser();</span>
-<span class="nc" id="L212">    account = auth.getUser();</span>
-<span class="nc" id="L213">    ((FtpSession) getSession()).setSpecialInit(this, new FileBasedDir(</span>
-<span class="nc" id="L214">        (FtpSession) getSession()), new FilesystemBasedFtpRestart(</span>
-<span class="nc" id="L215">        (FtpSession) getSession()));</span>
+<span class="fc" id="L209">    currentAuth = auth;</span>
+<span class="fc" id="L210">    setIsIdentified(true);</span>
+<span class="fc" id="L211">    user = auth.getUser();</span>
+<span class="fc" id="L212">    account = auth.getUser();</span>
+<span class="fc" id="L213">    ((FtpSession) getSession()).setSpecialInit(this, new FileBasedDir(</span>
+<span class="fc" id="L214">        (FtpSession) getSession()), new FilesystemBasedFtpRestart(</span>
+<span class="fc" id="L215">        (FtpSession) getSession()));</span>
     try {
 <span class="nc" id="L217">      setBusinessRootFromAuth();</span>
-<span class="nc" id="L218">    } catch (final Reply421Exception ignored) {</span>
+<span class="fc" id="L218">    } catch (final Reply421Exception ignored) {</span>
       // nothing
 <span class="nc" id="L220">    }</span>
-<span class="nc" id="L221">    getSession().getDir().initAfterIdentification();</span>
-<span class="nc" id="L222">    currentAuth.setAdmin(true);</span>
-<span class="nc" id="L223">  }</span>
+<span class="fc" id="L221">    getSession().getDir().initAfterIdentification();</span>
+<span class="fc" id="L222">    currentAuth.setAdmin(true);</span>
+<span class="fc" id="L223">  }</span>
 
   /**
    * @return the specialId
    */
   public final long getSpecialId() {
-<span class="nc" id="L229">    return specialId;</span>
+<span class="fc" id="L229">    return specialId;</span>
   }
 
   /**
    * @param specialId the specialId to set
    */
   public final void setSpecialId(final long specialId) {
-<span class="nc" id="L236">    this.specialId = specialId;</span>
-<span class="nc" id="L237">  }</span>
+<span class="fc" id="L236">    this.specialId = specialId;</span>
+<span class="fc" id="L237">  }</span>
 
   /**
    * @return the associated Command Executor
    */
   @Override
   public final CommandExecutor getCommandExecutor() {
-<span class="nc" id="L244">    return currentAuth.getCommandExecutor();</span>
+<span class="fc" id="L244">    return currentAuth.getCommandExecutor();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

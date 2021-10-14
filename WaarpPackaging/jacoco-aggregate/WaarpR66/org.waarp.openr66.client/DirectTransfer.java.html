@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DirectTransfer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.client</a> &gt; <span class="el_source">DirectTransfer.java</span></div><h1>DirectTransfer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.client;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.client.utils.OutputFormat;
+import org.waarp.openr66.commander.ClientRunner;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Direct Transfer from a client with or without database connection
+ */
+public class DirectTransfer extends AbstractTransfer {
+  protected final NetworkTransaction networkTransaction;
+
+<span class="fc" id="L50">  protected boolean limitRetryConnection = true;</span>
+
+  public DirectTransfer(final R66Future future, final String remoteHost,
+                        final String filename, final String rulename,
+                        final String transferInfo, final boolean isMD5,
+                        final int blocksize, final long id,
+                        final NetworkTransaction networkTransaction) {
+    // no starttime since it is direct (blocking request, no delay)
+<span class="fc" id="L58">    super(DirectTransfer.class, future, filename, rulename, transferInfo, isMD5,</span>
+          remoteHost, blocksize, id, null);
+<span class="fc" id="L60">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L61">  }</span>
+
+  /**
+   * @return True if this DirectTransfer should limit the retry of connection
+   */
+  public boolean isLimitRetryConnection() {
+<span class="fc" id="L67">    return limitRetryConnection;</span>
+  }
+
+  /**
+   * @param limitRetryConnection True (default) for limited retry on
+   *     connection, False to have no limit
+   */
+  public void setLimitRetryConnection(final boolean limitRetryConnection) {
+<span class="nc" id="L75">    this.limitRetryConnection = limitRetryConnection;</span>
+<span class="nc" id="L76">  }</span>
+
+  /**
+   * Prior to call this method, the pipeline and NetworkTransaction must have
+   * been initialized. It is the
+   * responsibility of the caller to finish all network resources.
+   */
+  @Override
+  public void run() {
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L86">      logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);</span>
+    }
+<span class="fc" id="L88">    final DbTaskRunner taskRunner = initRequest();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">    if (taskRunner == null) {</span>
+      // already an error from there
+<span class="fc" id="L91">      return;</span>
+    }
+<span class="fc" id="L93">    final ClientRunner runner =</span>
+        new ClientRunner(networkTransaction, taskRunner, future);
+    // If retry indefinitely is useful
+<span class="fc" id="L96">    runner.setLimitRetryConnection(isLimitRetryConnection());</span>
+<span class="fc" id="L97">    OpenR66ProtocolNotYetConnectionException exc = null;</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+      try {
+<span class="fc" id="L100">        runner.runTransfer();</span>
+<span class="fc" id="L101">        exc = null;</span>
+<span class="fc" id="L102">        break;</span>
+<span class="nc" id="L103">      } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L104">        logger.info(&quot;Cannot Transfer&quot;, e);</span>
+<span class="nc" id="L105">        future.setResult(</span>
+            new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
+<span class="nc" id="L107">        future.setFailure(e);</span>
+<span class="nc" id="L108">        return;</span>
+<span class="fc" id="L109">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="fc" id="L110">        logger.info(&quot;Cannot Connect&quot;, e);</span>
+<span class="fc" id="L111">        future.setResult(</span>
+            new R66Result(e, null, true, ErrorCode.ConnectionImpossible,
+                          taskRunner));
+<span class="fc" id="L114">        finalizeInErrorTransferRequest(runner, taskRunner,</span>
+                                       ErrorCode.ConnectionImpossible);
+        // since no connection : just forget it
+<span class="pc bpc" id="L117" title="2 of 4 branches missed.">        if (nolog || taskRunner.shallIgnoreSave()) {</span>
+          try {
+<span class="nc" id="L119">            taskRunner.delete();</span>
+<span class="nc" id="L120">          } catch (final WaarpDatabaseException ignored) {</span>
+            // nothing
+<span class="nc" id="L122">          }</span>
+        }
+<span class="fc" id="L124">        future.setFailure(e);</span>
+<span class="fc" id="L125">        return;</span>
+<span class="nc" id="L126">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L127">        logger.info(&quot;Bad Protocol&quot;, e);</span>
+<span class="nc" id="L128">        future.setResult(</span>
+            new R66Result(e, null, true, ErrorCode.TransferError, taskRunner));
+<span class="nc" id="L130">        future.setFailure(e);</span>
+<span class="nc" id="L131">        return;</span>
+<span class="fc" id="L132">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
+<span class="fc" id="L133">        logger.debug(&quot;Not Yet Connected&quot;, e);</span>
+<span class="fc" id="L134">        exc = e;</span>
+      }
+    }
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (exc != null) {</span>
+<span class="nc" id="L138">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L139">      logger.info(&quot;Cannot Connect&quot;, exc);</span>
+<span class="nc" id="L140">      future.setResult(</span>
+          new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
+                        taskRunner));
+      // since no connection : just forget it
+<span class="nc bnc" id="L144" title="All 4 branches missed.">      if (nolog || taskRunner.shallIgnoreSave()) {</span>
+        try {
+<span class="nc" id="L146">          taskRunner.delete();</span>
+<span class="nc" id="L147">        } catch (final WaarpDatabaseException ignored) {</span>
+          // nothing
+<span class="nc" id="L149">        }</span>
+      }
+<span class="nc" id="L151">      future.setFailure(exc);</span>
+    }
+<span class="fc" id="L153">  }</span>
+
+  public static void main(final String[] args) {
+<span class="nc" id="L156">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L159">      logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);</span>
+    }
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (!getParams(args, false)) {</span>
+<span class="nc" id="L162">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L164">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L165">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+      }
+<span class="nc bnc" id="L167" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L168">        admin.close();</span>
+      }
+<span class="nc" id="L170">      WaarpSystemUtil.systemExit(2);</span>
+<span class="nc" id="L171">      return;</span>
+    }
+<span class="nc" id="L173">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L174">    final R66Future future = new R66Future(true);</span>
+
+<span class="nc" id="L176">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L177">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+    try {
+<span class="nc" id="L179">      final DirectTransfer transaction =</span>
+          new DirectTransfer(future, rhost, localFilename, rule, transferInfo,
+                             ismd5, block, idt, networkTransaction);
+<span class="nc" id="L182">      transaction.transferArgs.setFollowId(sFollowId);</span>
+<span class="nc" id="L183">      transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
+<span class="nc" id="L184">      logger.debug(&quot;rhost: {}:{}&quot;, rhost,</span>
+<span class="nc" id="L185">                   transaction.transferArgs.getRemoteHost());</span>
+<span class="nc" id="L186">      transaction.run();</span>
+<span class="nc" id="L187">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L188">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L189">      logger.debug(&quot;finish transfer: {}&quot;, future.isSuccess());</span>
+<span class="nc" id="L190">      final long delay = time2 - time1;</span>
+<span class="nc" id="L191">      final R66Result result = future.getResult();</span>
+<span class="nc" id="L192">      final OutputFormat outputFormat =</span>
+<span class="nc" id="L193">          new OutputFormat(DirectTransfer.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc" id="L195">        prepareOkOutputFormat(delay, result, outputFormat);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (transaction.normalInfoAsWarn) {</span>
+<span class="nc" id="L197">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L199">          logger.info(outputFormat.loggerOut());</span>
+        }
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L202">          outputFormat.sysout();</span>
+        }
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (nolog) {</span>
+          // In case of success, delete the runner
+          try {
+<span class="nc" id="L207">            result.getRunner().delete();</span>
+<span class="nc" id="L208">          } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L209">            logger.warn(&quot;Cannot apply nolog to     &quot; +</span>
+<span class="nc" id="L210">                        result.getRunner().toShortString() + &quot; : {}&quot;,</span>
+<span class="nc" id="L211">                        e.getMessage());</span>
+<span class="nc" id="L212">          }</span>
+        }
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        if (WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L215">          return;</span>
+        }
+<span class="nc" id="L217">        networkTransaction.closeAll();</span>
+<span class="nc" id="L218">        WaarpSystemUtil.systemExit(0);</span>
+      } else {
+<span class="nc bnc" id="L220" title="All 4 branches missed.">        if (result == null || result.getRunner() == null) {</span>
+<span class="nc" id="L221">          prepareKoOutputFormat(future, outputFormat);</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L223">            outputFormat.sysout();</span>
+          }
+<span class="nc bnc" id="L225" title="All 2 branches missed.">          if (WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L226">            return;</span>
+          }
+<span class="nc" id="L228">          networkTransaction.closeAll();</span>
+<span class="nc" id="L229">          WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());</span>
+<span class="nc" id="L230">          return;</span>
+        }
+<span class="nc" id="L232">        prepareKoOutputFormat(future, result, outputFormat);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L234">          outputFormat.sysout();</span>
+        }
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        if (WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L237">          return;</span>
+        }
+<span class="nc" id="L239">        networkTransaction.closeAll();</span>
+<span class="nc" id="L240">        WaarpSystemUtil.systemExit(result.getCode().ordinal());</span>
+      }
+<span class="nc" id="L242">    } catch (final Throwable e) {</span>
+<span class="nc" id="L243">      logger.error(&quot;Exception&quot;, e);</span>
+    } finally {
+<span class="nc" id="L245">      logger.debug(&quot;finish transfer: {}:{}&quot;, future.isDone(),</span>
+<span class="nc" id="L246">                   future.isSuccess());</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (!WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L248">        networkTransaction.closeAll();</span>
+        // In case something wrong append
+<span class="nc bnc" id="L250" title="All 4 branches missed.">        if (future.isDone() &amp;&amp; future.isSuccess()) {</span>
+<span class="nc" id="L251">          WaarpSystemUtil.systemExit(0);</span>
+        } else {
+<span class="nc" id="L253">          WaarpSystemUtil.systemExit(66);</span>
+        }
+      }
+    }
+<span class="nc" id="L257">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

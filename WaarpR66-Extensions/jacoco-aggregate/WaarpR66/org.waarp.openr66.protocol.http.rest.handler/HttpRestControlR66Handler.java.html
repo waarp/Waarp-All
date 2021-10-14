@@ -36,6 +36,7 @@ import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -65,14 +66,14 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
   /**
    * Internal Logger
    */
-<span class="nc" id="L68">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L69">      WaarpLoggerFactory.getLogger(HttpRestControlR66Handler.class);</span>
+<span class="fc" id="L69">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L70">      WaarpLoggerFactory.getLogger(HttpRestControlR66Handler.class);</span>
 
   public HttpRestControlR66Handler(final RestConfiguration config,
                                    final METHOD... methods) {
-<span class="nc" id="L73">    super(BASEURI, config, METHOD.OPTIONS);</span>
-<span class="nc" id="L74">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT, METHOD.POST);</span>
-<span class="nc" id="L75">  }</span>
+<span class="fc" id="L74">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L75">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT, METHOD.POST);</span>
+<span class="fc" id="L76">  }</span>
 
   @Override
   public final void endParsingRequest(final HttpRestHandler handler,
@@ -81,206 +82,208 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                                       final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
-<span class="nc" id="L84">      HttpRestV1Utils.checkSanity(arguments);</span>
-<span class="nc" id="L85">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L86">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L87">    }</span>
-<span class="nc" id="L88">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (body != null) {</span>
-<span class="nc" id="L90">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+<span class="fc" id="L85">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="nc" id="L86">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L87">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
+<span class="fc" id="L88">    }</span>
+<span class="fc" id="L89">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L91">      logger.debug(&quot;Obj: {}&quot;, body);</span>
     }
-<span class="nc" id="L92">    handler.setWillClose(false);</span>
-<span class="nc" id="L93">    final ServerActions serverHandler =</span>
-<span class="nc" id="L94">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+<span class="fc" id="L93">    handler.setWillClose(false);</span>
+<span class="fc" id="L94">    final ServerActions serverHandler =</span>
+<span class="fc" id="L95">        ((HttpRestR66Handler) handler).getServerHandler();</span>
     // now action according to body
-<span class="nc" id="L96">    final JsonPacket json = (JsonPacket) body;</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (json == null) {</span>
-<span class="nc" id="L98">      result.setDetail(&quot;not enough information&quot;);</span>
-<span class="nc" id="L99">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
-<span class="nc" id="L100">      return;</span>
+<span class="fc" id="L97">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    if (json == null) {</span>
+<span class="fc" id="L99">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="fc" id="L100">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L101">      return;</span>
     }
-<span class="nc" id="L102">    result.getAnswer()</span>
-<span class="nc" id="L103">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Control.name());</span>
-<span class="nc" id="L104">    final METHOD method = arguments.getMethod();</span>
+<span class="nc" id="L103">    result.getAnswer()</span>
+<span class="nc" id="L104">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Control.name());</span>
+<span class="nc" id="L105">    final METHOD method = arguments.getMethod();</span>
     try {
-<span class="nc bnc" id="L106" title="All 4 branches missed.">      if (json instanceof InformationJsonPacket &amp;&amp; method == METHOD.GET) {//</span>
-<span class="nc" id="L107">        final InformationJsonPacket node = (InformationJsonPacket) json;</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (node.isIdRequest()) {</span>
-<span class="nc" id="L109">          result.setCommand(ACTIONS_TYPE.GetTransferInformation.name());</span>
+<span class="nc bnc" id="L107" title="All 4 branches missed.">      if (json instanceof InformationJsonPacket &amp;&amp; method == METHOD.GET) {//</span>
+<span class="nc" id="L108">        final InformationJsonPacket node = (InformationJsonPacket) json;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (node.isIdRequest()) {</span>
+<span class="nc" id="L110">          result.setCommand(ACTIONS_TYPE.GetTransferInformation.name());</span>
           final ValidPacket validPacket;
-<span class="nc bnc" id="L111" title="All 2 branches missed.">          if (node.isIdRequest()) {</span>
-<span class="nc" id="L112">            validPacket =</span>
-<span class="nc" id="L113">                serverHandler.informationRequest(node.getId(), node.isTo(),</span>
-<span class="nc" id="L114">                                                 node.getRulename(), true);</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">          if (node.isIdRequest()) {</span>
+<span class="nc" id="L113">            validPacket =</span>
+<span class="nc" id="L114">                serverHandler.informationRequest(node.getId(), node.isTo(),</span>
+<span class="nc" id="L115">                                                 node.getRulename(), true);</span>
           } else {
-<span class="nc" id="L116">            validPacket = serverHandler.informationFile(node.getRequest(),</span>
-<span class="nc" id="L117">                                                        node.getRulename(),</span>
-<span class="nc" id="L118">                                                        node.getFilename(),</span>
+<span class="nc" id="L117">            validPacket = serverHandler.informationFile(node.getRequest(),</span>
+<span class="nc" id="L118">                                                        node.getRulename(),</span>
+<span class="nc" id="L119">                                                        node.getFilename(),</span>
                                                         true);
           }
-<span class="nc bnc" id="L121" title="All 2 branches missed.">          if (validPacket != null) {</span>
-<span class="nc" id="L122">            final ObjectNode resp =</span>
-<span class="nc" id="L123">                JsonHandler.getFromString(validPacket.getSheader());</span>
-<span class="nc" id="L124">            handler.setStatus(HttpResponseStatus.OK);</span>
-<span class="nc" id="L125">            result.setResult(HttpResponseStatus.OK);</span>
-<span class="nc" id="L126">            result.getResults().add(resp);</span>
-<span class="nc" id="L127">          } else {</span>
-<span class="nc" id="L128">            result.setDetail(&quot;Error during information request&quot;);</span>
-<span class="nc" id="L129">            setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">          if (validPacket != null) {</span>
+<span class="nc" id="L123">            final ObjectNode resp =</span>
+<span class="nc" id="L124">                JsonHandler.getFromString(validPacket.getSheader());</span>
+<span class="nc" id="L125">            handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="nc" id="L126">            result.setResult(HttpResponseStatus.OK);</span>
+<span class="nc" id="L127">            result.getResults().add(resp);</span>
+<span class="nc" id="L128">          } else {</span>
+<span class="nc" id="L129">            result.setDetail(&quot;Error during information request&quot;);</span>
+<span class="nc" id="L130">            setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
           }
-<span class="nc" id="L131">        } else {</span>
-<span class="nc" id="L132">          result.setCommand(ACTIONS_TYPE.GetInformation.name());</span>
-<span class="nc" id="L133">          result.setDetail(</span>
+<span class="nc" id="L132">        } else {</span>
+<span class="nc" id="L133">          result.setCommand(ACTIONS_TYPE.GetInformation.name());</span>
+<span class="nc" id="L134">          result.setDetail(</span>
               &quot;Error: FileInformation is not applicable with URI &quot; + BASEURI);
-<span class="nc" id="L135">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc" id="L136">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
         }
-<span class="nc bnc" id="L137" title="All 4 branches missed.">      } else if (json instanceof RestartTransferJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L138" title="All 4 branches missed.">      } else if (json instanceof RestartTransferJsonPacket &amp;&amp;</span>
                  method == METHOD.PUT) {//
-<span class="nc" id="L139">        result.setCommand(ACTIONS_TYPE.RestartTransfer.name());</span>
-<span class="nc" id="L140">        final RestartTransferJsonPacket node = (RestartTransferJsonPacket) json;</span>
-<span class="nc" id="L141">        final R66Result r66result =</span>
-<span class="nc" id="L142">            serverHandler.requestRestart(node.getRequested(),</span>
-<span class="nc" id="L143">                                         node.getRequester(),</span>
-<span class="nc" id="L144">                                         node.getSpecialid(),</span>
-<span class="nc" id="L145">                                         node.getRestarttime());</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (serverHandler.isCodeValid(r66result.getCode())) {</span>
-<span class="nc" id="L147">          result.setDetail(&quot;Restart Transfer done&quot;);</span>
-<span class="nc" id="L148">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
+<span class="nc" id="L140">        result.setCommand(ACTIONS_TYPE.RestartTransfer.name());</span>
+<span class="nc" id="L141">        final RestartTransferJsonPacket node = (RestartTransferJsonPacket) json;</span>
+<span class="nc" id="L142">        final R66Result r66result =</span>
+<span class="nc" id="L143">            serverHandler.requestRestart(node.getRequested(),</span>
+<span class="nc" id="L144">                                         node.getRequester(),</span>
+<span class="nc" id="L145">                                         node.getSpecialid(),</span>
+<span class="nc" id="L146">                                         node.getRestarttime());</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (serverHandler.isCodeValid(r66result.getCode())) {</span>
+<span class="nc" id="L148">          result.setDetail(&quot;Restart Transfer done&quot;);</span>
+<span class="nc" id="L149">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
         } else {
-<span class="nc" id="L150">          result.setDetail(&quot;Restart Transfer in error&quot;);</span>
-<span class="nc" id="L151">          setError(handler, result, node, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc" id="L151">          result.setDetail(&quot;Restart Transfer in error&quot;);</span>
+<span class="nc" id="L152">          setError(handler, result, node, HttpResponseStatus.NOT_ACCEPTABLE);</span>
         }
-<span class="nc bnc" id="L153" title="All 4 branches missed.">      } else if (json instanceof StopOrCancelJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L154" title="All 4 branches missed.">      } else if (json instanceof StopOrCancelJsonPacket &amp;&amp;</span>
                  method == METHOD.PUT) {//
-<span class="nc" id="L155">        result.setCommand(ACTIONS_TYPE.StopOrCancelTransfer.name());</span>
-<span class="nc" id="L156">        final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;</span>
+<span class="nc" id="L156">        result.setCommand(ACTIONS_TYPE.StopOrCancelTransfer.name());</span>
+<span class="nc" id="L157">        final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;</span>
         final R66Result resulttest;
-<span class="nc bnc" id="L158" title="All 4 branches missed.">        if (node.getRequested() == null || node.getRequester() == null ||</span>
-<span class="nc bnc" id="L159" title="All 2 branches missed.">            node.getSpecialid() == ILLEGALVALUE) {</span>
-<span class="nc" id="L160">          result.setDetail(&quot;Not enough argument passed to identify a transfer&quot;);</span>
-<span class="nc" id="L161">          setError(handler, result, node, HttpResponseStatus.NOT_FOUND);</span>
+<span class="nc bnc" id="L159" title="All 4 branches missed.">        if (node.getRequested() == null || node.getRequester() == null ||</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            node.getSpecialid() == ILLEGALVALUE) {</span>
+<span class="nc" id="L161">          result.setDetail(&quot;Not enough argument passed to identify a transfer&quot;);</span>
+<span class="nc" id="L162">          setError(handler, result, node, HttpResponseStatus.NOT_FOUND);</span>
         } else {
-<span class="nc" id="L163">          final String reqd = node.getRequested();</span>
-<span class="nc" id="L164">          final String reqr = node.getRequester();</span>
-<span class="nc" id="L165">          final long id = node.getSpecialid();</span>
-<span class="nc" id="L166">          resulttest =</span>
-<span class="nc" id="L167">              serverHandler.stopOrCancel(node.getRequestUserPacket(), reqd,</span>
+<span class="nc" id="L164">          final String reqd = node.getRequested();</span>
+<span class="nc" id="L165">          final String reqr = node.getRequester();</span>
+<span class="nc" id="L166">          final long id = node.getSpecialid();</span>
+<span class="nc" id="L167">          resulttest =</span>
+<span class="nc" id="L168">              serverHandler.stopOrCancel(node.getRequestUserPacket(), reqd,</span>
                                          reqr, id);
-<span class="nc" id="L169">          result.setDetail(resulttest.getCode().getMesg());</span>
-<span class="nc" id="L170">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
+<span class="nc" id="L170">          result.setDetail(resulttest.getCode().getMesg());</span>
+<span class="nc" id="L171">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
         }
-<span class="nc bnc" id="L172" title="All 4 branches missed.">      } else if (json instanceof TransferRequestJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L173" title="All 4 branches missed.">      } else if (json instanceof TransferRequestJsonPacket &amp;&amp;</span>
                  method == METHOD.POST) {
-<span class="nc" id="L174">        result.setCommand(ACTIONS_TYPE.CreateTransfer.name());</span>
-<span class="nc" id="L175">        final TransferRequestJsonPacket node = (TransferRequestJsonPacket) json;</span>
-<span class="nc" id="L176">        final R66Result r66result = serverHandler.transferRequest(node);</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (serverHandler.isCodeValid(r66result.getCode())) {</span>
-<span class="nc" id="L178">          result.setDetail(&quot;New Transfer registered&quot;);</span>
-<span class="nc" id="L179">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
+<span class="nc" id="L175">        result.setCommand(ACTIONS_TYPE.CreateTransfer.name());</span>
+<span class="nc" id="L176">        final TransferRequestJsonPacket node = (TransferRequestJsonPacket) json;</span>
+<span class="nc" id="L177">        final R66Result r66result = serverHandler.transferRequest(node);</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (serverHandler.isCodeValid(r66result.getCode())) {</span>
+<span class="nc" id="L179">          result.setDetail(&quot;New Transfer registered&quot;);</span>
+<span class="nc" id="L180">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
         } else {
-<span class="nc" id="L181">          result.setDetail(&quot;New Transfer cannot be registered&quot;);</span>
-<span class="nc" id="L182">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc" id="L182">          result.setDetail(&quot;New Transfer cannot be registered&quot;);</span>
+<span class="nc" id="L183">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
         }
-<span class="nc" id="L184">      } else {</span>
-<span class="nc" id="L185">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
-<span class="nc" id="L186">        result.setDetail(&quot;Unknown command&quot;);</span>
-<span class="nc" id="L187">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+<span class="nc" id="L185">      } else {</span>
+<span class="nc" id="L186">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
+<span class="nc" id="L187">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L188">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
       }
-<span class="nc" id="L189">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
-<span class="nc" id="L190">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="nc" id="L191">    } catch (final OpenR66ProtocolNoDataException e) {</span>
-<span class="nc" id="L192">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L193">    }</span>
-<span class="nc" id="L194">  }</span>
+<span class="nc" id="L190">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L191">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L192">    } catch (final OpenR66ProtocolNoDataException e) {</span>
+<span class="nc" id="L193">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L194">    } catch (OpenR66ProtocolNoCorrectAuthenticationException e) {</span>
+<span class="nc" id="L195">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L196">    }</span>
+<span class="nc" id="L197">  }</span>
 
   @Override
   protected final ArrayNode getDetailedAllow() {
-<span class="nc" id="L198">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L201">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="nc bnc" id="L200" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="nc" id="L201">      final InformationJsonPacket node3 =</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L204">      final InformationJsonPacket node3 =</span>
           new InformationJsonPacket(Long.MIN_VALUE, false, &quot;remoteHost&quot;);
-<span class="nc" id="L203">      node3.setComment(&quot;Information on Transfer request (GET)&quot;);</span>
-<span class="nc" id="L204">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
-<span class="nc" id="L205">      final ObjectNode node1b = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L206">      node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
-<span class="nc bnc" id="L207" title="All 2 branches missed.">      for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
-<span class="nc" id="L208">        node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L206">      node3.setComment(&quot;Information on Transfer request (GET)&quot;);</span>
+<span class="fc" id="L207">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L208">      final ObjectNode node1b = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L209">      node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">      for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
+<span class="fc" id="L211">        node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L210">      node1.add(node1b);</span>
+<span class="fc" id="L213">      node1.add(node1b);</span>
       final ObjectNode node2;
       try {
-<span class="nc" id="L213">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
-<span class="nc" id="L214">                                               ACTIONS_TYPE.GetTransferInformation.name(),</span>
-<span class="nc" id="L215">                                               node3.createObjectNode(), node1);</span>
-<span class="nc" id="L216">        node.add(node2);</span>
-<span class="nc" id="L217">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L216">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L217">                                               ACTIONS_TYPE.GetTransferInformation.name(),</span>
+<span class="fc" id="L218">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L219">        node.add(node2);</span>
+<span class="nc" id="L220">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L219">      }</span>
+<span class="fc" id="L222">      }</span>
     }
-<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="nc" id="L222">      final RestartTransferJsonPacket node4 = new RestartTransferJsonPacket();</span>
-<span class="nc" id="L223">      node4.setRequestUserPacket();</span>
-<span class="nc" id="L224">      node4.setComment(&quot;Restart Transfer request (PUT)&quot;);</span>
-<span class="nc" id="L225">      node4.setRequested(&quot;Requested host&quot;);</span>
-<span class="nc" id="L226">      node4.setRequester(&quot;Requester host&quot;);</span>
-<span class="nc" id="L227">      node4.setRestarttime(new Date());</span>
-<span class="nc" id="L228">      ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="fc" id="L225">      final RestartTransferJsonPacket node4 = new RestartTransferJsonPacket();</span>
+<span class="fc" id="L226">      node4.setRequestUserPacket();</span>
+<span class="fc" id="L227">      node4.setComment(&quot;Restart Transfer request (PUT)&quot;);</span>
+<span class="fc" id="L228">      node4.setRequested(&quot;Requested host&quot;);</span>
+<span class="fc" id="L229">      node4.setRequester(&quot;Requester host&quot;);</span>
+<span class="fc" id="L230">      node4.setRestarttime(new Date());</span>
+<span class="fc" id="L231">      ArrayNode node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="nc" id="L230">        node1.add(node4.createObjectNode());</span>
-<span class="nc" id="L231">        final ObjectNode node2 =</span>
-<span class="nc" id="L232">            RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
-<span class="nc" id="L233">                                           ACTIONS_TYPE.RestartTransfer.name(),</span>
-<span class="nc" id="L234">                                           node4.createObjectNode(), node1);</span>
-<span class="nc" id="L235">        node.add(node2);</span>
-<span class="nc" id="L236">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L233">        node1.add(node4.createObjectNode());</span>
+<span class="fc" id="L234">        final ObjectNode node2 =</span>
+<span class="fc" id="L235">            RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="fc" id="L236">                                           ACTIONS_TYPE.RestartTransfer.name(),</span>
+<span class="fc" id="L237">                                           node4.createObjectNode(), node1);</span>
+<span class="fc" id="L238">        node.add(node2);</span>
+<span class="nc" id="L239">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L238">      }</span>
-<span class="nc" id="L239">      final StopOrCancelJsonPacket node5 = new StopOrCancelJsonPacket();</span>
-<span class="nc" id="L240">      node5.setRequestUserPacket();</span>
-<span class="nc" id="L241">      node5.setComment(&quot;Stop Or Cancel request (PUT)&quot;);</span>
-<span class="nc" id="L242">      node5.setRequested(&quot;Requested host&quot;);</span>
-<span class="nc" id="L243">      node5.setRequester(&quot;Requester host&quot;);</span>
-<span class="nc" id="L244">      node1 = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L241">      }</span>
+<span class="fc" id="L242">      final StopOrCancelJsonPacket node5 = new StopOrCancelJsonPacket();</span>
+<span class="fc" id="L243">      node5.setRequestUserPacket();</span>
+<span class="fc" id="L244">      node5.setComment(&quot;Stop Or Cancel request (PUT)&quot;);</span>
+<span class="fc" id="L245">      node5.setRequested(&quot;Requested host&quot;);</span>
+<span class="fc" id="L246">      node5.setRequester(&quot;Requester host&quot;);</span>
+<span class="fc" id="L247">      node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="nc" id="L246">        node1.add(node5.createObjectNode());</span>
-<span class="nc" id="L247">        final ObjectNode node2 =</span>
-<span class="nc" id="L248">            RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
-<span class="nc" id="L249">                                           ACTIONS_TYPE.StopOrCancelTransfer.name(),</span>
-<span class="nc" id="L250">                                           node5.createObjectNode(), node1);</span>
-<span class="nc" id="L251">        node.add(node2);</span>
-<span class="nc" id="L252">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L249">        node1.add(node5.createObjectNode());</span>
+<span class="fc" id="L250">        final ObjectNode node2 =</span>
+<span class="fc" id="L251">            RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="fc" id="L252">                                           ACTIONS_TYPE.StopOrCancelTransfer.name(),</span>
+<span class="fc" id="L253">                                           node5.createObjectNode(), node1);</span>
+<span class="fc" id="L254">        node.add(node2);</span>
+<span class="nc" id="L255">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L254">      }</span>
+<span class="fc" id="L257">      }</span>
     }
-<span class="nc bnc" id="L256" title="All 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
-<span class="nc" id="L257">      final TransferRequestJsonPacket node6 = new TransferRequestJsonPacket();</span>
-<span class="nc" id="L258">      node6.setRequestUserPacket();</span>
-<span class="nc" id="L259">      node6.setComment(&quot;Transfer Request (POST)&quot;);</span>
-<span class="nc" id="L260">      node6.setFilename(&quot;Filename&quot;);</span>
-<span class="nc" id="L261">      node6.setFileInformation(&quot;File information&quot;);</span>
-<span class="nc" id="L262">      node6.setRequested(&quot;Requested host&quot;);</span>
-<span class="nc" id="L263">      node6.setRulename(&quot;Rulename&quot;);</span>
-<span class="nc" id="L264">      node6.setStart(new Date());</span>
-<span class="nc" id="L265">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="fc" id="L260">      final TransferRequestJsonPacket node6 = new TransferRequestJsonPacket();</span>
+<span class="fc" id="L261">      node6.setRequestUserPacket();</span>
+<span class="fc" id="L262">      node6.setComment(&quot;Transfer Request (POST)&quot;);</span>
+<span class="fc" id="L263">      node6.setFilename(&quot;Filename&quot;);</span>
+<span class="fc" id="L264">      node6.setFileInformation(&quot;File information&quot;);</span>
+<span class="fc" id="L265">      node6.setRequested(&quot;Requested host&quot;);</span>
+<span class="fc" id="L266">      node6.setRulename(&quot;Rulename&quot;);</span>
+<span class="fc" id="L267">      node6.setStart(new Date());</span>
+<span class="fc" id="L268">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="nc" id="L267">        node1.add(node6.createObjectNode());</span>
-<span class="nc" id="L268">        final ObjectNode node2 =</span>
-<span class="nc" id="L269">            RestArgument.fillDetailedAllow(METHOD.POST, path,</span>
-<span class="nc" id="L270">                                           ACTIONS_TYPE.CreateTransfer.name(),</span>
-<span class="nc" id="L271">                                           node6.createObjectNode(), node1);</span>
-<span class="nc" id="L272">        node.add(node2);</span>
-<span class="nc" id="L273">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L270">        node1.add(node6.createObjectNode());</span>
+<span class="fc" id="L271">        final ObjectNode node2 =</span>
+<span class="fc" id="L272">            RestArgument.fillDetailedAllow(METHOD.POST, path,</span>
+<span class="fc" id="L273">                                           ACTIONS_TYPE.CreateTransfer.name(),</span>
+<span class="fc" id="L274">                                           node6.createObjectNode(), node1);</span>
+<span class="fc" id="L275">        node.add(node2);</span>
+<span class="nc" id="L276">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L275">      }</span>
+<span class="fc" id="L278">      }</span>
     }
 
-<span class="nc" id="L278">    final ObjectNode node2 =</span>
-<span class="nc" id="L279">        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
-<span class="nc" id="L280">                                       COMMAND_TYPE.OPTIONS.name(), null, null);</span>
-<span class="nc" id="L281">    node.add(node2);</span>
+<span class="fc" id="L281">    final ObjectNode node2 =</span>
+<span class="fc" id="L282">        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="fc" id="L283">                                       COMMAND_TYPE.OPTIONS.name(), null, null);</span>
+<span class="fc" id="L284">    node.add(node2);</span>
 
-<span class="nc" id="L283">    return node;</span>
+<span class="fc" id="L286">    return node;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

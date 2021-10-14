@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -33,6 +34,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -56,158 +58,166 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(HttpRestConfigR66Handler.class);</span>
+<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(HttpRestConfigR66Handler.class);</span>
 
   public HttpRestConfigR66Handler(final RestConfiguration config,
                                   final METHOD... methods) {
-<span class="fc" id="L64">    super(BASEURI, config, METHOD.OPTIONS);</span>
-<span class="fc" id="L65">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
-<span class="fc" id="L66">  }</span>
+<span class="fc" id="L66">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L67">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
+<span class="fc" id="L68">  }</span>
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="nc" id="L73">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
-<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (body != null) {</span>
-<span class="nc" id="L75">      logger.debug(&quot;Obj: {}&quot;, body);</span>
-    }
-<span class="nc" id="L77">    handler.setWillClose(false);</span>
-<span class="nc" id="L78">    final ServerActions serverHandler =</span>
-<span class="nc" id="L79">        ((HttpRestR66Handler) handler).getServerHandler();</span>
-    // now action according to body
-<span class="nc" id="L81">    final JsonPacket json = (JsonPacket) body;</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (json == null) {</span>
-<span class="nc" id="L83">      result.setDetail(&quot;not enough information&quot;);</span>
-<span class="nc" id="L84">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
-<span class="nc" id="L85">      return;</span>
-    }
-<span class="nc" id="L87">    result.getAnswer()</span>
-<span class="nc" id="L88">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Config.name());</span>
     try {
-<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (json instanceof ConfigExportJsonPacket &amp;&amp;</span>
-<span class="nc bnc" id="L91" title="All 2 branches missed.">          arguments.getMethod() == METHOD.GET) {//</span>
-<span class="nc" id="L92">        result.setCommand(ACTIONS_TYPE.ExportConfig.name());</span>
+<span class="nc" id="L77">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="nc" id="L78">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L79">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
+<span class="nc" id="L80">    }</span>
+<span class="nc" id="L81">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L83">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    }
+<span class="nc" id="L85">    handler.setWillClose(false);</span>
+<span class="nc" id="L86">    final ServerActions serverHandler =</span>
+<span class="nc" id="L87">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+    // now action according to body
+<span class="nc" id="L89">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (json == null) {</span>
+<span class="nc" id="L91">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="nc" id="L92">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L93">      return;</span>
+    }
+<span class="nc" id="L95">    result.getAnswer()</span>
+<span class="nc" id="L96">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Config.name());</span>
+    try {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">      if (json instanceof ConfigExportJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">          arguments.getMethod() == METHOD.GET) {//</span>
+<span class="nc" id="L100">        result.setCommand(ACTIONS_TYPE.ExportConfig.name());</span>
         // host, rule, business, alias, roles
-<span class="nc" id="L94">        final ConfigExportJsonPacket node = (ConfigExportJsonPacket) json;</span>
-<span class="nc" id="L95">        final boolean bhost = node.isHost();</span>
-<span class="nc" id="L96">        final boolean brule = node.isRule();</span>
-<span class="nc" id="L97">        final boolean bbusiness = node.isBusiness();</span>
-<span class="nc" id="L98">        final boolean balias = node.isAlias();</span>
-<span class="nc" id="L99">        final boolean broles = node.isRoles();</span>
-<span class="nc" id="L100">        final String[] sresult =</span>
-<span class="nc" id="L101">            serverHandler.configExport(bhost, brule, bbusiness, balias, broles);</span>
+<span class="nc" id="L102">        final ConfigExportJsonPacket node = (ConfigExportJsonPacket) json;</span>
+<span class="nc" id="L103">        final boolean bhost = node.isHost();</span>
+<span class="nc" id="L104">        final boolean brule = node.isRule();</span>
+<span class="nc" id="L105">        final boolean bbusiness = node.isBusiness();</span>
+<span class="nc" id="L106">        final boolean balias = node.isAlias();</span>
+<span class="nc" id="L107">        final boolean broles = node.isRoles();</span>
+<span class="nc" id="L108">        final String[] sresult =</span>
+<span class="nc" id="L109">            serverHandler.configExport(bhost, brule, bbusiness, balias, broles);</span>
         // Now answer
-<span class="nc" id="L103">        final ConfigExportResponseJsonPacket resp =</span>
+<span class="nc" id="L111">        final ConfigExportResponseJsonPacket resp =</span>
             new ConfigExportResponseJsonPacket();
-<span class="nc" id="L105">        resp.fromJson(node);</span>
-<span class="nc" id="L106">        resp.setFilehost(sresult[0]);</span>
-<span class="nc" id="L107">        resp.setFilerule(sresult[1]);</span>
-<span class="nc" id="L108">        resp.setFilebusiness(sresult[2]);</span>
-<span class="nc" id="L109">        resp.setFilealias(sresult[3]);</span>
-<span class="nc" id="L110">        resp.setFileroles(sresult[4]);</span>
-<span class="nc bnc" id="L111" title="All 4 branches missed.">        if (resp.getFilerule() != null || resp.getFilehost() != null ||</span>
-<span class="nc bnc" id="L112" title="All 4 branches missed.">            resp.getFilebusiness() != null || resp.getFilealias() != null ||</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">            resp.getFileroles() != null) {</span>
-<span class="nc" id="L114">          setOk(handler, result, resp, HttpResponseStatus.OK);</span>
+<span class="nc" id="L113">        resp.fromJson(node);</span>
+<span class="nc" id="L114">        resp.setFilehost(sresult[0]);</span>
+<span class="nc" id="L115">        resp.setFilerule(sresult[1]);</span>
+<span class="nc" id="L116">        resp.setFilebusiness(sresult[2]);</span>
+<span class="nc" id="L117">        resp.setFilealias(sresult[3]);</span>
+<span class="nc" id="L118">        resp.setFileroles(sresult[4]);</span>
+<span class="nc bnc" id="L119" title="All 4 branches missed.">        if (resp.getFilerule() != null || resp.getFilehost() != null ||</span>
+<span class="nc bnc" id="L120" title="All 4 branches missed.">            resp.getFilebusiness() != null || resp.getFilealias() != null ||</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            resp.getFileroles() != null) {</span>
+<span class="nc" id="L122">          setOk(handler, result, resp, HttpResponseStatus.OK);</span>
         } else {
-<span class="nc" id="L116">          result.setDetail(&quot;Export configuration in error&quot;);</span>
-<span class="nc" id="L117">          setError(handler, result, resp, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc" id="L124">          result.setDetail(&quot;Export configuration in error&quot;);</span>
+<span class="nc" id="L125">          setError(handler, result, resp, HttpResponseStatus.NOT_ACCEPTABLE);</span>
         }
-<span class="nc bnc" id="L119" title="All 2 branches missed.">      } else if (json instanceof ConfigImportJsonPacket &amp;&amp;</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">                 arguments.getMethod() == METHOD.PUT) {//</span>
-<span class="nc" id="L121">        result.setCommand(ACTIONS_TYPE.ImportConfig.name());</span>
-<span class="nc" id="L122">        final ConfigImportResponseJsonPacket resp =</span>
-<span class="nc" id="L123">            serverHandler.configImport((ConfigImportJsonPacket) json);</span>
-<span class="nc bnc" id="L124" title="All 4 branches missed.">        if (resp.isImportedhost() || resp.isImportedrule() ||</span>
-<span class="nc bnc" id="L125" title="All 4 branches missed.">            resp.isImportedbusiness() || resp.isImportedalias() ||</span>
-<span class="nc bnc" id="L126" title="All 2 branches missed.">            resp.isImportedroles()) {</span>
-<span class="nc" id="L127">          setOk(handler, result, resp, HttpResponseStatus.OK);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">      } else if (json instanceof ConfigImportJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                 arguments.getMethod() == METHOD.PUT) {//</span>
+<span class="nc" id="L129">        result.setCommand(ACTIONS_TYPE.ImportConfig.name());</span>
+<span class="nc" id="L130">        final ConfigImportResponseJsonPacket resp =</span>
+<span class="nc" id="L131">            serverHandler.configImport((ConfigImportJsonPacket) json);</span>
+<span class="nc bnc" id="L132" title="All 4 branches missed.">        if (resp.isImportedhost() || resp.isImportedrule() ||</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">            resp.isImportedbusiness() || resp.isImportedalias() ||</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            resp.isImportedroles()) {</span>
+<span class="nc" id="L135">          setOk(handler, result, resp, HttpResponseStatus.OK);</span>
         } else {
-<span class="nc" id="L129">          result.setDetail(&quot;Import configuration in error&quot;);</span>
-<span class="nc" id="L130">          setError(handler, result, resp, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc" id="L137">          result.setDetail(&quot;Import configuration in error&quot;);</span>
+<span class="nc" id="L138">          setError(handler, result, resp, HttpResponseStatus.NOT_ACCEPTABLE);</span>
         }
-<span class="nc" id="L132">      } else {</span>
-<span class="nc" id="L133">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
-<span class="nc" id="L134">        result.setDetail(&quot;Unknown command&quot;);</span>
-<span class="nc" id="L135">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+<span class="nc" id="L140">      } else {</span>
+<span class="nc" id="L141">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
+<span class="nc" id="L142">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L143">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
       }
-<span class="nc" id="L137">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
-<span class="nc" id="L138">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="nc" id="L139">    } catch (final OpenR66ProtocolSystemException e) {</span>
-<span class="nc" id="L140">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L141">    }</span>
-<span class="nc" id="L142">  }</span>
+<span class="nc" id="L145">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L146">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L147">    } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L148">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L149">    } catch (OpenR66ProtocolNoCorrectAuthenticationException e) {</span>
+<span class="nc" id="L150">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L151">    }</span>
+<span class="nc" id="L152">  }</span>
 
   @Override
-  protected ArrayNode getDetailedAllow() {
-<span class="nc" id="L146">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+  protected final ArrayNode getDetailedAllow() {
+<span class="nc" id="L156">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="nc" id="L149">      final ConfigExportJsonPacket node3 = new ConfigExportJsonPacket();</span>
-<span class="nc" id="L150">      node3.setRequestUserPacket();</span>
-<span class="nc" id="L151">      node3.setComment(&quot;ConfigExport request (GET)&quot;);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="nc" id="L159">      final ConfigExportJsonPacket node3 = new ConfigExportJsonPacket();</span>
+<span class="nc" id="L160">      node3.setRequestUserPacket();</span>
+<span class="nc" id="L161">      node3.setComment(&quot;ConfigExport request (GET)&quot;);</span>
       final ObjectNode node2;
-<span class="nc" id="L153">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
-<span class="nc" id="L154">      final ConfigExportResponseJsonPacket resp =</span>
+<span class="nc" id="L163">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L164">      final ConfigExportResponseJsonPacket resp =</span>
           new ConfigExportResponseJsonPacket();
-<span class="nc" id="L156">      resp.setComment(&quot;ConfigExport response&quot;);</span>
-<span class="nc" id="L157">      resp.setFilealias(&quot;filepath&quot;);</span>
-<span class="nc" id="L158">      resp.setFilebusiness(&quot;filepath&quot;);</span>
-<span class="nc" id="L159">      resp.setFilehost(&quot;filepath&quot;);</span>
-<span class="nc" id="L160">      resp.setFileroles(&quot;filepath&quot;);</span>
-<span class="nc" id="L161">      resp.setFilerule(&quot;filepath&quot;);</span>
-<span class="nc" id="L162">      resp.setRequestUserPacket();</span>
+<span class="nc" id="L166">      resp.setComment(&quot;ConfigExport response&quot;);</span>
+<span class="nc" id="L167">      resp.setFilealias(&quot;filepath&quot;);</span>
+<span class="nc" id="L168">      resp.setFilebusiness(&quot;filepath&quot;);</span>
+<span class="nc" id="L169">      resp.setFilehost(&quot;filepath&quot;);</span>
+<span class="nc" id="L170">      resp.setFileroles(&quot;filepath&quot;);</span>
+<span class="nc" id="L171">      resp.setFilerule(&quot;filepath&quot;);</span>
+<span class="nc" id="L172">      resp.setRequestUserPacket();</span>
       try {
-<span class="nc" id="L164">        node1.add(resp.createObjectNode());</span>
-<span class="nc" id="L165">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
-<span class="nc" id="L166">                                               ACTIONS_TYPE.ExportConfig.name(),</span>
-<span class="nc" id="L167">                                               node3.createObjectNode(), node1);</span>
-<span class="nc" id="L168">        node.add(node2);</span>
-<span class="nc" id="L169">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L174">        node1.add(resp.createObjectNode());</span>
+<span class="nc" id="L175">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="nc" id="L176">                                               ACTIONS_TYPE.ExportConfig.name(),</span>
+<span class="nc" id="L177">                                               node3.createObjectNode(), node1);</span>
+<span class="nc" id="L178">        node.add(node2);</span>
+<span class="nc" id="L179">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L171">      }</span>
+<span class="nc" id="L181">      }</span>
     }
-<span class="nc bnc" id="L173" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="nc" id="L174">      final ConfigImportJsonPacket node4 = new ConfigImportJsonPacket();</span>
-<span class="nc" id="L175">      node4.setRequestUserPacket();</span>
-<span class="nc" id="L176">      node4.setComment(</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="nc" id="L184">      final ConfigImportJsonPacket node4 = new ConfigImportJsonPacket();</span>
+<span class="nc" id="L185">      node4.setRequestUserPacket();</span>
+<span class="nc" id="L186">      node4.setComment(</span>
           &quot;ConfigImport request (PUT) where items are either set through transfer Id, either set directly with a filename&quot;);
-<span class="nc" id="L178">      node4.setAlias(&quot;AliasFilename if not through TransferId&quot;);</span>
-<span class="nc" id="L179">      node4.setBusiness(&quot;BusinessFilename if not through TransferId&quot;);</span>
-<span class="nc" id="L180">      node4.setHost(&quot;HostFilename if not through TransferId&quot;);</span>
-<span class="nc" id="L181">      node4.setRoles(&quot;RolesFilename if not through TransferId&quot;);</span>
-<span class="nc" id="L182">      node4.setRule(&quot;RuleFilename if not through TransferId&quot;);</span>
-<span class="nc" id="L183">      final ConfigImportResponseJsonPacket resp2 =</span>
+<span class="nc" id="L188">      node4.setAlias(&quot;AliasFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L189">      node4.setBusiness(&quot;BusinessFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L190">      node4.setHost(&quot;HostFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L191">      node4.setRoles(&quot;RolesFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L192">      node4.setRule(&quot;RuleFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L193">      final ConfigImportResponseJsonPacket resp2 =</span>
           new ConfigImportResponseJsonPacket();
-<span class="nc" id="L185">      resp2.setComment(&quot;ConfigImport response&quot;);</span>
-<span class="nc" id="L186">      resp2.setAlias(&quot;filepath&quot;);</span>
-<span class="nc" id="L187">      resp2.setBusiness(&quot;filepath&quot;);</span>
-<span class="nc" id="L188">      resp2.setHost(&quot;filepath&quot;);</span>
-<span class="nc" id="L189">      resp2.setRoles(&quot;filepath&quot;);</span>
-<span class="nc" id="L190">      resp2.setRule(&quot;filepath&quot;);</span>
-<span class="nc" id="L191">      resp2.setRequestUserPacket();</span>
-<span class="nc" id="L192">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L195">      resp2.setComment(&quot;ConfigImport response&quot;);</span>
+<span class="nc" id="L196">      resp2.setAlias(&quot;filepath&quot;);</span>
+<span class="nc" id="L197">      resp2.setBusiness(&quot;filepath&quot;);</span>
+<span class="nc" id="L198">      resp2.setHost(&quot;filepath&quot;);</span>
+<span class="nc" id="L199">      resp2.setRoles(&quot;filepath&quot;);</span>
+<span class="nc" id="L200">      resp2.setRule(&quot;filepath&quot;);</span>
+<span class="nc" id="L201">      resp2.setRequestUserPacket();</span>
+<span class="nc" id="L202">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="nc" id="L194">        node1.add(resp2.createObjectNode());</span>
-<span class="nc" id="L195">        final ObjectNode node2 = RestArgument</span>
-<span class="nc" id="L196">            .fillDetailedAllow(METHOD.PUT, path,</span>
-<span class="nc" id="L197">                               ACTIONS_TYPE.ImportConfig.name(),</span>
-<span class="nc" id="L198">                               node4.createObjectNode(), node1);</span>
-<span class="nc" id="L199">        node.add(node2);</span>
-<span class="nc" id="L200">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L204">        node1.add(resp2.createObjectNode());</span>
+<span class="nc" id="L205">        final ObjectNode node2 =</span>
+<span class="nc" id="L206">            RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="nc" id="L207">                                           ACTIONS_TYPE.ImportConfig.name(),</span>
+<span class="nc" id="L208">                                           node4.createObjectNode(), node1);</span>
+<span class="nc" id="L209">        node.add(node2);</span>
+<span class="nc" id="L210">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L202">      }</span>
+<span class="nc" id="L212">      }</span>
     }
 
-<span class="nc" id="L205">    final ObjectNode node2 = RestArgument</span>
-<span class="nc" id="L206">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
-                           null, null);
-<span class="nc" id="L208">    node.add(node2);</span>
+<span class="nc" id="L215">    final ObjectNode node2 =</span>
+<span class="nc" id="L216">        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="nc" id="L217">                                       COMMAND_TYPE.OPTIONS.name(), null, null);</span>
+<span class="nc" id="L218">    node.add(node2);</span>
 
-<span class="nc" id="L210">    return node;</span>
+<span class="nc" id="L220">    return node;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

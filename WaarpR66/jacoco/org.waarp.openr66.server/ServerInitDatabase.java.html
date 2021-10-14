@@ -26,8 +26,9 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
@@ -35,7 +36,6 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,47 +63,61 @@ public class ServerInitDatabase {
   static String sdirconfig;
   static String shostauth;
   static String slimitconfig;
+<span class="fc" id="L66">  static String sextendedFactoryClassList = null;</span>
+<span class="fc" id="L67">  static long minimalSequenceValue = ILLEGALVALUE;</span>
 
   private ServerInitDatabase() {
   }
 
   protected static boolean getParams(final String[] args) {
-<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L72">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L74">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
     }
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L75">      logger.error(INFO_ARGS);</span>
-<span class="nc" id="L76">      return false;</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L77">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L78">      return false;</span>
     }
-<span class="fc" id="L78">    sxml = args[0];</span>
-<span class="fc bfc" id="L79" title="All 2 branches covered.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="fc bfc" id="L80" title="All 2 branches covered.">      if (&quot;-initdb&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L81">        database = true;</span>
-<span class="fc" id="L82">        FileBasedConfiguration.autoupgrade = false;</span>
-<span class="fc" id="L83">        upgradeDb = true;</span>
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">      } else if (&quot;-upgradeDb&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L85">        upgradeDb = true;</span>
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">      } else if (&quot;-loadBusiness&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L87">        i++;</span>
-<span class="nc" id="L88">        sbusiness = args[i];</span>
-<span class="pc bpc" id="L89" title="1 of 2 branches missed.">      } else if (&quot;-loadAlias&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L90">        i++;</span>
-<span class="nc" id="L91">        salias = args[i];</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">      } else if (&quot;-loadRoles&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L93">        i++;</span>
-<span class="nc" id="L94">        sroles = args[i];</span>
-<span class="fc bfc" id="L95" title="All 2 branches covered.">      } else if (&quot;-dir&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L96">        i++;</span>
-<span class="fc" id="L97">        sdirconfig = args[i];</span>
-<span class="fc bfc" id="L98" title="All 2 branches covered.">      } else if (&quot;-limit&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L99">        i++;</span>
-<span class="fc" id="L100">        slimitconfig = args[i];</span>
-<span class="pc bpc" id="L101" title="1 of 2 branches missed.">      } else if (&quot;-auth&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L102">        i++;</span>
-<span class="fc" id="L103">        shostauth = args[i];</span>
+<span class="fc" id="L80">    sxml = args[0];</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">      if (&quot;-initdb&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L83">        database = true;</span>
+<span class="fc" id="L84">        FileBasedConfiguration.autoupgrade = false;</span>
+<span class="fc" id="L85">        upgradeDb = true;</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">      } else if (&quot;-upgradeDb&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L87">        upgradeDb = true;</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">      } else if (&quot;-loadBusiness&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L89">        i++;</span>
+<span class="nc" id="L90">        sbusiness = args[i];</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">      } else if (&quot;-loadAlias&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L92">        i++;</span>
+<span class="nc" id="L93">        salias = args[i];</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">      } else if (&quot;-loadRoles&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L95">        i++;</span>
+<span class="nc" id="L96">        sroles = args[i];</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">      } else if (&quot;-dir&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L98">        i++;</span>
+<span class="fc" id="L99">        sdirconfig = args[i];</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">      } else if (&quot;-limit&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L101">        i++;</span>
+<span class="fc" id="L102">        slimitconfig = args[i];</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">      } else if (&quot;-auth&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L104">        i++;</span>
+<span class="fc" id="L105">        shostauth = args[i];</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">      } else if (&quot;-loadExtendedTaskFactory&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L107">        i++;</span>
+<span class="nc" id="L108">        sextendedFactoryClassList = args[i];</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">      } else if (&quot;-minimalSeq&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L110">        i++;</span>
+        try {
+<span class="nc" id="L112">          minimalSequenceValue = Long.parseLong(args[i]);</span>
+<span class="nc" id="L113">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L114">          logger.error(&quot;Number for restart sequence is not a long: {}&quot;,</span>
+                       args[i]);
+<span class="nc" id="L116">          minimalSequenceValue = ILLEGALVALUE;</span>
+<span class="nc" id="L117">        }</span>
       }
     }
-<span class="fc" id="L106">    return true;</span>
+<span class="fc" id="L120">    return true;</span>
   }
 
   /**
@@ -111,264 +125,267 @@ public class ServerInitDatabase {
    *     limit_configuration]
    */
   public static void main(final String[] args) {
-<span class="fc" id="L114">    WaarpLoggerFactory</span>
-<span class="fc" id="L115">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="fc" id="L117">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
+<span class="fc" id="L128">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="fc" id="L131">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
     }
-<span class="pc bpc" id="L119" title="1 of 2 branches missed.">    if (!getParams(args)) {</span>
-<span class="nc" id="L120">      SysErrLogger.FAKE_LOGGER.sysout(INFO_ARGS);</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L122">        admin.close();</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L134">      SysErrLogger.FAKE_LOGGER.sysout(INFO_ARGS);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L136">        admin.close();</span>
       }
-<span class="nc bnc" id="L124" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L125">        return;</span>
-      }
-<span class="nc" id="L127">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L128">      System.exit(2);//NOSONAR</span>
+<span class="nc" id="L138">      WaarpSystemUtil.systemExit(2);</span>
+<span class="nc" id="L139">      return;</span>
     }
 
     try {
-<span class="fc" id="L132">      if (!FileBasedConfiguration</span>
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">          .setConfigurationInitDatabase(Configuration.configuration, args[0],</span>
-                                        database)) {
-<span class="nc" id="L135">        System.err</span>
-<span class="nc" id="L136">            .format(Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;));</span>
-<span class="nc" id="L137">        SysErrLogger.FAKE_LOGGER.syserr();</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L139">          return;</span>
-        }
-<span class="nc" id="L141">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L142">        System.exit(2);//NOSONAR</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">      if (!FileBasedConfiguration.setConfigurationInitDatabase(</span>
+          Configuration.configuration, args[0], database)) {
+<span class="nc" id="L145">        System.err.format(</span>
+<span class="nc" id="L146">            Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;));</span>
+<span class="nc" id="L147">        SysErrLogger.FAKE_LOGGER.syserr();</span>
+<span class="nc" id="L148">        WaarpSystemUtil.systemExit(2);</span>
+<span class="nc" id="L149">        return;</span>
       }
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">      if (database) {</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">      if (database) {</span>
         // Init database
-<span class="fc" id="L146">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
-<span class="fc" id="L147">            Messages.getString(&quot;ServerInitDatabase.Create.Start&quot;));</span>
-<span class="fc" id="L148">        SysErrLogger.FAKE_LOGGER.sysout();</span>
-<span class="fc" id="L149">        initdb();</span>
-<span class="fc" id="L150">        SysErrLogger.FAKE_LOGGER</span>
-<span class="fc" id="L151">            .sysoutFormat(Messages.getString(&quot;ServerInitDatabase.Create.Done&quot;));</span>
-<span class="fc" id="L152">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="fc" id="L153">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="fc" id="L154">            Messages.getString(&quot;ServerInitDatabase.Create.Start&quot;));</span>
+<span class="fc" id="L155">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="fc" id="L156">        initdb();</span>
+<span class="fc" id="L157">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="fc" id="L158">            Messages.getString(&quot;ServerInitDatabase.Create.Done&quot;));</span>
+<span class="fc" id="L159">        SysErrLogger.FAKE_LOGGER.sysout();</span>
       }
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">      if (upgradeDb) {</span>
-        // try to upgrade DB schema
-<span class="fc" id="L156">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
-<span class="fc" id="L157">            Messages.getString(&quot;ServerInitDatabase.Upgrade.Start&quot;));</span>
-<span class="fc" id="L158">        SysErrLogger.FAKE_LOGGER.sysout();</span>
-        // TODO Split check for update and upgrade actions
-<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (!upgradedb()) {</span>
-<span class="nc" id="L161">          SysErrLogger.FAKE_LOGGER.syserr(</span>
-<span class="nc" id="L162">              Messages.getString(&quot;ServerInitDatabase.SchemaNotUptodate&quot;));</span>
-<span class="nc" id="L163">          SysErrLogger.FAKE_LOGGER.syserr();</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">          if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L165">            return;</span>
-          }
-<span class="nc" id="L167">          System.exit(1);//NOSONAR</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">      if (sextendedFactoryClassList != null) {</span>
+        // Load extended Factory for Task Type
+<span class="nc" id="L163">        final String[] extendedFactories = sextendedFactoryClassList.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        for (final String extendedFactory : extendedFactories) {</span>
+          try {
+<span class="nc" id="L166">            WaarpSystemUtil.newInstance(extendedFactory);</span>
+<span class="nc" id="L167">          } catch (final Exception e) {</span>
+<span class="nc" id="L168">            SysErrLogger.FAKE_LOGGER.sysoutFormat(Messages.getString(</span>
+                &quot;ServerInitDatabase.ExtendedTaskFactory.error&quot;) +
+<span class="nc" id="L170">                                                  e.getMessage());</span>
+<span class="nc" id="L171">            SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="nc" id="L172">          }</span>
         }
-<span class="fc" id="L169">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
-<span class="fc" id="L170">            Messages.getString(&quot;ServerInitDatabase.Upgrade.Done&quot;));</span>
-<span class="fc" id="L171">        SysErrLogger.FAKE_LOGGER.sysout();</span>
       }
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">      if (upgradeDb) {</span>
+        // try to upgrade DB schema
+<span class="fc" id="L177">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="fc" id="L178">            Messages.getString(&quot;ServerInitDatabase.Upgrade.Start&quot;));</span>
+<span class="fc" id="L179">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+        // TODO Split check for update and upgrade actions
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        if (!upgradedb()) {</span>
+<span class="nc" id="L182">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L183">              Messages.getString(&quot;ServerInitDatabase.SchemaNotUptodate&quot;));</span>
+<span class="nc" id="L184">          SysErrLogger.FAKE_LOGGER.syserr();</span>
+<span class="nc" id="L185">          updateMinimalValueSequence();</span>
+<span class="nc" id="L186">          WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L187">          return;</span>
+        }
+<span class="fc" id="L189">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="fc" id="L190">            Messages.getString(&quot;ServerInitDatabase.Upgrade.Done&quot;));</span>
+<span class="fc" id="L191">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+      }
+<span class="fc" id="L193">      updateMinimalValueSequence();</span>
       // Try to load some element directly into database from first
       // configuration file
-<span class="fc" id="L175">      FileBasedConfiguration</span>
-<span class="fc" id="L176">          .setConfigurationServerFromXml(Configuration.configuration, args[0]);</span>
-<span class="pc bpc" id="L177" title="1 of 2 branches missed.">      if (sdirconfig != null) {</span>
+<span class="fc" id="L196">      FileBasedConfiguration.setConfigurationServerFromXml(</span>
+          Configuration.configuration, args[0], false);
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">      if (sdirconfig != null) {</span>
         // load Rules
-<span class="fc" id="L179">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
-<span class="fc" id="L180">            Messages.getString(&quot;ServerInitDatabase.LoadRule.Start&quot;),</span>
+<span class="fc" id="L200">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="fc" id="L201">            Messages.getString(&quot;ServerInitDatabase.LoadRule.Start&quot;),</span>
             sdirconfig);
-<span class="fc" id="L182">        SysErrLogger.FAKE_LOGGER.sysout();</span>
-<span class="fc" id="L183">        final File dirConfig = new File(sdirconfig);</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        if (dirConfig.isDirectory()) {</span>
-<span class="pc bpc" id="L185" title="1 of 2 branches missed.">          if (!loadRules(dirConfig)) {</span>
-<span class="nc" id="L186">            SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
-<span class="nc" id="L187">                Messages.getString(&quot;ServerInitDatabase.LoadRule.Failed&quot;));</span>
-<span class="nc bnc" id="L188" title="All 2 branches missed.">            if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L189">              return;</span>
-            }
-<span class="nc" id="L191">            System.exit(1);//NOSONAR</span>
+<span class="fc" id="L203">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="fc" id="L204">        final File dirConfig = new File(sdirconfig);</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        if (dirConfig.isDirectory()) {</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">          if (!loadRules(dirConfig)) {</span>
+<span class="nc" id="L207">            SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="nc" id="L208">                Messages.getString(&quot;ServerInitDatabase.LoadRule.Failed&quot;));</span>
+<span class="nc" id="L209">            WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L210">            return;</span>
           }
         } else {
-<span class="nc" id="L194">          System.err.format(</span>
-<span class="nc" id="L195">              Messages.getString(&quot;ServerInitDatabase.LoadRule.NoDirectory&quot;),</span>
+<span class="nc" id="L213">          System.err.format(</span>
+<span class="nc" id="L214">              Messages.getString(&quot;ServerInitDatabase.LoadRule.NoDirectory&quot;),</span>
               sdirconfig);
-<span class="nc" id="L197">          SysErrLogger.FAKE_LOGGER.syserr();</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">          if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L199">            return;</span>
-          }
-<span class="nc" id="L201">          System.exit(1);//NOSONAR</span>
-        }
-<span class="fc" id="L203">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
-<span class="fc" id="L204">            Messages.getString(&quot;ServerInitDatabase.LoadRule.Done&quot;));</span>
-<span class="fc" id="L205">        SysErrLogger.FAKE_LOGGER.sysout();</span>
-      }
-<span class="pc bpc" id="L207" title="1 of 2 branches missed.">      if (shostauth != null) {</span>
-        // Load Host Authentications
-<span class="fc" id="L209">        System.out</span>
-<span class="fc" id="L210">            .format(Messages.getString(&quot;ServerInitDatabase.LoadAuth.Start&quot;),</span>
-                    shostauth);
-<span class="fc" id="L212">        SysErrLogger.FAKE_LOGGER.sysout();</span>
-<span class="pc bpc" id="L213" title="1 of 2 branches missed.">        if (!loadHostAuth(shostauth)) {</span>
-<span class="nc" id="L214">          System.err</span>
-<span class="nc" id="L215">              .format(Messages.getString(&quot;ServerInitDatabase.LoadAuth.Failed&quot;));</span>
 <span class="nc" id="L216">          SysErrLogger.FAKE_LOGGER.syserr();</span>
-<span class="nc bnc" id="L217" title="All 2 branches missed.">          if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L218">            return;</span>
-          }
-<span class="nc" id="L220">          System.exit(1);//NOSONAR</span>
+<span class="nc" id="L217">          WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L218">          return;</span>
         }
-<span class="fc" id="L222">        System.out</span>
-<span class="fc" id="L223">            .format(Messages.getString(&quot;ServerInitDatabase.LoadAuth.Done&quot;));</span>
-<span class="fc" id="L224">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="fc" id="L220">        SysErrLogger.FAKE_LOGGER.sysoutFormat(</span>
+<span class="fc" id="L221">            Messages.getString(&quot;ServerInitDatabase.LoadRule.Done&quot;));</span>
+<span class="fc" id="L222">        SysErrLogger.FAKE_LOGGER.sysout();</span>
       }
-<span class="pc bpc" id="L226" title="1 of 2 branches missed.">      if (slimitconfig != null) {</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">      if (shostauth != null) {</span>
+        // Load Host Authentications
+<span class="fc" id="L226">        System.out.format(</span>
+<span class="fc" id="L227">            Messages.getString(&quot;ServerInitDatabase.LoadAuth.Start&quot;), shostauth);</span>
+<span class="fc" id="L228">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        if (!loadHostAuth(shostauth)) {</span>
+<span class="nc" id="L230">          System.err.format(</span>
+<span class="nc" id="L231">              Messages.getString(&quot;ServerInitDatabase.LoadAuth.Failed&quot;));</span>
+<span class="nc" id="L232">          SysErrLogger.FAKE_LOGGER.syserr();</span>
+<span class="nc" id="L233">          WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L234">          return;</span>
+        }
+<span class="fc" id="L236">        System.out.format(</span>
+<span class="fc" id="L237">            Messages.getString(&quot;ServerInitDatabase.LoadAuth.Done&quot;));</span>
+<span class="fc" id="L238">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+      }
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">      if (slimitconfig != null) {</span>
         // Load configuration
-<span class="fc" id="L228">        System.out</span>
-<span class="fc" id="L229">            .format(Messages.getString(&quot;ServerInitDatabase.LoadLimit.Start&quot;),</span>
-                    slimitconfig);
-<span class="fc" id="L231">        SysErrLogger.FAKE_LOGGER.sysout();</span>
-<span class="fc" id="L232">        if (!FileBasedConfiguration</span>
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">            .setConfigurationLoadLimitFromXml(Configuration.configuration,</span>
-                                              slimitconfig)) {
-<span class="nc" id="L235">          System.err.format(</span>
-<span class="nc" id="L236">              Messages.getString(&quot;ServerInitDatabase.LoadLimit.Failed&quot;));</span>
-<span class="nc" id="L237">          SysErrLogger.FAKE_LOGGER.syserr();</span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">          if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L239">            return;</span>
-          }
-<span class="nc" id="L241">          System.exit(1);//NOSONAR</span>
-        }
-<span class="fc" id="L243">        System.out</span>
-<span class="fc" id="L244">            .format(Messages.getString(&quot;ServerInitDatabase.LoadLimit.Done&quot;));</span>
+<span class="fc" id="L242">        System.out.format(</span>
+<span class="fc" id="L243">            Messages.getString(&quot;ServerInitDatabase.LoadLimit.Start&quot;),</span>
+            slimitconfig);
 <span class="fc" id="L245">        SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if (!FileBasedConfiguration.setConfigurationLoadLimitFromXml(</span>
+            Configuration.configuration, slimitconfig)) {
+<span class="nc" id="L248">          System.err.format(</span>
+<span class="nc" id="L249">              Messages.getString(&quot;ServerInitDatabase.LoadLimit.Failed&quot;));</span>
+<span class="nc" id="L250">          SysErrLogger.FAKE_LOGGER.syserr();</span>
+<span class="nc" id="L251">          WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L252">          return;</span>
+        }
+<span class="fc" id="L254">        System.out.format(</span>
+<span class="fc" id="L255">            Messages.getString(&quot;ServerInitDatabase.LoadLimit.Done&quot;));</span>
+<span class="fc" id="L256">        SysErrLogger.FAKE_LOGGER.sysout();</span>
       }
-<span class="pc bpc" id="L247" title="3 of 6 branches missed.">      if (sbusiness != null || salias != null || sroles != null) {</span>
-<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (sbusiness != null) {</span>
-<span class="nc" id="L249">          sbusiness = getXMLFromFile(sbusiness);</span>
+<span class="pc bpc" id="L258" title="3 of 6 branches missed.">      if (sbusiness != null || salias != null || sroles != null) {</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        if (sbusiness != null) {</span>
+<span class="nc" id="L260">          sbusiness = getXMLFromFile(sbusiness);</span>
         }
-<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (salias != null) {</span>
-<span class="nc" id="L252">          salias = getXMLFromFile(salias);</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (salias != null) {</span>
+<span class="nc" id="L263">          salias = getXMLFromFile(salias);</span>
         }
-<span class="nc bnc" id="L254" title="All 2 branches missed.">        if (sroles != null) {</span>
-<span class="nc" id="L255">          sroles = getXMLFromFile(sroles);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        if (sroles != null) {</span>
+<span class="nc" id="L266">          sroles = getXMLFromFile(sroles);</span>
         }
         DbHostConfiguration hostConfiguration;
         try {
-<span class="nc" id="L259">          hostConfiguration =</span>
-<span class="nc" id="L260">              new DbHostConfiguration(Configuration.configuration.getHostId());</span>
-<span class="nc bnc" id="L261" title="All 4 branches missed.">          if (salias != null &amp;&amp; !salias.isEmpty()) {</span>
-<span class="nc" id="L262">            hostConfiguration.setAliases(salias);</span>
+<span class="nc" id="L270">          hostConfiguration =</span>
+<span class="nc" id="L271">              new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">          if (ParametersChecker.isNotEmpty(salias)) {</span>
+<span class="nc" id="L273">            hostConfiguration.setAliases(salias);</span>
           }
-<span class="nc bnc" id="L264" title="All 4 branches missed.">          if (sbusiness != null &amp;&amp; !sbusiness.isEmpty()) {</span>
-<span class="nc" id="L265">            hostConfiguration.setBusiness(sbusiness);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">          if (ParametersChecker.isNotEmpty(sbusiness)) {</span>
+<span class="nc" id="L276">            hostConfiguration.setBusiness(sbusiness);</span>
           }
-<span class="nc bnc" id="L267" title="All 4 branches missed.">          if (sroles != null &amp;&amp; !sroles.isEmpty()) {</span>
-<span class="nc" id="L268">            hostConfiguration.setRoles(sroles);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">          if (ParametersChecker.isNotEmpty(sroles)) {</span>
+<span class="nc" id="L279">            hostConfiguration.setRoles(sroles);</span>
           }
-<span class="nc" id="L270">          hostConfiguration.update();</span>
-<span class="nc" id="L271">        } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L272">          hostConfiguration =</span>
-<span class="nc" id="L273">              new DbHostConfiguration(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L281">          hostConfiguration.update();</span>
+<span class="nc" id="L282">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L283">          hostConfiguration =</span>
+<span class="nc" id="L284">              new DbHostConfiguration(Configuration.configuration.getHostId(),</span>
                                       sbusiness, sroles, salias, &quot;&quot;);
-<span class="nc" id="L275">          hostConfiguration.insert();</span>
-<span class="nc" id="L276">        }</span>
+<span class="nc" id="L286">          hostConfiguration.insert();</span>
+<span class="nc" id="L287">        }</span>
       }
-<span class="fc" id="L278">      SysErrLogger.FAKE_LOGGER</span>
-<span class="fc" id="L279">          .sysout(Messages.getString(&quot;ServerInitDatabase.LoadDone&quot;));</span>
-<span class="fc" id="L280">      SysErrLogger.FAKE_LOGGER.sysout();</span>
-<span class="pc bpc" id="L281" title="1 of 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="fc" id="L282">        return;</span>
-      }
-<span class="nc" id="L284">      System.exit(0);//NOSONAR</span>
-<span class="nc" id="L285">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L286">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L287">          .syserr(Messages.getString(&quot;ServerInitDatabase.ErrDatabase&quot;));</span>
-<span class="nc" id="L288">      SysErrLogger.FAKE_LOGGER.syserr();</span>
-<span class="nc bnc" id="L289" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L290">        return;</span>
-      }
-<span class="nc" id="L292">      System.exit(3);//NOSONAR</span>
+<span class="fc" id="L289">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="fc" id="L290">          Messages.getString(&quot;ServerInitDatabase.LoadDone&quot;));</span>
+<span class="fc" id="L291">      SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="fc" id="L292">      WaarpSystemUtil.systemExit(0);</span>
+<span class="nc" id="L293">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L294">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L295">          Messages.getString(&quot;ServerInitDatabase.ErrDatabase&quot;));</span>
+<span class="nc" id="L296">      SysErrLogger.FAKE_LOGGER.syserr();</span>
+<span class="nc" id="L297">      WaarpSystemUtil.systemExit(3);</span>
     } finally {
-<span class="pc bpc" id="L294" title="1 of 2 branches missed.">      if (admin != null) {</span>
-<span class="fc" id="L295">        admin.close();</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">      if (admin != null) {</span>
+<span class="fc" id="L300">        admin.close();</span>
       }
     }
-<span class="nc" id="L298">  }</span>
+<span class="fc" id="L303">  }</span>
+
+  private static void updateMinimalValueSequence() {
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">    if (minimalSequenceValue != ILLEGALVALUE) {</span>
+      try {
+<span class="nc" id="L308">        admin.getSession().getAdmin().getDbModel()</span>
+<span class="nc" id="L309">             .resetSequence(admin.getSession(), minimalSequenceValue);</span>
+<span class="nc" id="L310">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L311">        logger.error(&quot;Cannot update sequence restart value: {}&quot;,</span>
+<span class="nc" id="L312">                     e.getMessage());</span>
+<span class="nc" id="L313">      }</span>
+    }
+<span class="fc" id="L315">  }</span>
 
   private static String getXMLFromFile(final String path) {
-<span class="nc" id="L301">    String res = &quot;&quot;;</span>
-<span class="nc" id="L302">    final File file = new File(path);</span>
-<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (file.canRead()) {</span>
+<span class="nc" id="L318">    String res = &quot;&quot;;</span>
+<span class="nc" id="L319">    final File file = new File(path);</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">    if (file.canRead()) {</span>
       try {
-<span class="nc" id="L305">        final String value =</span>
-<span class="nc" id="L306">            FileUtils.readFileToString(file, WaarpStringUtils.UTF8);</span>
-<span class="nc bnc" id="L307" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.trim().isEmpty()) {</span>
-<span class="nc" id="L308">          res = value.replaceAll(&quot;\r|\n|  &quot;, &quot; &quot;).trim();</span>
+<span class="nc" id="L322">        final String value =</span>
+<span class="nc" id="L323">            FileUtils.readFileToString(file, WaarpStringUtils.UTF8);</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">        if (ParametersChecker.isNotEmpty(value)) {</span>
+<span class="nc" id="L325">          res = value.replaceAll(&quot;\r|\n|  &quot;, &quot; &quot;).trim();</span>
         }
-<span class="nc" id="L310">      } catch (final IOException e) {</span>
-<span class="nc" id="L311">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L312">      }</span>
+<span class="nc" id="L327">      } catch (final IOException e) {</span>
+<span class="nc" id="L328">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L329">      }</span>
     }
-<span class="nc" id="L314">    return res;</span>
+<span class="nc" id="L331">    return res;</span>
   }
 
   public static void initdb() throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
-<span class="fc" id="L319">    admin.getSession().getAdmin().getDbModel().createTables(admin.getSession());</span>
-<span class="fc" id="L320">  }</span>
+<span class="fc" id="L336">    admin.getSession().getAdmin().getDbModel().createTables(admin.getSession());</span>
+<span class="fc" id="L337">  }</span>
 
   /**
    * @return True if the base is up to date, else False (need Upgrade)
    */
   public static boolean upgradedb() {
-<span class="pc bpc" id="L326" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L327">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L344">      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);</span>
     }
     // Update tables: runner
-<span class="fc" id="L330">    boolean uptodate = true;</span>
+<span class="fc" id="L347">    boolean uptodate = true;</span>
     // Check if the database is up to date
-<span class="fc" id="L332">    final String version = DbHostConfiguration</span>
-<span class="fc" id="L333">        .getVersionDb(Configuration.configuration.getHostId());</span>
+<span class="fc" id="L349">    final String version = DbHostConfiguration.getVersionDb(</span>
+<span class="fc" id="L350">        Configuration.configuration.getHostId());</span>
     try {
-<span class="pc bpc" id="L335" title="1 of 2 branches missed.">      if (version != null) {</span>
-<span class="fc" id="L336">        uptodate = admin.getSession().getAdmin().getDbModel()</span>
-<span class="fc" id="L337">                        .needUpgradeDb(admin.getSession(), version, true);</span>
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">      if (version != null) {</span>
+<span class="fc" id="L353">        uptodate = admin.getSession().getAdmin().getDbModel()</span>
+<span class="fc" id="L354">                        .needUpgradeDb(admin.getSession(), version, true);</span>
       } else {
-<span class="nc" id="L339">        uptodate = admin.getSession().getAdmin().getDbModel()</span>
-<span class="nc" id="L340">                        .needUpgradeDb(admin.getSession(), &quot;1.1.0&quot;, true);</span>
+<span class="nc" id="L356">        uptodate = admin.getSession().getAdmin().getDbModel()</span>
+<span class="nc" id="L357">                        .needUpgradeDb(admin.getSession(), &quot;1.1.0&quot;, true);</span>
       }
-<span class="pc bpc" id="L342" title="1 of 2 branches missed.">      if (uptodate) {</span>
-<span class="nc" id="L343">        logger.error(Messages.getString(</span>
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">      if (uptodate) {</span>
+<span class="nc" id="L360">        logger.error(Messages.getString(</span>
             &quot;ServerInitDatabase.SchemaNotUptodate&quot;)); //$NON-NLS-1$
-<span class="nc" id="L345">        return false;</span>
+<span class="nc" id="L362">        return false;</span>
       } else {
-<span class="fc" id="L347">        logger.debug(Messages.getString(</span>
+<span class="fc" id="L364">        logger.debug(Messages.getString(</span>
             &quot;ServerInitDatabase.SchemaUptodate&quot;)); //$NON-NLS-1$
       }
-<span class="nc" id="L350">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L351">      logger</span>
-<span class="nc" id="L352">          .error(Messages.getString(&quot;Database.CannotConnect&quot;), e); //$NON-NLS-1$</span>
-<span class="nc" id="L353">      return false;</span>
-<span class="fc" id="L354">    }</span>
-<span class="pc bpc" id="L355" title="1 of 2 branches missed.">    return !uptodate;</span>
+<span class="nc" id="L367">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L368">      logger.error(Messages.getString(&quot;Database.CannotConnect&quot;),</span>
+                   e); //$NON-NLS-1$
+<span class="nc" id="L370">      return false;</span>
+<span class="fc" id="L371">    }</span>
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">    return !uptodate;</span>
   }
 
   public static boolean loadRules(final File dirConfig)
       throws WaarpDatabaseException {
     try {
-<span class="fc" id="L361">      RuleFileBasedConfiguration.importRules(dirConfig);</span>
-<span class="nc" id="L362">    } catch (final OpenR66ProtocolSystemException e) {</span>
-<span class="nc" id="L363">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L364">      return false;</span>
-<span class="fc" id="L365">    }</span>
-<span class="fc" id="L366">    return true;</span>
+<span class="fc" id="L378">      RuleFileBasedConfiguration.importRules(dirConfig);</span>
+<span class="nc" id="L379">    } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L380">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L381">      return false;</span>
+<span class="fc" id="L382">    }</span>
+<span class="fc" id="L383">    return true;</span>
   }
 
   public static boolean loadHostAuth(final String filename) {
-<span class="fc" id="L370">    return AuthenticationFileBasedConfiguration</span>
-<span class="fc" id="L371">        .loadAuthentication(Configuration.configuration, filename);</span>
+<span class="fc" id="L387">    return AuthenticationFileBasedConfiguration.loadAuthentication(</span>
+        Configuration.configuration, filename);
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

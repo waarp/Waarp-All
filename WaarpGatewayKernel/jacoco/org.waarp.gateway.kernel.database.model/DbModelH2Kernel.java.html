@@ -49,7 +49,7 @@ public class DbModelH2Kernel extends DbModelH2 {
 <span class="nc" id="L49">  }</span>
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L54">    createTableMonitoring(session);</span>
 <span class="nc" id="L55">  }</span>
@@ -81,10 +81,10 @@ public class DbModelH2Kernel extends DbModelH2 {
     try {
 <span class="nc" id="L82">      request.query(action.toString());</span>
 <span class="nc" id="L83">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L84">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L84">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L85">      return;</span>
 <span class="nc" id="L86">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L87">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L87">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
 <span class="nc" id="L90">      request.close();</span>
@@ -102,68 +102,71 @@ public class DbModelH2Kernel extends DbModelH2 {
     try {
 <span class="nc" id="L103">      request.query(action.toString());</span>
 <span class="nc" id="L104">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L105">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L105">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L106">      return;</span>
 <span class="nc" id="L107">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L108">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L108">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
       // XXX FIX No return
     } finally {
 <span class="nc" id="L111">      request.close();</span>
     }
 
     // cptrunner
-<span class="nc" id="L115">    action = new StringBuilder(</span>
+<span class="nc" id="L115">    final long minimalValue = System.currentTimeMillis() + 1;</span>
+<span class="nc" id="L116">    action = new StringBuilder(</span>
         &quot;CREATE SEQUENCE IF NOT EXISTS &quot; + DbTransferLog.fieldseq +
         &quot; START WITH &quot; + (DbConstantGateway.ILLEGALVALUE + 1) + &quot; MINVALUE &quot; +
-        (DbConstantGateway.ILLEGALVALUE + 1));
-<span class="nc" id="L119">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+        minimalValue);
+<span class="nc" id="L120">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L121">      request.query(action.toString());</span>
-<span class="nc" id="L122">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L123">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L124">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L122">      request.query(action.toString());</span>
+<span class="nc" id="L123">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L124">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L125">    } catch (final WaarpDatabaseSqlException e) {</span>
       // version &lt;= 1.2.173
-<span class="nc" id="L126">      action = new StringBuilder(</span>
+<span class="nc" id="L127">      action = new StringBuilder(</span>
           &quot;CREATE SEQUENCE IF NOT EXISTS &quot; + DbTransferLog.fieldseq +
-          &quot; START WITH &quot; + (DbConstantGateway.ILLEGALVALUE + 1));
-<span class="nc" id="L129">      SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+          &quot; START WITH &quot; + minimalValue);
+<span class="nc" id="L130">      SysErrLogger.FAKE_LOGGER.sysout(action);</span>
       try {
-<span class="nc" id="L131">        request.query(action.toString());</span>
-<span class="nc" id="L132">      } catch (final WaarpDatabaseNoConnectionException e2) {</span>
-<span class="nc" id="L133">        SysErrLogger.FAKE_LOGGER.syserr(e2);</span>
-<span class="nc" id="L134">      } catch (final WaarpDatabaseSqlException e2) {</span>
-<span class="nc" id="L135">        SysErrLogger.FAKE_LOGGER.syserr(e2);</span>
+<span class="nc" id="L132">        request.query(action.toString());</span>
+<span class="nc" id="L133">      } catch (final WaarpDatabaseNoConnectionException e2) {</span>
+<span class="nc" id="L134">        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);</span>
+<span class="nc" id="L135">      } catch (final WaarpDatabaseSqlException e2) {</span>
+<span class="nc" id="L136">        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);</span>
       } finally {
-<span class="nc" id="L137">        request.close();</span>
+<span class="nc" id="L138">        request.close();</span>
       }
     } finally {
-<span class="nc" id="L140">      request.close();</span>
+<span class="nc" id="L141">      request.close();</span>
     }
-<span class="nc" id="L142">  }</span>
+<span class="nc" id="L143">  }</span>
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L147">    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);</span>
-<span class="nc" id="L148">  }</span>
+<span class="nc" id="L148">    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);</span>
+<span class="nc" id="L149">  }</span>
 
   @Override
-  public long nextSequence(final DbSession dbSession)
+  public final long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L154">    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);</span>
+<span class="nc" id="L155">    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);</span>
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version) {
-<span class="nc" id="L159">    return false;</span>
+  public final boolean upgradeDb(final DbSession session,
+                                 final String version) {
+<span class="nc" id="L161">    return false;</span>
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix) {
-<span class="nc" id="L165">    return false;</span>
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version,
+                                     final boolean tryFix) {
+<span class="nc" id="L168">    return false;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

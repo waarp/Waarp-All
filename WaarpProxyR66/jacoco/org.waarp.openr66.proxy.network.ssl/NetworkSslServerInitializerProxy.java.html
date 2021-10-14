@@ -52,17 +52,17 @@ public class NetworkSslServerInitializerProxy
     final SslHandler sslHandler;
 <span class="fc bfc" id="L53" title="All 2 branches covered.">    if (isClient) {</span>
       // Not server: no clientAuthent, no renegotiation
-<span class="fc" id="L55">      sslHandler = getWaarpSslContextFactory().initInitializer(false, false);</span>
+<span class="fc" id="L55">      sslHandler = getWaarpSslContextFactory().createHandlerClient(ch);</span>
     } else {
       // Server: no renegotiation still, but possible clientAuthent
-<span class="fc" id="L58">      sslHandler = getWaarpSslContextFactory().initInitializer(true,</span>
-<span class="fc" id="L59">                                                               getWaarpSslContextFactory()</span>
-<span class="fc" id="L60">                                                                   .needClientAuthentication());</span>
+<span class="fc" id="L58">      sslHandler = getWaarpSslContextFactory().createHandlerServer(</span>
+<span class="fc" id="L59">          getWaarpSslContextFactory().needClientAuthentication(), ch);</span>
     }
-<span class="fc" id="L62">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
+<span class="fc" id="L61">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
 
-<span class="fc" id="L64">    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0, configuration</span>
-<span class="fc" id="L65">        .getTimeoutCon(), TimeUnit.MILLISECONDS));</span>
+<span class="fc" id="L63">    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0,</span>
+<span class="fc" id="L64">                                                   configuration.getTimeoutCon(),</span>
+                                                   TimeUnit.MILLISECONDS));
 <span class="fc" id="L66">    final GlobalTrafficShapingHandler handler =</span>
 <span class="fc" id="L67">        configuration.getGlobalTrafficShapingHandler();</span>
 <span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (handler != null) {</span>
@@ -77,4 +77,4 @@ public class NetworkSslServerInitializerProxy
                      new NetworkSslServerHandler(!isClient));
 <span class="fc" id="L78">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -60,27 +60,27 @@ public class WaarpMORow implements MOGroup {
    * @param mibLevel this integer identifies this Row in the MIB
    */
   public WaarpMORow(final WaarpInterfaceMib mib, final OID reference,
-<span class="nc" id="L63">                    final WaarpEntry[] entries, final int mibLevel) {</span>
-<span class="nc" id="L64">    this.mib = mib;</span>
-<span class="nc" id="L65">    this.reference = reference;</span>
-<span class="nc" id="L66">    this.mibLevel = mibLevel;</span>
-<span class="nc" id="L67">    setRow(new WaarpMOScalar[entries.length]);</span>
-<span class="nc" id="L68">    type = new int[entries.length];</span>
-<span class="nc" id="L69">    final int[] ref = this.reference.getValue();</span>
-<span class="nc" id="L70">    final int[] add = new int[2];</span>
-<span class="nc" id="L71">    add[1] = 0;</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">    for (int i = 0; i &lt; entries.length; i++) {</span>
-<span class="nc" id="L73">      final WaarpEntry entry = entries[i];</span>
-<span class="nc" id="L74">      type[i] = entry.smiConstantsType;</span>
-<span class="nc" id="L75">      add[0] = i + 1;</span>
-<span class="nc" id="L76">      final OID oid = new OID(ref, add);</span>
+<span class="fc" id="L63">                    final WaarpEntry[] entries, final int mibLevel) {</span>
+<span class="fc" id="L64">    this.mib = mib;</span>
+<span class="fc" id="L65">    this.reference = reference;</span>
+<span class="fc" id="L66">    this.mibLevel = mibLevel;</span>
+<span class="fc" id="L67">    setRow(new WaarpMOScalar[entries.length]);</span>
+<span class="fc" id="L68">    type = new int[entries.length];</span>
+<span class="fc" id="L69">    final int[] ref = this.reference.getValue();</span>
+<span class="fc" id="L70">    final int[] add = new int[2];</span>
+<span class="fc" id="L71">    add[1] = 0;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">    for (int i = 0; i &lt; entries.length; i++) {</span>
+<span class="fc" id="L73">      final WaarpEntry entry = entries[i];</span>
+<span class="fc" id="L74">      type[i] = entry.smiConstantsType;</span>
+<span class="fc" id="L75">      add[0] = i + 1;</span>
+<span class="fc" id="L76">      final OID oid = new OID(ref, add);</span>
       // the value is null at the creation, meaning values have to be
       // setup once just after
-<span class="nc" id="L79">      getRow()[i] =</span>
-<span class="nc" id="L80">          WaarpMOFactory.create(oid, null, entry.smiConstantsType, entry.access,</span>
+<span class="fc" id="L79">      getRow()[i] =</span>
+<span class="fc" id="L80">          WaarpMOFactory.create(oid, null, entry.smiConstantsType, entry.access,</span>
                                 this, mibLevel, i);
     }
-<span class="nc" id="L83">  }</span>
+<span class="fc" id="L83">  }</span>
 
   /**
    * Set a Value in this Row
@@ -92,22 +92,22 @@ public class WaarpMORow implements MOGroup {
    */
   public final void setValue(final int index, final Object value)
       throws IllegalArgumentException {
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (index &gt;= getRow().length) {</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    if (index &gt;= getRow().length) {</span>
 <span class="nc" id="L96">      throw new IllegalArgumentException(&quot;Index exceed Row size&quot;);</span>
     }
-<span class="nc" id="L98">    final Variable var = getRow()[index].getValue();</span>
-<span class="nc" id="L99">    WaarpMOFactory.setVariable(var, value, type[index]);</span>
-<span class="nc" id="L100">  }</span>
+<span class="fc" id="L98">    final Variable var = getRow()[index].getValue();</span>
+<span class="fc" id="L99">    WaarpMOFactory.setVariable(var, value, type[index]);</span>
+<span class="fc" id="L100">  }</span>
 
   @Override
   public final void registerMOs(final MOServer server,
                                 final OctetString context)
       throws DuplicateRegistrationException {
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    for (int i = 0; i &lt; getRow().length; i++) {</span>
-<span class="nc" id="L107">      final WaarpMOScalar scalar = getRow()[i];</span>
-<span class="nc" id="L108">      server.register(scalar, context);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    for (int i = 0; i &lt; getRow().length; i++) {</span>
+<span class="fc" id="L107">      final WaarpMOScalar scalar = getRow()[i];</span>
+<span class="fc" id="L108">      server.register(scalar, context);</span>
     }
-<span class="nc" id="L110">  }</span>
+<span class="fc" id="L110">  }</span>
 
   @Override
   public final void unregisterMOs(final MOServer server,
@@ -122,14 +122,14 @@ public class WaarpMORow implements MOGroup {
    * @return the row
    */
   public final WaarpMOScalar[] getRow() {
-<span class="nc" id="L125">    return row;</span>
+<span class="fc" id="L125">    return row;</span>
   }
 
   /**
    * @param row the row to set
    */
   final void setRow(final WaarpMOScalar[] row) {
-<span class="nc" id="L132">    this.row = row;</span>
-<span class="nc" id="L133">  }</span>
+<span class="fc" id="L132">    this.row = row;</span>
+<span class="fc" id="L133">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

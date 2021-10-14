@@ -167,7 +167,7 @@ final class MessageFormatter {
    * @return The formatted message
    */
   static FormattingTuple format(final String messagePattern, final Object arg) {
-<span class="nc" id="L170">    return arrayFormat(messagePattern, new Object[] { arg });</span>
+<span class="fc" id="L170">    return arrayFormat(messagePattern, new Object[] { arg });</span>
   }
 
   /**
@@ -195,19 +195,19 @@ final class MessageFormatter {
    */
   static FormattingTuple format(final String messagePattern, final Object argA,
                                 final Object argB) {
-<span class="nc" id="L198">    return arrayFormat(messagePattern, new Object[] { argA, argB });</span>
+<span class="fc" id="L198">    return arrayFormat(messagePattern, new Object[] { argA, argB });</span>
   }
 
   static Throwable getThrowableCandidate(final Object[] argArray) {
-<span class="nc bnc" id="L202" title="All 4 branches missed.">    if (argArray == null || argArray.length == 0) {</span>
-<span class="nc" id="L203">      return null;</span>
+<span class="fc bfc" id="L202" title="All 4 branches covered.">    if (argArray == null || argArray.length == 0) {</span>
+<span class="fc" id="L203">      return null;</span>
     }
 
-<span class="nc" id="L206">    final Object lastEntry = argArray[argArray.length - 1];</span>
-<span class="nc bnc" id="L207" title="All 2 branches missed.">    if (lastEntry instanceof Throwable) {</span>
+<span class="fc" id="L206">    final Object lastEntry = argArray[argArray.length - 1];</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">    if (lastEntry instanceof Throwable) {</span>
 <span class="nc" id="L208">      return (Throwable) lastEntry;</span>
     }
-<span class="nc" id="L210">    return null;</span>
+<span class="fc" id="L210">    return null;</span>
   }
 
   /**
@@ -227,40 +227,40 @@ final class MessageFormatter {
   static FormattingTuple arrayFormat(final String messagePattern,
                                      final Object[] argArray) {
 
-<span class="nc" id="L230">    final Throwable throwableCandidate = getThrowableCandidate(argArray);</span>
+<span class="fc" id="L230">    final Throwable throwableCandidate = getThrowableCandidate(argArray);</span>
 
-<span class="nc bnc" id="L232" title="All 2 branches missed.">    if (messagePattern == null) {</span>
-<span class="nc" id="L233">      return new FormattingTuple(null, argArray, throwableCandidate);</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">    if (messagePattern == null) {</span>
+<span class="fc" id="L233">      return new FormattingTuple(null, argArray, throwableCandidate);</span>
     }
 
-<span class="nc bnc" id="L236" title="All 2 branches missed.">    if (argArray == null) {</span>
-<span class="nc" id="L237">      return new FormattingTuple(messagePattern);</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">    if (argArray == null) {</span>
+<span class="fc" id="L237">      return new FormattingTuple(messagePattern);</span>
     }
 
-<span class="nc" id="L240">    int i = 0;</span>
+<span class="fc" id="L240">    int i = 0;</span>
     int j;
-<span class="nc" id="L242">    final StringBuilder sbuild =</span>
-<span class="nc" id="L243">        new StringBuilder(messagePattern.length() + 50);</span>
+<span class="fc" id="L242">    final StringBuilder sbuild =</span>
+<span class="fc" id="L243">        new StringBuilder(messagePattern.length() + 50);</span>
 
     int l;
-<span class="nc bnc" id="L246" title="All 2 branches missed.">    for (l = 0; l &lt; argArray.length; l++) {</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">    for (l = 0; l &lt; argArray.length; l++) {</span>
 
-<span class="nc" id="L248">      j = messagePattern.indexOf(DELIM_STR, i);</span>
+<span class="fc" id="L248">      j = messagePattern.indexOf(DELIM_STR, i);</span>
 
-<span class="nc bnc" id="L250" title="All 2 branches missed.">      if (j == -1) {</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">      if (j == -1) {</span>
         // no more variables
-<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (i == 0) {</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        if (i == 0) {</span>
           // this is a simple string
-<span class="nc" id="L254">          return new FormattingTuple(messagePattern, argArray,</span>
+<span class="fc" id="L254">          return new FormattingTuple(messagePattern, argArray,</span>
                                      throwableCandidate);
         } else {
           // add the tail string which contains no variables and return the result.
-<span class="nc" id="L258">          sbuild.append(messagePattern.substring(i));</span>
-<span class="nc" id="L259">          return new FormattingTuple(sbuild.toString(), argArray,</span>
+<span class="fc" id="L258">          sbuild.append(messagePattern.substring(i));</span>
+<span class="fc" id="L259">          return new FormattingTuple(sbuild.toString(), argArray,</span>
                                      throwableCandidate);
         }
       } else {
-<span class="nc bnc" id="L263" title="All 2 branches missed.">        if (isEscapedDelimeter(messagePattern, j)) {</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">        if (isEscapedDelimeter(messagePattern, j)) {</span>
 <span class="nc bnc" id="L264" title="All 2 branches missed.">          if (!isDoubleEscaped(messagePattern, j)) {</span>
 <span class="nc" id="L265">            l--;</span>
             // DELIM_START was escaped, thus should not be incremented
@@ -277,214 +277,214 @@ final class MessageFormatter {
           }
         } else {
           // normal case
-<span class="nc" id="L280">          sbuild.append(messagePattern, i, j);</span>
-<span class="nc" id="L281">          deeplyAppendParameter(sbuild, argArray[l],</span>
+<span class="fc" id="L280">          sbuild.append(messagePattern, i, j);</span>
+<span class="fc" id="L281">          deeplyAppendParameter(sbuild, argArray[l],</span>
                                 new HashMap&lt;Object[], Void&gt;());
-<span class="nc" id="L283">          i = j + 2;</span>
+<span class="fc" id="L283">          i = j + 2;</span>
         }
       }
     }
     // append the characters following the last {} pair.
-<span class="nc" id="L288">    sbuild.append(messagePattern.substring(i));</span>
-<span class="nc bnc" id="L289" title="All 2 branches missed.">    if (l &lt; argArray.length - 1) {</span>
+<span class="fc" id="L288">    sbuild.append(messagePattern.substring(i));</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    if (l &lt; argArray.length - 1) {</span>
 <span class="nc" id="L290">      return new FormattingTuple(sbuild.toString(), argArray,</span>
                                  throwableCandidate);
     } else {
-<span class="nc" id="L293">      return new FormattingTuple(sbuild.toString(), argArray, null);</span>
+<span class="fc" id="L293">      return new FormattingTuple(sbuild.toString(), argArray, null);</span>
     }
   }
 
   static boolean isEscapedDelimeter(final String messagePattern,
                                     final int delimeterStartIndex) {
-<span class="nc" id="L299">    ParametersChecker.checkParameterNullOnly(&quot;Must not be null&quot;,</span>
+<span class="fc" id="L299">    ParametersChecker.checkParameterNullOnly(&quot;Must not be null&quot;,</span>
                                              messagePattern);
-<span class="nc bnc" id="L301" title="All 2 branches missed.">    if (delimeterStartIndex == 0) {</span>
-<span class="nc" id="L302">      return false;</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">    if (delimeterStartIndex == 0) {</span>
+<span class="fc" id="L302">      return false;</span>
     }
-<span class="nc bnc" id="L304" title="All 2 branches missed.">    return messagePattern.charAt(delimeterStartIndex - 1) == ESCAPE_CHAR;</span>
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">    return messagePattern.charAt(delimeterStartIndex - 1) == ESCAPE_CHAR;</span>
   }
 
   static boolean isDoubleEscaped(final String messagePattern,
                                  final int delimeterStartIndex) {
-<span class="nc" id="L309">    ParametersChecker.checkParameterNullOnly(&quot;Must not be null&quot;,</span>
+<span class="fc" id="L309">    ParametersChecker.checkParameterNullOnly(&quot;Must not be null&quot;,</span>
                                              messagePattern);
-<span class="nc bnc" id="L311" title="All 2 branches missed.">    return delimeterStartIndex &gt;= 2 &amp;&amp;</span>
-<span class="nc bnc" id="L312" title="All 2 branches missed.">           delimeterStartIndex - 2 &gt; messagePattern.length() &amp;&amp;</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">           messagePattern.charAt(delimeterStartIndex - 2) == ESCAPE_CHAR;</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">    return delimeterStartIndex &gt;= 2 &amp;&amp;</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">           delimeterStartIndex - 2 &gt; messagePattern.length() &amp;&amp;</span>
+<span class="pc bnc" id="L313" title="All 2 branches missed.">           messagePattern.charAt(delimeterStartIndex - 2) == ESCAPE_CHAR;</span>
   }
 
   // special treatment of array values was suggested by 'lizongbo'
   static void deeplyAppendParameter(final StringBuilder sbuild, final Object o,
                                     final Map&lt;Object[], Void&gt; seenMap) {
-<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (o == null) {</span>
-<span class="nc" id="L320">      sbuild.append(&quot;null&quot;);</span>
-<span class="nc" id="L321">      return;</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="fc" id="L320">      sbuild.append(&quot;null&quot;);</span>
+<span class="fc" id="L321">      return;</span>
     }
-<span class="nc bnc" id="L323" title="All 2 branches missed.">    if (!o.getClass().isArray()) {</span>
-<span class="nc" id="L324">      safeObjectAppend(sbuild, o);</span>
+<span class="fc bfc" id="L323" title="All 2 branches covered.">    if (!o.getClass().isArray()) {</span>
+<span class="fc" id="L324">      safeObjectAppend(sbuild, o);</span>
     } else {
       // check for primitive array types because they
       // unfortunately cannot be cast to Object[]
-<span class="nc bnc" id="L328" title="All 2 branches missed.">      if (o instanceof boolean[]) {</span>
-<span class="nc" id="L329">        booleanArrayAppend(sbuild, (boolean[]) o);</span>
-<span class="nc bnc" id="L330" title="All 2 branches missed.">      } else if (o instanceof byte[]) {</span>
-<span class="nc" id="L331">        byteArrayAppend(sbuild, (byte[]) o);</span>
-<span class="nc bnc" id="L332" title="All 2 branches missed.">      } else if (o instanceof char[]) {</span>
-<span class="nc" id="L333">        charArrayAppend(sbuild, (char[]) o);</span>
-<span class="nc bnc" id="L334" title="All 2 branches missed.">      } else if (o instanceof short[]) {</span>
-<span class="nc" id="L335">        shortArrayAppend(sbuild, (short[]) o);</span>
-<span class="nc bnc" id="L336" title="All 2 branches missed.">      } else if (o instanceof int[]) {</span>
-<span class="nc" id="L337">        intArrayAppend(sbuild, (int[]) o);</span>
-<span class="nc bnc" id="L338" title="All 2 branches missed.">      } else if (o instanceof long[]) {</span>
-<span class="nc" id="L339">        longArrayAppend(sbuild, (long[]) o);</span>
-<span class="nc bnc" id="L340" title="All 2 branches missed.">      } else if (o instanceof float[]) {</span>
-<span class="nc" id="L341">        floatArrayAppend(sbuild, (float[]) o);</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">      } else if (o instanceof double[]) {</span>
-<span class="nc" id="L343">        doubleArrayAppend(sbuild, (double[]) o);</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">      if (o instanceof boolean[]) {</span>
+<span class="fc" id="L329">        booleanArrayAppend(sbuild, (boolean[]) o);</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">      } else if (o instanceof byte[]) {</span>
+<span class="fc" id="L331">        byteArrayAppend(sbuild, (byte[]) o);</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">      } else if (o instanceof char[]) {</span>
+<span class="fc" id="L333">        charArrayAppend(sbuild, (char[]) o);</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">      } else if (o instanceof short[]) {</span>
+<span class="fc" id="L335">        shortArrayAppend(sbuild, (short[]) o);</span>
+<span class="fc bfc" id="L336" title="All 2 branches covered.">      } else if (o instanceof int[]) {</span>
+<span class="fc" id="L337">        intArrayAppend(sbuild, (int[]) o);</span>
+<span class="fc bfc" id="L338" title="All 2 branches covered.">      } else if (o instanceof long[]) {</span>
+<span class="fc" id="L339">        longArrayAppend(sbuild, (long[]) o);</span>
+<span class="fc bfc" id="L340" title="All 2 branches covered.">      } else if (o instanceof float[]) {</span>
+<span class="fc" id="L341">        floatArrayAppend(sbuild, (float[]) o);</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">      } else if (o instanceof double[]) {</span>
+<span class="fc" id="L343">        doubleArrayAppend(sbuild, (double[]) o);</span>
       } else {
-<span class="nc" id="L345">        objectArrayAppend(sbuild, (Object[]) o, seenMap);</span>
+<span class="fc" id="L345">        objectArrayAppend(sbuild, (Object[]) o, seenMap);</span>
       }
     }
-<span class="nc" id="L348">  }</span>
+<span class="fc" id="L348">  }</span>
 
   private static void safeObjectAppend(final StringBuilder sbuild,
                                        final Object o) {
     try {
-<span class="nc" id="L353">      final String oAsString = o.toString();</span>
-<span class="nc" id="L354">      sbuild.append(oAsString);</span>
+<span class="fc" id="L353">      final String oAsString = o.toString();</span>
+<span class="fc" id="L354">      sbuild.append(oAsString);</span>
 <span class="nc" id="L355">    } catch (final Exception t) {</span>
 <span class="nc" id="L356">      SysErrLogger.FAKE_LOGGER.ignoreLog(t);</span>
 <span class="nc" id="L357">      SysErrLogger.FAKE_LOGGER.syserr(</span>
           &quot;SLF4J: Failed toString() invocation on an object of type [&quot; +
 <span class="nc" id="L359">          o.getClass().getName() + ']' + t.getMessage());</span>
 <span class="nc" id="L360">      sbuild.append(&quot;[FAILED toString()]&quot;);</span>
-<span class="nc" id="L361">    }</span>
-<span class="nc" id="L362">  }</span>
+<span class="fc" id="L361">    }</span>
+<span class="fc" id="L362">  }</span>
 
   private static void objectArrayAppend(final StringBuilder sbuild,
                                         final Object[] a,
                                         final Map&lt;Object[], Void&gt; seenMap) {
-<span class="nc" id="L367">    sbuild.append('[');</span>
-<span class="nc bnc" id="L368" title="All 2 branches missed.">    if (!seenMap.containsKey(a)) {</span>
-<span class="nc" id="L369">      seenMap.put(a, null);</span>
-<span class="nc" id="L370">      final int len = a.length;</span>
-<span class="nc bnc" id="L371" title="All 2 branches missed.">      for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L372">        deeplyAppendParameter(sbuild, a[i], seenMap);</span>
-<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (i != len - 1) {</span>
+<span class="fc" id="L367">    sbuild.append('[');</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">    if (!seenMap.containsKey(a)) {</span>
+<span class="fc" id="L369">      seenMap.put(a, null);</span>
+<span class="fc" id="L370">      final int len = a.length;</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">      for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L372">        deeplyAppendParameter(sbuild, a[i], seenMap);</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">        if (i != len - 1) {</span>
 <span class="nc" id="L374">          sbuild.append(&quot;, &quot;);</span>
         }
       }
       // allow repeats in siblings
-<span class="nc" id="L378">      seenMap.remove(a);</span>
-<span class="nc" id="L379">    } else {</span>
+<span class="fc" id="L378">      seenMap.remove(a);</span>
+<span class="fc" id="L379">    } else {</span>
 <span class="nc" id="L380">      sbuild.append(&quot;...&quot;);</span>
     }
-<span class="nc" id="L382">    sbuild.append(']');</span>
-<span class="nc" id="L383">  }</span>
+<span class="fc" id="L382">    sbuild.append(']');</span>
+<span class="fc" id="L383">  }</span>
 
   private static void booleanArrayAppend(final StringBuilder sbuild,
                                          final boolean[] a) {
-<span class="nc" id="L387">    sbuild.append('[');</span>
-<span class="nc" id="L388">    final int len = a.length;</span>
-<span class="nc bnc" id="L389" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L390">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L391" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L387">    sbuild.append('[');</span>
+<span class="fc" id="L388">    final int len = a.length;</span>
+<span class="fc bfc" id="L389" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L390">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L392">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L395">    sbuild.append(']');</span>
-<span class="nc" id="L396">  }</span>
+<span class="fc" id="L395">    sbuild.append(']');</span>
+<span class="fc" id="L396">  }</span>
 
   private static void byteArrayAppend(final StringBuilder sbuild,
                                       final byte[] a) {
-<span class="nc" id="L400">    sbuild.append('[');</span>
-<span class="nc" id="L401">    final int len = a.length;</span>
-<span class="nc bnc" id="L402" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L403">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L404" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L400">    sbuild.append('[');</span>
+<span class="fc" id="L401">    final int len = a.length;</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L403">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L404" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L405">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L408">    sbuild.append(']');</span>
-<span class="nc" id="L409">  }</span>
+<span class="fc" id="L408">    sbuild.append(']');</span>
+<span class="fc" id="L409">  }</span>
 
   private static void charArrayAppend(final StringBuilder sbuild,
                                       final char[] a) {
-<span class="nc" id="L413">    sbuild.append('[');</span>
-<span class="nc" id="L414">    final int len = a.length;</span>
-<span class="nc bnc" id="L415" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L416">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L417" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L413">    sbuild.append('[');</span>
+<span class="fc" id="L414">    final int len = a.length;</span>
+<span class="fc bfc" id="L415" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L416">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L418">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L421">    sbuild.append(']');</span>
-<span class="nc" id="L422">  }</span>
+<span class="fc" id="L421">    sbuild.append(']');</span>
+<span class="fc" id="L422">  }</span>
 
   private static void shortArrayAppend(final StringBuilder sbuild,
                                        final short[] a) {
-<span class="nc" id="L426">    sbuild.append('[');</span>
-<span class="nc" id="L427">    final int len = a.length;</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L429">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L430" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L426">    sbuild.append('[');</span>
+<span class="fc" id="L427">    final int len = a.length;</span>
+<span class="fc bfc" id="L428" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L429">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L430" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L431">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L434">    sbuild.append(']');</span>
-<span class="nc" id="L435">  }</span>
+<span class="fc" id="L434">    sbuild.append(']');</span>
+<span class="fc" id="L435">  }</span>
 
   private static void intArrayAppend(final StringBuilder sbuild,
                                      final int[] a) {
-<span class="nc" id="L439">    sbuild.append('[');</span>
-<span class="nc" id="L440">    final int len = a.length;</span>
-<span class="nc bnc" id="L441" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L442">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L443" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L439">    sbuild.append('[');</span>
+<span class="fc" id="L440">    final int len = a.length;</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L442">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L443" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L444">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L447">    sbuild.append(']');</span>
-<span class="nc" id="L448">  }</span>
+<span class="fc" id="L447">    sbuild.append(']');</span>
+<span class="fc" id="L448">  }</span>
 
   private static void longArrayAppend(final StringBuilder sbuild,
                                       final long[] a) {
-<span class="nc" id="L452">    sbuild.append('[');</span>
-<span class="nc" id="L453">    final int len = a.length;</span>
-<span class="nc bnc" id="L454" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L455">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L456" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L452">    sbuild.append('[');</span>
+<span class="fc" id="L453">    final int len = a.length;</span>
+<span class="fc bfc" id="L454" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L455">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L457">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L460">    sbuild.append(']');</span>
-<span class="nc" id="L461">  }</span>
+<span class="fc" id="L460">    sbuild.append(']');</span>
+<span class="fc" id="L461">  }</span>
 
   private static void floatArrayAppend(final StringBuilder sbuild,
                                        final float[] a) {
-<span class="nc" id="L465">    sbuild.append('[');</span>
-<span class="nc" id="L466">    final int len = a.length;</span>
-<span class="nc bnc" id="L467" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L468">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L469" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L465">    sbuild.append('[');</span>
+<span class="fc" id="L466">    final int len = a.length;</span>
+<span class="fc bfc" id="L467" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L468">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L470">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L473">    sbuild.append(']');</span>
-<span class="nc" id="L474">  }</span>
+<span class="fc" id="L473">    sbuild.append(']');</span>
+<span class="fc" id="L474">  }</span>
 
   private static void doubleArrayAppend(final StringBuilder sbuild,
                                         final double[] a) {
-<span class="nc" id="L478">    sbuild.append('[');</span>
-<span class="nc" id="L479">    final int len = a.length;</span>
-<span class="nc bnc" id="L480" title="All 2 branches missed.">    for (int i = 0; i &lt; len; i++) {</span>
-<span class="nc" id="L481">      sbuild.append(a[i]);</span>
-<span class="nc bnc" id="L482" title="All 2 branches missed.">      if (i != len - 1) {</span>
+<span class="fc" id="L478">    sbuild.append('[');</span>
+<span class="fc" id="L479">    final int len = a.length;</span>
+<span class="fc bfc" id="L480" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L481">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L482" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
 <span class="nc" id="L483">        sbuild.append(&quot;, &quot;);</span>
       }
     }
-<span class="nc" id="L486">    sbuild.append(']');</span>
-<span class="nc" id="L487">  }</span>
+<span class="fc" id="L486">    sbuild.append(']');</span>
+<span class="fc" id="L487">  }</span>
 
   private MessageFormatter() {
   }

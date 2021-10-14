@@ -38,7 +38,7 @@ import java.util.ConcurrentModificationException;
 /**
  * This Abstract class regroups common methods for all implementation classes.
  */
-<span class="nc" id="L41">public abstract class DbModelAbstract implements DbModel {</span>
+<span class="fc" id="L41">public abstract class DbModelAbstract implements DbModel {</span>
   /**
    * Max size in Binary mode, store in BASE64 mode (so x2)
    */
@@ -57,7 +57,7 @@ import java.util.ConcurrentModificationException;
   public static final int MAX_VARCHAR = 8096;
   protected static DbTypeResolver dbTypeResolver;
 
-<span class="nc" id="L60">  public abstract static class DbTypeResolver {</span>
+<span class="fc" id="L60">  public abstract static class DbTypeResolver {</span>
     public abstract String getType(int sqlType);
 
     public String getCreateTable() {
@@ -86,8 +86,8 @@ import java.util.ConcurrentModificationException;
   /**
    * Internal Logger
    */
-<span class="nc" id="L89">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L90">      WaarpLoggerFactory.getLogger(DbModelAbstract.class);</span>
+<span class="fc" id="L89">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L90">      WaarpLoggerFactory.getLogger(DbModelAbstract.class);</span>
   private static final String CANNOT_CONNECT_TO_DATABASE =
       &quot;Cannot connect to database&quot;;
 
@@ -148,18 +148,18 @@ import java.util.ConcurrentModificationException;
   public final void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
-<span class="nc" id="L151">    synchronized (this) {</span>
-<span class="nc bnc" id="L152" title="All 2 branches missed.">      if (dbSession.getConn() == null) {</span>
+<span class="fc" id="L151">    synchronized (this) {</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">      if (dbSession.getConn() == null) {</span>
 <span class="nc" id="L153">        throw new WaarpDatabaseNoConnectionException(</span>
             CANNOT_CONNECT_TO_DATABASE);
       }
       try {
-<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (!dbSession.getConn().isClosed() &amp;&amp;</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">            !dbSession.getConn().isValid(DbConstant.VALIDTESTDURATION)) {</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (!dbSession.getConn().isClosed() &amp;&amp;</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">            !dbSession.getConn().isValid(DbConstant.VALIDTESTDURATION)) {</span>
           // Give a try by closing the current connection
 <span class="nc" id="L160">          throw new SQLException(CANNOT_CONNECT_TO_DATABASE);</span>
         }
-<span class="nc" id="L162">        dbSession.setDisActive(false);</span>
+<span class="fc" id="L162">        dbSession.setDisActive(false);</span>
 <span class="nc" id="L163">      } catch (final SQLException e2) {</span>
 <span class="nc" id="L164">        dbSession.setDisActive(true);</span>
         // Might be unsupported so switch to SELECT 1 way
@@ -173,9 +173,9 @@ import java.util.ConcurrentModificationException;
 <span class="nc" id="L173">        closeInternalConnection(dbSession);</span>
 <span class="nc" id="L174">        throw new WaarpDatabaseNoConnectionException(CANNOT_CONNECT_TO_DATABASE,</span>
                                                      e2);
-<span class="nc" id="L176">      }</span>
-<span class="nc" id="L177">    }</span>
-<span class="nc" id="L178">  }</span>
+<span class="fc" id="L176">      }</span>
+<span class="fc" id="L177">    }</span>
+<span class="fc" id="L178">  }</span>
 
   private boolean subValidationConnection(final DbSession dbSession,
                                           final SQLException e2)
@@ -319,16 +319,16 @@ import java.util.ConcurrentModificationException;
   public Connection getDbConnection(final String server, final String user,
                                     final String passwd) throws SQLException {
     // Default implementation
-<span class="nc" id="L322">    return DriverManager.getConnection(server, user, passwd);</span>
+<span class="fc" id="L322">    return DriverManager.getConnection(server, user, passwd);</span>
   }
 
   @Override
   public void releaseResources() {
-<span class="nc" id="L327">  }</span>
+<span class="fc" id="L327">  }</span>
 
   @Override
   public int currentNumberOfPooledConnections() {
-<span class="nc" id="L331">    return DbAdmin.getNbConnection();</span>
+<span class="fc" id="L331">    return DbAdmin.getNbConnection();</span>
   }
 
 }

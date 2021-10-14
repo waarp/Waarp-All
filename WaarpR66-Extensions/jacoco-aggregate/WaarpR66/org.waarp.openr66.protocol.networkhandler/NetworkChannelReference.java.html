@@ -52,10 +52,10 @@ public class NetworkChannelReference {
   /**
    * Internal Logger
    */
-<span class="nc" id="L55">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L56">      WaarpLoggerFactory.getLogger(NetworkChannelReference.class);</span>
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(NetworkChannelReference.class);</span>
 
-<span class="nc" id="L58">  private static final LocalChannelReference[] LCR_0_LENGTH =</span>
+<span class="fc" id="L58">  private static final LocalChannelReference[] LCR_0_LENGTH =</span>
       new LocalChannelReference[0];
 
   /**
@@ -65,8 +65,8 @@ public class NetworkChannelReference {
   /**
    * Associated LocalChannelReference
    */
-<span class="nc" id="L68">  private final Set&lt;LocalChannelReference&gt; localChannelReferences =</span>
-<span class="nc" id="L69">      ConcurrentUtility.newConcurrentSet();</span>
+<span class="pc" id="L68">  private final Set&lt;LocalChannelReference&gt; localChannelReferences =</span>
+<span class="pc" id="L69">      ConcurrentUtility.newConcurrentSet();</span>
   /**
    * Network Channel
    */
@@ -94,21 +94,21 @@ public class NetworkChannelReference {
   /**
    * Last Time in ms this channel was used by a LocalChannel
    */
-<span class="nc" id="L97">  private long lastTimeUsed = System.currentTimeMillis();</span>
+<span class="pc" id="L97">  private long lastTimeUsed = System.currentTimeMillis();</span>
   /**
    * Is this channel multiplexed using Ssl
    */
   private final boolean isSSL;
 
   public NetworkChannelReference(final Channel networkChannel,
-<span class="nc" id="L104">                                 final WaarpLock lock, final boolean isSSL) {</span>
-<span class="nc" id="L105">    channel = networkChannel;</span>
-<span class="nc" id="L106">    networkAddress = channel.remoteAddress();</span>
-<span class="nc" id="L107">    hostAddress =</span>
-<span class="nc" id="L108">        ((InetSocketAddress) networkAddress).getAddress().getHostAddress();</span>
-<span class="nc" id="L109">    this.lock = lock;</span>
-<span class="nc" id="L110">    this.isSSL = isSSL;</span>
-<span class="nc" id="L111">  }</span>
+<span class="fc" id="L104">                                 final WaarpLock lock, final boolean isSSL) {</span>
+<span class="fc" id="L105">    channel = networkChannel;</span>
+<span class="fc" id="L106">    networkAddress = channel.remoteAddress();</span>
+<span class="fc" id="L107">    hostAddress =</span>
+<span class="fc" id="L108">        ((InetSocketAddress) networkAddress).getAddress().getHostAddress();</span>
+<span class="fc" id="L109">    this.lock = lock;</span>
+<span class="fc" id="L110">    this.isSSL = isSSL;</span>
+<span class="fc" id="L111">  }</span>
 
   public NetworkChannelReference(final SocketAddress address,
 <span class="nc" id="L114">                                 final WaarpLock lock, final boolean isSSL) {</span>
@@ -121,28 +121,28 @@ public class NetworkChannelReference {
 <span class="nc" id="L121">  }</span>
 
   public final boolean isSSL() {
-<span class="nc" id="L124">    return isSSL;</span>
+<span class="fc" id="L124">    return isSSL;</span>
   }
 
   public final void add(final LocalChannelReference localChannel)
       throws OpenR66ProtocolRemoteShutdownException {
     // lock is of no use since caller is itself in locked situation for the very same lock
-<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (isShuttingDown) {</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">    if (isShuttingDown) {</span>
 <span class="nc" id="L131">      throw new OpenR66ProtocolRemoteShutdownException(</span>
           &quot;Current NetworkChannelReference is closed&quot;);
     }
-<span class="nc" id="L134">    use();</span>
-<span class="nc" id="L135">    localChannelReferences.add(localChannel);</span>
-<span class="nc" id="L136">  }</span>
+<span class="fc" id="L134">    use();</span>
+<span class="fc" id="L135">    localChannelReferences.add(localChannel);</span>
+<span class="fc" id="L136">  }</span>
 
   /**
    * To set the last time used
    */
   public final void use() {
-<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (!isShuttingDown) {</span>
-<span class="nc" id="L143">      lastTimeUsed = System.currentTimeMillis();</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">    if (!isShuttingDown) {</span>
+<span class="fc" id="L143">      lastTimeUsed = System.currentTimeMillis();</span>
     }
-<span class="nc" id="L145">  }</span>
+<span class="fc" id="L145">  }</span>
 
   /**
    * To set the last time used when correct
@@ -150,11 +150,11 @@ public class NetworkChannelReference {
    * @return True if last time used is set
    */
   public final boolean useIfUsed() {
-<span class="nc bnc" id="L153" title="All 4 branches missed.">    if (!isShuttingDown &amp;&amp; !localChannelReferences.isEmpty()) {</span>
-<span class="nc" id="L154">      lastTimeUsed = System.currentTimeMillis();</span>
-<span class="nc" id="L155">      return true;</span>
+<span class="fc bfc" id="L153" title="All 4 branches covered.">    if (!isShuttingDown &amp;&amp; !localChannelReferences.isEmpty()) {</span>
+<span class="fc" id="L154">      lastTimeUsed = System.currentTimeMillis();</span>
+<span class="fc" id="L155">      return true;</span>
     }
-<span class="nc" id="L157">    return false;</span>
+<span class="fc" id="L157">    return false;</span>
   }
 
   /**
@@ -163,11 +163,11 @@ public class NetworkChannelReference {
    * @param localChannel
    */
   public final void closeAndRemove(final LocalChannelReference localChannel) {
-<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (!localChannel.getFutureRequest().isDone()) {</span>
-<span class="nc" id="L167">      localChannel.close();</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">    if (!localChannel.getFutureRequest().isDone()) {</span>
+<span class="fc" id="L167">      localChannel.close();</span>
     }
-<span class="nc" id="L169">    remove(localChannel);</span>
-<span class="nc" id="L170">  }</span>
+<span class="fc" id="L169">    remove(localChannel);</span>
+<span class="fc" id="L170">  }</span>
 
   /**
    * Remove one LocalChanelReference
@@ -175,65 +175,65 @@ public class NetworkChannelReference {
    * @param localChannel
    */
   public final void remove(final LocalChannelReference localChannel) {
-<span class="nc" id="L178">    localChannelReferences.remove(localChannel);</span>
+<span class="fc" id="L178">    localChannelReferences.remove(localChannel);</span>
     // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis()
-<span class="nc" id="L180">  }</span>
+<span class="fc" id="L180">  }</span>
 
   /**
    * Shutdown All Local Channels associated with this NCR
    */
   public final void shutdownAllLocalChannels() {
-<span class="nc" id="L186">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
+<span class="fc" id="L186">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
     try {
-<span class="nc" id="L188">      logger.info(&quot;Will shutdown all local channels&quot;);</span>
-<span class="nc" id="L189">      isShuttingDown = true;</span>
-<span class="nc" id="L190">      final LocalChannelReference[] localChannelReferenceArray =</span>
-<span class="nc" id="L191">          localChannelReferences.toArray(LCR_0_LENGTH);</span>
-<span class="nc" id="L192">      final ArrayList&lt;LocalChannelReference&gt; toCloseLater =</span>
+<span class="fc" id="L188">      logger.info(&quot;Will shutdown all local channels&quot;);</span>
+<span class="fc" id="L189">      isShuttingDown = true;</span>
+<span class="fc" id="L190">      final LocalChannelReference[] localChannelReferenceArray =</span>
+<span class="fc" id="L191">          localChannelReferences.toArray(LCR_0_LENGTH);</span>
+<span class="fc" id="L192">      final ArrayList&lt;LocalChannelReference&gt; toCloseLater =</span>
           new ArrayList&lt;LocalChannelReference&gt;();
-<span class="nc bnc" id="L194" title="All 2 branches missed.">      for (final LocalChannelReference localChannelReference : localChannelReferenceArray) {</span>
-<span class="nc" id="L195">        localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
-<span class="nc" id="L196">            Configuration.configuration.getTimeoutCon() / 3);</span>
-<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
-<span class="nc" id="L198">          localChannelReference.getFutureValidRequest().awaitOrInterruptible(</span>
-<span class="nc" id="L199">              Configuration.configuration.getTimeoutCon() / 3);</span>
-<span class="nc bnc" id="L200" title="All 2 branches missed.">          if (localChannelReference.getFutureValidRequest().isDone() &amp;&amp;</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">              localChannelReference.getFutureValidRequest().isFailed()) {</span>
-<span class="nc" id="L202">            toCloseLater.add(localChannelReference);</span>
-<span class="nc" id="L203">            continue;</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">      for (final LocalChannelReference localChannelReference : localChannelReferenceArray) {</span>
+<span class="fc" id="L195">        localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
+<span class="fc" id="L196">            Configuration.configuration.getTimeoutCon() / 3);</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="fc" id="L198">          localChannelReference.getFutureValidRequest().awaitOrInterruptible(</span>
+<span class="fc" id="L199">              Configuration.configuration.getTimeoutCon() / 3);</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">          if (localChannelReference.getFutureValidRequest().isDone() &amp;&amp;</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">              localChannelReference.getFutureValidRequest().isFailed()) {</span>
+<span class="fc" id="L202">            toCloseLater.add(localChannelReference);</span>
+<span class="fc" id="L203">            continue;</span>
           } else {
-<span class="nc" id="L205">            final R66Result finalValue =</span>
-<span class="nc" id="L206">                new R66Result(localChannelReference.getSession(), true,</span>
+<span class="fc" id="L205">            final R66Result finalValue =</span>
+<span class="fc" id="L206">                new R66Result(localChannelReference.getSession(), true,</span>
                               ErrorCode.Shutdown, null);
-<span class="nc bnc" id="L208" title="All 2 branches missed.">            if (localChannelReference.getSession() != null) {</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">            if (localChannelReference.getSession() != null) {</span>
               try {
-<span class="nc" id="L210">                localChannelReference.getSession()</span>
-<span class="nc" id="L211">                                     .tryFinalizeRequest(finalValue);</span>
-<span class="nc" id="L212">              } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="fc" id="L210">                localChannelReference.getSession()</span>
+<span class="fc" id="L211">                                     .tryFinalizeRequest(finalValue);</span>
+<span class="fc" id="L212">              } catch (final OpenR66RunnerErrorException ignored) {</span>
                 // nothing
 <span class="nc" id="L214">              } catch (final OpenR66ProtocolSystemException ignored) {</span>
                 // nothing
-<span class="nc" id="L216">              }</span>
+<span class="fc" id="L216">              }</span>
             }
           }
         }
-<span class="nc" id="L220">        localChannelReference.close();</span>
+<span class="fc" id="L220">        localChannelReference.close();</span>
       }
       try {
-<span class="nc" id="L223">        Thread.sleep(Configuration.WAITFORNETOP);</span>
+<span class="fc" id="L223">        Thread.sleep(Configuration.WAITFORNETOP);</span>
 <span class="nc" id="L224">      } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L225">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L226">      }</span>
-<span class="nc bnc" id="L227" title="All 2 branches missed.">      for (final LocalChannelReference localChannelReference : toCloseLater) {</span>
-<span class="nc" id="L228">        localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
-<span class="nc" id="L229">            Configuration.configuration.getTimeoutCon() / 3);</span>
-<span class="nc" id="L230">        localChannelReference.close();</span>
-<span class="nc" id="L231">      }</span>
-<span class="nc" id="L232">      toCloseLater.clear();</span>
+<span class="fc" id="L226">      }</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">      for (final LocalChannelReference localChannelReference : toCloseLater) {</span>
+<span class="fc" id="L228">        localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
+<span class="fc" id="L229">            Configuration.configuration.getTimeoutCon() / 3);</span>
+<span class="fc" id="L230">        localChannelReference.close();</span>
+<span class="fc" id="L231">      }</span>
+<span class="fc" id="L232">      toCloseLater.clear();</span>
     } finally {
-<span class="nc" id="L234">      lock.unlock();</span>
+<span class="fc" id="L234">      lock.unlock();</span>
     }
-<span class="nc" id="L236">  }</span>
+<span class="fc" id="L236">  }</span>
 
   /**
    * @param localChannelReference the localChannelReference to be closed
@@ -253,43 +253,43 @@ public class NetworkChannelReference {
    * @return -1 if not allowed, 0 if allowed, else time in ms before ready to recheck
    */
   public final long shutdownAllowed() {
-<span class="nc" id="L256">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
+<span class="fc" id="L256">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
     try {
-<span class="nc" id="L258">      logger.debug(&quot;NC count: {}&quot;, this);</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">      if (nbLocalChannels() &lt;= 0) {</span>
-<span class="nc" id="L260">        boolean reallyShutdownNetwork = true;</span>
-<span class="nc bnc" id="L261" title="All 2 branches missed.">        for (int i = 0; i &lt; RETRYNB; i++) {</span>
+<span class="fc" id="L258">      logger.debug(&quot;NC count: {}&quot;, this);</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">      if (nbLocalChannels() &lt;= 0) {</span>
+<span class="fc" id="L260">        boolean reallyShutdownNetwork = true;</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">        for (int i = 0; i &lt; RETRYNB; i++) {</span>
           try {
-<span class="nc" id="L263">            Thread.sleep(RETRYINMS);</span>
-<span class="nc" id="L264">          } catch (final InterruptedException e) { // NOSONAR</span>
-<span class="nc" id="L265">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L266">          }</span>
-<span class="nc bnc" id="L267" title="All 2 branches missed.">          if (nbLocalChannels() != 0) {</span>
+<span class="fc" id="L263">            Thread.sleep(RETRYINMS);</span>
+<span class="fc" id="L264">          } catch (final InterruptedException e) { // NOSONAR</span>
+<span class="fc" id="L265">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L266">          }</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">          if (nbLocalChannels() != 0) {</span>
 <span class="nc" id="L268">            reallyShutdownNetwork = false;</span>
 <span class="nc" id="L269">            break;</span>
           }
         }
-<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (reallyShutdownNetwork) {</span>
-<span class="nc" id="L273">          long time =</span>
-<span class="nc" id="L274">              checkLastTime(Configuration.configuration.getTimeoutCon() * 2);</span>
-<span class="nc bnc" id="L275" title="All 2 branches missed.">          if (time &gt; Configuration.RETRYINMS &amp;&amp;</span>
-<span class="nc bnc" id="L276" title="All 2 branches missed.">              Configuration.configuration.isTimerCloseReady()) {</span>
-<span class="nc" id="L277">            logger.debug(&quot;NC reschedule at {} : {}&quot;, time, this);</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if (reallyShutdownNetwork) {</span>
+<span class="fc" id="L273">          long time =</span>
+<span class="fc" id="L274">              checkLastTime(Configuration.configuration.getTimeoutCon() * 2);</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">          if (time &gt; Configuration.RETRYINMS &amp;&amp;</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">              Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="fc" id="L277">            logger.debug(&quot;NC reschedule at {} : {}&quot;, time, this);</span>
             // will re execute this request later on
-<span class="nc" id="L279">            time = (time / 10) * 10 + 100; // round to 10</span>
-<span class="nc" id="L280">            return time;</span>
+<span class="fc" id="L279">            time = (time / 10) * 10 + 100; // round to 10</span>
+<span class="fc" id="L280">            return time;</span>
           }
-<span class="nc" id="L282">          logger.info(&quot;Closing NETWORK channel {}&quot;, this);</span>
-<span class="nc" id="L283">          return 0;</span>
+<span class="fc" id="L282">          logger.info(&quot;Closing NETWORK channel {}&quot;, this);</span>
+<span class="fc" id="L283">          return 0;</span>
         } else {
 <span class="nc" id="L285">          use();</span>
 <span class="nc" id="L286">          logger.debug(&quot;Ignore closing Network channel&quot;);</span>
 <span class="nc" id="L287">          return -1;</span>
         }
       }
-<span class="nc" id="L290">      return -1;</span>
+<span class="fc" id="L290">      return -1;</span>
     } finally {
-<span class="nc" id="L292">      lock.unlock();</span>
+<span class="fc" id="L292">      lock.unlock();</span>
     }
   }
 
@@ -302,7 +302,7 @@ public class NetworkChannelReference {
 <span class="nc" id="L302">  }</span>
 
   public final int nbLocalChannels() {
-<span class="nc" id="L305">    return localChannelReferences.size();</span>
+<span class="fc" id="L305">    return localChannelReferences.size();</span>
   }
 
   /**
@@ -329,8 +329,8 @@ public class NetworkChannelReference {
 
   @Override
   public final String toString() {
-<span class="nc bnc" id="L332" title="All 4 branches missed.">    return &quot;NC: &quot; + hostId + ':' + (channel != null &amp;&amp; channel.isActive()) +</span>
-<span class="nc" id="L333">           ' ' + networkAddress + &quot; Count: &quot; + localChannelReferences.size();</span>
+<span class="pc bpc" id="L332" title="1 of 4 branches missed.">    return &quot;NC: &quot; + hostId + ':' + (channel != null &amp;&amp; channel.isActive()) +</span>
+<span class="fc" id="L333">           ' ' + networkAddress + &quot; Count: &quot; + localChannelReferences.size();</span>
   }
 
   @Override
@@ -347,17 +347,17 @@ public class NetworkChannelReference {
 
   @Override
   public final int hashCode() {
-<span class="nc bnc" id="L350" title="All 2 branches missed.">    if (channel == null) {</span>
+<span class="pc bpc" id="L350" title="1 of 2 branches missed.">    if (channel == null) {</span>
 <span class="nc" id="L351">      return Integer.MIN_VALUE;</span>
     }
-<span class="nc" id="L353">    return channel.id().hashCode();</span>
+<span class="fc" id="L353">    return channel.id().hashCode();</span>
   }
 
   /**
    * @return the hashcode for the global remote networkaddress
    */
   public final int getSocketHashCode() {
-<span class="nc" id="L360">    return networkAddress.hashCode();</span>
+<span class="fc" id="L360">    return networkAddress.hashCode();</span>
   }
 
   /**
@@ -380,7 +380,7 @@ public class NetworkChannelReference {
    *     in ms)
    */
   public final long checkLastTime(final long delay) {
-<span class="nc" id="L383">    return lastTimeUsed + delay - System.currentTimeMillis();</span>
+<span class="fc" id="L383">    return lastTimeUsed + delay - System.currentTimeMillis();</span>
   }
 
   /**
@@ -394,22 +394,22 @@ public class NetworkChannelReference {
    * @return the channel
    */
   public final Channel channel() {
-<span class="nc" id="L397">    return channel;</span>
+<span class="fc" id="L397">    return channel;</span>
   }
 
   /**
    * @return the hostId
    */
   public final String getHostId() {
-<span class="nc" id="L404">    return hostId;</span>
+<span class="fc" id="L404">    return hostId;</span>
   }
 
   /**
    * @param hostId the hostId to set
    */
   public final void setHostId(final String hostId) {
-<span class="nc" id="L411">    this.hostId = hostId;</span>
-<span class="nc" id="L412">  }</span>
+<span class="fc" id="L411">    this.hostId = hostId;</span>
+<span class="fc" id="L412">  }</span>
 
   /**
    * @return the lastTimeUsed

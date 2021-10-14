@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpPrivateMib.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpSnmp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.snmp.r66</a> &gt; <span class="el_source">WaarpPrivateMib.java</span></div><h1>WaarpPrivateMib.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.snmp.r66;
+
+import org.snmp4j.agent.DuplicateRegistrationException;
+import org.snmp4j.agent.MOServer;
+import org.snmp4j.agent.mo.MOAccessImpl;
+import org.snmp4j.agent.mo.snmp.SNMPv2MIB;
+import org.snmp4j.agent.mo.snmp.SysUpTime;
+import org.snmp4j.smi.Integer32;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.SMIConstants;
+import org.snmp4j.smi.TimeTicks;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.snmp.WaarpSnmpAgent;
+import org.waarp.snmp.interf.WaarpInterfaceMib;
+import org.waarp.snmp.utils.MemoryGauge32;
+import org.waarp.snmp.utils.MemoryGauge32.MemoryType;
+import org.waarp.snmp.utils.WaarpEntry;
+import org.waarp.snmp.utils.WaarpMORow;
+import org.waarp.snmp.utils.WaarpMOScalar;
+import org.waarp.snmp.utils.WaarpUptime;
+
+/**
+ * Private MIB for Waarp OpenR66
+ */
+public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(WaarpPrivateMib.class);</span>
+
+  // These are both standard in RFC-1213
+  /**
+   * SnmpConstants.sysDescr
+   */
+  public final String textualSysDecr;
+
+  /**
+   * SnmpConstants.sysObjectID
+   */
+  public final OID ggObjectId; // will be smiPrivateCode.typeWaarp
+
+  /**
+   * SnmpConstants.sysContact
+   */
+<span class="fc" id="L67">  public String contactName = &quot;Nobody&quot;;</span>
+
+  /**
+   * SnmpConstants.sysName
+   */
+<span class="fc" id="L72">  public String textualName = &quot;OpenR66&quot;;</span>
+
+  /**
+   * SnmpConstants.sysLocation
+   */
+<span class="fc" id="L77">  public String address = &quot;somewhere&quot;;</span>
+
+  /**
+   * SnmpConstants.sysServices
+   * &lt;p&gt;
+   * transport + application
+   */
+<span class="fc" id="L84">  public int service = 72;</span>
+
+  /**
+   * SnmpConstants.sysUpTime
+   */
+  public SysUpTime upTime;
+
+  /**
+   * need to add &quot;.port&quot; like &quot;6666&quot; Only in TCP (no UDP supported for Waarp)
+   * &lt;p&gt;
+   * example: rootEnterpriseMib+&quot;66666&quot;+&quot;.1.1.4.&quot;;
+   */
+  public final String applicationProtocolBase;
+
+  /**
+   * will be = new OID(applicationProtocolBase+port);
+   */
+  public final OID applicationProtocol;
+
+  /**
+   * Private MIB: not published so take an OID probably not attributed
+   */
+<span class="fc" id="L106">  public int smiPrivateCode = 66666;</span>
+
+  /**
+   * identification of Waarp module
+   */
+<span class="fc" id="L111">  public int smiTypeWaarp = 66; // default = 66 = R66</span>
+  /**
+   * root OID in String
+   */
+  public final String srootOIDWaarp;
+  /**
+   * root OID
+   */
+  public final OID rootOIDWaarp;
+
+  /**
+   * Used in Notify
+   */
+  public final OID rootOIDWaarpNotif;
+
+  /**
+   * Used in Notify Start or Shutdown
+   */
+  public final OID rootOIDWaarpNotifStartOrShutdown;
+
+  /**
+   * Info static part
+   */
+  public final OID rootOIDWaarpInfo;
+  /**
+   * Info Row access
+   */
+  public WaarpMORow rowInfo;
+
+  /**
+   * Global dynamic part
+   */
+  public final OID rootOIDWaarpGlobal;
+  /**
+   * Global Row access
+   */
+  public WaarpMORow rowGlobal;
+
+  /**
+   * Uptime OID
+   */
+  public final OID rootOIDWaarpGlobalUptime;
+
+  /**
+   * Corresponding UpTime in Mib
+   */
+  public WaarpMOScalar scalarUptime;
+
+  /**
+   * Detailed dynamic part
+   */
+  public final OID rootOIDWaarpDetailed;
+  /**
+   * Detailed Row access
+   */
+  public WaarpMORow rowDetailed;
+
+  /**
+   * Error dynamic part
+   */
+  public final OID rootOIDWaarpError;
+  /**
+   * Error Row access
+   */
+  public WaarpMORow rowError;
+
+  /**
+   * New SNMPV2 MIB
+   */
+  public SNMPv2MIB snmpv2;
+
+  /**
+   * Corresponding agent
+   */
+  public WaarpSnmpAgent agent;
+
+  /**
+   * @param sysdesc The System Description to associate
+   * @param port the port to show as used by the application
+   * @param smiPrivateCodeFinal the smiPrivateCode (should be 66666)
+   * @param typeWaarpObject the type of Waarp Object (should be 66)
+   * @param scontactName the contact name to show
+   * @param stextualName the textual name to show
+   * @param saddress the address to show
+   * @param iservice the service to show (should be 72)
+   */
+  protected WaarpPrivateMib(final String sysdesc, final int port,
+                            final int smiPrivateCodeFinal,
+                            final int typeWaarpObject,
+                            final String scontactName,
+                            final String stextualName, final String saddress,
+<span class="fc" id="L202">                            final int iservice) {</span>
+<span class="fc" id="L203">    textualSysDecr = sysdesc;</span>
+<span class="fc" id="L204">    smiPrivateCode = smiPrivateCodeFinal;</span>
+<span class="fc" id="L205">    smiTypeWaarp = typeWaarpObject;</span>
+<span class="fc" id="L206">    contactName = scontactName;</span>
+<span class="fc" id="L207">    textualName = stextualName;</span>
+<span class="fc" id="L208">    address = saddress;</span>
+<span class="fc" id="L209">    service = iservice;</span>
+<span class="fc" id="L210">    srootOIDWaarp =</span>
+        rootEnterpriseMib + &quot;.&quot; + smiPrivateCode + '.' + smiTypeWaarp;
+<span class="fc" id="L212">    applicationProtocolBase = srootOIDWaarp + &quot;.1.1.4.&quot;;</span>
+<span class="fc" id="L213">    ggObjectId = new OID(srootOIDWaarp);</span>
+<span class="fc" id="L214">    applicationProtocol = new OID(applicationProtocolBase + port);</span>
+<span class="fc" id="L215">    rootOIDWaarp = new OID(srootOIDWaarp);</span>
+<span class="fc" id="L216">    rootOIDWaarpInfo = new OID(srootOIDWaarp + &quot;.1&quot;);</span>
+<span class="fc" id="L217">    rootOIDWaarpGlobal = new OID(srootOIDWaarp + &quot;.2&quot;);</span>
+<span class="fc" id="L218">    rootOIDWaarpGlobalUptime = new OID(</span>
+<span class="fc" id="L219">        rootOIDWaarpGlobal + &quot;.&quot; + WaarpGlobalValuesIndex.applUptime.getOID() +</span>
+        &quot;.0&quot;);
+<span class="fc" id="L221">    rootOIDWaarpDetailed = new OID(srootOIDWaarp + &quot;.3&quot;);</span>
+<span class="fc" id="L222">    rootOIDWaarpError = new OID(srootOIDWaarp + &quot;.4&quot;);</span>
+<span class="fc" id="L223">    rootOIDWaarpNotif = new OID(srootOIDWaarp + &quot;.5.1&quot;);</span>
+<span class="fc" id="L224">    rootOIDWaarpNotifStartOrShutdown = new OID(srootOIDWaarp + &quot;.5.1.1.1&quot;);</span>
+<span class="fc" id="L225">  }</span>
+
+  @Override
+  public final void setAgent(final WaarpSnmpAgent agent) {
+<span class="fc" id="L229">    this.agent = agent;</span>
+<span class="fc" id="L230">  }</span>
+
+  @Override
+  public final OID getBaseOidStartOrShutdown() {
+<span class="fc" id="L234">    return rootOIDWaarpNotifStartOrShutdown;</span>
+  }
+
+  @Override
+  public final SNMPv2MIB getSNMPv2MIB() {
+<span class="fc" id="L239">    return snmpv2;</span>
+  }
+
+  /**
+   * Unregister and Register again the SNMPv2MIB with System adapted to this
+   * Mib
+   *
+   * @throws DuplicateRegistrationException
+   */
+  protected final void agentRegisterSystem()
+      throws DuplicateRegistrationException {
+    // Since BaseAgent registers some mibs by default we need to unregister
+    // one before we register our own sysDescr. Normally you would
+    // override that method and register the mibs that you need
+
+<span class="fc" id="L254">    agent.unregisterManagedObject(agent.getSnmpv2MIB());</span>
+
+    // Register a system description, use one from you product environment
+    // to test with
+<span class="fc" id="L258">    snmpv2 = new SNMPv2MIB(new OctetString(textualSysDecr), ggObjectId,</span>
+                           new Integer32(service));
+<span class="fc" id="L260">    snmpv2.setContact(new OctetString(contactName));</span>
+<span class="fc" id="L261">    snmpv2.setLocation(new OctetString(address));</span>
+<span class="fc" id="L262">    snmpv2.setName(new OctetString(textualName));</span>
+<span class="fc" id="L263">    snmpv2.registerMOs(agent.getServer(), null);</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L265">      logger.debug(&quot;SNMPV2: {}:{}:{}:{}:{}:{}:{}&quot;, snmpv2.getContact(),</span>
+<span class="nc" id="L266">                   snmpv2.getDescr(), snmpv2.getLocation(), snmpv2.getName(),</span>
+<span class="nc" id="L267">                   snmpv2.getObjectID(), snmpv2.getServices(),</span>
+<span class="nc" id="L268">                   snmpv2.getUpTime());</span>
+    }
+    // Save UpTime reference since used everywhere
+<span class="fc" id="L271">    upTime = snmpv2.getSysUpTime();</span>
+<span class="fc" id="L272">  }</span>
+
+  /**
+   * Register this MIB
+   *
+   * @throws DuplicateRegistrationException
+   */
+  protected final void defaultAgentRegisterWaarpMib()
+      throws DuplicateRegistrationException {
+    // register Static info
+<span class="fc" id="L282">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
+<span class="fc" id="L283">                             MibLevel.staticInfo.ordinal());</span>
+<span class="fc" id="L284">    rowInfo.registerMOs(agent.getServer(), null);</span>
+    // register General info
+<span class="fc" id="L286">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
+<span class="fc" id="L287">                               MibLevel.globalInfo.ordinal());</span>
+<span class="fc" id="L288">    WaarpMOScalar memoryScalar =</span>
+<span class="fc" id="L289">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
+<span class="fc" id="L290">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
+<span class="fc" id="L291">    memoryScalar =</span>
+<span class="fc" id="L292">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
+<span class="fc" id="L293">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
+<span class="fc" id="L294">    memoryScalar =</span>
+<span class="fc" id="L295">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
+<span class="fc" id="L296">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
+<span class="fc" id="L297">    rowGlobal.registerMOs(agent.getServer(), null);</span>
+    // setup UpTime to SysUpTime and change status
+<span class="fc" id="L299">    scalarUptime =</span>
+<span class="fc" id="L300">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
+<span class="fc" id="L301">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
+<span class="fc" id="L302">    changeStatus(OperStatus.restarting);</span>
+<span class="fc" id="L303">    changeStatus(OperStatus.up);</span>
+    // register Detailed info
+<span class="fc" id="L305">    rowDetailed =</span>
+        new WaarpMORow(this, rootOIDWaarpDetailed, WaarpDetailedValues,
+<span class="fc" id="L307">                       MibLevel.detailedInfo.ordinal());</span>
+<span class="fc" id="L308">    rowDetailed.registerMOs(agent.getServer(), null);</span>
+    // register Error info
+<span class="fc" id="L310">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
+<span class="fc" id="L311">                              MibLevel.errorInfo.ordinal());</span>
+<span class="fc" id="L312">    rowError.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L313">  }</span>
+
+  /**
+   * Register this MIB
+   *
+   * @throws DuplicateRegistrationException
+   */
+  protected abstract void agentRegisterWaarpMib()
+      throws DuplicateRegistrationException;
+
+  /**
+   * Unregister this MIB
+   */
+  protected final void agentUnregisterMibs() {
+<span class="nc" id="L327">    logger.debug(&quot;UnRegisterWaarp&quot;);</span>
+<span class="nc" id="L328">    rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L329">    rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L330">    rowDetailed.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L331">    rowError.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L332">  }</span>
+
+  @Override
+  public final void registerMOs(final MOServer server,
+                                final OctetString context)
+      throws DuplicateRegistrationException {
+<span class="fc" id="L338">    agentRegisterSystem();</span>
+<span class="fc" id="L339">    agentRegisterWaarpMib();</span>
+<span class="fc" id="L340">  }</span>
+
+  @Override
+  public final void unregisterMOs(final MOServer server,
+                                  final OctetString context) {
+<span class="nc" id="L345">    agentUnregisterMibs();</span>
+<span class="nc" id="L346">  }</span>
+
+  /**
+   * Change the status and the LastChange Timeticks
+   *
+   * @param status
+   */
+  public final void changeStatus(final OperStatus status) {
+<span class="fc" id="L354">    final WaarpMOScalar statusScalar =</span>
+<span class="fc" id="L355">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];</span>
+<span class="fc" id="L356">    final Integer32 var = (Integer32) statusScalar.getValue();</span>
+<span class="pc bpc" id="L357" title="1 of 2 branches missed.">    if (var.getValue() != status.status) {</span>
+<span class="fc" id="L358">      var.setValue(status.status);</span>
+<span class="fc" id="L359">      final WaarpMOScalar lastTimeScalar =</span>
+<span class="fc" id="L360">          rowGlobal.getRow()[WaarpGlobalValuesIndex.applLastChange.ordinal()];</span>
+<span class="fc" id="L361">      final TimeTicks time = (TimeTicks) lastTimeScalar.getValue();</span>
+<span class="fc" id="L362">      time.setValue(upTime.get().getValue());</span>
+    }
+<span class="fc" id="L364">  }</span>
+
+  /**
+   * MIB entry levels
+   */
+<span class="fc" id="L369">  public enum MibLevel {</span>
+<span class="fc" id="L370">    staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo</span>
+  }
+
+  // From now the MIB definition
+
+  /**
+   * Notification Elements
+   */
+<span class="fc" id="L378">  public enum NotificationElements {</span>
+<span class="fc" id="L379">    TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),</span>
+<span class="fc" id="L380">    InfoTask(5);</span>
+
+    public final int[] oid;
+
+<span class="fc" id="L384">    NotificationElements(final int oid) {</span>
+<span class="fc" id="L385">      this.oid = new int[] { oid };</span>
+<span class="fc" id="L386">    }</span>
+
+    public final OID getOID(final OID oidBase) {
+<span class="fc" id="L389">      return new OID(oidBase.getValue(), oid);</span>
+    }
+
+    public final OID getOID(final OID oidBase, final int rank) {
+<span class="fc" id="L393">      final int[] ids = { oid[0], rank };</span>
+<span class="fc" id="L394">      return new OID(oidBase.getValue(), ids);</span>
+    }
+  }
+
+  /**
+   * Notification for a task trap
+   */
+<span class="fc" id="L401">  public enum NotificationTasks {</span>
+<span class="fc" id="L402">    globalStepInfo, stepInfo, rankFileInfo, stepStatusInfo, filenameInfo,</span>
+<span class="fc" id="L403">    originalNameInfo, idRuleInfo, modeTransInfo, retrieveModeInfo,</span>
+<span class="fc" id="L404">    startTransInfo, infoStatusInfo, requesterInfo, requestedInfo, specialIdInfo;</span>
+
+    public final int getOID() {
+<span class="fc" id="L407">      return ordinal() + 1;</span>
+    }
+  }
+
+  /**
+   * Definition part
+   */
+<span class="fc" id="L414">  public enum WaarpDefinitionIndex {</span>
+<span class="fc" id="L415">    applName, applServerName, applVersion, applDescription, applURL,</span>
+<span class="fc" id="L416">    applApplicationProtocol;</span>
+
+    public final int getOID() {
+<span class="nc" id="L419">      return ordinal() + 1;</span>
+    }
+  }
+
+  /**
+   * Definition part
+   */
+<span class="fc" id="L426">  public static final WaarpEntry[] WaarpDefinition = {</span>
+      // applName
+      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applServerName
+      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applVersion
+      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applDescription
+      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applURL
+      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applApplicationProtocol
+      new WaarpEntry(SMIConstants.SYNTAX_OBJECT_IDENTIFIER,
+                     MOAccessImpl.ACCESS_READ_ONLY)
+  };
+
+  /**
+   * Global part
+   */
+<span class="fc" id="L450">  public enum WaarpGlobalValuesIndex {</span>
+<span class="fc" id="L451">    applUptime, applOperStatus, applLastChange, applInboundAssociations,</span>
+<span class="fc" id="L452">    applOutboundAssociations, applAccumInboundAssociations,</span>
+<span class="fc" id="L453">    applAccumOutboundAssociations, applLastInboundActivity,</span>
+<span class="fc" id="L454">    applLastOutboundActivity, applRejectedInboundAssociations,</span>
+<span class="fc" id="L455">    applFailedOutboundAssociations, applInboundBandwidthKBS,</span>
+<span class="fc" id="L456">    applOutboundBandwidthKBS, nbInfoUnknown, nbInfoNotUpdated,</span>
+<span class="fc" id="L457">    nbInfoInterrupted, nbInfoToSubmit, nbInfoError, nbInfoRunning, nbInfoDone,</span>
+<span class="fc" id="L458">    nbStepAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,</span>
+<span class="fc" id="L459">    nbNetworkConnection;</span>
+
+    public final int getOID() {
+<span class="fc" id="L462">      return ordinal() + 1;</span>
+    }
+  }
+
+  /**
+   * Global part
+   */
+<span class="fc" id="L469">  public static final WaarpEntry[] WaarpGlobalValues = {</span>
+      // applUptime
+      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applOperStatus
+      new WaarpEntry(SMIConstants.SYNTAX_INTEGER,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applLastChange
+      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applInboundAssociations
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applOutboundAssociations
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applAccumInboundAssociations
+      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applAccumOutboundAssociations
+      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applLastInboundActivity
+      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applLastOutboundActivity
+      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applRejectedInboundAssociations
+      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applFailedOutboundAssociations
+      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // Bandwidth
+      // applInboundBandwidthKBS
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // applOutboundBandwidthKBS
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // Overall status including past, future and current transfers
+      // nbInfoUnknown
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInfoNotUpdated
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInfoInterrupted
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInfoToSubmit
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInfoError
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInfoRunning
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInfoDone
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // Current situation of all transfers, running or not
+      // nbStepAllTransfer
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // memoryTotal
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // memoryFree
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // memoryUsed
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbThreads
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbNetworkConnection
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32, MOAccessImpl.ACCESS_READ_ONLY)
+  };
+
+  /**
+   * Detailed part
+   */
+<span class="fc" id="L555">  public enum WaarpDetailedValuesIndex {</span>
+<span class="fc" id="L556">    nbStepNotask, nbStepPretask, nbStepTransfer, nbStepPosttask, nbStepAllDone,</span>
+<span class="fc" id="L557">    nbStepError, nbAllRunningStep, nbRunningStep, nbInitOkStep,</span>
+<span class="fc" id="L558">    nbPreProcessingOkStep, nbTransferOkStep, nbPostProcessingOkStep,</span>
+<span class="fc" id="L559">    nbCompleteOkStep;</span>
+
+    public final int getOID() {
+<span class="nc" id="L562">      return ordinal() + 1;</span>
+    }
+  }
+
+  /**
+   * Detailed part
+   */
+<span class="fc" id="L569">  public static final WaarpEntry[] WaarpDetailedValues = {</span>
+      // nbStepNotask
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStepPretask
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStepTransfer
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStepPosttask
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStepAllDone
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStepError
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // First on Running Transfers only
+      // nbAllRunningStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbRunningStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbInitOkStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbPreProcessingOkStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbTransferOkStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbPostProcessingOkStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbCompleteOkStep
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32, MOAccessImpl.ACCESS_READ_ONLY)
+  };
+
+  /**
+   * Error part
+   */
+<span class="fc" id="L614">  public enum WaarpErrorValuesIndex {</span>
+<span class="fc" id="L615">    nbStatusConnectionImpossible, nbStatusServerOverloaded, nbStatusBadAuthent,</span>
+<span class="fc" id="L616">    nbStatusExternalOp, nbStatusTransferError, nbStatusMD5Error,</span>
+<span class="fc" id="L617">    nbStatusDisconnection, nbStatusFinalOp, nbStatusUnimplemented,</span>
+<span class="fc" id="L618">    nbStatusInternal, nbStatusWarning, nbStatusQueryAlreadyFinished,</span>
+<span class="fc" id="L619">    nbStatusQueryStillRunning, nbStatusNotKnownHost,</span>
+<span class="fc" id="L620">    nbStatusQueryRemotelyUnknown, nbStatusCommandNotFound,</span>
+<span class="fc" id="L621">    nbStatusPassThroughMode, nbStatusRemoteShutdown, nbStatusShutdown,</span>
+<span class="fc" id="L622">    nbStatusRemoteError, nbStatusStopped, nbStatusCanceled,</span>
+<span class="fc" id="L623">    nbStatusFileNotFound, nbStatusUnknown;</span>
+
+    public final int getOID() {
+<span class="nc" id="L626">      return ordinal() + 1;</span>
+    }
+  }
+
+  /**
+   * Error part
+   */
+<span class="fc" id="L633">  public static final WaarpEntry[] WaarpErrorValues = {</span>
+      // Error Status on all transfers
+      // nbStatusConnectionImpossible
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusServerOverloaded
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusBadAuthent
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusExternalOp
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusTransferError
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusMD5Error
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusDisconnection
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusFinalOp
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusUnimplemented
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusInternal
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusWarning
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusQueryAlreadyFinished
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusQueryStillRunning
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusNotKnownHost
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusQueryRemotelyUnknown
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusCommandNotFound
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusPassThroughMode
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusRemoteShutdown
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusShutdown
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusRemoteError
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusStopped
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusCanceled
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusFileNotFound
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
+                     MOAccessImpl.ACCESS_READ_ONLY),
+      // nbStatusUnknown
+      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32, MOAccessImpl.ACCESS_READ_ONLY)
+  };
+
+  /**
+   * Oper Status (as defined in Net Application SNMP)
+   */
+<span class="fc" id="L711">  public enum OperStatus {</span>
+<span class="fc" id="L712">    up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);</span>
+
+    public final int status;
+
+<span class="fc" id="L716">    OperStatus(final int status) {</span>
+<span class="fc" id="L717">      this.status = status;</span>
+<span class="fc" id="L718">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

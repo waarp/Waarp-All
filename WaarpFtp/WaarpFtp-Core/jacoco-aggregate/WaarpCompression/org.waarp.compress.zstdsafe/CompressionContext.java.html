@@ -36,33 +36,33 @@ package org.waarp.compress.zstdsafe;
 import static org.waarp.compress.zstdsafe.Constants.*;
 
 class CompressionContext {
-<span class="nc" id="L39">  public final RepeatedOffsets offsets = new RepeatedOffsets();</span>
+<span class="fc" id="L39">  public final RepeatedOffsets offsets = new RepeatedOffsets();</span>
   public final BlockCompressionState blockCompressionState;
   public final SequenceStore sequenceStore;
 
-<span class="nc" id="L43">  public final SequenceEncodingContext sequenceEncodingContext =</span>
+<span class="fc" id="L43">  public final SequenceEncodingContext sequenceEncodingContext =</span>
       new SequenceEncodingContext();
 
-<span class="nc" id="L46">  public final HuffmanCompressionContext huffmanContext =</span>
+<span class="fc" id="L46">  public final HuffmanCompressionContext huffmanContext =</span>
       new HuffmanCompressionContext();
 
   public CompressionContext(final CompressionParameters parameters,
-<span class="nc" id="L50">                            final int baseAddress, final int inputSize) {</span>
-<span class="nc" id="L51">    final int windowSize =</span>
-<span class="nc" id="L52">        Math.max(1, Math.min(1 &lt;&lt; parameters.getWindowLog(), inputSize));</span>
-<span class="nc" id="L53">    final int blockSize = Math.min(MAX_BLOCK_SIZE, windowSize);</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">    final int divider = (parameters.getSearchLength() == 3)? 3 : 4;</span>
+<span class="fc" id="L50">                            final int baseAddress, final int inputSize) {</span>
+<span class="fc" id="L51">    final int windowSize =</span>
+<span class="fc" id="L52">        Math.max(1, Math.min(1 &lt;&lt; parameters.getWindowLog(), inputSize));</span>
+<span class="fc" id="L53">    final int blockSize = Math.min(MAX_BLOCK_SIZE, windowSize);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">    final int divider = (parameters.getSearchLength() == 3)? 3 : 4;</span>
 
-<span class="nc" id="L56">    final int maxSequences = blockSize / divider;</span>
+<span class="fc" id="L56">    final int maxSequences = blockSize / divider;</span>
 
-<span class="nc" id="L58">    sequenceStore = new SequenceStore(blockSize, maxSequences);</span>
+<span class="fc" id="L58">    sequenceStore = new SequenceStore(blockSize, maxSequences);</span>
 
-<span class="nc" id="L60">    blockCompressionState = new BlockCompressionState(parameters, baseAddress);</span>
-<span class="nc" id="L61">  }</span>
+<span class="fc" id="L60">    blockCompressionState = new BlockCompressionState(parameters, baseAddress);</span>
+<span class="fc" id="L61">  }</span>
 
   public void commit() {
-<span class="nc" id="L64">    offsets.commit();</span>
-<span class="nc" id="L65">    huffmanContext.saveChanges();</span>
-<span class="nc" id="L66">  }</span>
+<span class="fc" id="L64">    offsets.commit();</span>
+<span class="fc" id="L65">    huffmanContext.saveChanges();</span>
+<span class="fc" id="L66">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

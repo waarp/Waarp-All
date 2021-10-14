@@ -182,8 +182,8 @@ public class FileBasedConfiguration {
   private static boolean loadServerParam(final Configuration config) {
 <span class="fc" id="L183">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_SERVER));</span>
     try {
-<span class="fc" id="L185">      return org.waarp.openr66.configuration.FileBasedConfiguration</span>
-<span class="fc" id="L186">          .loadServerConfig(config, hashConfigSub);</span>
+<span class="fc" id="L185">      return org.waarp.openr66.configuration.FileBasedConfiguration.loadServerConfig(</span>
+          config, hashConfigSub);
     } finally {
 <span class="fc" id="L188">      hashConfigSub.clear();</span>
 <span class="fc" id="L189">      hashConfigSub = null;</span>
@@ -325,49 +325,50 @@ public class FileBasedConfiguration {
     try {
 <span class="fc" id="L326">      document = XmlUtil.getNewSaxReader().read(filename);</span>
 <span class="nc" id="L327">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L328">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
-<span class="nc" id="L329">      return false;</span>
-<span class="fc" id="L330">    }</span>
-<span class="pc bpc" id="L331" title="1 of 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L332">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
-<span class="nc" id="L333">      return false;</span>
+<span class="nc" id="L328">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L329">                   e.getMessage());</span>
+<span class="nc" id="L330">      return false;</span>
+<span class="fc" id="L331">    }</span>
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L333">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L334">      return false;</span>
     }
-<span class="fc" id="L335">    XmlValue[] configuration = XmlUtil.read(document, configServer);</span>
-<span class="fc" id="L336">    hashConfig = new XmlHash(configuration);</span>
-<span class="fc" id="L337">    final XmlRootHash xmlRootHash = new XmlRootHash(configuration);</span>
-<span class="fc" id="L338">    setXmlRootHash(xmlRootHash);</span>
+<span class="fc" id="L336">    XmlValue[] configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L337">    hashConfig = new XmlHash(configuration);</span>
+<span class="fc" id="L338">    final XmlRootHash xmlRootHash = new XmlRootHash(configuration);</span>
+<span class="fc" id="L339">    setXmlRootHash(xmlRootHash);</span>
     // Now read the configuration
-<span class="pc bpc" id="L340" title="1 of 2 branches missed.">    if (!loadIdentity(config, xmlRootHash)) {</span>
-<span class="nc" id="L341">      logger.error(&quot;Cannot load Identity&quot;);</span>
-<span class="nc" id="L342">      return false;</span>
+<span class="pc bpc" id="L341" title="1 of 2 branches missed.">    if (!loadIdentity(config, xmlRootHash)) {</span>
+<span class="nc" id="L342">      logger.error(&quot;Cannot load Identity&quot;);</span>
+<span class="nc" id="L343">      return false;</span>
     }
-<span class="pc bpc" id="L344" title="1 of 2 branches missed.">    if (!loadDatabase(config)) {</span>
-<span class="nc" id="L345">      logger.error(&quot;Cannot load Database configuration&quot;);</span>
-<span class="nc" id="L346">      return false;</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">    if (!loadDatabase(config)) {</span>
+<span class="nc" id="L346">      logger.error(&quot;Cannot load Database configuration&quot;);</span>
+<span class="nc" id="L347">      return false;</span>
     }
-<span class="pc bpc" id="L348" title="1 of 2 branches missed.">    if (!loadServerParam(config)) {</span>
-<span class="nc" id="L349">      logger.error(&quot;Cannot load Server Parameters&quot;);</span>
-<span class="nc" id="L350">      return false;</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">    if (!loadServerParam(config)) {</span>
+<span class="nc" id="L350">      logger.error(&quot;Cannot load Server Parameters&quot;);</span>
+<span class="nc" id="L351">      return false;</span>
     }
-<span class="pc bpc" id="L352" title="1 of 2 branches missed.">    if (!loadDirectory(config)) {</span>
-<span class="nc" id="L353">      logger.error(&quot;Cannot load Directory configuration&quot;);</span>
-<span class="nc" id="L354">      return false;</span>
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L354">      logger.error(&quot;Cannot load Directory configuration&quot;);</span>
+<span class="nc" id="L355">      return false;</span>
     }
-<span class="fc" id="L356">    loadLimit(config, false);</span>
-<span class="pc bpc" id="L357" title="2 of 4 branches missed.">    if (config.isUseSSL() &amp;&amp; !loadSsl(config, xmlRootHash)) {</span>
-<span class="nc" id="L358">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
-<span class="nc" id="L359">      return false;</span>
+<span class="fc" id="L357">    loadLimit(config, false);</span>
+<span class="pc bpc" id="L358" title="2 of 4 branches missed.">    if (config.isUseSSL() &amp;&amp; !loadSsl(config, xmlRootHash)) {</span>
+<span class="nc" id="L359">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L360">      return false;</span>
     }
-<span class="pc bpc" id="L361" title="1 of 2 branches missed.">    if (!loadNetworkServer(config)) {</span>
-<span class="nc" id="L362">      logger.error(&quot;Cannot load Network configuration&quot;);</span>
-<span class="nc" id="L363">      return false;</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (!loadNetworkServer(config)) {</span>
+<span class="nc" id="L363">      logger.error(&quot;Cannot load Network configuration&quot;);</span>
+<span class="nc" id="L364">      return false;</span>
     }
-<span class="fc" id="L365">    hashConfig.clear();</span>
-<span class="fc" id="L366">    hashConfig = null;</span>
-<span class="fc" id="L367">    xmlRootHash.clear();</span>
-<span class="fc" id="L368">    configuration = null;</span>
-<span class="fc" id="L369">    return true;</span>
+<span class="fc" id="L366">    hashConfig.clear();</span>
+<span class="fc" id="L367">    hashConfig = null;</span>
+<span class="fc" id="L368">    xmlRootHash.clear();</span>
+<span class="fc" id="L369">    configuration = null;</span>
+<span class="fc" id="L370">    return true;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

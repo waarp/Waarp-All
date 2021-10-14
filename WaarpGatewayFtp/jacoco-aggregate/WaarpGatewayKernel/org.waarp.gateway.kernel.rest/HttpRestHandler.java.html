@@ -85,8 +85,8 @@ public abstract class HttpRestHandler
   /**
    * Internal Logger
    */
-<span class="nc" id="L88">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L89">      WaarpLoggerFactory.getLogger(HttpRestHandler.class);</span>
+<span class="fc" id="L88">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L89">      WaarpLoggerFactory.getLogger(HttpRestHandler.class);</span>
 
   /*
    * Note: Presence de BODY dans toutes les requetes/responses = Content-Length ou Transfer-Encoding HEAD:
@@ -94,7 +94,7 @@ public abstract class HttpRestHandler
    *
    */
 
-<span class="nc" id="L97">  public enum METHOD {</span>
+<span class="fc" id="L97">  public enum METHOD {</span>
     /**
      * REST: Standard GET item
      * &lt;p&gt;
@@ -109,14 +109,14 @@ public abstract class HttpRestHandler
      * process, unless that text happens to
      * be the output of the process.
      */
-<span class="nc" id="L112">    GET(HttpMethod.GET),</span>
+<span class="fc" id="L112">    GET(HttpMethod.GET),</span>
     /**
      * REST: Update existing item
      * &lt;p&gt;
      * The PUT method requests that the enclosed entity be stored under the
      * supplied Request-URI.
      */
-<span class="nc" id="L119">    PUT(HttpMethod.PUT),</span>
+<span class="fc" id="L119">    PUT(HttpMethod.PUT),</span>
     /**
      * REST: Create a new item
      * &lt;p&gt;
@@ -125,14 +125,14 @@ public abstract class HttpRestHandler
      * new subordinate of the resource identified by the Request-URI in the
      * Request-Line.
      */
-<span class="nc" id="L128">    POST(HttpMethod.POST),</span>
+<span class="fc" id="L128">    POST(HttpMethod.POST),</span>
     /**
      * REST: Delete existing item
      * &lt;p&gt;
      * The DELETE method requests that the origin server delete the resource
      * identified by the Request-URI.
      */
-<span class="nc" id="L135">    DELETE(HttpMethod.DELETE),</span>
+<span class="fc" id="L135">    DELETE(HttpMethod.DELETE),</span>
     /**
      * REST: what options are supported for the URI
      * &lt;p&gt;
@@ -145,14 +145,14 @@ public abstract class HttpRestHandler
      * capabilities of a server, without implying a
      * resource action or initiating a resource retrieval.
      */
-<span class="nc" id="L148">    OPTIONS(HttpMethod.OPTIONS),</span>
+<span class="fc" id="L148">    OPTIONS(HttpMethod.OPTIONS),</span>
     /**
      * REST: as GET but no BODY (existence ? metadata ?)
      * &lt;p&gt;
      * The HEAD method is identical to GET except that the server MUST NOT
      * return a message-body in the response.
      */
-<span class="nc" id="L155">    HEAD(HttpMethod.HEAD),</span>
+<span class="fc" id="L155">    HEAD(HttpMethod.HEAD),</span>
     /**
      * REST: should not be used, use POST instead
      * &lt;p&gt;
@@ -161,7 +161,7 @@ public abstract class HttpRestHandler
      * entity be applied to the resource
      * identified by the Request-URI.
      */
-<span class="nc" id="L164">    PATCH(HttpMethod.PATCH),</span>
+<span class="fc" id="L164">    PATCH(HttpMethod.PATCH),</span>
     /**
      * REST: unknown usage
      * &lt;p&gt;
@@ -169,7 +169,7 @@ public abstract class HttpRestHandler
      * loop-back
      * of the request message.
      */
-<span class="nc" id="L172">    TRACE(HttpMethod.TRACE),</span>
+<span class="fc" id="L172">    TRACE(HttpMethod.TRACE),</span>
     /**
      * REST: unknown
      * &lt;p&gt;
@@ -178,20 +178,20 @@ public abstract class HttpRestHandler
      * that can dynamically switch to
      * being a tunnel
      */
-<span class="nc" id="L181">    CONNECT(HttpMethod.CONNECT);</span>
+<span class="fc" id="L181">    CONNECT(HttpMethod.CONNECT);</span>
 
     public final HttpMethod method;
 
-<span class="nc" id="L185">    METHOD(final HttpMethod method) {</span>
-<span class="nc" id="L186">      this.method = method;</span>
-<span class="nc" id="L187">    }</span>
+<span class="fc" id="L185">    METHOD(final HttpMethod method) {</span>
+<span class="fc" id="L186">      this.method = method;</span>
+<span class="fc" id="L187">    }</span>
   }
 
-<span class="nc" id="L190">  public static final HttpDataFactory factory =</span>
+<span class="fc" id="L190">  public static final HttpDataFactory factory =</span>
       new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
   // Disk if size exceed MINSIZE = 16K
   // XXX FIXME TODO to setup outside !
-<span class="nc" id="L194">  public static String TempPath = &quot;J:/GG/ARK/TMP&quot;;</span>
+<span class="fc" id="L194">  public static String TempPath = &quot;J:/GG/ARK/TMP&quot;;</span>
 
   public static ChannelGroup group;
 
@@ -204,20 +204,20 @@ public abstract class HttpRestHandler
    * @throws CryptoException
    */
   public static void initialize(final String tempPath) {
-<span class="nc" id="L207">    TempPath = tempPath;</span>
-<span class="nc" id="L208">    final File file = new File(tempPath);</span>
-<span class="nc" id="L209">    file.mkdirs();//NOSONAR</span>
-<span class="nc" id="L210">    DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file</span>
+<span class="fc" id="L207">    TempPath = tempPath;</span>
+<span class="fc" id="L208">    final File file = new File(tempPath);</span>
+<span class="fc" id="L209">    file.mkdirs();//NOSONAR</span>
+<span class="fc" id="L210">    DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file</span>
     // on exit (in normal
     // exit)
-<span class="nc" id="L213">    DiskFileUpload.baseDirectory = TempPath; // system temp</span>
+<span class="fc" id="L213">    DiskFileUpload.baseDirectory = TempPath; // system temp</span>
     // directory
-<span class="nc" id="L215">    DiskAttribute.deleteOnExitTemporaryFile = true; // should delete file on</span>
+<span class="fc" id="L215">    DiskAttribute.deleteOnExitTemporaryFile = true; // should delete file on</span>
     // exit (in normal exit)
-<span class="nc" id="L217">    DiskAttribute.baseDirectory = TempPath; // system temp directory</span>
-<span class="nc" id="L218">  }</span>
+<span class="fc" id="L217">    DiskAttribute.baseDirectory = TempPath; // system temp directory</span>
+<span class="fc" id="L218">  }</span>
 
-<span class="nc" id="L220">  public static final RestConfiguration defaultConfiguration =</span>
+<span class="fc" id="L220">  public static final RestConfiguration defaultConfiguration =</span>
       new RestConfiguration();
 
   public HashMap&lt;String, RestMethodHandler&gt; restHashMap;
@@ -225,7 +225,7 @@ public abstract class HttpRestHandler
   protected final RootOptionsRestMethodHandler rootHandler;
 
   protected HttpPostRequestDecoder decoder;
-<span class="nc" id="L228">  protected HttpResponseStatus status = HttpResponseStatus.OK;</span>
+<span class="fc" id="L228">  protected HttpResponseStatus status = HttpResponseStatus.OK;</span>
 
   protected HttpRequest request;
   protected RestMethodHandler handler;
@@ -251,10 +251,10 @@ public abstract class HttpRestHandler
    */
   protected ByteBuf cumulativeBody;
 
-<span class="nc" id="L254">  protected HttpRestHandler(final RestConfiguration config) {</span>
-<span class="nc" id="L255">    restConfiguration = config;</span>
-<span class="nc" id="L256">    rootHandler = new RootOptionsRestMethodHandler(config);</span>
-<span class="nc" id="L257">  }</span>
+<span class="fc" id="L254">  protected HttpRestHandler(final RestConfiguration config) {</span>
+<span class="fc" id="L255">    restConfiguration = config;</span>
+<span class="fc" id="L256">    rootHandler = new RootOptionsRestMethodHandler(config);</span>
+<span class="fc" id="L257">  }</span>
 
   protected static class HttpCleanChannelFutureListener
       implements ChannelFutureListener {
@@ -276,11 +276,11 @@ public abstract class HttpRestHandler
   @Override
   public final void channelActive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="nc bnc" id="L279" title="All 2 branches missed.">    if (group != null) {</span>
-<span class="nc" id="L280">      group.add(ctx.channel());</span>
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">    if (group != null) {</span>
+<span class="fc" id="L280">      group.add(ctx.channel());</span>
     }
-<span class="nc" id="L282">    super.channelActive(ctx);</span>
-<span class="nc" id="L283">  }</span>
+<span class="fc" id="L282">    super.channelActive(ctx);</span>
+<span class="fc" id="L283">  }</span>
 
   /**
    * Clean method
@@ -288,26 +288,26 @@ public abstract class HttpRestHandler
    * Override if needed
    */
   protected final void clean() {
-<span class="nc bnc" id="L291" title="All 2 branches missed.">    if (arguments != null) {</span>
-<span class="nc" id="L292">      arguments.clean();</span>
-<span class="nc" id="L293">      arguments = null;</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">    if (arguments != null) {</span>
+<span class="fc" id="L292">      arguments.clean();</span>
+<span class="fc" id="L293">      arguments = null;</span>
     }
-<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (response != null) {</span>
-<span class="nc" id="L296">      response.clean();</span>
-<span class="nc" id="L297">      response = null;</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">    if (response != null) {</span>
+<span class="fc" id="L296">      response.clean();</span>
+<span class="fc" id="L297">      response = null;</span>
     }
-<span class="nc bnc" id="L299" title="All 2 branches missed.">    if (decoder != null) {</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">    if (decoder != null) {</span>
 <span class="nc" id="L300">      decoder.cleanFiles();</span>
 <span class="nc" id="L301">      decoder = null;</span>
     }
-<span class="nc" id="L303">    handler = null;</span>
-<span class="nc" id="L304">    cumulativeBody = null;</span>
-<span class="nc" id="L305">    jsonObject = null;</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">    if (dbSession != null) {</span>
+<span class="fc" id="L303">    handler = null;</span>
+<span class="fc" id="L304">    cumulativeBody = null;</span>
+<span class="fc" id="L305">    jsonObject = null;</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">    if (dbSession != null) {</span>
 <span class="nc" id="L307">      dbSession.enUseConnectionNoDisconnect();</span>
 <span class="nc" id="L308">      dbSession = null;</span>
     }
-<span class="nc" id="L310">  }</span>
+<span class="fc" id="L310">  }</span>
 
   /**
    * Called at the beginning of every new request
@@ -316,20 +316,20 @@ public abstract class HttpRestHandler
    */
   protected final void initialize() {
     // clean previous FileUpload if Any
-<span class="nc" id="L319">    clean();</span>
-<span class="nc" id="L320">    status = HttpResponseStatus.OK;</span>
-<span class="nc" id="L321">    request = null;</span>
-<span class="nc" id="L322">    setWillClose(false);</span>
-<span class="nc" id="L323">    arguments = new RestArgument(JsonHandler.createObjectNode());</span>
-<span class="nc" id="L324">    response = new RestArgument(JsonHandler.createObjectNode());</span>
-<span class="nc" id="L325">  }</span>
+<span class="fc" id="L319">    clean();</span>
+<span class="fc" id="L320">    status = HttpResponseStatus.OK;</span>
+<span class="fc" id="L321">    request = null;</span>
+<span class="fc" id="L322">    setWillClose(false);</span>
+<span class="fc" id="L323">    arguments = new RestArgument(JsonHandler.createObjectNode());</span>
+<span class="fc" id="L324">    response = new RestArgument(JsonHandler.createObjectNode());</span>
+<span class="fc" id="L325">  }</span>
 
   /**
    * @return the DbSession associated with the current request (might be Admin
    *     dbSession if none)
    */
   public final DbSession getDbSession() {
-<span class="nc bnc" id="L332" title="All 2 branches missed.">    return dbSession == null? DbConstantGateway.admin.getSession() : dbSession;</span>
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">    return dbSession == null? DbConstantGateway.admin.getSession() : dbSession;</span>
   }
 
   /**
@@ -352,13 +352,13 @@ public abstract class HttpRestHandler
    * @param httpResponse
    */
   protected final void setCookies(final FullHttpResponse httpResponse) {
-<span class="nc bnc" id="L355" title="All 2 branches missed.">    if (response == null) {</span>
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">    if (response == null) {</span>
 <span class="nc" id="L356">      return;</span>
     }
-<span class="nc" id="L358">    final ObjectNode cookieON = response.getCookieArgs();</span>
-<span class="nc bnc" id="L359" title="All 2 branches missed.">    if (!cookieON.isMissingNode()) {</span>
-<span class="nc" id="L360">      final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; iter = cookieON.fields();</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">      while (iter.hasNext()) {</span>
+<span class="fc" id="L358">    final ObjectNode cookieON = response.getCookieArgs();</span>
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (!cookieON.isMissingNode()) {</span>
+<span class="fc" id="L360">      final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; iter = cookieON.fields();</span>
+<span class="pc bpc" id="L361" title="1 of 2 branches missed.">      while (iter.hasNext()) {</span>
 <span class="nc" id="L362">        final Entry&lt;String, JsonNode&gt; entry = iter.next();</span>
 <span class="nc" id="L363">        httpResponse.headers().add(HttpHeaderNames.SET_COOKIE,</span>
 <span class="nc" id="L364">                                   ServerCookieEncoder.LAX.encode(</span>
@@ -366,7 +366,7 @@ public abstract class HttpRestHandler
 <span class="nc" id="L366">                                       entry.getValue().asText()));</span>
 <span class="nc" id="L367">      }</span>
     }
-<span class="nc" id="L369">  }</span>
+<span class="fc" id="L369">  }</span>
 
   /**
    * Could be overwritten if necessary
@@ -380,73 +380,73 @@ public abstract class HttpRestHandler
   protected final RestMethodHandler getHandler()
       throws HttpMethodNotAllowedRequestException,
              HttpForbiddenRequestException {
-<span class="nc" id="L383">    final METHOD method = arguments.getMethod();</span>
-<span class="nc" id="L384">    final String uri = arguments.getBaseUri();</span>
-<span class="nc" id="L385">    boolean restFound = false;</span>
-<span class="nc" id="L386">    RestMethodHandler handlerNew = restHashMap.get(uri);</span>
-<span class="nc bnc" id="L387" title="All 2 branches missed.">    if (handlerNew != null) {</span>
-<span class="nc" id="L388">      handlerNew.checkHandlerSessionCorrectness(this, arguments, response);</span>
-<span class="nc bnc" id="L389" title="All 2 branches missed.">      if (handlerNew.isMethodIncluded(method)) {</span>
-<span class="nc" id="L390">        restFound = true;</span>
+<span class="fc" id="L383">    final METHOD method = arguments.getMethod();</span>
+<span class="fc" id="L384">    final String uri = arguments.getBaseUri();</span>
+<span class="fc" id="L385">    boolean restFound = false;</span>
+<span class="fc" id="L386">    RestMethodHandler handlerNew = restHashMap.get(uri);</span>
+<span class="fc bfc" id="L387" title="All 2 branches covered.">    if (handlerNew != null) {</span>
+<span class="fc" id="L388">      handlerNew.checkHandlerSessionCorrectness(this, arguments, response);</span>
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">      if (handlerNew.isMethodIncluded(method)) {</span>
+<span class="fc" id="L390">        restFound = true;</span>
       }
     }
-<span class="nc bnc" id="L393" title="All 4 branches missed.">    if (handlerNew == null &amp;&amp; method == METHOD.OPTIONS) {</span>
-<span class="nc" id="L394">      handlerNew = rootHandler;</span>
+<span class="pc bpc" id="L393" title="1 of 4 branches missed.">    if (handlerNew == null &amp;&amp; method == METHOD.OPTIONS) {</span>
+<span class="fc" id="L394">      handlerNew = rootHandler;</span>
       // use Options default handler
-<span class="nc" id="L396">      restFound = true;</span>
+<span class="fc" id="L396">      restFound = true;</span>
     }
-<span class="nc" id="L398">    logger.debug(&quot;{} {} {}&quot;, method, uri, restFound);</span>
-<span class="nc bnc" id="L399" title="All 2 branches missed.">    if (!restFound) {</span>
+<span class="fc" id="L398">    logger.debug(&quot;{} {} {}&quot;, method, uri, restFound);</span>
+<span class="pc bpc" id="L399" title="1 of 2 branches missed.">    if (!restFound) {</span>
 <span class="nc" id="L400">      throw new HttpMethodNotAllowedRequestException(</span>
           &quot;No Method found for that URI: &quot; + uri);
     }
-<span class="nc" id="L403">    return handlerNew;</span>
+<span class="fc" id="L403">    return handlerNew;</span>
   }
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
                               final HttpObject msg) {
-<span class="nc" id="L409">    logger.debug(&quot;Msg Received&quot;);</span>
+<span class="fc" id="L409">    logger.debug(&quot;Msg Received&quot;);</span>
     try {
-<span class="nc bnc" id="L411" title="All 2 branches missed.">      if (msg instanceof HttpRequest) {</span>
-<span class="nc" id="L412">        initialize();</span>
-<span class="nc" id="L413">        request = (HttpRequest) msg;</span>
-<span class="nc" id="L414">        arguments.setRequest(request);</span>
-<span class="nc" id="L415">        final Iterator&lt;Entry&lt;CharSequence, CharSequence&gt;&gt; iterator =</span>
-<span class="nc" id="L416">            request.headers().iteratorCharSequence();</span>
-<span class="nc" id="L417">        arguments.setHeaderArgs(iterator);</span>
-<span class="nc" id="L418">        arguments.setCookieArgs(request.headers().get(HttpHeaderNames.COOKIE));</span>
-<span class="nc" id="L419">        logger.debug(&quot;DEBUG: {}&quot;, arguments);</span>
-<span class="nc" id="L420">        checkConnection(ctx);</span>
-<span class="nc" id="L421">        handler = getHandler();</span>
-<span class="nc bnc" id="L422" title="All 2 branches missed.">        if (arguments.getMethod() == METHOD.OPTIONS) {</span>
-<span class="nc" id="L423">          response.setFromArgument(arguments);</span>
-<span class="nc" id="L424">          handler.optionsCommand(this, arguments, response);</span>
-<span class="nc" id="L425">          finalizeSend(ctx);</span>
-<span class="nc" id="L426">          return;</span>
+<span class="fc bfc" id="L411" title="All 2 branches covered.">      if (msg instanceof HttpRequest) {</span>
+<span class="fc" id="L412">        initialize();</span>
+<span class="fc" id="L413">        request = (HttpRequest) msg;</span>
+<span class="fc" id="L414">        arguments.setRequest(request);</span>
+<span class="fc" id="L415">        final Iterator&lt;Entry&lt;CharSequence, CharSequence&gt;&gt; iterator =</span>
+<span class="fc" id="L416">            request.headers().iteratorCharSequence();</span>
+<span class="fc" id="L417">        arguments.setHeaderArgs(iterator);</span>
+<span class="fc" id="L418">        arguments.setCookieArgs(request.headers().get(HttpHeaderNames.COOKIE));</span>
+<span class="fc" id="L419">        logger.debug(&quot;DEBUG: {}&quot;, arguments);</span>
+<span class="fc" id="L420">        checkConnection(ctx);</span>
+<span class="fc" id="L421">        handler = getHandler();</span>
+<span class="fc bfc" id="L422" title="All 2 branches covered.">        if (arguments.getMethod() == METHOD.OPTIONS) {</span>
+<span class="fc" id="L423">          response.setFromArgument(arguments);</span>
+<span class="fc" id="L424">          handler.optionsCommand(this, arguments, response);</span>
+<span class="fc" id="L425">          finalizeSend(ctx);</span>
+<span class="fc" id="L426">          return;</span>
         }
-<span class="nc bnc" id="L428" title="All 2 branches missed.">        if (request instanceof FullHttpRequest) {</span>
-<span class="nc bnc" id="L429" title="All 2 branches missed.">          if (handler.isBodyJsonDecoded()) {</span>
-<span class="nc" id="L430">            final ByteBuf buffer = ((FullHttpRequest) request).content();</span>
-<span class="nc" id="L431">            jsonObject = getBodyJsonArgs(buffer);</span>
-<span class="nc" id="L432">          } else {</span>
+<span class="fc bfc" id="L428" title="All 2 branches covered.">        if (request instanceof FullHttpRequest) {</span>
+<span class="pc bpc" id="L429" title="1 of 2 branches missed.">          if (handler.isBodyJsonDecoded()) {</span>
+<span class="fc" id="L430">            final ByteBuf buffer = ((FullHttpRequest) request).content();</span>
+<span class="fc" id="L431">            jsonObject = getBodyJsonArgs(buffer);</span>
+<span class="fc" id="L432">          } else {</span>
             // decoder for 1 chunk
 <span class="nc" id="L434">            createDecoder();</span>
             // Not chunk version
 <span class="nc" id="L436">            readAllHttpData();</span>
           }
-<span class="nc" id="L438">          response.setFromArgument(arguments);</span>
-<span class="nc" id="L439">          handler.endParsingRequest(this, arguments, response, jsonObject);</span>
-<span class="nc" id="L440">          finalizeSend(ctx);</span>
-<span class="nc" id="L441">          return;</span>
+<span class="fc" id="L438">          response.setFromArgument(arguments);</span>
+<span class="fc" id="L439">          handler.endParsingRequest(this, arguments, response, jsonObject);</span>
+<span class="fc" id="L440">          finalizeSend(ctx);</span>
+<span class="fc" id="L441">          return;</span>
         }
         // no body yet
-<span class="nc bnc" id="L444" title="All 2 branches missed.">        if (!handler.isBodyJsonDecoded()) {</span>
+<span class="pc bpc" id="L444" title="1 of 2 branches missed.">        if (!handler.isBodyJsonDecoded()) {</span>
 <span class="nc" id="L445">          createDecoder();</span>
         }
-<span class="nc" id="L447">      } else {</span>
+<span class="fc" id="L447">      } else {</span>
         // New chunk is received
-<span class="nc bnc" id="L449" title="All 2 branches missed.">        if (handler != null) {</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">        if (handler != null) {</span>
 <span class="nc" id="L450">          bodyChunk(ctx, (HttpContent) msg);</span>
         }
       }
@@ -519,25 +519,25 @@ public abstract class HttpRestHandler
       } else {
 <span class="nc" id="L520">        forceClosing(ctx);</span>
       }
-<span class="nc" id="L522">    } catch (final HttpNotFoundRequestException e1) {</span>
-<span class="nc bnc" id="L523" title="All 2 branches missed.">      if (handler != null) {</span>
-<span class="nc" id="L524">        status =</span>
-<span class="nc" id="L525">            handler.handleException(this, arguments, response, jsonObject, e1);</span>
+<span class="fc" id="L522">    } catch (final HttpNotFoundRequestException e1) {</span>
+<span class="pc bpc" id="L523" title="1 of 2 branches missed.">      if (handler != null) {</span>
+<span class="fc" id="L524">        status =</span>
+<span class="fc" id="L525">            handler.handleException(this, arguments, response, jsonObject, e1);</span>
       }
-<span class="nc bnc" id="L527" title="All 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
+<span class="pc bpc" id="L527" title="1 of 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
 <span class="nc" id="L528">        status = HttpResponseStatus.NOT_FOUND;</span>
       }
-<span class="nc" id="L530">      logger.warn(&quot;Error: {}&quot;, e1.getMessage());</span>
-<span class="nc bnc" id="L531" title="All 2 branches missed.">      if (response.getDetail().isEmpty()) {</span>
-<span class="nc" id="L532">        response.setDetail(e1.getMessage());</span>
+<span class="fc" id="L530">      logger.warn(&quot;Error: {}&quot;, e1.getMessage());</span>
+<span class="pc bpc" id="L531" title="1 of 2 branches missed.">      if (response.getDetail().isEmpty()) {</span>
+<span class="fc" id="L532">        response.setDetail(e1.getMessage());</span>
       }
-<span class="nc bnc" id="L534" title="All 2 branches missed.">      if (handler != null) {</span>
-<span class="nc" id="L535">        finalizeSend(ctx);</span>
+<span class="pc bpc" id="L534" title="1 of 2 branches missed.">      if (handler != null) {</span>
+<span class="fc" id="L535">        finalizeSend(ctx);</span>
       } else {
 <span class="nc" id="L537">        forceClosing(ctx);</span>
       }
-<span class="nc" id="L539">    }</span>
-<span class="nc" id="L540">  }</span>
+<span class="pc" id="L539">    }</span>
+<span class="fc" id="L540">  }</span>
 
   /**
    * Create the decoder
@@ -647,7 +647,7 @@ public abstract class HttpRestHandler
    */
   public final FullHttpResponse getResponse(final ByteBuf content) {
     // Decide whether to close the connection or not.
-<span class="nc bnc" id="L650" title="All 2 branches missed.">    if (request == null) {</span>
+<span class="pc bpc" id="L650" title="1 of 2 branches missed.">    if (request == null) {</span>
       final FullHttpResponse httpResponse;
 <span class="nc bnc" id="L652" title="All 2 branches missed.">      if (content == null) {</span>
 <span class="nc" id="L653">        httpResponse =</span>
@@ -662,33 +662,33 @@ public abstract class HttpRestHandler
 <span class="nc" id="L662">      setWillClose(true);</span>
 <span class="nc" id="L663">      return httpResponse;</span>
     }
-<span class="nc" id="L665">    boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
-<span class="nc bnc" id="L666" title="All 4 branches missed.">    setWillClose(isWillClose() || status != HttpResponseStatus.OK ||</span>
-<span class="nc bnc" id="L667" title="All 2 branches missed.">                 HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(</span>
-<span class="nc" id="L668">                     request.headers().get(HttpHeaderNames.CONNECTION)) ||</span>
-<span class="nc bnc" id="L669" title="All 4 branches missed.">                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &amp;&amp;</span>
+<span class="fc" id="L665">    boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
+<span class="pc bpc" id="L666" title="1 of 4 branches missed.">    setWillClose(isWillClose() || status != HttpResponseStatus.OK ||</span>
+<span class="pc bpc" id="L667" title="1 of 2 branches missed.">                 HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(</span>
+<span class="fc" id="L668">                     request.headers().get(HttpHeaderNames.CONNECTION)) ||</span>
+<span class="pc bpc" id="L669" title="3 of 4 branches missed.">                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &amp;&amp;</span>
                  !keepAlive);
-<span class="nc bnc" id="L671" title="All 2 branches missed.">    if (isWillClose()) {</span>
-<span class="nc" id="L672">      keepAlive = false;</span>
+<span class="fc bfc" id="L671" title="All 2 branches covered.">    if (isWillClose()) {</span>
+<span class="fc" id="L672">      keepAlive = false;</span>
     }
     // Build the response object.
     final FullHttpResponse httpResponse;
-<span class="nc bnc" id="L676" title="All 2 branches missed.">    if (content != null) {</span>
-<span class="nc" id="L677">      httpResponse =</span>
-<span class="nc" id="L678">          new DefaultFullHttpResponse(request.protocolVersion(), status,</span>
+<span class="pc bpc" id="L676" title="1 of 2 branches missed.">    if (content != null) {</span>
+<span class="fc" id="L677">      httpResponse =</span>
+<span class="fc" id="L678">          new DefaultFullHttpResponse(request.protocolVersion(), status,</span>
                                       content);
-<span class="nc" id="L680">      httpResponse.headers()</span>
-<span class="nc" id="L681">                  .set(HttpHeaderNames.CONTENT_LENGTH, content.array().length);</span>
+<span class="fc" id="L680">      httpResponse.headers()</span>
+<span class="fc" id="L681">                  .set(HttpHeaderNames.CONTENT_LENGTH, content.array().length);</span>
     } else {
 <span class="nc" id="L683">      httpResponse =</span>
 <span class="nc" id="L684">          new DefaultFullHttpResponse(request.protocolVersion(), status);</span>
     }
-<span class="nc bnc" id="L686" title="All 2 branches missed.">    if (keepAlive) {</span>
-<span class="nc" id="L687">      httpResponse.headers()</span>
-<span class="nc" id="L688">                  .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+<span class="fc bfc" id="L686" title="All 2 branches covered.">    if (keepAlive) {</span>
+<span class="fc" id="L687">      httpResponse.headers()</span>
+<span class="fc" id="L688">                  .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
     }
-<span class="nc" id="L690">    setCookies(httpResponse);</span>
-<span class="nc" id="L691">    return httpResponse;</span>
+<span class="fc" id="L690">    setCookies(httpResponse);</span>
+<span class="fc" id="L691">    return httpResponse;</span>
   }
 
   /**
@@ -706,16 +706,16 @@ public abstract class HttpRestHandler
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     // New chunk is received: only for Post!
-<span class="nc bnc" id="L709" title="All 2 branches missed.">    if (handler.isBodyJsonDecoded()) {</span>
-<span class="nc" id="L710">      final ByteBuf buffer = chunk.content();</span>
-<span class="nc bnc" id="L711" title="All 2 branches missed.">      if (cumulativeBody != null) {</span>
+<span class="pc bpc" id="L709" title="1 of 2 branches missed.">    if (handler.isBodyJsonDecoded()) {</span>
+<span class="fc" id="L710">      final ByteBuf buffer = chunk.content();</span>
+<span class="pc bpc" id="L711" title="1 of 2 branches missed.">      if (cumulativeBody != null) {</span>
 <span class="nc bnc" id="L712" title="All 2 branches missed.">        if (buffer.isReadable()) {</span>
 <span class="nc" id="L713">          cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, buffer);</span>
         }
       } else {
-<span class="nc" id="L716">        cumulativeBody = buffer.slice();</span>
+<span class="fc" id="L716">        cumulativeBody = buffer.slice();</span>
       }
-<span class="nc" id="L718">    } else {</span>
+<span class="fc" id="L718">    } else {</span>
       try {
 <span class="nc" id="L720">        decoder.offer(chunk);</span>
 <span class="nc" id="L721">      } catch (final ErrorDataDecoderException e1) {</span>
@@ -727,13 +727,13 @@ public abstract class HttpRestHandler
 <span class="nc" id="L727">      readHttpDataChunkByChunk();</span>
     }
     // example of reading only if at the end
-<span class="nc bnc" id="L730" title="All 2 branches missed.">    if (chunk instanceof LastHttpContent) {</span>
-<span class="nc bnc" id="L731" title="All 2 branches missed.">      if (handler.isBodyJsonDecoded()) {</span>
-<span class="nc" id="L732">        jsonObject = getBodyJsonArgs(cumulativeBody);</span>
-<span class="nc" id="L733">        WaarpNettyUtil.release(cumulativeBody);</span>
-<span class="nc" id="L734">        cumulativeBody = null;</span>
+<span class="pc bpc" id="L730" title="1 of 2 branches missed.">    if (chunk instanceof LastHttpContent) {</span>
+<span class="pc bpc" id="L731" title="1 of 2 branches missed.">      if (handler.isBodyJsonDecoded()) {</span>
+<span class="fc" id="L732">        jsonObject = getBodyJsonArgs(cumulativeBody);</span>
+<span class="fc" id="L733">        WaarpNettyUtil.release(cumulativeBody);</span>
+<span class="fc" id="L734">        cumulativeBody = null;</span>
       }
-<span class="nc" id="L736">      response.setFromArgument(arguments);</span>
+<span class="fc" id="L736">      response.setFromArgument(arguments);</span>
 <span class="nc" id="L737">      handler.endParsingRequest(this, arguments, response, jsonObject);</span>
 <span class="nc" id="L738">      finalizeSend(ctx);</span>
     }
@@ -741,18 +741,18 @@ public abstract class HttpRestHandler
 
   protected final void finalizeSend(final ChannelHandlerContext ctx) {
     final ChannelFuture future;
-<span class="nc bnc" id="L744" title="All 2 branches missed.">    if (arguments.getMethod() == METHOD.OPTIONS) {</span>
-<span class="nc" id="L745">      future = handler.sendOptionsResponse(this, ctx, response, status);</span>
+<span class="fc bfc" id="L744" title="All 2 branches covered.">    if (arguments.getMethod() == METHOD.OPTIONS) {</span>
+<span class="fc" id="L745">      future = handler.sendOptionsResponse(this, ctx, response, status);</span>
     } else {
-<span class="nc" id="L747">      future = handler.sendResponse(this, ctx, arguments, response, jsonObject,</span>
+<span class="fc" id="L747">      future = handler.sendResponse(this, ctx, arguments, response, jsonObject,</span>
                                     status);
     }
-<span class="nc bnc" id="L750" title="All 2 branches missed.">    if (future != null) {</span>
-<span class="nc" id="L751">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="fc bfc" id="L750" title="All 2 branches covered.">    if (future != null) {</span>
+<span class="fc" id="L751">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
     }
-<span class="nc" id="L753">    clean();</span>
-<span class="nc" id="L754">    logger.debug(&quot;Cleaned&quot;);</span>
-<span class="nc" id="L755">  }</span>
+<span class="fc" id="L753">    clean();</span>
+<span class="fc" id="L754">    logger.debug(&quot;Cleaned&quot;);</span>
+<span class="fc" id="L755">  }</span>
 
   /**
    * Get Body args as JSON body
@@ -763,10 +763,10 @@ public abstract class HttpRestHandler
    */
   protected final Object getBodyJsonArgs(final ByteBuf data)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L766" title="All 4 branches missed.">    if (data == null || data.readableBytes() == 0) {</span>
-<span class="nc" id="L767">      return null;</span>
+<span class="pc bpc" id="L766" title="1 of 4 branches missed.">    if (data == null || data.readableBytes() == 0) {</span>
+<span class="fc" id="L767">      return null;</span>
     }
-<span class="nc" id="L769">    return handler.getBody(this, data, arguments, response);</span>
+<span class="fc" id="L769">    return handler.getBody(this, data, arguments, response);</span>
   }
 
   /**
@@ -792,7 +792,7 @@ public abstract class HttpRestHandler
   @Override
   public final void exceptionCaught(final ChannelHandlerContext ctx,
                                     final Throwable cause) {
-<span class="nc bnc" id="L795" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
+<span class="pc bpc" id="L795" title="1 of 2 branches missed.">    if (ctx.channel().isActive()) {</span>
 <span class="nc bnc" id="L796" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
 <span class="nc" id="L797">        logger.warn(&quot;Exception {}&quot;, cause.getMessage());</span>
       } else {
@@ -815,14 +815,14 @@ public abstract class HttpRestHandler
 <span class="nc" id="L815">        forceClosing(ctx);</span>
       }
     }
-<span class="nc" id="L818">  }</span>
+<span class="fc" id="L818">  }</span>
 
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="nc" id="L823">    super.channelInactive(ctx);</span>
-<span class="nc" id="L824">    clean();</span>
-<span class="nc" id="L825">  }</span>
+<span class="fc" id="L823">    super.channelInactive(ctx);</span>
+<span class="fc" id="L824">    clean();</span>
+<span class="fc" id="L825">  }</span>
 
   /**
    * @return the status
@@ -835,28 +835,28 @@ public abstract class HttpRestHandler
    * @param status the status to set
    */
   public final void setStatus(final HttpResponseStatus status) {
-<span class="nc" id="L838">    this.status = status;</span>
-<span class="nc" id="L839">  }</span>
+<span class="fc" id="L838">    this.status = status;</span>
+<span class="fc" id="L839">  }</span>
 
   /**
    * @return the request
    */
   public final HttpRequest getRequest() {
-<span class="nc" id="L845">    return request;</span>
+<span class="fc" id="L845">    return request;</span>
   }
 
   /**
    * @return the willClose
    */
   public final boolean isWillClose() {
-<span class="nc" id="L852">    return willClose;</span>
+<span class="fc" id="L852">    return willClose;</span>
   }
 
   /**
    * @param willClose the willClose to set
    */
   public final void setWillClose(final boolean willClose) {
-<span class="nc" id="L859">    this.willClose = willClose;</span>
-<span class="nc" id="L860">  }</span>
+<span class="fc" id="L859">    this.willClose = willClose;</span>
+<span class="fc" id="L860">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

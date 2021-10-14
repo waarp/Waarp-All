@@ -266,480 +266,483 @@
 <a class="jxr_linenumber" name="L258" href="#L258">258</a>         <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L259" href="#L259">259</a>           taskRunner.forceSaveStatus();
 <a class="jxr_linenumber" name="L260" href="#L260">260</a>           taskRunner.run();
-<a class="jxr_linenumber" name="L261" href="#L261">261</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66RunnerErrorException" href="../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a> e1) {
-<a class="jxr_linenumber" name="L262" href="#L262">262</a>           changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
-<a class="jxr_linenumber" name="L263" href="#L263">263</a>                             <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L264" href="#L264">264</a>         }
-<a class="jxr_linenumber" name="L265" href="#L265">265</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L266" href="#L266">266</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
-<a class="jxr_linenumber" name="L267" href="#L267">267</a>         logger.error(<span class="jxr_string">"Protocol Error"</span>, e);
-<a class="jxr_linenumber" name="L268" href="#L268">268</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L269" href="#L269">269</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> e) {
-<a class="jxr_linenumber" name="L270" href="#L270">270</a>         logger.warn(<span class="jxr_string">"No connection warning {}"</span>, e.getMessage());
-<a class="jxr_linenumber" name="L271" href="#L271">271</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L272" href="#L272">272</a>       }
-<a class="jxr_linenumber" name="L273" href="#L273">273</a>       <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result = transfer.getResult();
-<a class="jxr_linenumber" name="L274" href="#L274">274</a>       <strong class="jxr_keyword">if</strong> (result != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L275" href="#L275">275</a>         <strong class="jxr_keyword">if</strong> (result.getCode() == ErrorCode.QueryAlreadyFinished) {
-<a class="jxr_linenumber" name="L276" href="#L276">276</a>           logger.warn(Messages.getString(TRANSFER_STATUS) +
-<a class="jxr_linenumber" name="L277" href="#L277">277</a>                       (transfer.isSuccess()?
-<a class="jxr_linenumber" name="L278" href="#L278">278</a>                           Messages.getString(REQUEST_INFORMATION_SUCCESS) :
-<a class="jxr_linenumber" name="L279" href="#L279">279</a>                           Messages.getString(REQUEST_INFORMATION_FAILURE)) +
-<a class="jxr_linenumber" name="L280" href="#L280">280</a>                       <span class="jxr_string">"     "</span> + ErrorCode.QueryAlreadyFinished.getMesg() + ':' +
-<a class="jxr_linenumber" name="L281" href="#L281">281</a>                       result.toString());
-<a class="jxr_linenumber" name="L282" href="#L282">282</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L283" href="#L283">283</a>           <strong class="jxr_keyword">if</strong> (transfer.isSuccess()) {
-<a class="jxr_linenumber" name="L284" href="#L284">284</a>             logger.info(<span class="jxr_string">"{}{}     {}"</span>, Messages.getString(TRANSFER_STATUS),
-<a class="jxr_linenumber" name="L285" href="#L285">285</a>                         Messages.getString(REQUEST_INFORMATION_SUCCESS),
-<a class="jxr_linenumber" name="L286" href="#L286">286</a>                         result);
-<a class="jxr_linenumber" name="L287" href="#L287">287</a>           } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L288" href="#L288">288</a>             logger.error(Messages.getString(TRANSFER_STATUS) +
-<a class="jxr_linenumber" name="L289" href="#L289">289</a>                          Messages.getString(REQUEST_INFORMATION_FAILURE) +
-<a class="jxr_linenumber" name="L290" href="#L290">290</a>                          <span class="jxr_string">"     "</span> + result.toString());
-<a class="jxr_linenumber" name="L291" href="#L291">291</a>           }
-<a class="jxr_linenumber" name="L292" href="#L292">292</a>         }
-<a class="jxr_linenumber" name="L293" href="#L293">293</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L294" href="#L294">294</a>         <strong class="jxr_keyword">if</strong> (transfer.isSuccess()) {
-<a class="jxr_linenumber" name="L295" href="#L295">295</a>           logger.warn(Messages.getString(TRANSFER_STATUS) +
-<a class="jxr_linenumber" name="L296" href="#L296">296</a>                       Messages.getString(REQUEST_INFORMATION_SUCCESS) +
-<a class="jxr_linenumber" name="L297" href="#L297">297</a>                       <span class="jxr_string">"     no result"</span>);
-<a class="jxr_linenumber" name="L298" href="#L298">298</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L299" href="#L299">299</a>           logger.error(Messages.getString(TRANSFER_STATUS) +
-<a class="jxr_linenumber" name="L300" href="#L300">300</a>                        Messages.getString(REQUEST_INFORMATION_FAILURE) +
-<a class="jxr_linenumber" name="L301" href="#L301">301</a>                        <span class="jxr_string">"     no result"</span>);
-<a class="jxr_linenumber" name="L302" href="#L302">302</a>         }
-<a class="jxr_linenumber" name="L303" href="#L303">303</a>       }
-<a class="jxr_linenumber" name="L304" href="#L304">304</a>     } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L305" href="#L305">305</a>       <strong class="jxr_keyword">if</strong> (activeRunners != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L306" href="#L306">306</a>         activeRunners.remove(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="L307" href="#L307">307</a>       }
-<a class="jxr_linenumber" name="L308" href="#L308">308</a>       setName(<span class="jxr_string">"Finished_"</span> + nameTask);
-<a class="jxr_linenumber" name="L309" href="#L309">309</a>     }
-<a class="jxr_linenumber" name="L310" href="#L310">310</a>   }
-<a class="jxr_linenumber" name="L311" href="#L311">311</a> 
-<a class="jxr_linenumber" name="L312" href="#L312">312</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L313" href="#L313">313</a> <em class="jxr_javadoccomment">   * @param runner</em>
-<a class="jxr_linenumber" name="L314" href="#L314">314</a> <em class="jxr_javadoccomment">   * @param limit</em>
-<a class="jxr_linenumber" name="L315" href="#L315">315</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L316" href="#L316">316</a> <em class="jxr_javadoccomment">   * @return True if the task was run less than limit, else False</em>
-<a class="jxr_linenumber" name="L317" href="#L317">317</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L318" href="#L318">318</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> incrementTaskRunnerTry(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
-<a class="jxr_linenumber" name="L319" href="#L319">319</a>                                               <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> limit) {
-<a class="jxr_linenumber" name="L320" href="#L320">320</a>     <strong class="jxr_keyword">if</strong> (!isLimitRetryConnection()) {
-<a class="jxr_linenumber" name="L321" href="#L321">321</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L322" href="#L322">322</a>     }
-<a class="jxr_linenumber" name="L323" href="#L323">323</a>     <strong class="jxr_keyword">final</strong> String key = runner.getKey();
-<a class="jxr_linenumber" name="L324" href="#L324">324</a>     Integer tries = taskRunnerRetryHashMap.get(key);
-<a class="jxr_linenumber" name="L325" href="#L325">325</a>     logger.debug(<span class="jxr_string">"try to find integer: {}"</span>, tries);
-<a class="jxr_linenumber" name="L326" href="#L326">326</a>     <strong class="jxr_keyword">if</strong> (tries == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L327" href="#L327">327</a>       tries = 1;
-<a class="jxr_linenumber" name="L328" href="#L328">328</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L329" href="#L329">329</a>       tries += 1;
-<a class="jxr_linenumber" name="L330" href="#L330">330</a>     }
-<a class="jxr_linenumber" name="L331" href="#L331">331</a>     logger.debug(<span class="jxr_string">"Check: {} vs {}: {}"</span>, tries, limit, limit &lt;= tries);
-<a class="jxr_linenumber" name="L332" href="#L332">332</a>     <strong class="jxr_keyword">if</strong> (limit &lt;= tries || Thread.interrupted()) {
-<a class="jxr_linenumber" name="L333" href="#L333">333</a>       taskRunnerRetryHashMap.remove(key);
-<a class="jxr_linenumber" name="L334" href="#L334">334</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L335" href="#L335">335</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L336" href="#L336">336</a>       taskRunnerRetryHashMap.put(key, tries);
-<a class="jxr_linenumber" name="L337" href="#L337">337</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L338" href="#L338">338</a>     }
-<a class="jxr_linenumber" name="L339" href="#L339">339</a>   }
-<a class="jxr_linenumber" name="L340" href="#L340">340</a> 
-<a class="jxr_linenumber" name="L341" href="#L341">341</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L342" href="#L342">342</a> <em class="jxr_javadoccomment">   * True transfer run (can be called directly to enable exception outside any</em>
-<a class="jxr_linenumber" name="L343" href="#L343">343</a> <em class="jxr_javadoccomment">   * executors)</em>
-<a class="jxr_linenumber" name="L344" href="#L344">344</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L345" href="#L345">345</a> <em class="jxr_javadoccomment">   * @return The R66Future of the transfer operation</em>
-<a class="jxr_linenumber" name="L346" href="#L346">346</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L347" href="#L347">347</a> <em class="jxr_javadoccomment">   * @throws OpenR66RunnerErrorException</em>
-<a class="jxr_linenumber" name="L348" href="#L348">348</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNoConnectionException</em>
-<a class="jxr_linenumber" name="L349" href="#L349">349</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolPacketException</em>
-<a class="jxr_linenumber" name="L350" href="#L350">350</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNotYetConnectionException</em>
-<a class="jxr_linenumber" name="L351" href="#L351">351</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L352" href="#L352">352</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> runTransfer()
-<a class="jxr_linenumber" name="L353" href="#L353">353</a>       <strong class="jxr_keyword">throws</strong> OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
-<a class="jxr_linenumber" name="L354" href="#L354">354</a>              OpenR66ProtocolPacketException,
-<a class="jxr_linenumber" name="L355" href="#L355">355</a>              <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> {
-<a class="jxr_linenumber" name="L356" href="#L356">356</a>     logger.debug(<span class="jxr_string">"Start attempt Transfer"</span>);
-<a class="jxr_linenumber" name="L357" href="#L357">357</a>     localChannelReference = initRequest();
-<a class="jxr_linenumber" name="L358" href="#L358">358</a>     localChannelReference.getFutureValidRequest().awaitOrInterruptible(
-<a class="jxr_linenumber" name="L359" href="#L359">359</a>         Configuration.configuration.getTimeoutCon());
-<a class="jxr_linenumber" name="L360" href="#L360">360</a>     <strong class="jxr_keyword">if</strong> (localChannelReference.getFutureValidRequest().isSuccess()) {
-<a class="jxr_linenumber" name="L361" href="#L361">361</a>       <strong class="jxr_keyword">return</strong> finishTransfer(localChannelReference);
-<a class="jxr_linenumber" name="L362" href="#L362">362</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>         localChannelReference.getFutureValidRequest().getResult() != <strong class="jxr_keyword">null</strong> &amp;&amp;
-<a class="jxr_linenumber" name="L364" href="#L364">364</a>         localChannelReference.getFutureValidRequest().getResult().getCode() ==
-<a class="jxr_linenumber" name="L365" href="#L365">365</a>         ErrorCode.ServerOverloaded) {
-<a class="jxr_linenumber" name="L366" href="#L366">366</a>       <strong class="jxr_keyword">return</strong> tryAgainTransferOnOverloaded(<strong class="jxr_keyword">true</strong>, localChannelReference);
-<a class="jxr_linenumber" name="L367" href="#L367">367</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L368" href="#L368">368</a>       <strong class="jxr_keyword">return</strong> finishTransfer(localChannelReference);
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>     }
-<a class="jxr_linenumber" name="L370" href="#L370">370</a>   }
-<a class="jxr_linenumber" name="L371" href="#L371">371</a> 
-<a class="jxr_linenumber" name="L372" href="#L372">372</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L373" href="#L373">373</a> <em class="jxr_javadoccomment">   * In case an overloaded signal is returned by the requested</em>
-<a class="jxr_linenumber" name="L374" href="#L374">374</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L375" href="#L375">375</a> <em class="jxr_javadoccomment">   * @param retry if True, it will retry in case of overloaded remote</em>
-<a class="jxr_linenumber" name="L376" href="#L376">376</a> <em class="jxr_javadoccomment">   *     server, else it just stops</em>
-<a class="jxr_linenumber" name="L377" href="#L377">377</a> <em class="jxr_javadoccomment">   * @param localChannelReference</em>
-<a class="jxr_linenumber" name="L378" href="#L378">378</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L379" href="#L379">379</a> <em class="jxr_javadoccomment">   * @return The R66Future of the transfer operation</em>
-<a class="jxr_linenumber" name="L380" href="#L380">380</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L381" href="#L381">381</a> <em class="jxr_javadoccomment">   * @throws OpenR66RunnerErrorException</em>
-<a class="jxr_linenumber" name="L382" href="#L382">382</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNoConnectionException</em>
-<a class="jxr_linenumber" name="L383" href="#L383">383</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolPacketException</em>
-<a class="jxr_linenumber" name="L384" href="#L384">384</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNotYetConnectionException</em>
-<a class="jxr_linenumber" name="L385" href="#L385">385</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L386" href="#L386">386</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> tryAgainTransferOnOverloaded(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> retry,
-<a class="jxr_linenumber" name="L387" href="#L387">387</a>                                                       <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> localChannelReference)
-<a class="jxr_linenumber" name="L388" href="#L388">388</a>       <strong class="jxr_keyword">throws</strong> OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
-<a class="jxr_linenumber" name="L389" href="#L389">389</a>              OpenR66ProtocolPacketException,
-<a class="jxr_linenumber" name="L390" href="#L390">390</a>              <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> {
-<a class="jxr_linenumber" name="L391" href="#L391">391</a>     <strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.localChannelReference == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L392" href="#L392">392</a>       <strong class="jxr_keyword">this</strong>.localChannelReference = localChannelReference;
-<a class="jxr_linenumber" name="L393" href="#L393">393</a>     }
-<a class="jxr_linenumber" name="L394" href="#L394">394</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> incRetry =
-<a class="jxr_linenumber" name="L395" href="#L395">395</a>         incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB);
-<a class="jxr_linenumber" name="L396" href="#L396">396</a>     logger.debug(<span class="jxr_string">"tryAgainTransferOnOverloaded: {}:{}"</span>, retry, incRetry);
-<a class="jxr_linenumber" name="L397" href="#L397">397</a>     <strong class="jxr_keyword">switch</strong> (taskRunner.getUpdatedInfo()) {
-<a class="jxr_linenumber" name="L398" href="#L398">398</a>       <strong class="jxr_keyword">case</strong> DONE:
-<a class="jxr_linenumber" name="L399" href="#L399">399</a>       <strong class="jxr_keyword">case</strong> INERROR:
-<a class="jxr_linenumber" name="L400" href="#L400">400</a>       <strong class="jxr_keyword">case</strong> INTERRUPTED:
-<a class="jxr_linenumber" name="L401" href="#L401">401</a>         <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L402" href="#L402">402</a>       <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L403" href="#L403">403</a>         changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ServerOverloaded,
-<a class="jxr_linenumber" name="L404" href="#L404">404</a>                           <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L405" href="#L405">405</a>     }
-<a class="jxr_linenumber" name="L406" href="#L406">406</a>     <em class="jxr_comment">// redo if possible</em>
-<a class="jxr_linenumber" name="L407" href="#L407">407</a>     <strong class="jxr_keyword">if</strong> (retry &amp;&amp; incRetry) {
-<a class="jxr_linenumber" name="L408" href="#L408">408</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L409" href="#L409">409</a>         Thread.sleep(Configuration.configuration.getConstraintLimitHandler()
-<a class="jxr_linenumber" name="L410" href="#L410">410</a>                                                 .getSleepTime());
-<a class="jxr_linenumber" name="L411" href="#L411">411</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L412" href="#L412">412</a>         <strong class="jxr_keyword">if</strong> (localChannelReference == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L413" href="#L413">413</a>           taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
-<a class="jxr_linenumber" name="L414" href="#L414">414</a>         }
-<a class="jxr_linenumber" name="L415" href="#L415">415</a>         taskRunner.getLocalChannelReference()
-<a class="jxr_linenumber" name="L416" href="#L416">416</a>                   .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
-<a class="jxr_linenumber" name="L417" href="#L417">417</a>                                    ErrorCode.ConnectionImpossible);
-<a class="jxr_linenumber" name="L418" href="#L418">418</a>         taskRunner.setErrorTask();
-<a class="jxr_linenumber" name="L419" href="#L419">419</a>         taskRunner.run();
-<a class="jxr_linenumber" name="L420" href="#L420">420</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L421" href="#L421">421</a>             <span class="jxr_string">"End of retry on ServerOverloaded due to interruption"</span>);
-<a class="jxr_linenumber" name="L422" href="#L422">422</a>       }
-<a class="jxr_linenumber" name="L423" href="#L423">423</a>       <strong class="jxr_keyword">return</strong> runTransfer();
-<a class="jxr_linenumber" name="L424" href="#L424">424</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L425" href="#L425">425</a>       <strong class="jxr_keyword">if</strong> (localChannelReference == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L426" href="#L426">426</a>         taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
-<a class="jxr_linenumber" name="L427" href="#L427">427</a>       }
-<a class="jxr_linenumber" name="L428" href="#L428">428</a>       taskRunner.getLocalChannelReference()
-<a class="jxr_linenumber" name="L429" href="#L429">429</a>                 .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
-<a class="jxr_linenumber" name="L430" href="#L430">430</a>                                  ErrorCode.ConnectionImpossible);
-<a class="jxr_linenumber" name="L431" href="#L431">431</a>       taskRunner.setErrorTask();
-<a class="jxr_linenumber" name="L432" href="#L432">432</a>       taskRunner.run();
-<a class="jxr_linenumber" name="L433" href="#L433">433</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L434" href="#L434">434</a>           <span class="jxr_string">"End of retry on ServerOverloaded"</span>);
-<a class="jxr_linenumber" name="L435" href="#L435">435</a>     }
-<a class="jxr_linenumber" name="L436" href="#L436">436</a>   }
-<a class="jxr_linenumber" name="L437" href="#L437">437</a> 
-<a class="jxr_linenumber" name="L438" href="#L438">438</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L439" href="#L439">439</a> <em class="jxr_javadoccomment">   * Finish the transfer (called at the end of runTransfer)</em>
-<a class="jxr_linenumber" name="L440" href="#L440">440</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L441" href="#L441">441</a> <em class="jxr_javadoccomment">   * @param localChannelReference</em>
-<a class="jxr_linenumber" name="L442" href="#L442">442</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L443" href="#L443">443</a> <em class="jxr_javadoccomment">   * @return The R66Future of the transfer operation</em>
-<a class="jxr_linenumber" name="L444" href="#L444">444</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L445" href="#L445">445</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> finishTransfer(
-<a class="jxr_linenumber" name="L446" href="#L446">446</a>       <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> localChannelReference) {
-<a class="jxr_linenumber" name="L447" href="#L447">447</a>     <strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.localChannelReference == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L448" href="#L448">448</a>       <strong class="jxr_keyword">this</strong>.localChannelReference = localChannelReference;
-<a class="jxr_linenumber" name="L449" href="#L449">449</a>     }
-<a class="jxr_linenumber" name="L450" href="#L450">450</a>     <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> transfer = localChannelReference.getFutureRequest();
-<a class="jxr_linenumber" name="L451" href="#L451">451</a>     transfer.awaitOrInterruptible();
-<a class="jxr_linenumber" name="L452" href="#L452">452</a>     taskRunnerRetryHashMap.remove(taskRunner.getKey());
-<a class="jxr_linenumber" name="L453" href="#L453">453</a>     logger.info(<span class="jxr_string">"Request done with {}"</span>,
-<a class="jxr_linenumber" name="L454" href="#L454">454</a>                 transfer.isSuccess()? <span class="jxr_string">"success"</span> : <span class="jxr_string">"error"</span>);
-<a class="jxr_linenumber" name="L455" href="#L455">455</a>     localChannelReference.close();
-<a class="jxr_linenumber" name="L456" href="#L456">456</a>     <em class="jxr_comment">// now reload TaskRunner if it still exists (light client can forget it)</em>
-<a class="jxr_linenumber" name="L457" href="#L457">457</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isSender = taskRunner.isSender();
-<a class="jxr_linenumber" name="L458" href="#L458">458</a>     <strong class="jxr_keyword">if</strong> (transfer.isSuccess()) {
-<a class="jxr_linenumber" name="L459" href="#L459">459</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L460" href="#L460">460</a>         taskRunner.select();
-<a class="jxr_linenumber" name="L461" href="#L461">461</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L462" href="#L462">462</a>         logger.debug(<span class="jxr_string">"Not a problem but cannot find at the end the task"</span>, e);
-<a class="jxr_linenumber" name="L463" href="#L463">463</a>         taskRunner.setFrom(transfer.getRunner());
-<a class="jxr_linenumber" name="L464" href="#L464">464</a>       }
-<a class="jxr_linenumber" name="L465" href="#L465">465</a>       taskRunner.setSender(isSender);
-<a class="jxr_linenumber" name="L466" href="#L466">466</a>       changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);
-<a class="jxr_linenumber" name="L467" href="#L467">467</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L468" href="#L468">468</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L469" href="#L469">469</a>         taskRunner.select();
-<a class="jxr_linenumber" name="L470" href="#L470">470</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L471" href="#L471">471</a>         logger.debug(<span class="jxr_string">"Not a problem but cannot find at the end the task"</span>);
-<a class="jxr_linenumber" name="L472" href="#L472">472</a>         taskRunner.setFrom(transfer.getRunner());
-<a class="jxr_linenumber" name="L473" href="#L473">473</a>       }
-<a class="jxr_linenumber" name="L474" href="#L474">474</a>       taskRunner.setSender(isSender);
-<a class="jxr_linenumber" name="L475" href="#L475">475</a>       <em class="jxr_comment">// Case when we were interrupted</em>
-<a class="jxr_linenumber" name="L476" href="#L476">476</a>       <strong class="jxr_keyword">if</strong> (transfer.getResult() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L477" href="#L477">477</a>         <strong class="jxr_keyword">switch</strong> (taskRunner.getUpdatedInfo()) {
-<a class="jxr_linenumber" name="L478" href="#L478">478</a>           <strong class="jxr_keyword">case</strong> DONE:
-<a class="jxr_linenumber" name="L479" href="#L479">479</a>             <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> ok =
-<a class="jxr_linenumber" name="L480" href="#L480">480</a>                 <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>, ErrorCode.CompleteOk, taskRunner);
-<a class="jxr_linenumber" name="L481" href="#L481">481</a>             transfer.setResult(ok);
-<a class="jxr_linenumber" name="L482" href="#L482">482</a>             transfer.setSuccess();
-<a class="jxr_linenumber" name="L483" href="#L483">483</a>             changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);
-<a class="jxr_linenumber" name="L484" href="#L484">484</a>             <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L485" href="#L485">485</a>           <strong class="jxr_keyword">case</strong> INERROR:
-<a class="jxr_linenumber" name="L486" href="#L486">486</a>           <strong class="jxr_keyword">case</strong> INTERRUPTED:
-<a class="jxr_linenumber" name="L487" href="#L487">487</a>           <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L488" href="#L488">488</a>             <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> error =
-<a class="jxr_linenumber" name="L489" href="#L489">489</a>                 <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>, ErrorCode.Internal, taskRunner);
-<a class="jxr_linenumber" name="L490" href="#L490">490</a>             transfer.setResult(error);
-<a class="jxr_linenumber" name="L491" href="#L491">491</a>             transfer.cancel();
-<a class="jxr_linenumber" name="L492" href="#L492">492</a>             changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);
-<a class="jxr_linenumber" name="L493" href="#L493">493</a>         }
-<a class="jxr_linenumber" name="L494" href="#L494">494</a>         <strong class="jxr_keyword">return</strong> transfer;
-<a class="jxr_linenumber" name="L495" href="#L495">495</a>       }
-<a class="jxr_linenumber" name="L496" href="#L496">496</a>       <strong class="jxr_keyword">if</strong> (transfer.getResult().getCode() == ErrorCode.QueryAlreadyFinished) {
-<a class="jxr_linenumber" name="L497" href="#L497">497</a>         <em class="jxr_comment">// check if post task to execute</em>
-<a class="jxr_linenumber" name="L498" href="#L498">498</a>         logger.warn(<span class="jxr_string">"WARN QueryAlreadyFinished:     "</span> + transfer + <span class="jxr_string">"     "</span> +
-<a class="jxr_linenumber" name="L499" href="#L499">499</a>                     taskRunner.toShortString());
-<a class="jxr_linenumber" name="L500" href="#L500">500</a>         <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L501" href="#L501">501</a>           TransferUtils.finalizeTaskWithNoSession(taskRunner,
-<a class="jxr_linenumber" name="L502" href="#L502">502</a>                                                   localChannelReference);
-<a class="jxr_linenumber" name="L503" href="#L503">503</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66RunnerErrorException" href="../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a> e) {
-<a class="jxr_linenumber" name="L504" href="#L504">504</a>           taskRunner.changeUpdatedInfo(UpdatedInfo.INERROR);
-<a class="jxr_linenumber" name="L505" href="#L505">505</a>           taskRunner.forceSaveStatus();
-<a class="jxr_linenumber" name="L506" href="#L506">506</a>         }
-<a class="jxr_linenumber" name="L507" href="#L507">507</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L508" href="#L508">508</a>         <strong class="jxr_keyword">switch</strong> (taskRunner.getUpdatedInfo()) {
-<a class="jxr_linenumber" name="L509" href="#L509">509</a>           <strong class="jxr_keyword">case</strong> DONE:
-<a class="jxr_linenumber" name="L510" href="#L510">510</a>           <strong class="jxr_keyword">case</strong> INERROR:
-<a class="jxr_linenumber" name="L511" href="#L511">511</a>           <strong class="jxr_keyword">case</strong> INTERRUPTED:
-<a class="jxr_linenumber" name="L512" href="#L512">512</a>           <strong class="jxr_keyword">case</strong> TOSUBMIT:
-<a class="jxr_linenumber" name="L513" href="#L513">513</a>             <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L514" href="#L514">514</a>           <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L515" href="#L515">515</a>             changeUpdatedInfo(UpdatedInfo.INERROR,
-<a class="jxr_linenumber" name="L516" href="#L516">516</a>                               transfer.getResult().getCode(), false);
-<a class="jxr_linenumber" name="L517" href="#L517">517</a>         }
-<a class="jxr_linenumber" name="L518" href="#L518">518</a>       }
-<a class="jxr_linenumber" name="L519" href="#L519">519</a>     }
-<a class="jxr_linenumber" name="L520" href="#L520">520</a>     <strong class="jxr_keyword">return</strong> transfer;
-<a class="jxr_linenumber" name="L521" href="#L521">521</a>   }
-<a class="jxr_linenumber" name="L522" href="#L522">522</a> 
-<a class="jxr_linenumber" name="L523" href="#L523">523</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L524" href="#L524">524</a> <em class="jxr_javadoccomment">   * Initialize the request</em>
-<a class="jxr_linenumber" name="L525" href="#L525">525</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L526" href="#L526">526</a> <em class="jxr_javadoccomment">   * @return the localChannelReference holding the transfer request</em>
-<a class="jxr_linenumber" name="L527" href="#L527">527</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L528" href="#L528">528</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNoConnectionException</em>
-<a class="jxr_linenumber" name="L529" href="#L529">529</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolPacketException</em>
-<a class="jxr_linenumber" name="L530" href="#L530">530</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNotYetConnectionException</em>
-<a class="jxr_linenumber" name="L531" href="#L531">531</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L532" href="#L532">532</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> initRequest()
-<a class="jxr_linenumber" name="L533" href="#L533">533</a>       <strong class="jxr_keyword">throws</strong> OpenR66ProtocolNoConnectionException,
-<a class="jxr_linenumber" name="L534" href="#L534">534</a>              OpenR66ProtocolPacketException,
-<a class="jxr_linenumber" name="L535" href="#L535">535</a>              <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> {
-<a class="jxr_linenumber" name="L536" href="#L536">536</a>     changeUpdatedInfo(UpdatedInfo.RUNNING, ErrorCode.Running, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L537" href="#L537">537</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> id = taskRunner.getSpecialId();
-<a class="jxr_linenumber" name="L538" href="#L538">538</a>     <strong class="jxr_keyword">final</strong> String tid;
-<a class="jxr_linenumber" name="L539" href="#L539">539</a>     <strong class="jxr_keyword">if</strong> (id == DbConstantR66.ILLEGALVALUE) {
-<a class="jxr_linenumber" name="L540" href="#L540">540</a>       tid = <span class="jxr_string">"Runner_"</span> + taskRunner.getRuleId() + '_' + taskRunner.getMode() +
-<a class="jxr_linenumber" name="L541" href="#L541">541</a>             <span class="jxr_string">"_NEWTRANSFER"</span>;
-<a class="jxr_linenumber" name="L542" href="#L542">542</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L261" href="#L261">261</a>           taskRunner.saveStatus();
+<a class="jxr_linenumber" name="L262" href="#L262">262</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66RunnerErrorException" href="../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a> e1) {
+<a class="jxr_linenumber" name="L263" href="#L263">263</a>           changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>                             <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L265" href="#L265">265</a>         }
+<a class="jxr_linenumber" name="L266" href="#L266">266</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
+<a class="jxr_linenumber" name="L268" href="#L268">268</a>         logger.error(<span class="jxr_string">"Protocol Error"</span>, e);
+<a class="jxr_linenumber" name="L269" href="#L269">269</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> e) {
+<a class="jxr_linenumber" name="L271" href="#L271">271</a>         logger.warn(<span class="jxr_string">"No connection warning {}"</span>, e.getMessage());
+<a class="jxr_linenumber" name="L272" href="#L272">272</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>       }
+<a class="jxr_linenumber" name="L274" href="#L274">274</a>       <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result = transfer.getResult();
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>       <strong class="jxr_keyword">if</strong> (result != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L276" href="#L276">276</a>         <strong class="jxr_keyword">if</strong> (result.getCode() == ErrorCode.QueryAlreadyFinished) {
+<a class="jxr_linenumber" name="L277" href="#L277">277</a>           logger.warn(Messages.getString(TRANSFER_STATUS) +
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>                       (transfer.isSuccess()?
+<a class="jxr_linenumber" name="L279" href="#L279">279</a>                           Messages.getString(REQUEST_INFORMATION_SUCCESS) :
+<a class="jxr_linenumber" name="L280" href="#L280">280</a>                           Messages.getString(REQUEST_INFORMATION_FAILURE)) +
+<a class="jxr_linenumber" name="L281" href="#L281">281</a>                       <span class="jxr_string">"     "</span> + ErrorCode.QueryAlreadyFinished.getMesg() + ':' +
+<a class="jxr_linenumber" name="L282" href="#L282">282</a>                       result.toString());
+<a class="jxr_linenumber" name="L283" href="#L283">283</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>           <strong class="jxr_keyword">if</strong> (transfer.isSuccess()) {
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>             logger.info(<span class="jxr_string">"{}{}     {}"</span>, Messages.getString(TRANSFER_STATUS),
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>                         Messages.getString(REQUEST_INFORMATION_SUCCESS),
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>                         result);
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>           } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>             logger.error(Messages.getString(TRANSFER_STATUS) +
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>                          Messages.getString(REQUEST_INFORMATION_FAILURE) +
+<a class="jxr_linenumber" name="L291" href="#L291">291</a>                          <span class="jxr_string">"     "</span> + result.toString());
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>           }
+<a class="jxr_linenumber" name="L293" href="#L293">293</a>         }
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>         <strong class="jxr_keyword">if</strong> (transfer.isSuccess()) {
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>           logger.warn(Messages.getString(TRANSFER_STATUS) +
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>                       Messages.getString(REQUEST_INFORMATION_SUCCESS) +
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>                       <span class="jxr_string">"     no result"</span>);
+<a class="jxr_linenumber" name="L299" href="#L299">299</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>           logger.error(Messages.getString(TRANSFER_STATUS) +
+<a class="jxr_linenumber" name="L301" href="#L301">301</a>                        Messages.getString(REQUEST_INFORMATION_FAILURE) +
+<a class="jxr_linenumber" name="L302" href="#L302">302</a>                        <span class="jxr_string">"     no result"</span>);
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>         }
+<a class="jxr_linenumber" name="L304" href="#L304">304</a>       }
+<a class="jxr_linenumber" name="L305" href="#L305">305</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L306" href="#L306">306</a>       <strong class="jxr_keyword">if</strong> (activeRunners != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L307" href="#L307">307</a>         activeRunners.remove(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>       }
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>       setName(<span class="jxr_string">"Finished_"</span> + nameTask);
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>     }
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>   }
+<a class="jxr_linenumber" name="L312" href="#L312">312</a> 
+<a class="jxr_linenumber" name="L313" href="#L313">313</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L314" href="#L314">314</a> <em class="jxr_javadoccomment">   * @param runner</em>
+<a class="jxr_linenumber" name="L315" href="#L315">315</a> <em class="jxr_javadoccomment">   * @param limit</em>
+<a class="jxr_linenumber" name="L316" href="#L316">316</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L317" href="#L317">317</a> <em class="jxr_javadoccomment">   * @return True if the task was run less than limit, else False</em>
+<a class="jxr_linenumber" name="L318" href="#L318">318</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> incrementTaskRunnerTry(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>                                               <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> limit) {
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>     <strong class="jxr_keyword">if</strong> (!isLimitRetryConnection()) {
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>     }
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>     <strong class="jxr_keyword">final</strong> String key = runner.getKey();
+<a class="jxr_linenumber" name="L325" href="#L325">325</a>     Integer tries = taskRunnerRetryHashMap.get(key);
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>     logger.debug(<span class="jxr_string">"try to find integer: {}"</span>, tries);
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>     <strong class="jxr_keyword">if</strong> (tries == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>       tries = 1;
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>       tries += 1;
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>     }
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>     logger.debug(<span class="jxr_string">"Check: {} vs {}: {}"</span>, tries, limit, limit &lt;= tries);
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>     <strong class="jxr_keyword">if</strong> (limit &lt;= tries || Thread.interrupted()) {
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>       taskRunnerRetryHashMap.remove(key);
+<a class="jxr_linenumber" name="L335" href="#L335">335</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L337" href="#L337">337</a>       taskRunnerRetryHashMap.put(key, tries);
+<a class="jxr_linenumber" name="L338" href="#L338">338</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>     }
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>   }
+<a class="jxr_linenumber" name="L341" href="#L341">341</a> 
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L343" href="#L343">343</a> <em class="jxr_javadoccomment">   * True transfer run (can be called directly to enable exception outside any</em>
+<a class="jxr_linenumber" name="L344" href="#L344">344</a> <em class="jxr_javadoccomment">   * executors)</em>
+<a class="jxr_linenumber" name="L345" href="#L345">345</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L346" href="#L346">346</a> <em class="jxr_javadoccomment">   * @return The R66Future of the transfer operation</em>
+<a class="jxr_linenumber" name="L347" href="#L347">347</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L348" href="#L348">348</a> <em class="jxr_javadoccomment">   * @throws OpenR66RunnerErrorException</em>
+<a class="jxr_linenumber" name="L349" href="#L349">349</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNoConnectionException</em>
+<a class="jxr_linenumber" name="L350" href="#L350">350</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolPacketException</em>
+<a class="jxr_linenumber" name="L351" href="#L351">351</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNotYetConnectionException</em>
+<a class="jxr_linenumber" name="L352" href="#L352">352</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L353" href="#L353">353</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> runTransfer()
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>       <strong class="jxr_keyword">throws</strong> OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
+<a class="jxr_linenumber" name="L355" href="#L355">355</a>              OpenR66ProtocolPacketException,
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>              <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> {
+<a class="jxr_linenumber" name="L357" href="#L357">357</a>     logger.debug(<span class="jxr_string">"Start attempt Transfer"</span>);
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>     localChannelReference = initRequest();
+<a class="jxr_linenumber" name="L359" href="#L359">359</a>     localChannelReference.getFutureValidRequest().awaitOrInterruptible(
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>         Configuration.configuration.getTimeoutCon());
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>     <strong class="jxr_keyword">if</strong> (localChannelReference.getFutureValidRequest().isSuccess()) {
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>       <strong class="jxr_keyword">return</strong> finishTransfer(localChannelReference);
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>         localChannelReference.getFutureValidRequest().getResult() != <strong class="jxr_keyword">null</strong> &amp;&amp;
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>         localChannelReference.getFutureValidRequest().getResult().getCode() ==
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>         ErrorCode.ServerOverloaded) {
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>       <strong class="jxr_keyword">return</strong> tryAgainTransferOnOverloaded(<strong class="jxr_keyword">true</strong>, localChannelReference);
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>       <strong class="jxr_keyword">return</strong> finishTransfer(localChannelReference);
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>     }
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>   }
+<a class="jxr_linenumber" name="L372" href="#L372">372</a> 
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L374" href="#L374">374</a> <em class="jxr_javadoccomment">   * In case an overloaded signal is returned by the requested</em>
+<a class="jxr_linenumber" name="L375" href="#L375">375</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L376" href="#L376">376</a> <em class="jxr_javadoccomment">   * @param retry if True, it will retry in case of overloaded remote</em>
+<a class="jxr_linenumber" name="L377" href="#L377">377</a> <em class="jxr_javadoccomment">   *     server, else it just stops</em>
+<a class="jxr_linenumber" name="L378" href="#L378">378</a> <em class="jxr_javadoccomment">   * @param localChannelReference</em>
+<a class="jxr_linenumber" name="L379" href="#L379">379</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L380" href="#L380">380</a> <em class="jxr_javadoccomment">   * @return The R66Future of the transfer operation</em>
+<a class="jxr_linenumber" name="L381" href="#L381">381</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L382" href="#L382">382</a> <em class="jxr_javadoccomment">   * @throws OpenR66RunnerErrorException</em>
+<a class="jxr_linenumber" name="L383" href="#L383">383</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNoConnectionException</em>
+<a class="jxr_linenumber" name="L384" href="#L384">384</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolPacketException</em>
+<a class="jxr_linenumber" name="L385" href="#L385">385</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNotYetConnectionException</em>
+<a class="jxr_linenumber" name="L386" href="#L386">386</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> tryAgainTransferOnOverloaded(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> retry,
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>                                                       <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> localChannelReference)
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>       <strong class="jxr_keyword">throws</strong> OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>              OpenR66ProtocolPacketException,
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>              <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> {
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>     <strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.localChannelReference == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>       <strong class="jxr_keyword">this</strong>.localChannelReference = localChannelReference;
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>     }
+<a class="jxr_linenumber" name="L395" href="#L395">395</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> incRetry =
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>         incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB);
+<a class="jxr_linenumber" name="L397" href="#L397">397</a>     logger.debug(<span class="jxr_string">"tryAgainTransferOnOverloaded: {}:{}"</span>, retry, incRetry);
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>     <strong class="jxr_keyword">switch</strong> (taskRunner.getUpdatedInfo()) {
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>       <strong class="jxr_keyword">case</strong> DONE:
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>       <strong class="jxr_keyword">case</strong> INERROR:
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>       <strong class="jxr_keyword">case</strong> INTERRUPTED:
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>         <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>       <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>         changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ServerOverloaded,
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>                           <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L406" href="#L406">406</a>     }
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>     <em class="jxr_comment">// redo if possible</em>
+<a class="jxr_linenumber" name="L408" href="#L408">408</a>     <strong class="jxr_keyword">if</strong> (retry &amp;&amp; incRetry) {
+<a class="jxr_linenumber" name="L409" href="#L409">409</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L410" href="#L410">410</a>         Thread.sleep(Configuration.configuration.getConstraintLimitHandler()
+<a class="jxr_linenumber" name="L411" href="#L411">411</a>                                                 .getSleepTime());
+<a class="jxr_linenumber" name="L412" href="#L412">412</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L413" href="#L413">413</a>         <strong class="jxr_keyword">if</strong> (localChannelReference == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L414" href="#L414">414</a>           taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
+<a class="jxr_linenumber" name="L415" href="#L415">415</a>         }
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>         taskRunner.getLocalChannelReference()
+<a class="jxr_linenumber" name="L417" href="#L417">417</a>                   .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
+<a class="jxr_linenumber" name="L418" href="#L418">418</a>                                    ErrorCode.ConnectionImpossible);
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>         taskRunner.setErrorTask();
+<a class="jxr_linenumber" name="L420" href="#L420">420</a>         taskRunner.run();
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>         taskRunner.saveStatus();
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L423" href="#L423">423</a>             <span class="jxr_string">"End of retry on ServerOverloaded due to interruption"</span>);
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>       }
+<a class="jxr_linenumber" name="L425" href="#L425">425</a>       <strong class="jxr_keyword">return</strong> runTransfer();
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L427" href="#L427">427</a>       <strong class="jxr_keyword">if</strong> (localChannelReference == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L428" href="#L428">428</a>         taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
+<a class="jxr_linenumber" name="L429" href="#L429">429</a>       }
+<a class="jxr_linenumber" name="L430" href="#L430">430</a>       taskRunner.getLocalChannelReference()
+<a class="jxr_linenumber" name="L431" href="#L431">431</a>                 .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
+<a class="jxr_linenumber" name="L432" href="#L432">432</a>                                  ErrorCode.ConnectionImpossible);
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>       taskRunner.setErrorTask();
+<a class="jxr_linenumber" name="L434" href="#L434">434</a>       taskRunner.run();
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>       taskRunner.saveStatus();
+<a class="jxr_linenumber" name="L436" href="#L436">436</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L437" href="#L437">437</a>           <span class="jxr_string">"End of retry on ServerOverloaded"</span>);
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>     }
+<a class="jxr_linenumber" name="L439" href="#L439">439</a>   }
+<a class="jxr_linenumber" name="L440" href="#L440">440</a> 
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L442" href="#L442">442</a> <em class="jxr_javadoccomment">   * Finish the transfer (called at the end of runTransfer)</em>
+<a class="jxr_linenumber" name="L443" href="#L443">443</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L444" href="#L444">444</a> <em class="jxr_javadoccomment">   * @param localChannelReference</em>
+<a class="jxr_linenumber" name="L445" href="#L445">445</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L446" href="#L446">446</a> <em class="jxr_javadoccomment">   * @return The R66Future of the transfer operation</em>
+<a class="jxr_linenumber" name="L447" href="#L447">447</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L448" href="#L448">448</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> finishTransfer(
+<a class="jxr_linenumber" name="L449" href="#L449">449</a>       <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> localChannelReference) {
+<a class="jxr_linenumber" name="L450" href="#L450">450</a>     <strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.localChannelReference == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L451" href="#L451">451</a>       <strong class="jxr_keyword">this</strong>.localChannelReference = localChannelReference;
+<a class="jxr_linenumber" name="L452" href="#L452">452</a>     }
+<a class="jxr_linenumber" name="L453" href="#L453">453</a>     <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> transfer = localChannelReference.getFutureRequest();
+<a class="jxr_linenumber" name="L454" href="#L454">454</a>     transfer.awaitOrInterruptible();
+<a class="jxr_linenumber" name="L455" href="#L455">455</a>     taskRunnerRetryHashMap.remove(taskRunner.getKey());
+<a class="jxr_linenumber" name="L456" href="#L456">456</a>     logger.info(<span class="jxr_string">"Request done with {}"</span>,
+<a class="jxr_linenumber" name="L457" href="#L457">457</a>                 transfer.isSuccess()? <span class="jxr_string">"success"</span> : <span class="jxr_string">"error"</span>);
+<a class="jxr_linenumber" name="L458" href="#L458">458</a>     localChannelReference.close();
+<a class="jxr_linenumber" name="L459" href="#L459">459</a>     <em class="jxr_comment">// now reload TaskRunner if it still exists (light client can forget it)</em>
+<a class="jxr_linenumber" name="L460" href="#L460">460</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isSender = taskRunner.isSender();
+<a class="jxr_linenumber" name="L461" href="#L461">461</a>     <strong class="jxr_keyword">if</strong> (transfer.isSuccess()) {
+<a class="jxr_linenumber" name="L462" href="#L462">462</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L463" href="#L463">463</a>         taskRunner.select();
+<a class="jxr_linenumber" name="L464" href="#L464">464</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
+<a class="jxr_linenumber" name="L465" href="#L465">465</a>         logger.debug(<span class="jxr_string">"Not a problem but cannot find at the end the task"</span>, e);
+<a class="jxr_linenumber" name="L466" href="#L466">466</a>         taskRunner.setFrom(transfer.getRunner());
+<a class="jxr_linenumber" name="L467" href="#L467">467</a>       }
+<a class="jxr_linenumber" name="L468" href="#L468">468</a>       taskRunner.setSender(isSender);
+<a class="jxr_linenumber" name="L469" href="#L469">469</a>       changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);
+<a class="jxr_linenumber" name="L470" href="#L470">470</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L471" href="#L471">471</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L472" href="#L472">472</a>         taskRunner.select();
+<a class="jxr_linenumber" name="L473" href="#L473">473</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
+<a class="jxr_linenumber" name="L474" href="#L474">474</a>         logger.debug(<span class="jxr_string">"Not a problem but cannot find at the end the task"</span>);
+<a class="jxr_linenumber" name="L475" href="#L475">475</a>         taskRunner.setFrom(transfer.getRunner());
+<a class="jxr_linenumber" name="L476" href="#L476">476</a>       }
+<a class="jxr_linenumber" name="L477" href="#L477">477</a>       taskRunner.setSender(isSender);
+<a class="jxr_linenumber" name="L478" href="#L478">478</a>       <em class="jxr_comment">// Case when we were interrupted</em>
+<a class="jxr_linenumber" name="L479" href="#L479">479</a>       <strong class="jxr_keyword">if</strong> (transfer.getResult() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L480" href="#L480">480</a>         <strong class="jxr_keyword">switch</strong> (taskRunner.getUpdatedInfo()) {
+<a class="jxr_linenumber" name="L481" href="#L481">481</a>           <strong class="jxr_keyword">case</strong> DONE:
+<a class="jxr_linenumber" name="L482" href="#L482">482</a>             <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> ok =
+<a class="jxr_linenumber" name="L483" href="#L483">483</a>                 <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>, ErrorCode.CompleteOk, taskRunner);
+<a class="jxr_linenumber" name="L484" href="#L484">484</a>             transfer.setResult(ok);
+<a class="jxr_linenumber" name="L485" href="#L485">485</a>             transfer.setSuccess();
+<a class="jxr_linenumber" name="L486" href="#L486">486</a>             changeUpdatedInfo(UpdatedInfo.DONE, ErrorCode.CompleteOk, false);
+<a class="jxr_linenumber" name="L487" href="#L487">487</a>             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L488" href="#L488">488</a>           <strong class="jxr_keyword">case</strong> INERROR:
+<a class="jxr_linenumber" name="L489" href="#L489">489</a>           <strong class="jxr_keyword">case</strong> INTERRUPTED:
+<a class="jxr_linenumber" name="L490" href="#L490">490</a>           <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L491" href="#L491">491</a>             <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> error =
+<a class="jxr_linenumber" name="L492" href="#L492">492</a>                 <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>, ErrorCode.Internal, taskRunner);
+<a class="jxr_linenumber" name="L493" href="#L493">493</a>             transfer.setResult(error);
+<a class="jxr_linenumber" name="L494" href="#L494">494</a>             transfer.cancel();
+<a class="jxr_linenumber" name="L495" href="#L495">495</a>             changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);
+<a class="jxr_linenumber" name="L496" href="#L496">496</a>         }
+<a class="jxr_linenumber" name="L497" href="#L497">497</a>         <strong class="jxr_keyword">return</strong> transfer;
+<a class="jxr_linenumber" name="L498" href="#L498">498</a>       }
+<a class="jxr_linenumber" name="L499" href="#L499">499</a>       <strong class="jxr_keyword">if</strong> (transfer.getResult().getCode() == ErrorCode.QueryAlreadyFinished) {
+<a class="jxr_linenumber" name="L500" href="#L500">500</a>         <em class="jxr_comment">// check if post task to execute</em>
+<a class="jxr_linenumber" name="L501" href="#L501">501</a>         logger.warn(<span class="jxr_string">"WARN QueryAlreadyFinished:     "</span> + transfer + <span class="jxr_string">"     "</span> +
+<a class="jxr_linenumber" name="L502" href="#L502">502</a>                     taskRunner.toShortString());
+<a class="jxr_linenumber" name="L503" href="#L503">503</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L504" href="#L504">504</a>           TransferUtils.finalizeTaskWithNoSession(taskRunner,
+<a class="jxr_linenumber" name="L505" href="#L505">505</a>                                                   localChannelReference);
+<a class="jxr_linenumber" name="L506" href="#L506">506</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66RunnerErrorException" href="../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a> e) {
+<a class="jxr_linenumber" name="L507" href="#L507">507</a>           taskRunner.changeUpdatedInfo(UpdatedInfo.INERROR);
+<a class="jxr_linenumber" name="L508" href="#L508">508</a>           taskRunner.forceSaveStatus();
+<a class="jxr_linenumber" name="L509" href="#L509">509</a>         }
+<a class="jxr_linenumber" name="L510" href="#L510">510</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L511" href="#L511">511</a>         <strong class="jxr_keyword">switch</strong> (taskRunner.getUpdatedInfo()) {
+<a class="jxr_linenumber" name="L512" href="#L512">512</a>           <strong class="jxr_keyword">case</strong> DONE:
+<a class="jxr_linenumber" name="L513" href="#L513">513</a>           <strong class="jxr_keyword">case</strong> INERROR:
+<a class="jxr_linenumber" name="L514" href="#L514">514</a>           <strong class="jxr_keyword">case</strong> INTERRUPTED:
+<a class="jxr_linenumber" name="L515" href="#L515">515</a>           <strong class="jxr_keyword">case</strong> TOSUBMIT:
+<a class="jxr_linenumber" name="L516" href="#L516">516</a>             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L517" href="#L517">517</a>           <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L518" href="#L518">518</a>             changeUpdatedInfo(UpdatedInfo.INERROR,
+<a class="jxr_linenumber" name="L519" href="#L519">519</a>                               transfer.getResult().getCode(), false);
+<a class="jxr_linenumber" name="L520" href="#L520">520</a>         }
+<a class="jxr_linenumber" name="L521" href="#L521">521</a>       }
+<a class="jxr_linenumber" name="L522" href="#L522">522</a>     }
+<a class="jxr_linenumber" name="L523" href="#L523">523</a>     <strong class="jxr_keyword">return</strong> transfer;
+<a class="jxr_linenumber" name="L524" href="#L524">524</a>   }
+<a class="jxr_linenumber" name="L525" href="#L525">525</a> 
+<a class="jxr_linenumber" name="L526" href="#L526">526</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L527" href="#L527">527</a> <em class="jxr_javadoccomment">   * Initialize the request</em>
+<a class="jxr_linenumber" name="L528" href="#L528">528</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L529" href="#L529">529</a> <em class="jxr_javadoccomment">   * @return the localChannelReference holding the transfer request</em>
+<a class="jxr_linenumber" name="L530" href="#L530">530</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L531" href="#L531">531</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNoConnectionException</em>
+<a class="jxr_linenumber" name="L532" href="#L532">532</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolPacketException</em>
+<a class="jxr_linenumber" name="L533" href="#L533">533</a> <em class="jxr_javadoccomment">   * @throws OpenR66ProtocolNotYetConnectionException</em>
+<a class="jxr_linenumber" name="L534" href="#L534">534</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L535" href="#L535">535</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> initRequest()
+<a class="jxr_linenumber" name="L536" href="#L536">536</a>       <strong class="jxr_keyword">throws</strong> OpenR66ProtocolNoConnectionException,
+<a class="jxr_linenumber" name="L537" href="#L537">537</a>              OpenR66ProtocolPacketException,
+<a class="jxr_linenumber" name="L538" href="#L538">538</a>              <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a> {
+<a class="jxr_linenumber" name="L539" href="#L539">539</a>     changeUpdatedInfo(UpdatedInfo.RUNNING, ErrorCode.Running, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L540" href="#L540">540</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> id = taskRunner.getSpecialId();
+<a class="jxr_linenumber" name="L541" href="#L541">541</a>     <strong class="jxr_keyword">final</strong> String tid;
+<a class="jxr_linenumber" name="L542" href="#L542">542</a>     <strong class="jxr_keyword">if</strong> (id == DbConstantR66.ILLEGALVALUE) {
 <a class="jxr_linenumber" name="L543" href="#L543">543</a>       tid = <span class="jxr_string">"Runner_"</span> + taskRunner.getRuleId() + '_' + taskRunner.getMode() +
-<a class="jxr_linenumber" name="L544" href="#L544">544</a>             '_' + id;
-<a class="jxr_linenumber" name="L545" href="#L545">545</a>     }
-<a class="jxr_linenumber" name="L546" href="#L546">546</a>     setName(tid);
-<a class="jxr_linenumber" name="L547" href="#L547">547</a>     logger.debug(<span class="jxr_string">"Will run {}"</span>, taskRunner);
-<a class="jxr_linenumber" name="L548" href="#L548">548</a>     <strong class="jxr_keyword">boolean</strong> restartPost = false;
-<a class="jxr_linenumber" name="L549" href="#L549">549</a>     <strong class="jxr_keyword">if</strong> (taskRunner.getGloballaststep() == TASKSTEP.POSTTASK.ordinal()) {
-<a class="jxr_linenumber" name="L550" href="#L550">550</a>       <em class="jxr_comment">// Send a validation to requested</em>
-<a class="jxr_linenumber" name="L551" href="#L551">551</a>       <strong class="jxr_keyword">if</strong> (!taskRunner.isRequestOnRequested()) {
-<a class="jxr_linenumber" name="L552" href="#L552">552</a>         <em class="jxr_comment">// restart</em>
-<a class="jxr_linenumber" name="L553" href="#L553">553</a>         restartPost = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L554" href="#L554">554</a>       }
-<a class="jxr_linenumber" name="L555" href="#L555">555</a>     }
-<a class="jxr_linenumber" name="L556" href="#L556">556</a>     <strong class="jxr_keyword">if</strong> (taskRunner.isRequestOnRequested()) {
-<a class="jxr_linenumber" name="L557" href="#L557">557</a>       <em class="jxr_comment">// Don't have to restart a task for itself (or should use requester)</em>
-<a class="jxr_linenumber" name="L558" href="#L558">558</a>       logger.warn(<span class="jxr_string">"Requested host cannot initiate itself the request"</span>);
-<a class="jxr_linenumber" name="L559" href="#L559">559</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.LoopSelfRequestedHost,
-<a class="jxr_linenumber" name="L560" href="#L560">560</a>                         <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L561" href="#L561">561</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L562" href="#L562">562</a>           <span class="jxr_string">"Requested host cannot initiate itself the request"</span>);
-<a class="jxr_linenumber" name="L563" href="#L563">563</a>     }
-<a class="jxr_linenumber" name="L564" href="#L564">564</a>     <strong class="jxr_keyword">final</strong> <a name="DbHostAuth" href="../../../../org/waarp/openr66/database/data/DbHostAuth.html#DbHostAuth">DbHostAuth</a> host;
-<a class="jxr_linenumber" name="L565" href="#L565">565</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L566" href="#L566">566</a>       host = <strong class="jxr_keyword">new</strong> <a name="DbHostAuth" href="../../../../org/waarp/openr66/database/data/DbHostAuth.html#DbHostAuth">DbHostAuth</a>(taskRunner.getRequested());
-<a class="jxr_linenumber" name="L567" href="#L567">567</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L568" href="#L568">568</a>       logger.error(
-<a class="jxr_linenumber" name="L569" href="#L569">569</a>           <span class="jxr_string">"Requested host cannot be found: "</span> + taskRunner.getRequested());
-<a class="jxr_linenumber" name="L570" href="#L570">570</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.NotKnownHost, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L571" href="#L571">571</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L572" href="#L572">572</a>           <span class="jxr_string">"Requested host cannot be found "</span> + taskRunner.getRequested());
-<a class="jxr_linenumber" name="L573" href="#L573">573</a>     }
-<a class="jxr_linenumber" name="L574" href="#L574">574</a>     <strong class="jxr_keyword">if</strong> (host.isClient()) {
-<a class="jxr_linenumber" name="L575" href="#L575">575</a>       logger.warn(<span class="jxr_string">"Cannot initiate a connection with a client: {}"</span>, host);
-<a class="jxr_linenumber" name="L576" href="#L576">576</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
-<a class="jxr_linenumber" name="L577" href="#L577">577</a>                         <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L578" href="#L578">578</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L579" href="#L579">579</a>           <span class="jxr_string">"Cannot connect to client "</span> + host);
-<a class="jxr_linenumber" name="L580" href="#L580">580</a>     }
-<a class="jxr_linenumber" name="L581" href="#L581">581</a>     <strong class="jxr_keyword">final</strong> SocketAddress socketAddress = host.getSocketAddress();
-<a class="jxr_linenumber" name="L582" href="#L582">582</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isSSL = host.isSsl();
-<a class="jxr_linenumber" name="L583" href="#L583">583</a> 
-<a class="jxr_linenumber" name="L584" href="#L584">584</a>     <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> localChannelReferenceTemp;
-<a class="jxr_linenumber" name="L585" href="#L585">585</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L586" href="#L586">586</a>       localChannelReferenceTemp =
-<a class="jxr_linenumber" name="L587" href="#L587">587</a>           networkTransaction.createConnectionWithRetryWithAuthenticationException(
-<a class="jxr_linenumber" name="L588" href="#L588">588</a>               socketAddress, isSSL, futureRequest);
-<a class="jxr_linenumber" name="L589" href="#L589">589</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolNotAuthenticatedException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotAuthenticatedException.html#OpenR66ProtocolNotAuthenticatedException">OpenR66ProtocolNotAuthenticatedException</a> e1) {
-<a class="jxr_linenumber" name="L590" href="#L590">590</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L591" href="#L591">591</a>       taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
-<a class="jxr_linenumber" name="L592" href="#L592">592</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L593" href="#L593">593</a>           CANNOT_CONNECT_TO_SERVER + host +
-<a class="jxr_linenumber" name="L594" href="#L594">594</a>           <span class="jxr_string">" cannot be authenticated so stop retry here"</span>, e1);
-<a class="jxr_linenumber" name="L595" href="#L595">595</a>     }
-<a class="jxr_linenumber" name="L596" href="#L596">596</a>     taskRunner.setLocalChannelReference(localChannelReferenceTemp);
-<a class="jxr_linenumber" name="L597" href="#L597">597</a>     <strong class="jxr_keyword">if</strong> (localChannelReferenceTemp == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L598" href="#L598">598</a>       <em class="jxr_comment">// propose to redo</em>
-<a class="jxr_linenumber" name="L599" href="#L599">599</a>       String retry;
-<a class="jxr_linenumber" name="L600" href="#L600">600</a>       <strong class="jxr_keyword">if</strong> (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {
-<a class="jxr_linenumber" name="L601" href="#L601">601</a> 
-<a class="jxr_linenumber" name="L602" href="#L602">602</a>         logger.debug(<span class="jxr_string">"Will retry since Cannot connect to {}"</span>, host);
-<a class="jxr_linenumber" name="L603" href="#L603">603</a>         retry = <span class="jxr_string">" but will retry"</span>;
-<a class="jxr_linenumber" name="L604" href="#L604">604</a>         <em class="jxr_comment">// now wait</em>
-<a class="jxr_linenumber" name="L605" href="#L605">605</a>         <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L606" href="#L606">606</a>           Thread.sleep(Configuration.configuration.getDelayRetry());
-<a class="jxr_linenumber" name="L607" href="#L607">607</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L608" href="#L608">608</a>           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-<a class="jxr_linenumber" name="L609" href="#L609">609</a>           logger.info(
-<a class="jxr_linenumber" name="L610" href="#L610">610</a>               <span class="jxr_string">"Will not retry since an interruption occurs while connection to {}"</span>,
-<a class="jxr_linenumber" name="L611" href="#L611">611</a>               host);
-<a class="jxr_linenumber" name="L612" href="#L612">612</a>           retry = <span class="jxr_string">" and retries gets an interruption so stop here"</span>;
-<a class="jxr_linenumber" name="L613" href="#L613">613</a>           changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
-<a class="jxr_linenumber" name="L614" href="#L614">614</a>                             <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L615" href="#L615">615</a>           taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
-<a class="jxr_linenumber" name="L616" href="#L616">616</a>           <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L617" href="#L617">617</a>               CANNOT_CONNECT_TO_SERVER + host + retry);
-<a class="jxr_linenumber" name="L618" href="#L618">618</a>         }
-<a class="jxr_linenumber" name="L619" href="#L619">619</a>         changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,
-<a class="jxr_linenumber" name="L620" href="#L620">620</a>                           <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L621" href="#L621">621</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a>(
-<a class="jxr_linenumber" name="L622" href="#L622">622</a>             CANNOT_CONNECT_TO_SERVER + host + retry);
-<a class="jxr_linenumber" name="L623" href="#L623">623</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L624" href="#L624">624</a>         logger.info(
-<a class="jxr_linenumber" name="L625" href="#L625">625</a>             <span class="jxr_string">"Will not retry since limit of connection attemtps is reached for {}"</span>,
-<a class="jxr_linenumber" name="L626" href="#L626">626</a>             host);
-<a class="jxr_linenumber" name="L627" href="#L627">627</a>         retry = <span class="jxr_string">" and retries reach step limit so stop here"</span>;
-<a class="jxr_linenumber" name="L628" href="#L628">628</a>         changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
-<a class="jxr_linenumber" name="L629" href="#L629">629</a>                           <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L630" href="#L630">630</a>         taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
-<a class="jxr_linenumber" name="L631" href="#L631">631</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
-<a class="jxr_linenumber" name="L632" href="#L632">632</a>             CANNOT_CONNECT_TO_SERVER + host + retry);
-<a class="jxr_linenumber" name="L633" href="#L633">633</a>       }
-<a class="jxr_linenumber" name="L634" href="#L634">634</a>     }
-<a class="jxr_linenumber" name="L635" href="#L635">635</a>     <strong class="jxr_keyword">if</strong> (handler != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L636" href="#L636">636</a>       localChannelReferenceTemp.setRecvThroughHandler(handler);
+<a class="jxr_linenumber" name="L544" href="#L544">544</a>             <span class="jxr_string">"_NEWTRANSFER"</span>;
+<a class="jxr_linenumber" name="L545" href="#L545">545</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L546" href="#L546">546</a>       tid = <span class="jxr_string">"Runner_"</span> + taskRunner.getRuleId() + '_' + taskRunner.getMode() +
+<a class="jxr_linenumber" name="L547" href="#L547">547</a>             '_' + id;
+<a class="jxr_linenumber" name="L548" href="#L548">548</a>     }
+<a class="jxr_linenumber" name="L549" href="#L549">549</a>     setName(tid);
+<a class="jxr_linenumber" name="L550" href="#L550">550</a>     logger.debug(<span class="jxr_string">"Will run {}"</span>, taskRunner);
+<a class="jxr_linenumber" name="L551" href="#L551">551</a>     <strong class="jxr_keyword">boolean</strong> restartPost = false;
+<a class="jxr_linenumber" name="L552" href="#L552">552</a>     <strong class="jxr_keyword">if</strong> (taskRunner.getGloballaststep() == TASKSTEP.POSTTASK.ordinal()) {
+<a class="jxr_linenumber" name="L553" href="#L553">553</a>       <em class="jxr_comment">// Send a validation to requested</em>
+<a class="jxr_linenumber" name="L554" href="#L554">554</a>       <strong class="jxr_keyword">if</strong> (!taskRunner.isRequestOnRequested()) {
+<a class="jxr_linenumber" name="L555" href="#L555">555</a>         <em class="jxr_comment">// restart</em>
+<a class="jxr_linenumber" name="L556" href="#L556">556</a>         restartPost = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L557" href="#L557">557</a>       }
+<a class="jxr_linenumber" name="L558" href="#L558">558</a>     }
+<a class="jxr_linenumber" name="L559" href="#L559">559</a>     <strong class="jxr_keyword">if</strong> (taskRunner.isRequestOnRequested()) {
+<a class="jxr_linenumber" name="L560" href="#L560">560</a>       <em class="jxr_comment">// Don't have to restart a task for itself (or should use requester)</em>
+<a class="jxr_linenumber" name="L561" href="#L561">561</a>       logger.warn(<span class="jxr_string">"Requested host cannot initiate itself the request"</span>);
+<a class="jxr_linenumber" name="L562" href="#L562">562</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.LoopSelfRequestedHost,
+<a class="jxr_linenumber" name="L563" href="#L563">563</a>                         <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L564" href="#L564">564</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L565" href="#L565">565</a>           <span class="jxr_string">"Requested host cannot initiate itself the request"</span>);
+<a class="jxr_linenumber" name="L566" href="#L566">566</a>     }
+<a class="jxr_linenumber" name="L567" href="#L567">567</a>     <strong class="jxr_keyword">final</strong> <a name="DbHostAuth" href="../../../../org/waarp/openr66/database/data/DbHostAuth.html#DbHostAuth">DbHostAuth</a> host;
+<a class="jxr_linenumber" name="L568" href="#L568">568</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L569" href="#L569">569</a>       host = <strong class="jxr_keyword">new</strong> <a name="DbHostAuth" href="../../../../org/waarp/openr66/database/data/DbHostAuth.html#DbHostAuth">DbHostAuth</a>(taskRunner.getRequested());
+<a class="jxr_linenumber" name="L570" href="#L570">570</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
+<a class="jxr_linenumber" name="L571" href="#L571">571</a>       logger.error(
+<a class="jxr_linenumber" name="L572" href="#L572">572</a>           <span class="jxr_string">"Requested host cannot be found: "</span> + taskRunner.getRequested());
+<a class="jxr_linenumber" name="L573" href="#L573">573</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.NotKnownHost, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L574" href="#L574">574</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L575" href="#L575">575</a>           <span class="jxr_string">"Requested host cannot be found "</span> + taskRunner.getRequested());
+<a class="jxr_linenumber" name="L576" href="#L576">576</a>     }
+<a class="jxr_linenumber" name="L577" href="#L577">577</a>     <strong class="jxr_keyword">if</strong> (host.isClient()) {
+<a class="jxr_linenumber" name="L578" href="#L578">578</a>       logger.warn(<span class="jxr_string">"Cannot initiate a connection with a client: {}"</span>, host);
+<a class="jxr_linenumber" name="L579" href="#L579">579</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
+<a class="jxr_linenumber" name="L580" href="#L580">580</a>                         <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L581" href="#L581">581</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L582" href="#L582">582</a>           <span class="jxr_string">"Cannot connect to client "</span> + host);
+<a class="jxr_linenumber" name="L583" href="#L583">583</a>     }
+<a class="jxr_linenumber" name="L584" href="#L584">584</a>     <strong class="jxr_keyword">final</strong> SocketAddress socketAddress = host.getSocketAddress();
+<a class="jxr_linenumber" name="L585" href="#L585">585</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isSSL = host.isSsl();
+<a class="jxr_linenumber" name="L586" href="#L586">586</a> 
+<a class="jxr_linenumber" name="L587" href="#L587">587</a>     <strong class="jxr_keyword">final</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a> localChannelReferenceTemp;
+<a class="jxr_linenumber" name="L588" href="#L588">588</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L589" href="#L589">589</a>       localChannelReferenceTemp =
+<a class="jxr_linenumber" name="L590" href="#L590">590</a>           networkTransaction.createConnectionWithRetryWithAuthenticationException(
+<a class="jxr_linenumber" name="L591" href="#L591">591</a>               socketAddress, isSSL, futureRequest);
+<a class="jxr_linenumber" name="L592" href="#L592">592</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolNotAuthenticatedException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotAuthenticatedException.html#OpenR66ProtocolNotAuthenticatedException">OpenR66ProtocolNotAuthenticatedException</a> e1) {
+<a class="jxr_linenumber" name="L593" href="#L593">593</a>       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L594" href="#L594">594</a>       taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
+<a class="jxr_linenumber" name="L595" href="#L595">595</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L596" href="#L596">596</a>           CANNOT_CONNECT_TO_SERVER + host +
+<a class="jxr_linenumber" name="L597" href="#L597">597</a>           <span class="jxr_string">" cannot be authenticated so stop retry here"</span>, e1);
+<a class="jxr_linenumber" name="L598" href="#L598">598</a>     }
+<a class="jxr_linenumber" name="L599" href="#L599">599</a>     taskRunner.setLocalChannelReference(localChannelReferenceTemp);
+<a class="jxr_linenumber" name="L600" href="#L600">600</a>     <strong class="jxr_keyword">if</strong> (localChannelReferenceTemp == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L601" href="#L601">601</a>       <em class="jxr_comment">// propose to redo</em>
+<a class="jxr_linenumber" name="L602" href="#L602">602</a>       String retry;
+<a class="jxr_linenumber" name="L603" href="#L603">603</a>       <strong class="jxr_keyword">if</strong> (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {
+<a class="jxr_linenumber" name="L604" href="#L604">604</a> 
+<a class="jxr_linenumber" name="L605" href="#L605">605</a>         logger.debug(<span class="jxr_string">"Will retry since Cannot connect to {}"</span>, host);
+<a class="jxr_linenumber" name="L606" href="#L606">606</a>         retry = <span class="jxr_string">" but will retry"</span>;
+<a class="jxr_linenumber" name="L607" href="#L607">607</a>         <em class="jxr_comment">// now wait</em>
+<a class="jxr_linenumber" name="L608" href="#L608">608</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L609" href="#L609">609</a>           Thread.sleep(Configuration.configuration.getDelayRetry());
+<a class="jxr_linenumber" name="L610" href="#L610">610</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L611" href="#L611">611</a>           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+<a class="jxr_linenumber" name="L612" href="#L612">612</a>           logger.info(
+<a class="jxr_linenumber" name="L613" href="#L613">613</a>               <span class="jxr_string">"Will not retry since an interruption occurs while connection to {}"</span>,
+<a class="jxr_linenumber" name="L614" href="#L614">614</a>               host);
+<a class="jxr_linenumber" name="L615" href="#L615">615</a>           retry = <span class="jxr_string">" and retries gets an interruption so stop here"</span>;
+<a class="jxr_linenumber" name="L616" href="#L616">616</a>           changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
+<a class="jxr_linenumber" name="L617" href="#L617">617</a>                             <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L618" href="#L618">618</a>           taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
+<a class="jxr_linenumber" name="L619" href="#L619">619</a>           <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L620" href="#L620">620</a>               CANNOT_CONNECT_TO_SERVER + host + retry);
+<a class="jxr_linenumber" name="L621" href="#L621">621</a>         }
+<a class="jxr_linenumber" name="L622" href="#L622">622</a>         changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,
+<a class="jxr_linenumber" name="L623" href="#L623">623</a>                           <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L624" href="#L624">624</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNotYetConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNotYetConnectionException.html#OpenR66ProtocolNotYetConnectionException">OpenR66ProtocolNotYetConnectionException</a>(
+<a class="jxr_linenumber" name="L625" href="#L625">625</a>             CANNOT_CONNECT_TO_SERVER + host + retry);
+<a class="jxr_linenumber" name="L626" href="#L626">626</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L627" href="#L627">627</a>         logger.info(
+<a class="jxr_linenumber" name="L628" href="#L628">628</a>             <span class="jxr_string">"Will not retry since limit of connection attemtps is reached for {}"</span>,
+<a class="jxr_linenumber" name="L629" href="#L629">629</a>             host);
+<a class="jxr_linenumber" name="L630" href="#L630">630</a>         retry = <span class="jxr_string">" and retries reach step limit so stop here"</span>;
+<a class="jxr_linenumber" name="L631" href="#L631">631</a>         changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
+<a class="jxr_linenumber" name="L632" href="#L632">632</a>                           <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L633" href="#L633">633</a>         taskRunner.setLocalChannelReference(<strong class="jxr_keyword">new</strong> <a name="LocalChannelReference" href="../../../../org/waarp/openr66/protocol/localhandler/LocalChannelReference.html#LocalChannelReference">LocalChannelReference</a>());
+<a class="jxr_linenumber" name="L634" href="#L634">634</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="OpenR66ProtocolNoConnectionException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolNoConnectionException.html#OpenR66ProtocolNoConnectionException">OpenR66ProtocolNoConnectionException</a>(
+<a class="jxr_linenumber" name="L635" href="#L635">635</a>             CANNOT_CONNECT_TO_SERVER + host + retry);
+<a class="jxr_linenumber" name="L636" href="#L636">636</a>       }
 <a class="jxr_linenumber" name="L637" href="#L637">637</a>     }
-<a class="jxr_linenumber" name="L638" href="#L638">638</a>     localChannelReferenceTemp.setSendThroughMode(isSendThroughMode);
-<a class="jxr_linenumber" name="L639" href="#L639">639</a>     <strong class="jxr_keyword">if</strong> (restartPost) {
-<a class="jxr_linenumber" name="L640" href="#L640">640</a>       <strong class="jxr_keyword">final</strong> <a name="RequestPacket" href="../../../../org/waarp/openr66/protocol/localhandler/packet/RequestPacket.html#RequestPacket">RequestPacket</a> request = taskRunner.getRequest();
-<a class="jxr_linenumber" name="L641" href="#L641">641</a>       logger.debug(<span class="jxr_string">"Will send request {} "</span>, request);
-<a class="jxr_linenumber" name="L642" href="#L642">642</a>       localChannelReferenceTemp.setClientRunner(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="L643" href="#L643">643</a>       localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
-<a class="jxr_linenumber" name="L644" href="#L644">644</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L645" href="#L645">645</a>         ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp,
-<a class="jxr_linenumber" name="L646" href="#L646">646</a>                                               request, false);
-<a class="jxr_linenumber" name="L647" href="#L647">647</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
-<a class="jxr_linenumber" name="L648" href="#L648">648</a>         <em class="jxr_comment">// propose to redo</em>
-<a class="jxr_linenumber" name="L649" href="#L649">649</a>         logger.warn(<span class="jxr_string">"Cannot transfer request to "</span> + host);
-<a class="jxr_linenumber" name="L650" href="#L650">650</a>         changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L651" href="#L651">651</a>         localChannelReferenceTemp.close();
-<a class="jxr_linenumber" name="L652" href="#L652">652</a>         <strong class="jxr_keyword">throw</strong> e;
-<a class="jxr_linenumber" name="L653" href="#L653">653</a>       }
-<a class="jxr_linenumber" name="L654" href="#L654">654</a>       logger.debug(<span class="jxr_string">"Wait for request to {}"</span>, host);
-<a class="jxr_linenumber" name="L655" href="#L655">655</a>       <strong class="jxr_keyword">return</strong> localChannelReferenceTemp;
-<a class="jxr_linenumber" name="L656" href="#L656">656</a>     }
-<a class="jxr_linenumber" name="L657" href="#L657">657</a>     <em class="jxr_comment">// If Requester is NOT Sender, and if TransferTask then decrease now if</em>
-<a class="jxr_linenumber" name="L658" href="#L658">658</a>     <em class="jxr_comment">// possible the rank</em>
-<a class="jxr_linenumber" name="L659" href="#L659">659</a>     <strong class="jxr_keyword">if</strong> (!taskRunner.isSender() &amp;&amp;
-<a class="jxr_linenumber" name="L660" href="#L660">660</a>         taskRunner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {
-<a class="jxr_linenumber" name="L661" href="#L661">661</a>       logger.debug(
-<a class="jxr_linenumber" name="L662" href="#L662">662</a>           <span class="jxr_string">"Requester is not Sender so decrease if possible the rank {}"</span>,
-<a class="jxr_linenumber" name="L663" href="#L663">663</a>           taskRunner);
-<a class="jxr_linenumber" name="L664" href="#L664">664</a>       taskRunner.restartRank();
-<a class="jxr_linenumber" name="L665" href="#L665">665</a>       taskRunner.forceSaveStatus();
-<a class="jxr_linenumber" name="L666" href="#L666">666</a>       logger.info(<span class="jxr_string">"Requester is not Sender so new rank is {} {}"</span>,
-<a class="jxr_linenumber" name="L667" href="#L667">667</a>                   taskRunner.getRank(), taskRunner);
-<a class="jxr_linenumber" name="L668" href="#L668">668</a>     }
-<a class="jxr_linenumber" name="L669" href="#L669">669</a>     <strong class="jxr_keyword">final</strong> <a name="RequestPacket" href="../../../../org/waarp/openr66/protocol/localhandler/packet/RequestPacket.html#RequestPacket">RequestPacket</a> request = taskRunner.getRequest();
-<a class="jxr_linenumber" name="L670" href="#L670">670</a>     request.setLimit(
-<a class="jxr_linenumber" name="L671" href="#L671">671</a>         localChannelReferenceTemp.getChannelLimit(taskRunner.isSender()));
-<a class="jxr_linenumber" name="L672" href="#L672">672</a>     localChannelReferenceTemp.setClientRunner(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="L673" href="#L673">673</a>     logger.debug(<span class="jxr_string">"Will send request {} {}"</span>, request, localChannelReferenceTemp);
-<a class="jxr_linenumber" name="L674" href="#L674">674</a>     localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
-<a class="jxr_linenumber" name="L675" href="#L675">675</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L676" href="#L676">676</a>       ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp, request,
-<a class="jxr_linenumber" name="L677" href="#L677">677</a>                                             false);
-<a class="jxr_linenumber" name="L678" href="#L678">678</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
-<a class="jxr_linenumber" name="L679" href="#L679">679</a>       <em class="jxr_comment">// propose to redo</em>
-<a class="jxr_linenumber" name="L680" href="#L680">680</a>       logger.warn(<span class="jxr_string">"Cannot transfer request to "</span> + host);
-<a class="jxr_linenumber" name="L681" href="#L681">681</a>       changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L682" href="#L682">682</a>       localChannelReferenceTemp.close();
-<a class="jxr_linenumber" name="L683" href="#L683">683</a>       <strong class="jxr_keyword">throw</strong> e;
-<a class="jxr_linenumber" name="L684" href="#L684">684</a>     }
-<a class="jxr_linenumber" name="L685" href="#L685">685</a>     logger.debug(<span class="jxr_string">"Wait for request to {} {} {}"</span>, host,
-<a class="jxr_linenumber" name="L686" href="#L686">686</a>                  localChannelReferenceTemp, request);
-<a class="jxr_linenumber" name="L687" href="#L687">687</a>     <strong class="jxr_keyword">return</strong> localChannelReferenceTemp;
-<a class="jxr_linenumber" name="L688" href="#L688">688</a>   }
-<a class="jxr_linenumber" name="L689" href="#L689">689</a> 
-<a class="jxr_linenumber" name="L690" href="#L690">690</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L691" href="#L691">691</a> <em class="jxr_javadoccomment">   * Change the UpdatedInfo of the current runner</em>
-<a class="jxr_linenumber" name="L692" href="#L692">692</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L693" href="#L693">693</a> <em class="jxr_javadoccomment">   * @param info</em>
-<a class="jxr_linenumber" name="L694" href="#L694">694</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L695" href="#L695">695</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> changeUpdatedInfo(<strong class="jxr_keyword">final</strong> AbstractDbData.UpdatedInfo info,
-<a class="jxr_linenumber" name="L696" href="#L696">696</a>                                       <strong class="jxr_keyword">final</strong> <a name="ErrorCode" href="../../../../org/waarp/openr66/context/ErrorCode.html#ErrorCode">ErrorCode</a> code,
-<a class="jxr_linenumber" name="L697" href="#L697">697</a>                                       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> force) {
-<a class="jxr_linenumber" name="L698" href="#L698">698</a>     taskRunner.changeUpdatedInfo(info);
-<a class="jxr_linenumber" name="L699" href="#L699">699</a>     taskRunner.setErrorExecutionStatus(code);
-<a class="jxr_linenumber" name="L700" href="#L700">700</a>     <strong class="jxr_keyword">if</strong> (force) {
-<a class="jxr_linenumber" name="L701" href="#L701">701</a>       taskRunner.forceSaveStatus();
-<a class="jxr_linenumber" name="L702" href="#L702">702</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L703" href="#L703">703</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L704" href="#L704">704</a>         taskRunner.saveStatus();
-<a class="jxr_linenumber" name="L705" href="#L705">705</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66RunnerErrorException" href="../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a> ignored) {
-<a class="jxr_linenumber" name="L706" href="#L706">706</a>         <em class="jxr_comment">// nothing</em>
-<a class="jxr_linenumber" name="L707" href="#L707">707</a>       }
-<a class="jxr_linenumber" name="L708" href="#L708">708</a>     }
-<a class="jxr_linenumber" name="L709" href="#L709">709</a>   }
-<a class="jxr_linenumber" name="L710" href="#L710">710</a> 
-<a class="jxr_linenumber" name="L711" href="#L711">711</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L712" href="#L712">712</a> <em class="jxr_javadoccomment">   * @param handler the handler to set</em>
-<a class="jxr_linenumber" name="L713" href="#L713">713</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L714" href="#L714">714</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> setRecvThroughHandler(<strong class="jxr_keyword">final</strong> <a name="RecvThroughHandler" href="../../../../org/waarp/openr66/client/RecvThroughHandler.html#RecvThroughHandler">RecvThroughHandler</a> handler) {
-<a class="jxr_linenumber" name="L715" href="#L715">715</a>     <strong class="jxr_keyword">this</strong>.handler = handler;
-<a class="jxr_linenumber" name="L716" href="#L716">716</a>   }
-<a class="jxr_linenumber" name="L717" href="#L717">717</a> 
-<a class="jxr_linenumber" name="L718" href="#L718">718</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> setSendThroughMode() {
-<a class="jxr_linenumber" name="L719" href="#L719">719</a>     isSendThroughMode = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L720" href="#L720">720</a>   }
-<a class="jxr_linenumber" name="L721" href="#L721">721</a> 
-<a class="jxr_linenumber" name="L722" href="#L722">722</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> getSendThroughMode() {
-<a class="jxr_linenumber" name="L723" href="#L723">723</a>     <strong class="jxr_keyword">return</strong> isSendThroughMode;
-<a class="jxr_linenumber" name="L724" href="#L724">724</a>   }
-<a class="jxr_linenumber" name="L725" href="#L725">725</a> 
-<a class="jxr_linenumber" name="L726" href="#L726">726</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isLimitRetryConnection() {
-<a class="jxr_linenumber" name="L727" href="#L727">727</a>     <strong class="jxr_keyword">return</strong> limitRetryConnection;
-<a class="jxr_linenumber" name="L728" href="#L728">728</a>   }
-<a class="jxr_linenumber" name="L729" href="#L729">729</a> 
-<a class="jxr_linenumber" name="L730" href="#L730">730</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> setLimitRetryConnection(
-<a class="jxr_linenumber" name="L731" href="#L731">731</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> limitRetryConnection) {
-<a class="jxr_linenumber" name="L732" href="#L732">732</a>     <strong class="jxr_keyword">this</strong>.limitRetryConnection = limitRetryConnection;
-<a class="jxr_linenumber" name="L733" href="#L733">733</a>   }
-<a class="jxr_linenumber" name="L734" href="#L734">734</a> }
+<a class="jxr_linenumber" name="L638" href="#L638">638</a>     <strong class="jxr_keyword">if</strong> (handler != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L639" href="#L639">639</a>       localChannelReferenceTemp.setRecvThroughHandler(handler);
+<a class="jxr_linenumber" name="L640" href="#L640">640</a>     }
+<a class="jxr_linenumber" name="L641" href="#L641">641</a>     localChannelReferenceTemp.setSendThroughMode(isSendThroughMode);
+<a class="jxr_linenumber" name="L642" href="#L642">642</a>     <strong class="jxr_keyword">if</strong> (restartPost) {
+<a class="jxr_linenumber" name="L643" href="#L643">643</a>       <strong class="jxr_keyword">final</strong> <a name="RequestPacket" href="../../../../org/waarp/openr66/protocol/localhandler/packet/RequestPacket.html#RequestPacket">RequestPacket</a> request = taskRunner.getRequest();
+<a class="jxr_linenumber" name="L644" href="#L644">644</a>       logger.debug(<span class="jxr_string">"Will send request {} "</span>, request);
+<a class="jxr_linenumber" name="L645" href="#L645">645</a>       localChannelReferenceTemp.setClientRunner(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L646" href="#L646">646</a>       localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
+<a class="jxr_linenumber" name="L647" href="#L647">647</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L648" href="#L648">648</a>         ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp,
+<a class="jxr_linenumber" name="L649" href="#L649">649</a>                                               request, false);
+<a class="jxr_linenumber" name="L650" href="#L650">650</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
+<a class="jxr_linenumber" name="L651" href="#L651">651</a>         <em class="jxr_comment">// propose to redo</em>
+<a class="jxr_linenumber" name="L652" href="#L652">652</a>         logger.warn(<span class="jxr_string">"Cannot transfer request to "</span> + host);
+<a class="jxr_linenumber" name="L653" href="#L653">653</a>         changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L654" href="#L654">654</a>         localChannelReferenceTemp.close();
+<a class="jxr_linenumber" name="L655" href="#L655">655</a>         <strong class="jxr_keyword">throw</strong> e;
+<a class="jxr_linenumber" name="L656" href="#L656">656</a>       }
+<a class="jxr_linenumber" name="L657" href="#L657">657</a>       logger.debug(<span class="jxr_string">"Wait for request to {}"</span>, host);
+<a class="jxr_linenumber" name="L658" href="#L658">658</a>       <strong class="jxr_keyword">return</strong> localChannelReferenceTemp;
+<a class="jxr_linenumber" name="L659" href="#L659">659</a>     }
+<a class="jxr_linenumber" name="L660" href="#L660">660</a>     <em class="jxr_comment">// If Requester is NOT Sender, and if TransferTask then decrease now if</em>
+<a class="jxr_linenumber" name="L661" href="#L661">661</a>     <em class="jxr_comment">// possible the rank</em>
+<a class="jxr_linenumber" name="L662" href="#L662">662</a>     <strong class="jxr_keyword">if</strong> (!taskRunner.isSender() &amp;&amp;
+<a class="jxr_linenumber" name="L663" href="#L663">663</a>         taskRunner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {
+<a class="jxr_linenumber" name="L664" href="#L664">664</a>       logger.debug(
+<a class="jxr_linenumber" name="L665" href="#L665">665</a>           <span class="jxr_string">"Requester is not Sender so decrease if possible the rank {}"</span>,
+<a class="jxr_linenumber" name="L666" href="#L666">666</a>           taskRunner);
+<a class="jxr_linenumber" name="L667" href="#L667">667</a>       taskRunner.restartRank();
+<a class="jxr_linenumber" name="L668" href="#L668">668</a>       taskRunner.forceSaveStatus();
+<a class="jxr_linenumber" name="L669" href="#L669">669</a>       logger.info(<span class="jxr_string">"Requester is not Sender so new rank is {} {}"</span>,
+<a class="jxr_linenumber" name="L670" href="#L670">670</a>                   taskRunner.getRank(), taskRunner);
+<a class="jxr_linenumber" name="L671" href="#L671">671</a>     }
+<a class="jxr_linenumber" name="L672" href="#L672">672</a>     <strong class="jxr_keyword">final</strong> <a name="RequestPacket" href="../../../../org/waarp/openr66/protocol/localhandler/packet/RequestPacket.html#RequestPacket">RequestPacket</a> request = taskRunner.getRequest();
+<a class="jxr_linenumber" name="L673" href="#L673">673</a>     request.setLimit(
+<a class="jxr_linenumber" name="L674" href="#L674">674</a>         localChannelReferenceTemp.getChannelLimit(taskRunner.isSender()));
+<a class="jxr_linenumber" name="L675" href="#L675">675</a>     localChannelReferenceTemp.setClientRunner(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L676" href="#L676">676</a>     logger.debug(<span class="jxr_string">"Will send request {} {}"</span>, request, localChannelReferenceTemp);
+<a class="jxr_linenumber" name="L677" href="#L677">677</a>     localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
+<a class="jxr_linenumber" name="L678" href="#L678">678</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L679" href="#L679">679</a>       ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp, request,
+<a class="jxr_linenumber" name="L680" href="#L680">680</a>                                             false);
+<a class="jxr_linenumber" name="L681" href="#L681">681</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
+<a class="jxr_linenumber" name="L682" href="#L682">682</a>       <em class="jxr_comment">// propose to redo</em>
+<a class="jxr_linenumber" name="L683" href="#L683">683</a>       logger.warn(<span class="jxr_string">"Cannot transfer request to "</span> + host);
+<a class="jxr_linenumber" name="L684" href="#L684">684</a>       changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L685" href="#L685">685</a>       localChannelReferenceTemp.close();
+<a class="jxr_linenumber" name="L686" href="#L686">686</a>       <strong class="jxr_keyword">throw</strong> e;
+<a class="jxr_linenumber" name="L687" href="#L687">687</a>     }
+<a class="jxr_linenumber" name="L688" href="#L688">688</a>     logger.debug(<span class="jxr_string">"Wait for request to {} {} {}"</span>, host,
+<a class="jxr_linenumber" name="L689" href="#L689">689</a>                  localChannelReferenceTemp, request);
+<a class="jxr_linenumber" name="L690" href="#L690">690</a>     <strong class="jxr_keyword">return</strong> localChannelReferenceTemp;
+<a class="jxr_linenumber" name="L691" href="#L691">691</a>   }
+<a class="jxr_linenumber" name="L692" href="#L692">692</a> 
+<a class="jxr_linenumber" name="L693" href="#L693">693</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L694" href="#L694">694</a> <em class="jxr_javadoccomment">   * Change the UpdatedInfo of the current runner</em>
+<a class="jxr_linenumber" name="L695" href="#L695">695</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L696" href="#L696">696</a> <em class="jxr_javadoccomment">   * @param info</em>
+<a class="jxr_linenumber" name="L697" href="#L697">697</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L698" href="#L698">698</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> changeUpdatedInfo(<strong class="jxr_keyword">final</strong> AbstractDbData.UpdatedInfo info,
+<a class="jxr_linenumber" name="L699" href="#L699">699</a>                                       <strong class="jxr_keyword">final</strong> <a name="ErrorCode" href="../../../../org/waarp/openr66/context/ErrorCode.html#ErrorCode">ErrorCode</a> code,
+<a class="jxr_linenumber" name="L700" href="#L700">700</a>                                       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> force) {
+<a class="jxr_linenumber" name="L701" href="#L701">701</a>     taskRunner.changeUpdatedInfo(info);
+<a class="jxr_linenumber" name="L702" href="#L702">702</a>     taskRunner.setErrorExecutionStatus(code);
+<a class="jxr_linenumber" name="L703" href="#L703">703</a>     <strong class="jxr_keyword">if</strong> (force) {
+<a class="jxr_linenumber" name="L704" href="#L704">704</a>       taskRunner.forceSaveStatus();
+<a class="jxr_linenumber" name="L705" href="#L705">705</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L706" href="#L706">706</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L707" href="#L707">707</a>         taskRunner.saveStatus();
+<a class="jxr_linenumber" name="L708" href="#L708">708</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66RunnerErrorException" href="../../../../org/waarp/openr66/context/task/exception/OpenR66RunnerErrorException.html#OpenR66RunnerErrorException">OpenR66RunnerErrorException</a> ignored) {
+<a class="jxr_linenumber" name="L709" href="#L709">709</a>         <em class="jxr_comment">// nothing</em>
+<a class="jxr_linenumber" name="L710" href="#L710">710</a>       }
+<a class="jxr_linenumber" name="L711" href="#L711">711</a>     }
+<a class="jxr_linenumber" name="L712" href="#L712">712</a>   }
+<a class="jxr_linenumber" name="L713" href="#L713">713</a> 
+<a class="jxr_linenumber" name="L714" href="#L714">714</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L715" href="#L715">715</a> <em class="jxr_javadoccomment">   * @param handler the handler to set</em>
+<a class="jxr_linenumber" name="L716" href="#L716">716</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L717" href="#L717">717</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> setRecvThroughHandler(<strong class="jxr_keyword">final</strong> <a name="RecvThroughHandler" href="../../../../org/waarp/openr66/client/RecvThroughHandler.html#RecvThroughHandler">RecvThroughHandler</a> handler) {
+<a class="jxr_linenumber" name="L718" href="#L718">718</a>     <strong class="jxr_keyword">this</strong>.handler = handler;
+<a class="jxr_linenumber" name="L719" href="#L719">719</a>   }
+<a class="jxr_linenumber" name="L720" href="#L720">720</a> 
+<a class="jxr_linenumber" name="L721" href="#L721">721</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> setSendThroughMode() {
+<a class="jxr_linenumber" name="L722" href="#L722">722</a>     isSendThroughMode = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L723" href="#L723">723</a>   }
+<a class="jxr_linenumber" name="L724" href="#L724">724</a> 
+<a class="jxr_linenumber" name="L725" href="#L725">725</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> getSendThroughMode() {
+<a class="jxr_linenumber" name="L726" href="#L726">726</a>     <strong class="jxr_keyword">return</strong> isSendThroughMode;
+<a class="jxr_linenumber" name="L727" href="#L727">727</a>   }
+<a class="jxr_linenumber" name="L728" href="#L728">728</a> 
+<a class="jxr_linenumber" name="L729" href="#L729">729</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> isLimitRetryConnection() {
+<a class="jxr_linenumber" name="L730" href="#L730">730</a>     <strong class="jxr_keyword">return</strong> limitRetryConnection;
+<a class="jxr_linenumber" name="L731" href="#L731">731</a>   }
+<a class="jxr_linenumber" name="L732" href="#L732">732</a> 
+<a class="jxr_linenumber" name="L733" href="#L733">733</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> setLimitRetryConnection(
+<a class="jxr_linenumber" name="L734" href="#L734">734</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> limitRetryConnection) {
+<a class="jxr_linenumber" name="L735" href="#L735">735</a>     <strong class="jxr_keyword">this</strong>.limitRetryConnection = limitRetryConnection;
+<a class="jxr_linenumber" name="L736" href="#L736">736</a>   }
+<a class="jxr_linenumber" name="L737" href="#L737">737</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2021 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

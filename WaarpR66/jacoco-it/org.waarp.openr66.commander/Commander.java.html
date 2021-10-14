@@ -64,7 +64,7 @@ public class Commander implements CommanderInterface {
 <span class="fc" id="L64">  private static final WaarpLogger logger =</span>
 <span class="fc" id="L65">      WaarpLoggerFactory.getLogger(Commander.class);</span>
 
-  public static final int LIMIT_MAX_SUBMIT = 10000;
+  public static final int LIMIT_MAX_SUBMIT = 50000;
   public static final int LIMIT_SUBMIT = 1000;
 
   private InternalRunner internalRunner;
@@ -106,8 +106,8 @@ public class Commander implements CommanderInterface {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     try {
 <span class="pc bpc" id="L108" title="1 of 2 branches missed.">      if (Configuration.configuration.getMultipleMonitors() &gt; 1) {</span>
-<span class="nc" id="L109">        preparedStatementLock = DbMultipleMonitor</span>
-<span class="nc" id="L110">            .getUpdatedPrepareStament(noCommitAdmin.getSession());</span>
+<span class="nc" id="L109">        preparedStatementLock = DbMultipleMonitor.getUpdatedPrepareStament(</span>
+<span class="nc" id="L110">            noCommitAdmin.getSession());</span>
       } else {
 <span class="fc" id="L112">        preparedStatementLock = null;</span>
       }
@@ -133,7 +133,7 @@ public class Commander implements CommanderInterface {
    * Finalize internal data
    */
   @Override
-  public void finalizeCommander() {
+  public final void finalizeCommander() {
 <span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (preparedStatementLock != null) {</span>
       try {
 <span class="nc" id="L139">        noCommitAdmin.getSession().commit();</span>
@@ -153,316 +153,359 @@ public class Commander implements CommanderInterface {
   @Override
   public void run() {
 <span class="fc" id="L155">    Thread.currentThread().setName(&quot;OpenR66Commander&quot;);</span>
-<span class="pc bpc" id="L156" title="2 of 4 branches missed.">    if (admin.getSession() != null &amp;&amp; admin.getSession().isDisActive()) {</span>
-<span class="nc" id="L157">      admin.getSession().checkConnectionNoException();</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">    if (Configuration.configuration.isShutdown()) {</span>
+      // Stop
+<span class="nc" id="L158">      return;</span>
+    }
+<span class="pc bpc" id="L160" title="2 of 4 branches missed.">    if (admin.getSession() != null &amp;&amp; admin.getSession().isDisActive()) {</span>
+<span class="nc" id="L161">      admin.getSession().checkConnectionNoException();</span>
     }
     // each time it is runned, it parses all database for updates
-<span class="fc" id="L160">    DbMultipleMonitor multipleMonitor = null;</span>
+<span class="fc" id="L164">    DbMultipleMonitor multipleMonitor = null;</span>
     // Open a lock to prevent other &quot;HA&quot; monitors to retrieve access as Commander
     try {
       try {
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        if (preparedStatementLock != null) {</span>
-<span class="nc" id="L165">          preparedStatementLock.executeQuery();</span>
-<span class="nc" id="L166">          preparedStatementLock.getNext();</span>
-<span class="nc" id="L167">          multipleMonitor =</span>
-<span class="nc" id="L168">              DbMultipleMonitor.getFromStatement(preparedStatementLock);</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (preparedStatementLock != null) {</span>
+<span class="nc" id="L169">          preparedStatementLock.executeQuery();</span>
+<span class="nc" id="L170">          preparedStatementLock.getNext();</span>
+<span class="nc" id="L171">          multipleMonitor =</span>
+<span class="nc" id="L172">              DbMultipleMonitor.getFromStatement(preparedStatementLock);</span>
         }
-<span class="nc" id="L170">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L171">        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
+<span class="nc" id="L174">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L175">        logger.error(</span>
+            DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,
+<span class="nc" id="L177">            e.getMessage());</span>
         try {
-<span class="nc" id="L173">          noCommitAdmin.getDbModel()</span>
-<span class="nc" id="L174">                       .validConnection(noCommitAdmin.getSession());</span>
-<span class="nc" id="L175">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L179">          noCommitAdmin.getDbModel()</span>
+<span class="nc" id="L180">                       .validConnection(noCommitAdmin.getSession());</span>
+<span class="nc" id="L181">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L177">        }</span>
-<span class="nc" id="L178">        return;</span>
-<span class="nc" id="L179">      } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L180">        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
+<span class="nc" id="L183">        }</span>
+<span class="nc" id="L184">        return;</span>
+<span class="nc" id="L185">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L186">        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
         try {
-<span class="nc" id="L182">          noCommitAdmin.getDbModel()</span>
-<span class="nc" id="L183">                       .validConnection(noCommitAdmin.getSession());</span>
-<span class="nc" id="L184">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L188">          noCommitAdmin.getDbModel()</span>
+<span class="nc" id="L189">                       .validConnection(noCommitAdmin.getSession());</span>
+<span class="nc" id="L190">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L186">        }</span>
-<span class="nc" id="L187">        return;</span>
-<span class="fc" id="L188">      }</span>
-<span class="fc" id="L189">      logger.debug(&quot;Before {}&quot;, multipleMonitor);</span>
-<span class="fc" id="L190">      boolean shallReturnInCaseError = true;</span>
+<span class="nc" id="L192">        }</span>
+<span class="nc" id="L193">        return;</span>
+<span class="fc" id="L194">      }</span>
+<span class="fc" id="L195">      logger.debug(&quot;Before {}&quot;, multipleMonitor);</span>
+<span class="fc" id="L196">      boolean shallReturnInCaseError = true;</span>
       try {
         // First check Configuration
-<span class="fc" id="L193">        checkConfiguration(multipleMonitor);</span>
+<span class="fc" id="L199">        checkConfiguration(multipleMonitor);</span>
         // check HostConfiguration
-<span class="fc" id="L195">        shallReturnInCaseError = false;</span>
-<span class="fc" id="L196">        checkHostConfiguration(multipleMonitor);</span>
-<span class="nc" id="L197">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="fc" id="L201">        shallReturnInCaseError = false;</span>
+<span class="fc" id="L202">        checkHostConfiguration(multipleMonitor);</span>
+<span class="nc" id="L203">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
         try {
-<span class="nc" id="L199">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L200">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L205">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L206">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L202">        }</span>
-<span class="nc" id="L203">        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
-<span class="nc" id="L204">        return;</span>
-<span class="nc" id="L205">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L208">        }</span>
+<span class="nc" id="L209">        logger.error(</span>
+            DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,
+<span class="nc" id="L211">            e.getMessage());</span>
+<span class="nc" id="L212">        return;</span>
+<span class="nc" id="L213">      } catch (final WaarpDatabaseSqlException e) {</span>
         try {
-<span class="nc" id="L207">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L208">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L215">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L216">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L210">        }</span>
-<span class="nc" id="L211">        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
+<span class="nc" id="L218">        }</span>
+<span class="nc" id="L219">        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,</span>
+<span class="nc" id="L220">                     e.getMessage());</span>
         // XXX no return since table might not be initialized
-<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (shallReturnInCaseError) {</span>
-<span class="nc" id="L214">          return;</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (shallReturnInCaseError) {</span>
+<span class="nc" id="L223">          return;</span>
         }
-<span class="nc" id="L216">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L225">      } catch (final WaarpDatabaseException e) {</span>
         try {
-<span class="nc" id="L218">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L219">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L227">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L228">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L221">        }</span>
-<span class="nc" id="L222">        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
+<span class="nc" id="L230">        }</span>
+<span class="nc" id="L231">        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,</span>
+<span class="nc" id="L232">                     e.getMessage());</span>
         // XXX no return since table might not be initialized
-<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (shallReturnInCaseError) {</span>
-<span class="nc" id="L225">          return;</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (shallReturnInCaseError) {</span>
+<span class="nc" id="L235">          return;</span>
         }
-<span class="pc" id="L227">      }</span>
+<span class="pc" id="L237">      }</span>
       // Do not fusion with previous cases since last one could be in error but
       // still continue
       try {
         // ConsistencyCheck HostAuthent
-<span class="fc" id="L232">        checkHostAuthent(multipleMonitor);</span>
+<span class="fc" id="L242">        checkHostAuthent(multipleMonitor);</span>
         // Check Rules
-<span class="fc" id="L234">        checkRule(multipleMonitor);</span>
-<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        if (WaarpShutdownHook.isShutdownStarting()) {</span>
+<span class="fc" id="L244">        checkRule(multipleMonitor);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        if (WaarpShutdownHook.isShutdownStarting()) {</span>
           // no more task to submit
-<span class="nc" id="L237">          return;</span>
+<span class="nc" id="L247">          return;</span>
         }
 
         // Lauch Transfer ready to be submited
-<span class="fc" id="L241">        logger.debug(&quot;start runner&quot;);</span>
-<span class="fc" id="L242">        checkTaskRunner(multipleMonitor);</span>
-<span class="nc" id="L243">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="fc" id="L251">        logger.debug(&quot;start runner&quot;);</span>
+<span class="fc" id="L252">        checkTaskRunner(multipleMonitor);</span>
+<span class="nc" id="L253">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
         try {
-<span class="nc" id="L245">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L246">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L255">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L256">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L248">        }</span>
-<span class="nc" id="L249">        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
-<span class="nc" id="L250">        return;</span>
-<span class="nc" id="L251">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L258">        }</span>
+<span class="nc" id="L259">        logger.error(</span>
+            DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,
+<span class="nc" id="L261">            e.getMessage());</span>
+<span class="nc" id="L262">        return;</span>
+<span class="nc" id="L263">      } catch (final WaarpDatabaseSqlException e) {</span>
         try {
-<span class="nc" id="L253">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L254">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L265">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L266">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L256">        }</span>
-<span class="nc" id="L257">        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
-<span class="nc" id="L258">        return;</span>
-<span class="nc" id="L259">      } catch (final WaarpDatabaseNoDataException e) {</span>
+<span class="nc" id="L268">        }</span>
+<span class="nc" id="L269">        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,</span>
+<span class="nc" id="L270">                     e.getMessage());</span>
+<span class="nc" id="L271">        return;</span>
+<span class="nc" id="L272">      } catch (final WaarpDatabaseNoDataException e) {</span>
         try {
-<span class="nc" id="L261">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L262">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L274">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L275">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L264">        }</span>
-<span class="nc" id="L265">        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
-<span class="nc" id="L266">        return;</span>
-<span class="nc" id="L267">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L277">        }</span>
+<span class="nc" id="L278">        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,</span>
+<span class="nc" id="L279">                     e.getMessage());</span>
+<span class="nc" id="L280">        return;</span>
+<span class="nc" id="L281">      } catch (final WaarpDatabaseException e) {</span>
         try {
-<span class="nc" id="L269">          admin.getDbModel().validConnection(admin.getSession());</span>
-<span class="nc" id="L270">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L283">          admin.getDbModel().validConnection(admin.getSession());</span>
+<span class="nc" id="L284">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // nothing
-<span class="nc" id="L272">        }</span>
-<span class="nc" id="L273">        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);</span>
-<span class="nc" id="L274">        return;</span>
-<span class="fc" id="L275">      }</span>
-<span class="fc" id="L276">      logger.debug(&quot;end commander&quot;);</span>
+<span class="nc" id="L286">        }</span>
+<span class="nc" id="L287">        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER + &quot;: {}&quot;,</span>
+<span class="nc" id="L288">                     e.getMessage());</span>
+<span class="nc" id="L289">        return;</span>
+<span class="fc" id="L290">      }</span>
+<span class="fc" id="L291">      logger.debug(&quot;end commander&quot;);</span>
     } finally {
-<span class="pc bpc" id="L278" title="1 of 2 branches missed.">      if (multipleMonitor != null) {</span>
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">      if (multipleMonitor != null) {</span>
         try {
           // Now update and Commit so releasing the lock
-<span class="nc" id="L281">          logger.debug(&quot;Update {}&quot;, multipleMonitor);</span>
-<span class="nc" id="L282">          multipleMonitor.update();</span>
-<span class="nc" id="L283">          noCommitAdmin.getSession().commit();</span>
-<span class="nc" id="L284">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L296">          logger.debug(&quot;Update {}&quot;, multipleMonitor);</span>
+<span class="nc" id="L297">          multipleMonitor.update();</span>
+<span class="nc" id="L298">          noCommitAdmin.getSession().commit();</span>
+<span class="nc" id="L299">        } catch (final WaarpDatabaseException e) {</span>
           try {
-<span class="nc" id="L286">            noCommitAdmin.getDbModel()</span>
-<span class="nc" id="L287">                         .validConnection(noCommitAdmin.getSession());</span>
-<span class="nc" id="L288">          } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L301">            noCommitAdmin.getDbModel()</span>
+<span class="nc" id="L302">                         .validConnection(noCommitAdmin.getSession());</span>
+<span class="nc" id="L303">          } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
             // nothing
-<span class="nc" id="L290">          }</span>
-<span class="nc" id="L291">        }</span>
+<span class="nc" id="L305">          }</span>
+<span class="nc" id="L306">        }</span>
       }
     }
-<span class="fc" id="L294">  }</span>
+<span class="fc" id="L309">  }</span>
 
   private void checkConfiguration(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">    if (Configuration.configuration.isShutdown()) {</span>
+      // Stop
+<span class="nc" id="L315">      return;</span>
+    }
     final DbConfiguration[] configurations =
-<span class="fc" id="L299">        DbConfiguration.getUpdatedPrepareStament();</span>
-<span class="fc" id="L300">    int i = 0;</span>
-<span class="pc bpc" id="L301" title="1 of 2 branches missed.">    while (i &lt; configurations.length) {</span>
+<span class="fc" id="L318">        DbConfiguration.getUpdatedPrepareStament();</span>
+<span class="fc" id="L319">    int i = 0;</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">    while (i &lt; configurations.length) {</span>
       // should be only one...
-<span class="nc" id="L303">      final DbConfiguration configuration = configurations[i];</span>
-<span class="nc bnc" id="L304" title="All 2 branches missed.">      if (configuration.isOwnConfiguration()) {</span>
-<span class="nc" id="L305">        configuration.updateConfiguration();</span>
+<span class="nc" id="L322">      final DbConfiguration configuration = configurations[i];</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">      if (configuration.isOwnConfiguration()) {</span>
+<span class="nc" id="L324">        configuration.updateConfiguration();</span>
       }
-<span class="nc bnc" id="L307" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
         // update the configuration in HA mode
-<span class="nc bnc" id="L309" title="All 2 branches missed.">        if (multipleMonitor.checkUpdateConfig()) {</span>
-<span class="nc" id="L310">          configuration</span>
-<span class="nc" id="L311">              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L312">          configuration.update();</span>
-<span class="nc" id="L313">          logger.debug(CONFIG, multipleMonitor);</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        if (multipleMonitor.checkUpdateConfig()) {</span>
+<span class="nc" id="L329">          configuration.changeUpdatedInfo(</span>
+              AbstractDbData.UpdatedInfo.NOTUPDATED);
+<span class="nc" id="L331">          configuration.update();</span>
+<span class="nc" id="L332">          logger.debug(CONFIG, multipleMonitor);</span>
         } else {
-<span class="nc" id="L315">          configuration.update();</span>
-<span class="nc" id="L316">          logger.debug(CONFIG, multipleMonitor);</span>
+<span class="nc" id="L334">          configuration.update();</span>
+<span class="nc" id="L335">          logger.debug(CONFIG, multipleMonitor);</span>
         }
       } else {
-<span class="nc" id="L319">        configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L320">        configuration.update();</span>
+<span class="nc" id="L338">        configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="nc" id="L339">        configuration.update();</span>
       }
-<span class="nc" id="L322">      i++;</span>
-<span class="nc" id="L323">    }</span>
-<span class="fc" id="L324">  }</span>
+<span class="nc" id="L341">      i++;</span>
+<span class="nc" id="L342">    }</span>
+<span class="fc" id="L343">  }</span>
 
   private void checkHostConfiguration(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">    if (Configuration.configuration.isShutdown()) {</span>
+      // Stop
+<span class="nc" id="L349">      return;</span>
+    }
     final DbHostConfiguration[] configurations =
-<span class="fc" id="L329">        DbHostConfiguration.getUpdatedPrepareStament();</span>
-<span class="fc" id="L330">    int i = 0;</span>
-<span class="pc bpc" id="L331" title="1 of 2 branches missed.">    while (i &lt; configurations.length) {</span>
+<span class="fc" id="L352">        DbHostConfiguration.getUpdatedPrepareStament();</span>
+<span class="fc" id="L353">    int i = 0;</span>
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    while (i &lt; configurations.length) {</span>
       // should be only one...
-<span class="nc" id="L333">      final DbHostConfiguration configuration = configurations[i];</span>
-<span class="nc bnc" id="L334" title="All 2 branches missed.">      if (configuration.isOwnConfiguration()) {</span>
-<span class="nc" id="L335">        configuration.updateConfiguration();</span>
+<span class="nc" id="L356">      final DbHostConfiguration configuration = configurations[i];</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">      if (configuration.isOwnConfiguration()) {</span>
+<span class="nc" id="L358">        configuration.updateConfiguration();</span>
       }
-<span class="nc bnc" id="L337" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
         // update the configuration in HA mode
-<span class="nc bnc" id="L339" title="All 2 branches missed.">        if (multipleMonitor.checkUpdateConfig()) {</span>
-<span class="nc" id="L340">          configuration</span>
-<span class="nc" id="L341">              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L342">          configuration.update();</span>
-<span class="nc" id="L343">          logger.debug(CONFIG, multipleMonitor);</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">        if (multipleMonitor.checkUpdateConfig()) {</span>
+<span class="nc" id="L363">          configuration.changeUpdatedInfo(</span>
+              AbstractDbData.UpdatedInfo.NOTUPDATED);
+<span class="nc" id="L365">          configuration.update();</span>
+<span class="nc" id="L366">          logger.debug(CONFIG, multipleMonitor);</span>
         } else {
-<span class="nc" id="L345">          configuration.update();</span>
-<span class="nc" id="L346">          logger.debug(CONFIG, multipleMonitor);</span>
+<span class="nc" id="L368">          configuration.update();</span>
+<span class="nc" id="L369">          logger.debug(CONFIG, multipleMonitor);</span>
         }
       } else {
-<span class="nc" id="L349">        configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L350">        configuration.update();</span>
+<span class="nc" id="L372">        configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="nc" id="L373">        configuration.update();</span>
       }
-<span class="nc" id="L352">      i++;</span>
-<span class="nc" id="L353">    }</span>
-<span class="fc" id="L354">  }</span>
+<span class="nc" id="L375">      i++;</span>
+<span class="nc" id="L376">    }</span>
+<span class="fc" id="L377">  }</span>
 
   private void checkHostAuthent(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
-<span class="fc" id="L358">    final DbHostAuth[] auths = DbHostAuth.getUpdatedPreparedStatement();</span>
-<span class="fc" id="L359">    int i = 0;</span>
-<span class="fc" id="L360">    boolean mm = false;</span>
-<span class="fc" id="L361">    boolean lastUpdate = false;</span>
-<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    while (i &lt; auths.length) {</span>
+<span class="pc bpc" id="L381" title="1 of 2 branches missed.">    if (Configuration.configuration.isShutdown()) {</span>
+      // Stop
+<span class="nc" id="L383">      return;</span>
+    }
+<span class="fc" id="L385">    final DbHostAuth[] auths = DbHostAuth.getUpdatedPreparedStatement();</span>
+<span class="fc" id="L386">    int i = 0;</span>
+<span class="fc" id="L387">    boolean mm = false;</span>
+<span class="fc" id="L388">    boolean lastUpdate = false;</span>
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">    while (i &lt; auths.length) {</span>
       // Maybe multiple
-<span class="nc" id="L364">      final DbHostAuth hostAuth = auths[i];</span>
-<span class="nc bnc" id="L365" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
-<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (!mm) {</span>
+<span class="nc" id="L391">      final DbHostAuth hostAuth = auths[i];</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">        if (!mm) {</span>
           // not already set from a previous hostAuth
-<span class="nc" id="L368">          mm = true;</span>
-<span class="nc" id="L369">          lastUpdate = multipleMonitor.checkUpdateHost();</span>
+<span class="nc" id="L395">          mm = true;</span>
+<span class="nc" id="L396">          lastUpdate = multipleMonitor.checkUpdateHost();</span>
         } // else already set so no action on multipleMonitor
 
         // Update the Host configuration in HA mode
-<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (lastUpdate) {</span>
-<span class="nc" id="L374">          hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">        if (lastUpdate) {</span>
+<span class="nc" id="L401">          hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
         } else {
           // Nothing to do except validate
         }
-<span class="nc" id="L378">        hostAuth.update();</span>
-<span class="nc" id="L379">        logger.debug(&quot;Host {}&quot;, multipleMonitor);</span>
+<span class="nc" id="L405">        hostAuth.update();</span>
+<span class="nc" id="L406">        logger.debug(&quot;Host {}&quot;, multipleMonitor);</span>
       } else {
         // Nothing to do except validate
-<span class="nc" id="L382">        hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L383">        hostAuth.update();</span>
+<span class="nc" id="L409">        hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="nc" id="L410">        hostAuth.update();</span>
       }
-<span class="nc" id="L385">      i++;</span>
-<span class="nc" id="L386">    }</span>
-<span class="fc" id="L387">  }</span>
+<span class="nc" id="L412">      i++;</span>
+<span class="nc" id="L413">    }</span>
+<span class="fc" id="L414">  }</span>
 
   private void checkRule(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
-<span class="fc" id="L391">    final DbRule[] rules = DbRule.getUpdatedPrepareStament();</span>
-<span class="fc" id="L392">    int i = 0;</span>
-<span class="fc" id="L393">    boolean mm = false;</span>
-<span class="fc" id="L394">    boolean lastUpdate = false;</span>
-<span class="pc bpc" id="L395" title="1 of 2 branches missed.">    while (i &lt; rules.length) {</span>
-<span class="nc" id="L396">      final DbRule rule = rules[i];</span>
-<span class="nc bnc" id="L397" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
-<span class="nc bnc" id="L398" title="All 2 branches missed.">        if (!mm) {</span>
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">    if (Configuration.configuration.isShutdown()) {</span>
+      // Stop
+<span class="nc" id="L420">      return;</span>
+    }
+<span class="fc" id="L422">    final DbRule[] rules = DbRule.getUpdatedPrepareStament();</span>
+<span class="fc" id="L423">    int i = 0;</span>
+<span class="fc" id="L424">    boolean mm = false;</span>
+<span class="fc" id="L425">    boolean lastUpdate = false;</span>
+<span class="pc bpc" id="L426" title="1 of 2 branches missed.">    while (i &lt; rules.length) {</span>
+<span class="nc" id="L427">      final DbRule rule = rules[i];</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">      if (multipleMonitor != null) {</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        if (!mm) {</span>
           // not already set from a previous hostAuth
-<span class="nc" id="L400">          mm = true;</span>
-<span class="nc" id="L401">          lastUpdate = multipleMonitor.checkUpdateRule();</span>
+<span class="nc" id="L431">          mm = true;</span>
+<span class="nc" id="L432">          lastUpdate = multipleMonitor.checkUpdateRule();</span>
         } // else already set so no action on multipleMonitor
         // Update the Rules in HA mode
-<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (lastUpdate) {</span>
-<span class="nc" id="L405">          rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        if (lastUpdate) {</span>
+<span class="nc" id="L436">          rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
         } else {
           // Nothing to do except validate
         }
-<span class="nc" id="L409">        rule.update();</span>
-<span class="nc" id="L410">        logger.debug(&quot;Rule {}&quot;, multipleMonitor);</span>
+<span class="nc" id="L440">        rule.update();</span>
+<span class="nc" id="L441">        logger.debug(&quot;Rule {}&quot;, multipleMonitor);</span>
       } else {
         // Nothing to do except validate
-<span class="nc" id="L413">        rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L414">        rule.update();</span>
+<span class="nc" id="L444">        rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="nc" id="L445">        rule.update();</span>
       }
-<span class="nc" id="L416">      i++;</span>
-<span class="nc" id="L417">    }</span>
-<span class="fc" id="L418">  }</span>
+<span class="nc" id="L447">      i++;</span>
+<span class="nc" id="L448">    }</span>
+<span class="fc" id="L449">  }</span>
 
   private void checkTaskRunner(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
-    // No specific HA mode since the other servers will wait for the commit on Lock
-<span class="fc" id="L423">    final int maxRunnable =</span>
-<span class="fc" id="L424">        Math.min(Configuration.configuration.getRunnerThread(),</span>
-<span class="fc" id="L425">                 internalRunner.allowedToSubmit());</span>
-<span class="pc bpc" id="L426" title="1 of 2 branches missed.">    if (maxRunnable &gt; 0) {</span>
-<span class="fc" id="L427">      final DbTaskRunner[] tasks = DbTaskRunner</span>
-<span class="fc" id="L428">          .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, true,</span>
-                                             maxRunnable);
-<span class="fc" id="L430">      logger.info(&quot;TaskRunner to launch: {} (launched: {}, active: {}) {}&quot;,</span>
-<span class="fc" id="L431">                  tasks.length, totalRuns, internalRunner.nbInternalRunner(),</span>
-<span class="fc" id="L432">                  NetworkTransaction.hashStatus());</span>
-<span class="fc" id="L433">      int i = 0;</span>
-<span class="fc bfc" id="L434" title="All 2 branches covered.">      while (i &lt; tasks.length) {</span>
-<span class="pc bpc" id="L435" title="1 of 2 branches missed.">        if (WaarpShutdownHook.isShutdownStarting()) {</span>
-<span class="nc" id="L436">          logger.info(&quot;Will not start transfers, server is in shutdown.&quot;);</span>
-<span class="nc" id="L437">          return;</span>
-        }
-<span class="fc" id="L439">        final DbTaskRunner taskRunner = tasks[i];</span>
-<span class="fc" id="L440">        i++;</span>
-
-<span class="fc" id="L442">        logger.debug(&quot;get a task: {}&quot;, taskRunner);</span>
-        // Launch if possible this task
-<span class="fc" id="L444">        final String key =</span>
-<span class="fc" id="L445">            taskRunner.getRequested() + ' ' + taskRunner.getRequester() + ' ' +</span>
-<span class="fc" id="L446">            taskRunner.getSpecialId();</span>
-<span class="fc" id="L447">        if (Configuration.configuration.getLocalTransaction()</span>
-<span class="pc bpc" id="L448" title="1 of 2 branches missed.">                                       .getFromRequest(key) != null) {</span>
-          // already running
-<span class="nc" id="L450">          continue;</span>
-        }
-<span class="pc bpc" id="L452" title="1 of 2 branches missed.">        if (taskRunner.isSelfRequested()) {</span>
-          // cannot schedule a request where the host is the requested host
-<span class="nc" id="L454">          taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);</span>
-          try {
-<span class="nc" id="L456">            taskRunner.update();</span>
-<span class="nc" id="L457">          } catch (final WaarpDatabaseNoDataException e) {</span>
-<span class="nc" id="L458">            logger.warn(&quot;Update failed, no transfer found&quot;);</span>
-<span class="nc" id="L459">          }</span>
-<span class="nc" id="L460">          continue;</span>
-        }
-<span class="fc" id="L462">        internalRunner.submitTaskRunner(taskRunner);</span>
-<span class="fc" id="L463">        totalRuns++;</span>
-<span class="fc" id="L464">      }</span>
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">    if (Configuration.configuration.isShutdown()) {</span>
+      // Stop
+<span class="nc" id="L455">      return;</span>
     }
-<span class="fc" id="L466">  }</span>
+    // No specific HA mode since the other servers will wait for the commit on Lock
+<span class="fc" id="L458">    final int maxRunnable =</span>
+<span class="fc" id="L459">        Math.min(Configuration.configuration.getRunnerThread(),</span>
+<span class="fc" id="L460">                 internalRunner.allowedToSubmit());</span>
+<span class="pc bpc" id="L461" title="1 of 2 branches missed.">    if (maxRunnable &gt; 0) {</span>
+<span class="fc" id="L462">      final DbTaskRunner[] tasks =</span>
+<span class="fc" id="L463">          DbTaskRunner.getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT,</span>
+                                                         true, maxRunnable);
+<span class="fc" id="L465">      logger.info(&quot;TaskRunner to launch: {} (launched: {}, active: {}) {}&quot;,</span>
+<span class="fc" id="L466">                  tasks.length, totalRuns, internalRunner.nbInternalRunner(),</span>
+<span class="fc" id="L467">                  NetworkTransaction.hashStatus());</span>
+<span class="fc" id="L468">      int i = 0;</span>
+<span class="fc bfc" id="L469" title="All 2 branches covered.">      while (i &lt; tasks.length) {</span>
+<span class="pc bpc" id="L470" title="1 of 2 branches missed.">        if (WaarpShutdownHook.isShutdownStarting()) {</span>
+<span class="nc" id="L471">          logger.info(&quot;Will not start transfers, server is in shutdown.&quot;);</span>
+<span class="nc" id="L472">          return;</span>
+        }
+<span class="fc" id="L474">        final DbTaskRunner taskRunner = tasks[i];</span>
+<span class="fc" id="L475">        i++;</span>
+
+<span class="fc" id="L477">        logger.debug(&quot;get a task: {}&quot;, taskRunner);</span>
+        // Launch if possible this task
+<span class="fc" id="L479">        final String key =</span>
+<span class="fc" id="L480">            taskRunner.getRequested() + ' ' + taskRunner.getRequester() + ' ' +</span>
+<span class="fc" id="L481">            taskRunner.getSpecialId();</span>
+<span class="fc" id="L482">        if (Configuration.configuration.getLocalTransaction()</span>
+<span class="pc bpc" id="L483" title="1 of 2 branches missed.">                                       .getFromRequest(key) != null) {</span>
+          // already running
+<span class="nc" id="L485">          continue;</span>
+        }
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">        if (taskRunner.isRequestOnRequested()) {</span>
+          // cannot schedule a request where the host is the requested host
+<span class="nc" id="L489">          taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);</span>
+          try {
+<span class="nc" id="L491">            taskRunner.update();</span>
+<span class="nc" id="L492">          } catch (final WaarpDatabaseNoDataException e) {</span>
+<span class="nc" id="L493">            logger.warn(&quot;Update failed, no transfer found&quot;);</span>
+<span class="nc" id="L494">          }</span>
+<span class="nc" id="L495">          continue;</span>
+        }
+        // last check: number can have raised up since Commander checks
+<span class="fc bfc" id="L498" title="All 2 branches covered.">        if (i &gt; (tasks.length - 10) &amp;&amp; internalRunner.nbInternalRunner() &gt;=</span>
+<span class="pc bpc" id="L499" title="1 of 2 branches missed.">                                       Configuration.configuration.getRunnerThread()) {</span>
+<span class="nc" id="L500">          break;</span>
+        }
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">        if (internalRunner.submitTaskRunner(taskRunner)) {</span>
+<span class="fc" id="L503">          totalRuns++;</span>
+        } else {
+          break;
+        }
+<span class="fc" id="L507">      }</span>
+    }
+<span class="fc" id="L509">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

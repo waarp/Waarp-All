@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpMonitoringExporterClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.monitoring</a> &gt; <span class="el_source">HttpMonitoringExporterClient.java</span></div><h1>HttpMonitoringExporterClient.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.monitoring;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.util.internal.SocketUtils;
+import org.joda.time.DateTime;
+import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
+
+import javax.net.ssl.SSLException;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+
+/**
+ * HttpMonitoringExporterClient used by the MonitorExporterTransfers
+ */
+public class HttpMonitoringExporterClient implements Closeable {
+<span class="fc" id="L66">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L67">      WaarpLoggerFactory.getLogger(HttpMonitoringExporterClient.class);</span>
+  public static final String HTTPS = &quot;https&quot;;
+  public static final String BASIC = &quot;Basic &quot;;
+  public static final String BEARER = &quot;Bearer &quot;;
+  public static final String API_KEY = &quot;ApiKey &quot;;
+
+  private final URI finalUri;
+  private final String host;
+  private final boolean keepConnection;
+  private final Bootstrap bootstrap;
+  private int port;
+  private final String basicAuthent;
+  private final String token;
+  private final String apiKey;
+<span class="fc" id="L81">  private Channel remoteRestChannel = null;</span>
+
+<span class="fc" id="L83">  private WaarpFuture futurePost = null;</span>
+
+  /**
+   * Note that only one among (basicAuthent, token, apikey) is allowed and
+   * will be taken into account.
+   *
+   * @param remoteBaseUrl as 'http://myhost.com:8080' or 'https://myhost.com:8443'
+   * @param basicAuthent Basic Authent in Base64 format to connect to
+   *     REST API if any (Basic authentication from 'username:paswwd')
+   *     (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param endpoint as '/waarpr66monitor' or simply '/'
+   * @param keepConnection True to keep the connexion opened, False to release the connexion each time
+   * @param group the EventLoopGroup to use
+   */
+  public HttpMonitoringExporterClient(final String remoteBaseUrl,
+                                      final String basicAuthent,
+                                      final String token, final String apiKey,
+                                      final String endpoint,
+                                      final boolean keepConnection,
+<span class="fc" id="L106">                                      final EventLoopGroup group) {</span>
+<span class="fc" id="L107">    this.keepConnection = keepConnection;</span>
+<span class="fc" id="L108">    this.token = token;</span>
+<span class="fc" id="L109">    this.basicAuthent = basicAuthent;</span>
+<span class="fc" id="L110">    this.apiKey = apiKey;</span>
+    final String uri;
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">    if (remoteBaseUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L113">      uri = remoteBaseUrl + endpoint;</span>
+    } else {
+<span class="fc" id="L115">      uri = remoteBaseUrl + &quot;/&quot; + endpoint;</span>
+    }
+
+    try {
+<span class="fc" id="L119">      finalUri = new URI(uri);</span>
+<span class="nc" id="L120">    } catch (final URISyntaxException e) {</span>
+<span class="nc" id="L121">      logger.error(&quot;URI syntax error: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L122">      throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L123">    }</span>
+<span class="fc" id="L124">    final String scheme =</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        finalUri.getScheme() == null? &quot;http&quot; : finalUri.getScheme();</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    host = finalUri.getHost() == null? &quot;127.0.0.1&quot; : finalUri.getHost();</span>
+<span class="fc" id="L127">    port = finalUri.getPort();</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (port == -1) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">      if (&quot;http&quot;.equalsIgnoreCase(scheme)) {</span>
+<span class="nc" id="L130">        port = 80;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      } else if (HTTPS.equalsIgnoreCase(scheme)) {</span>
+<span class="nc" id="L132">        port = 443;</span>
+      }
+    }
+
+<span class="pc bpc" id="L136" title="3 of 4 branches missed.">    if (!&quot;http&quot;.equalsIgnoreCase(scheme) &amp;&amp; !HTTPS.equalsIgnoreCase(scheme)) {</span>
+<span class="nc" id="L137">      logger.error(&quot;Only HTTP(S) is supported.&quot;);</span>
+<span class="nc" id="L138">      throw new IllegalArgumentException(&quot;Only HTTP(S) is supported.&quot;);</span>
+    }
+
+<span class="fc" id="L141">    final boolean ssl = HTTPS.equalsIgnoreCase(scheme);</span>
+    final SslContext sslCtx;
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">    if (ssl) {</span>
+      try {
+<span class="nc" id="L145">        sslCtx = SslContextBuilder.forClient().keyManager(</span>
+<span class="nc" id="L146">            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L147">                                       .getKeyManagerFactory()).trustManager(</span>
+<span class="nc" id="L148">            InsecureTrustManagerFactory.INSTANCE).build();</span>
+<span class="nc" id="L149">      } catch (final SSLException e) {</span>
+<span class="nc" id="L150">        logger.error(&quot;SslContext error&quot;, e);</span>
+<span class="nc" id="L151">        throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L152">      }</span>
+    } else {
+<span class="fc" id="L154">      sslCtx = null;</span>
+    }
+
+    // Configure the client.
+<span class="fc" id="L158">    bootstrap = new Bootstrap();</span>
+<span class="fc" id="L159">    WaarpNettyUtil.setBootstrap(bootstrap, group,</span>
+<span class="fc" id="L160">                                (int) Configuration.configuration.getTimeoutCon(),</span>
+<span class="fc" id="L161">                                configuration.getBlockSize() + 64, true);</span>
+<span class="fc" id="L162">    bootstrap.handler(</span>
+        new HttpMonitoringExporterClientInitializer(sslCtx, this));
+<span class="fc" id="L164">  }</span>
+
+  /**
+   * @param monitoredTransfers the Json objet to push as POST
+   * @param start the DateTime for the 'from' interval
+   * @param stop the DateTime for the 'to' interval
+   * @param serverId the serverId that is sending this monitoring information
+   *
+   * @return True if the POST succeeded
+   */
+  public final boolean post(final ObjectNode monitoredTransfers,
+                            final DateTime start, final DateTime stop,
+                            final String serverId) {
+<span class="fc" id="L177">    logger.debug(&quot;Start Post from {} to {} as {}&quot;, start, stop, serverId);</span>
+<span class="pc bpc" id="L178" title="1 of 4 branches missed.">    if (keepConnection &amp;&amp; remoteRestChannel != null &amp;&amp;</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        !remoteRestChannel.isActive()) {</span>
+<span class="nc" id="L180">      remoteRestChannel.close();</span>
+<span class="nc" id="L181">      remoteRestChannel = null;</span>
+    }
+<span class="fc bfc" id="L183" title="All 2 branches covered.">    if (remoteRestChannel == null) {</span>
+<span class="fc" id="L184">      final ChannelFuture future =</span>
+<span class="fc" id="L185">          bootstrap.connect(SocketUtils.socketAddress(host, port));</span>
+      try {
+<span class="fc" id="L187">        remoteRestChannel = future.sync().channel();</span>
+<span class="nc" id="L188">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L189">        logger.error(e);</span>
+<span class="nc" id="L190">        return false;</span>
+<span class="fc" id="L191">      }</span>
+    }
+<span class="fc" id="L193">    futurePost = new WaarpFuture(true);</span>
+    // Prepare Body
+<span class="fc" id="L195">    final String body = JsonUtils.nodeToString(monitoredTransfers);</span>
+    final int length;
+    final byte[] bbody;
+    try {
+<span class="fc" id="L199">      bbody = body.getBytes(WaarpStringUtils.UTF_8);</span>
+<span class="fc" id="L200">      length = body.length();</span>
+<span class="nc" id="L201">    } catch (final UnsupportedEncodingException e) {</span>
+<span class="nc" id="L202">      logger.error(e.getMessage());</span>
+<span class="nc" id="L203">      return false;</span>
+<span class="fc" id="L204">    }</span>
+<span class="fc" id="L205">    final ByteBuf buf = Unpooled.wrappedBuffer(bbody);</span>
+<span class="fc" id="L206">    final HttpHeaders headers = new DefaultHttpHeaders(true);</span>
+    // Header set
+<span class="fc" id="L208">    headers.set(HttpHeaderNames.HOST, host);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">    if (keepConnection) {</span>
+<span class="fc" id="L210">      headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+    } else {
+<span class="nc" id="L212">      headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
+    }
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    if (basicAuthent != null) {</span>
+<span class="nc" id="L215">      headers.set(HttpHeaderNames.AUTHORIZATION, BASIC + basicAuthent);</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">    } else if (token != null) {</span>
+<span class="nc" id="L217">      headers.set(HttpHeaderNames.AUTHORIZATION, BEARER + token);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">    } else if (apiKey != null) {</span>
+<span class="nc" id="L219">      headers.set(HttpHeaderNames.AUTHORIZATION, API_KEY + apiKey);</span>
+    }
+<span class="fc" id="L221">    headers.set(MonitorExporterTransfers.HEADER_WAARP_ID, serverId);</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">    headers.set(MonitorExporterTransfers.HEADER_WAARP_START,</span>
+<span class="fc" id="L223">                start == null? &quot;&quot; : start.toString());</span>
+<span class="fc" id="L224">    headers.set(MonitorExporterTransfers.HEADER_WAARP_STOP, stop.toString());</span>
+<span class="fc" id="L225">    headers.set(HttpHeaderNames.CONTENT_LENGTH, length);</span>
+<span class="fc" id="L226">    headers.set(HttpHeaderNames.CONTENT_TYPE,</span>
+                HttpHeaderValues.APPLICATION_JSON);
+<span class="fc" id="L228">    final HttpRequest request =</span>
+        new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+<span class="fc" id="L230">                               finalUri.toASCIIString(), headers);</span>
+    // Body set
+<span class="fc" id="L232">    logger.debug(&quot;Request from {} to {} as {} length {}&quot;, start, stop, serverId,</span>
+<span class="fc" id="L233">                 length);</span>
+<span class="fc" id="L234">    logger.debug(&quot;{} {} {} {}&quot;, request.method(), request.uri(),</span>
+<span class="fc" id="L235">                 request.protocolVersion(), request.headers());</span>
+<span class="fc" id="L236">    remoteRestChannel.write(request);</span>
+<span class="fc" id="L237">    remoteRestChannel.write(buf);</span>
+<span class="fc" id="L238">    remoteRestChannel.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT)</span>
+<span class="fc" id="L239">                     .awaitUninterruptibly();</span>
+<span class="fc" id="L240">    logger.debug(&quot;Ending Post from {} to {} as {}&quot;, start, stop, serverId);</span>
+
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (!keepConnection) {</span>
+      try {
+<span class="nc" id="L244">        logger.debug(&quot;Wait for Close connection&quot;);</span>
+<span class="nc" id="L245">        remoteRestChannel.closeFuture().sync();</span>
+<span class="nc" id="L246">        remoteRestChannel = null;</span>
+<span class="nc" id="L247">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L248">        logger.error(e);</span>
+        // ignore
+<span class="nc" id="L250">      }</span>
+    }
+<span class="fc" id="L252">    futurePost.awaitOrInterruptible();</span>
+<span class="fc" id="L253">    final boolean result = futurePost.isSuccess();</span>
+<span class="fc" id="L254">    logger.info(&quot;End Post from {} to {} as {} with {}&quot;, start, stop, serverId,</span>
+<span class="fc" id="L255">                result);</span>
+<span class="fc" id="L256">    return result;</span>
+  }
+
+  public final boolean isKeepConnection() {
+<span class="fc" id="L260">    return keepConnection;</span>
+  }
+
+  public final void setStatus(final boolean ok) {
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">    if (ok) {</span>
+<span class="fc" id="L265">      futurePost.setSuccess();</span>
+    } else {
+<span class="nc" id="L267">      futurePost.cancel();</span>
+    }
+<span class="fc" id="L269">  }</span>
+
+  @Override
+  public final void close() throws IOException {
+<span class="pc bpc" id="L273" title="2 of 4 branches missed.">    if (remoteRestChannel != null &amp;&amp; !remoteRestChannel.isActive()) {</span>
+<span class="fc" id="L274">      remoteRestChannel.close();</span>
+<span class="fc" id="L275">      remoteRestChannel = null;</span>
+    }
+<span class="fc" id="L277">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

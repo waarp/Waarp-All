@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>S3PutAndR66DeleteTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">S3PutAndR66DeleteTask.java</span></div><h1>S3PutAndR66DeleteTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
+import org.waarp.openr66.s3.taskfactory.S3TaskFactory;
+import org.waarp.openr66.s3.taskfactory.S3TaskFactory.S3TaskType;
+
+/**
+ * S3 PUT and DELETE Task&lt;br&gt;
+ * &lt;p&gt;
+ * Result of arguments will be as a S3 PUT and R66 DELETE command.&lt;br&gt;
+ * Format is the following:&lt;br&gt;
+ * &quot;-URL url of S3 service &lt;br&gt;
+ * -accessKey access Key for S3 service &lt;br&gt;
+ * -secretKey secret Key for S3 service &lt;br&gt;
+ * -bucketName bucket Name where to retrieve the object &lt;br&gt;
+ * -targetName source Name from the bucket to select the final Object &lt;br&gt;
+ * [-setTags 'name:value,...' without space]&quot; &lt;br&gt;
+ * &lt;br&gt;
+ * &lt;br&gt;
+ * The order of actions will be:&lt;br&gt;
+ * 1) connection to S3 service using access Key and Secret Key&lt;br&gt;
+ * 2) Store to the bucket the current File as the target Object&lt;br&gt;
+ * 3) if setTags is set, the informations are added as tags to the final S3 Object&lt;br&gt;
+ * 4) the current File is deleted&lt;br&gt;
+ */
+public class S3PutAndR66DeleteTask extends S3PutTask {
+<span class="nc" id="L47">  private static final S3TaskFactory.S3TaskType taskType =</span>
+      S3TaskFactory.S3TaskType.S3PUTR66DELETE;
+
+  /**
+   * Constructor
+   *
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public S3PutAndR66DeleteTask(final String argRule, final int delay,
+                               final String argTransfer,
+                               final R66Session session) {
+<span class="nc" id="L61">    super(argRule, delay, argTransfer, session);</span>
+<span class="nc" id="L62">  }</span>
+
+  /**
+   * The order of actions will be:&lt;br&gt;
+   * 1) connection to S3 service using access Key and Secret Key&lt;br&gt;
+   * 2) Store to the bucket the current File as the target Object&lt;br&gt;
+   * 3) if setTags is set, the informations are added as tags to the final S3 Object&lt;br&gt;
+   * 4) the current File is deleted&lt;br&gt;
+   */
+  @Override
+  public void run() {
+    try {
+<span class="nc" id="L74">      internalRun();</span>
+<span class="nc" id="L75">    } catch (final OpenR66ProtocolNetworkException e) {</span>
+<span class="nc" id="L76">      finalizeInError(e, &quot;Error while S3 Action&quot;);</span>
+<span class="nc" id="L77">      return;</span>
+<span class="nc" id="L78">    }</span>
+<span class="nc" id="L79">    final DeleteTask deleteTask = new DeleteTask(&quot;&quot;, 0, &quot;&quot;, session);</span>
+<span class="nc" id="L80">    deleteTask.run();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (deleteTask.futureCompletion.isSuccess()) {</span>
+<span class="nc" id="L82">      logger.debug(&quot;R66 Deleted&quot;);</span>
+<span class="nc" id="L83">      futureCompletion.setSuccess();</span>
+    } else {
+<span class="nc" id="L85">      logger.error(&quot;PUT file OK but local file deletion in error&quot;);</span>
+<span class="nc" id="L86">      futureCompletion.setResult(deleteTask.futureCompletion.getResult());</span>
+<span class="nc" id="L87">      futureCompletion.setFailure(deleteTask.futureCompletion.getCause());</span>
+    }
+<span class="nc" id="L89">  }</span>
+
+  @Override
+  public S3TaskType getS3TaskType() {
+<span class="nc" id="L93">    return taskType;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -159,7 +159,7 @@ public class RescheduleTransferTask extends AbstractTask {
 <span class="nc" id="L159">  }</span>
 
   @Override
-  public void run() {
+  public final void run() {
 <span class="nc" id="L163">    logger.info(&quot;Reschedule with {}:{} and {}&quot;, argRule, argTransfer, session);</span>
 <span class="nc" id="L164">    runner = session.getRunner();</span>
 <span class="nc bnc" id="L165" title="All 2 branches missed.">    if (runner == null) {</span>
@@ -176,7 +176,7 @@ public class RescheduleTransferTask extends AbstractTask {
 <span class="nc" id="L176">      futureCompletion.setSuccess();</span>
 <span class="nc" id="L177">      return;</span>
     }
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (runner.isSelfRequested()) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (runner.isRequestOnRequested()) {</span>
       // Self Requested Request so reschedule is ignored
 <span class="nc" id="L181">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.LoopSelfRequestedHost,
@@ -193,8 +193,8 @@ public class RescheduleTransferTask extends AbstractTask {
 <span class="nc" id="L193">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.Warning, runner);
 <span class="nc" id="L195">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L196">      logger</span>
-<span class="nc" id="L197">          .warn(&quot;Not enough argument in Reschedule: &quot; + runner.toShortString());</span>
+<span class="nc" id="L196">      logger.warn(</span>
+<span class="nc" id="L197">          &quot;Not enough argument in Reschedule: &quot; + runner.toShortString());</span>
 <span class="nc" id="L198">      futureCompletion.setSuccess();</span>
 <span class="nc" id="L199">      return;</span>
     }
@@ -254,7 +254,7 @@ public class RescheduleTransferTask extends AbstractTask {
 <span class="nc" id="L254">    futureCompletion.setSuccess();</span>
 <span class="nc" id="L255">  }</span>
 
-  protected void resetInformation(final int value) {
+  protected final void resetInformation(final int value) {
 <span class="nc" id="L258">    final Map&lt;String, Object&gt; root = runner.getTransferMap();</span>
 <span class="nc" id="L259">    root.put(CPTLIMIT, value);</span>
     try {
@@ -268,7 +268,7 @@ public class RescheduleTransferTask extends AbstractTask {
 <span class="nc" id="L268">    runner.setTransferMap(root);</span>
 <span class="nc" id="L269">  }</span>
 
-  protected boolean validateArgs(final String[] args) {
+  protected final boolean validateArgs(final String[] args) {
 <span class="nc" id="L272">    boolean validCode = false;</span>
 <span class="nc bnc" id="L273" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
 <span class="nc bnc" id="L274" title="All 2 branches missed.">      if (&quot;-delay&quot;.equalsIgnoreCase(args[i])) {</span>
@@ -305,7 +305,7 @@ public class RescheduleTransferTask extends AbstractTask {
         try {
 <span class="nc" id="L306">          limit = (Integer) root.get(CPTLIMIT);</span>
 <span class="nc" id="L307">        } catch (final Exception e) {</span>
-<span class="nc" id="L308">          logger.warn(&quot;Bad Long format: CPTLIMIT&quot;, e);</span>
+<span class="nc" id="L308">          logger.warn(&quot;Bad Long format: CPTLIMIT&quot; + &quot; : {}&quot;, e.getMessage());</span>
 <span class="nc" id="L309">          return false;</span>
 <span class="nc" id="L310">        }</span>
 <span class="nc bnc" id="L311" title="All 2 branches missed.">        if (limit != null) {</span>
@@ -351,92 +351,90 @@ public class RescheduleTransferTask extends AbstractTask {
         } else {
 <span class="nc" id="L352">          stop = Calendar.getInstance();</span>
         }
-<span class="nc" id="L354">        logger</span>
-<span class="nc" id="L355">            .debug(&quot;Dates before check: Not between {} and {}&quot;, start.getTime(),</span>
-<span class="nc" id="L356">                   stop.getTime());</span>
+<span class="nc" id="L354">        logger.debug(&quot;Dates before check: Not between {} and {}&quot;,</span>
+<span class="nc" id="L355">                     start.getTime(), stop.getTime());</span>
         // Check that start &lt; stop
-<span class="nc bnc" id="L358" title="All 2 branches missed.">        if (start.compareTo(stop) &gt; 0) {</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        if (start.compareTo(stop) &gt; 0) {</span>
           // no so add 24H to stop
-<span class="nc" id="L360">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L359">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
         }
         // Check that start and stop &gt; newDate (only start is checked since start &lt;= stop)
-<span class="nc bnc" id="L363" title="All 2 branches missed.">        if (start.compareTo(newDate) &lt; 0) {</span>
-<span class="nc" id="L364">          start.add(Calendar.DAY_OF_MONTH, 1);</span>
-<span class="nc" id="L365">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">        if (start.compareTo(newDate) &lt; 0) {</span>
+<span class="nc" id="L363">          start.add(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L364">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
         }
-<span class="nc" id="L367">        logger</span>
-<span class="nc" id="L368">            .debug(&quot;Dates after check: Not between {} and {}&quot;, start.getTime(),</span>
-<span class="nc" id="L369">                   stop.getTime());</span>
-<span class="nc bnc" id="L370" title="All 2 branches missed.">        if (!startModified) {</span>
-<span class="nc bnc" id="L371" title="All 2 branches missed.">          if (newDate.compareTo(stop) &lt; 0) {</span>
-<span class="nc" id="L372">            logger.debug(&quot;newDate: {} Should not be between {} and {}&quot;,</span>
-<span class="nc" id="L373">                         newDate.getTime(), start.getTime(), stop.getTime());</span>
-<span class="nc" id="L374">            return false;</span>
+<span class="nc" id="L366">        logger.debug(&quot;Dates after check: Not between {} and {}&quot;,</span>
+<span class="nc" id="L367">                     start.getTime(), stop.getTime());</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (!startModified) {</span>
+<span class="nc bnc" id="L369" title="All 2 branches missed.">          if (newDate.compareTo(stop) &lt; 0) {</span>
+<span class="nc" id="L370">            logger.debug(&quot;newDate: {} Should not be between {} and {}&quot;,</span>
+<span class="nc" id="L371">                         newDate.getTime(), start.getTime(), stop.getTime());</span>
+<span class="nc" id="L372">            return false;</span>
           }
-<span class="nc bnc" id="L376" title="All 2 branches missed.">        } else if (start.compareTo(newDate) &lt; 0) {</span>
-<span class="nc bnc" id="L377" title="All 4 branches missed.">          if (!stopModified || newDate.compareTo(stop) &lt; 0) {</span>
-<span class="nc" id="L378">            logger.debug(&quot;newDate: {} Should not be between {} and {}&quot;,</span>
-<span class="nc" id="L379">                         newDate.getTime(), start.getTime(), stop.getTime());</span>
-<span class="nc" id="L380">            return false;</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        } else if (start.compareTo(newDate) &lt; 0) {</span>
+<span class="nc bnc" id="L375" title="All 4 branches missed.">          if (!stopModified || newDate.compareTo(stop) &lt; 0) {</span>
+<span class="nc" id="L376">            logger.debug(&quot;newDate: {} Should not be between {} and {}&quot;,</span>
+<span class="nc" id="L377">                         newDate.getTime(), start.getTime(), stop.getTime());</span>
+<span class="nc" id="L378">            return false;</span>
           }
         }
-<span class="nc bnc" id="L383" title="All 2 branches missed.">      } else if (&quot;-between&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L384">        i++;</span>
-<span class="nc" id="L385">        betweenTest = true;</span>
-<span class="nc" id="L386">        final String[] elmts = args[i].split(&quot;;&quot;);</span>
-<span class="nc" id="L387">        boolean startModified = false;</span>
-<span class="nc" id="L388">        String[] values = elmts[0].split(&quot;:&quot;);</span>
-<span class="nc" id="L389">        Calendar start = getCalendar(values);</span>
-<span class="nc bnc" id="L390" title="All 2 branches missed.">        if (start != null) {</span>
-<span class="nc" id="L391">          startModified = true;</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">      } else if (&quot;-between&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L382">        i++;</span>
+<span class="nc" id="L383">        betweenTest = true;</span>
+<span class="nc" id="L384">        final String[] elmts = args[i].split(&quot;;&quot;);</span>
+<span class="nc" id="L385">        boolean startModified = false;</span>
+<span class="nc" id="L386">        String[] values = elmts[0].split(&quot;:&quot;);</span>
+<span class="nc" id="L387">        Calendar start = getCalendar(values);</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">        if (start != null) {</span>
+<span class="nc" id="L389">          startModified = true;</span>
         } else {
-<span class="nc" id="L393">          start = Calendar.getInstance();</span>
+<span class="nc" id="L391">          start = Calendar.getInstance();</span>
         }
-<span class="nc" id="L395">        boolean stopModified = false;</span>
-<span class="nc" id="L396">        values = elmts[1].split(&quot;:&quot;);</span>
-<span class="nc" id="L397">        Calendar stop = getCalendar(values);</span>
-<span class="nc bnc" id="L398" title="All 2 branches missed.">        if (stop != null) {</span>
-<span class="nc" id="L399">          stopModified = true;</span>
+<span class="nc" id="L393">        boolean stopModified = false;</span>
+<span class="nc" id="L394">        values = elmts[1].split(&quot;:&quot;);</span>
+<span class="nc" id="L395">        Calendar stop = getCalendar(values);</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">        if (stop != null) {</span>
+<span class="nc" id="L397">          stopModified = true;</span>
         } else {
-<span class="nc" id="L401">          stop = Calendar.getInstance();</span>
+<span class="nc" id="L399">          stop = Calendar.getInstance();</span>
         }
-<span class="nc" id="L403">        logger.debug(&quot;Dates before check: Between {} and {}&quot;, start.getTime(),</span>
-<span class="nc" id="L404">                     stop.getTime());</span>
+<span class="nc" id="L401">        logger.debug(&quot;Dates before check: Between {} and {}&quot;, start.getTime(),</span>
+<span class="nc" id="L402">                     stop.getTime());</span>
         // Check that start &lt; stop
-<span class="nc bnc" id="L406" title="All 2 branches missed.">        if (start.compareTo(stop) &gt; 0) {</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (start.compareTo(stop) &gt; 0) {</span>
           // no so add 24H to stop
-<span class="nc" id="L408">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L406">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
         }
         // Check that start and stop &gt; newDate (only start is checked since start &lt;= stop)
-<span class="nc bnc" id="L411" title="All 2 branches missed.">        if (start.compareTo(newDate) &lt; 0) {</span>
-<span class="nc" id="L412">          start.add(Calendar.DAY_OF_MONTH, 1);</span>
-<span class="nc" id="L413">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (start.compareTo(newDate) &lt; 0) {</span>
+<span class="nc" id="L410">          start.add(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L411">          stop.add(Calendar.DAY_OF_MONTH, 1);</span>
         }
-<span class="nc" id="L415">        logger.debug(&quot;Dates before check: Between {} and {}&quot;, start.getTime(),</span>
-<span class="nc" id="L416">                     stop.getTime());</span>
-<span class="nc bnc" id="L417" title="All 2 branches missed.">        if (!startModified) {</span>
-<span class="nc bnc" id="L418" title="All 2 branches missed.">          if (newDate.compareTo(stop) &lt; 0) {</span>
-<span class="nc" id="L419">            logger.debug(&quot;newDate: {} is between {} and {}&quot;, newDate.getTime(),</span>
-<span class="nc" id="L420">                         start.getTime(), stop.getTime());</span>
-<span class="nc" id="L421">            betweenResult = true;</span>
+<span class="nc" id="L413">        logger.debug(&quot;Dates before check: Between {} and {}&quot;, start.getTime(),</span>
+<span class="nc" id="L414">                     stop.getTime());</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if (!startModified) {</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">          if (newDate.compareTo(stop) &lt; 0) {</span>
+<span class="nc" id="L417">            logger.debug(&quot;newDate: {} is between {} and {}&quot;, newDate.getTime(),</span>
+<span class="nc" id="L418">                         start.getTime(), stop.getTime());</span>
+<span class="nc" id="L419">            betweenResult = true;</span>
           }
-<span class="nc bnc" id="L423" title="All 2 branches missed.">        } else if (start.compareTo(newDate) &lt; 0) {</span>
-<span class="nc bnc" id="L424" title="All 4 branches missed.">          if (!stopModified || newDate.compareTo(stop) &lt; 0) {</span>
-<span class="nc" id="L425">            logger.debug(&quot;newDate: {} is between {} and {}&quot;, newDate.getTime(),</span>
-<span class="nc" id="L426">                         start.getTime(), stop.getTime());</span>
-<span class="nc" id="L427">            betweenResult = true;</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">        } else if (start.compareTo(newDate) &lt; 0) {</span>
+<span class="nc bnc" id="L422" title="All 4 branches missed.">          if (!stopModified || newDate.compareTo(stop) &lt; 0) {</span>
+<span class="nc" id="L423">            logger.debug(&quot;newDate: {} is between {} and {}&quot;, newDate.getTime(),</span>
+<span class="nc" id="L424">                         start.getTime(), stop.getTime());</span>
+<span class="nc" id="L425">            betweenResult = true;</span>
           }
         }
       }
     }
-<span class="nc bnc" id="L432" title="All 2 branches missed.">    if (betweenTest) {</span>
-<span class="nc" id="L433">      logger.debug(</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">    if (betweenTest) {</span>
+<span class="nc" id="L431">      logger.debug(</span>
           &quot;Since between is specified, do we found newDate: {} Result: {}&quot;,
-<span class="nc" id="L435">          newDate.getTime(), betweenResult);</span>
-<span class="nc" id="L436">      return betweenResult;</span>
+<span class="nc" id="L433">          newDate.getTime(), betweenResult);</span>
+<span class="nc" id="L434">      return betweenResult;</span>
     }
-<span class="nc" id="L438">    logger.debug(&quot;newDate: {} rescheduled&quot;, newDate.getTime());</span>
-<span class="nc" id="L439">    return true;</span>
+<span class="nc" id="L436">    logger.debug(&quot;newDate: {} rescheduled&quot;, newDate.getTime());</span>
+<span class="nc" id="L437">    return true;</span>
   }
 
   /**
@@ -449,99 +447,99 @@ public class RescheduleTransferTask extends AbstractTask {
    *     specified
    */
   private Calendar getCalendar(final String[] values) {
-<span class="nc" id="L452">    final Calendar newcal = Calendar.getInstance();</span>
-<span class="nc" id="L453">    boolean isModified = false;</span>
-<span class="nc bnc" id="L454" title="All 2 branches missed.">    for (final String value2 : values) {</span>
-<span class="nc bnc" id="L455" title="All 2 branches missed.">      if (value2.length() &gt; 1) {</span>
-<span class="nc" id="L456">        int addvalue = 0; // will be different of 0</span>
-<span class="nc" id="L457">        int value = -1; // will be &gt;= 0</span>
-<span class="nc bnc" id="L458" title="All 4 branches missed.">        switch (value2.charAt(0)) {</span>
+<span class="nc" id="L450">    final Calendar newcal = Calendar.getInstance();</span>
+<span class="nc" id="L451">    boolean isModified = false;</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">    for (final String value2 : values) {</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">      if (value2.length() &gt; 1) {</span>
+<span class="nc" id="L454">        int addvalue = 0; // will be different of 0</span>
+<span class="nc" id="L455">        int value = -1; // will be &gt;= 0</span>
+<span class="nc bnc" id="L456" title="All 4 branches missed.">        switch (value2.charAt(0)) {</span>
           case '+':
             try {
-<span class="nc" id="L461">              addvalue = Integer.parseInt(value2.substring(2));</span>
-<span class="nc" id="L462">            } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L463">              continue;</span>
-<span class="nc" id="L464">            }</span>
+<span class="nc" id="L459">              addvalue = Integer.parseInt(value2.substring(2));</span>
+<span class="nc" id="L460">            } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L461">              continue;</span>
+<span class="nc" id="L462">            }</span>
             break;
           case '-':
             try {
-<span class="nc" id="L468">              addvalue = Integer.parseInt(value2.substring(1));</span>
-<span class="nc" id="L469">            } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L470">              continue;</span>
-<span class="nc" id="L471">            }</span>
+<span class="nc" id="L466">              addvalue = Integer.parseInt(value2.substring(1));</span>
+<span class="nc" id="L467">            } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L468">              continue;</span>
+<span class="nc" id="L469">            }</span>
             break;
           case '=':
             try {
-<span class="nc" id="L475">              value = Integer.parseInt(value2.substring(2));</span>
-<span class="nc" id="L476">            } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L477">              continue;</span>
-<span class="nc" id="L478">            }</span>
+<span class="nc" id="L473">              value = Integer.parseInt(value2.substring(2));</span>
+<span class="nc" id="L474">            } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L475">              continue;</span>
+<span class="nc" id="L476">            }</span>
             break;
           default: // no sign
             try {
-<span class="nc" id="L482">              value = Integer.parseInt(value2.substring(1));</span>
-<span class="nc" id="L483">            } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L484">              continue;</span>
-<span class="nc" id="L485">            }</span>
+<span class="nc" id="L480">              value = Integer.parseInt(value2.substring(1));</span>
+<span class="nc" id="L481">            } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L482">              continue;</span>
+<span class="nc" id="L483">            }</span>
         }
-<span class="nc bnc" id="L487" title="All 7 branches missed.">        switch (value2.charAt(0)) {</span>
+<span class="nc bnc" id="L485" title="All 7 branches missed.">        switch (value2.charAt(0)) {</span>
           case 'Y':
-<span class="nc bnc" id="L489" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
-<span class="nc" id="L490">              newcal.set(Calendar.YEAR, value);</span>
+<span class="nc bnc" id="L487" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L488">              newcal.set(Calendar.YEAR, value);</span>
             } else {
-<span class="nc" id="L492">              newcal.add(Calendar.YEAR, addvalue);</span>
+<span class="nc" id="L490">              newcal.add(Calendar.YEAR, addvalue);</span>
             }
-<span class="nc" id="L494">            isModified = true;</span>
-<span class="nc" id="L495">            break;</span>
+<span class="nc" id="L492">            isModified = true;</span>
+<span class="nc" id="L493">            break;</span>
           case 'M':
-<span class="nc bnc" id="L497" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
-<span class="nc" id="L498">              newcal.set(Calendar.MONTH, value);</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L496">              newcal.set(Calendar.MONTH, value);</span>
             } else {
-<span class="nc" id="L500">              newcal.add(Calendar.MONTH, addvalue);</span>
+<span class="nc" id="L498">              newcal.add(Calendar.MONTH, addvalue);</span>
             }
-<span class="nc" id="L502">            isModified = true;</span>
-<span class="nc" id="L503">            break;</span>
+<span class="nc" id="L500">            isModified = true;</span>
+<span class="nc" id="L501">            break;</span>
           case 'D':
-<span class="nc bnc" id="L505" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
-<span class="nc" id="L506">              newcal.set(Calendar.DAY_OF_MONTH, value);</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L504">              newcal.set(Calendar.DAY_OF_MONTH, value);</span>
             } else {
-<span class="nc" id="L508">              newcal.add(Calendar.DAY_OF_MONTH, addvalue);</span>
+<span class="nc" id="L506">              newcal.add(Calendar.DAY_OF_MONTH, addvalue);</span>
             }
-<span class="nc" id="L510">            isModified = true;</span>
-<span class="nc" id="L511">            break;</span>
+<span class="nc" id="L508">            isModified = true;</span>
+<span class="nc" id="L509">            break;</span>
           case 'H':
-<span class="nc bnc" id="L513" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
-<span class="nc" id="L514">              newcal.set(Calendar.HOUR_OF_DAY, value);</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L512">              newcal.set(Calendar.HOUR_OF_DAY, value);</span>
             } else {
-<span class="nc" id="L516">              newcal.add(Calendar.HOUR_OF_DAY, addvalue);</span>
+<span class="nc" id="L514">              newcal.add(Calendar.HOUR_OF_DAY, addvalue);</span>
             }
-<span class="nc" id="L518">            isModified = true;</span>
-<span class="nc" id="L519">            break;</span>
+<span class="nc" id="L516">            isModified = true;</span>
+<span class="nc" id="L517">            break;</span>
           case 'm':
-<span class="nc bnc" id="L521" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
-<span class="nc" id="L522">              newcal.set(Calendar.MINUTE, value);</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L520">              newcal.set(Calendar.MINUTE, value);</span>
             } else {
-<span class="nc" id="L524">              newcal.add(Calendar.MINUTE, addvalue);</span>
+<span class="nc" id="L522">              newcal.add(Calendar.MINUTE, addvalue);</span>
             }
-<span class="nc" id="L526">            isModified = true;</span>
-<span class="nc" id="L527">            break;</span>
+<span class="nc" id="L524">            isModified = true;</span>
+<span class="nc" id="L525">            break;</span>
           case 'S':
-<span class="nc bnc" id="L529" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
-<span class="nc" id="L530">              newcal.set(Calendar.SECOND, value);</span>
+<span class="nc bnc" id="L527" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L528">              newcal.set(Calendar.SECOND, value);</span>
             } else {
-<span class="nc" id="L532">              newcal.add(Calendar.SECOND, addvalue);</span>
+<span class="nc" id="L530">              newcal.add(Calendar.SECOND, addvalue);</span>
             }
-<span class="nc" id="L534">            isModified = true;</span>
-<span class="nc" id="L535">            break;</span>
+<span class="nc" id="L532">            isModified = true;</span>
+<span class="nc" id="L533">            break;</span>
           default:
             // nothing
         }
       }
     }
-<span class="nc bnc" id="L541" title="All 2 branches missed.">    if (isModified) {</span>
-<span class="nc" id="L542">      return newcal;</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">    if (isModified) {</span>
+<span class="nc" id="L540">      return newcal;</span>
     }
-<span class="nc" id="L544">    return null;</span>
+<span class="nc" id="L542">    return null;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>NetworkSslServerInitializer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.networkhandler.ssl</a> &gt; <span class="el_source">NetworkSslServerInitializer.java</span></div><h1>NetworkSslServerInitializer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.networkhandler.ssl;
+
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
+import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
+import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacketCodec;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ *
+ */
+public class NetworkSslServerInitializer
+    extends ChannelInitializer&lt;SocketChannel&gt; {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(NetworkSslServerInitializer.class);</span>
+  public static final String SSL_HANDLER = &quot;ssl&quot;;
+  protected final boolean isClient;
+  private static WaarpSslContextFactory waarpSslContextFactory;
+  private static WaarpSecureKeyStore waarpSecureKeyStore;
+
+  /**
+   * @param isClient True if this Factory is to be used in Client mode
+   */
+<span class="fc" id="L58">  public NetworkSslServerInitializer(final boolean isClient) {</span>
+<span class="fc" id="L59">    this.isClient = isClient;</span>
+<span class="fc" id="L60">  }</span>
+
+  @Override
+  protected void initChannel(final SocketChannel ch) throws Exception {
+<span class="fc" id="L64">    final ChannelPipeline pipeline = ch.pipeline();</span>
+    // Add SSL handler first to encrypt and decrypt everything.
+    final SslHandler sslHandler;
+<span class="fc bfc" id="L67" title="All 2 branches covered.">    if (isClient) {</span>
+      // Not server: no clientAuthent, no renegotiation
+<span class="fc" id="L69">      sslHandler = getWaarpSslContextFactory().createHandlerClient(ch);</span>
+    } else {
+      // Server: no renegotiation still, but possible clientAuthent
+<span class="fc" id="L72">      sslHandler = getWaarpSslContextFactory().createHandlerServer(</span>
+<span class="fc" id="L73">          getWaarpSslContextFactory().needClientAuthentication(), ch);</span>
+    }
+<span class="fc" id="L75">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
+<span class="fc" id="L76">    logger.debug(&quot;Create IdleStateHandler with {} ms&quot;,</span>
+<span class="fc" id="L77">                 Configuration.configuration.getTimeoutCon());</span>
+
+<span class="fc" id="L79">    pipeline.addLast(NetworkServerInitializer.TIMEOUT,</span>
+                     new IdleStateHandler(true, 0, 0,
+<span class="fc" id="L81">                                          Configuration.configuration.getTimeoutCon(),</span>
+                                          TimeUnit.MILLISECONDS));
+
+    // Global limitation
+<span class="fc" id="L85">    final GlobalTrafficShapingHandler handler =</span>
+<span class="fc" id="L86">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">    if (handler == null) {</span>
+<span class="nc" id="L88">      throw new OpenR66ProtocolNetworkException(</span>
+          &quot;Error at pipeline initialization,&quot; +
+          &quot; GlobalTrafficShapingHandler configured.&quot;);
+    }
+<span class="fc" id="L92">    pipeline.addLast(NetworkServerInitializer.LIMITGLOBAL, handler);</span>
+    // Per channel limitation
+<span class="fc" id="L94">    pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,</span>
+                     new ChannelTrafficShapingHandler(
+<span class="fc" id="L96">                         Configuration.configuration.getServerChannelWriteLimit(),</span>
+<span class="fc" id="L97">                         Configuration.configuration.getServerChannelReadLimit(),</span>
+<span class="fc" id="L98">                         Configuration.configuration.getDelayLimit(),</span>
+<span class="fc" id="L99">                         Configuration.configuration.getTimeoutCon()));</span>
+
+<span class="fc" id="L101">    pipeline.addLast(NetworkServerInitializer.NETWORK_CODEC,</span>
+                     new NetworkPacketCodec());
+<span class="fc bfc" id="L103" title="All 2 branches covered.">    pipeline.addLast(Configuration.configuration.getHandlerGroup(),</span>
+                     NetworkServerInitializer.NETWORK_HANDLER,
+                     new NetworkSslServerHandler(!isClient));
+<span class="fc" id="L106">  }</span>
+
+  /**
+   * @return the waarpSslContextFactory
+   */
+  public static WaarpSslContextFactory getWaarpSslContextFactory() {
+<span class="fc" id="L112">    return waarpSslContextFactory;</span>
+  }
+
+  /**
+   * @param waarpSslContextFactory the waarpSslContextFactory to set
+   */
+  public static void setWaarpSslContextFactory(
+      final WaarpSslContextFactory waarpSslContextFactory) {
+<span class="fc" id="L120">    NetworkSslServerInitializer.waarpSslContextFactory = waarpSslContextFactory;</span>
+<span class="fc" id="L121">  }</span>
+
+  /**
+   * @return the waarpSecureKeyStore
+   */
+  public static WaarpSecureKeyStore getWaarpSecureKeyStore() {
+<span class="fc" id="L127">    return waarpSecureKeyStore;</span>
+  }
+
+  /**
+   * @param waarpSecureKeyStore the waarpSecureKeyStore to set
+   */
+  public static void setWaarpSecureKeyStore(
+      final WaarpSecureKeyStore waarpSecureKeyStore) {
+<span class="fc" id="L135">    NetworkSslServerInitializer.waarpSecureKeyStore = waarpSecureKeyStore;</span>
+<span class="fc" id="L136">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

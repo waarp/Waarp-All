@@ -23,6 +23,8 @@ import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 
@@ -47,8 +49,8 @@ public class UnzeroedFileTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(UnzeroedFileTask.class);</span>
+<span class="fc" id="L52">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L53">      WaarpLoggerFactory.getLogger(UnzeroedFileTask.class);</span>
 
   /**
    * @param argRule
@@ -58,48 +60,48 @@ public class UnzeroedFileTask extends AbstractTask {
    */
   public UnzeroedFileTask(final String argRule, final int delay,
                           final String argTransfer, final R66Session session) {
-<span class="fc" id="L61">    super(TaskType.UNZEROED, delay, argRule, argTransfer, session);</span>
-<span class="fc" id="L62">  }</span>
+<span class="fc" id="L63">    super(TaskType.UNZEROED, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L64">  }</span>
 
   @Override
-  public void run() {
-<span class="fc" id="L66">    final File currentFile = session.getFile().getTrueFile();</span>
-<span class="pc bpc" id="L67" title="2 of 4 branches missed.">    final String toWrite = argRule == null || argRule.isEmpty()? &quot; &quot; : argRule;</span>
-<span class="fc" id="L68">    final String curpath =</span>
-<span class="fc" id="L69">        AbstractDir.normalizePath(currentFile.getAbsolutePath());</span>
-<span class="pc bpc" id="L70" title="2 of 4 branches missed.">    if (currentFile.exists() &amp;&amp; currentFile.length() == 0) {</span>
-<span class="nc" id="L71">      FileOutputStream out = null;</span>
+  public final void run() {
+<span class="fc" id="L68">    final File currentFile = session.getFile().getTrueFile();</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    final String toWrite = ParametersChecker.isEmpty(argRule)? &quot; &quot; : argRule;</span>
+<span class="fc" id="L70">    final String curpath =</span>
+<span class="fc" id="L71">        AbstractDir.normalizePath(currentFile.getAbsolutePath());</span>
+<span class="pc bpc" id="L72" title="2 of 4 branches missed.">    if (currentFile.exists() &amp;&amp; currentFile.length() == 0) {</span>
+<span class="nc" id="L73">      FileOutputStream out = null;</span>
       try {
-<span class="nc" id="L73">        out = new FileOutputStream(currentFile);</span>
-<span class="nc" id="L74">        out.write(toWrite.getBytes());</span>
-<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (delay &gt; 0) {</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">          if (delay &gt; 1) {</span>
-<span class="nc" id="L77">            logger.warn(&quot;Unzeroed File: &quot; + curpath + &quot; from &quot; + session);</span>
+<span class="nc" id="L75">        out = new FileOutputStream(currentFile);</span>
+<span class="nc" id="L76">        out.write(toWrite.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (delay &gt; 0) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">          if (delay &gt; 1) {</span>
+<span class="nc" id="L79">            logger.warn(&quot;Unzeroed File: &quot; + curpath + &quot; from &quot; + session);</span>
           } else {
-<span class="nc" id="L79">            logger.info(&quot;Unzeroed File: {} from {}&quot;, curpath, session);</span>
+<span class="nc" id="L81">            logger.info(&quot;Unzeroed File: {} from {}&quot;, curpath, session);</span>
           }
         }
-<span class="nc" id="L82">        futureCompletion.setSuccess();</span>
-<span class="nc" id="L83">      } catch (final IOException e) {</span>
-<span class="nc" id="L84">        logger.error(&quot;Cannot unzeroed File: &quot; + curpath + &quot; from &quot; + session);</span>
-<span class="nc" id="L85">        futureCompletion</span>
-<span class="nc" id="L86">            .setFailure(new OpenR66RunnerException(&quot;File not Unzeroed&quot;));</span>
+<span class="nc" id="L84">        futureCompletion.setSuccess();</span>
+<span class="nc" id="L85">      } catch (final IOException e) {</span>
+<span class="nc" id="L86">        logger.error(&quot;Cannot unzeroed File: &quot; + curpath + &quot; from &quot; + session);</span>
+<span class="nc" id="L87">        futureCompletion.setFailure(</span>
+            new OpenR66RunnerException(&quot;File not Unzeroed&quot;));
       } finally {
-<span class="nc" id="L88">        FileUtils.close(out);</span>
+<span class="nc" id="L90">        FileUtils.close(out);</span>
       }
-<span class="nc" id="L90">      return;</span>
+<span class="nc" id="L92">      return;</span>
     }
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    if (delay &gt; 0) {</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (delay &gt; 1) {</span>
-<span class="nc" id="L94">        logger.warn(</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (delay &gt; 0) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (delay &gt; 1) {</span>
+<span class="nc" id="L96">        logger.warn(</span>
             &quot;Unzeroed File not applicable to &quot; + curpath + &quot; from &quot; + session);
       } else {
-<span class="nc" id="L97">        logger.info(&quot;Unzeroed File not applicable to {} from {}&quot;, curpath,</span>
+<span class="nc" id="L99">        logger.info(&quot;Unzeroed File not applicable to {} from {}&quot;, curpath,</span>
                     session);
       }
     }
-<span class="fc" id="L101">    futureCompletion.setSuccess();</span>
-<span class="fc" id="L102">  }</span>
+<span class="fc" id="L103">    futureCompletion.setSuccess();</span>
+<span class="fc" id="L104">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

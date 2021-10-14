@@ -60,20 +60,20 @@ public class StartupPacket extends AbstractLocalPacket {
 <span class="fc" id="L60">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
 <span class="fc" id="L64">    return true;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
 <span class="nc" id="L70">    final int headerSize = 4;</span>
 <span class="nc" id="L71">    final int middleSize = 1;</span>
 <span class="nc" id="L72">    final int endSize = 0;</span>
 <span class="nc" id="L73">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
 <span class="nc" id="L75">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L76">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc" id="L76">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
 <span class="nc" id="L77">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
 <span class="nc" id="L78">    header.writeInt(localId);</span>
 <span class="nc" id="L79">    offset += headerSize;</span>
@@ -83,25 +83,25 @@ public class StartupPacket extends AbstractLocalPacket {
 <span class="nc" id="L83">  }</span>
 
   @Override
-  public String toString() {
+  public final String toString() {
 <span class="nc" id="L87">    return &quot;StartupPacket: &quot; + localId;</span>
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
 <span class="nc" id="L92">    return LocalPacketFactory.STARTUPPACKET;</span>
   }
 
   /**
    * @return the localId
    */
-  public Integer getLocalId() {
+  public final Integer getLocalId() {
 <span class="nc" id="L99">    return localId;</span>
   }
 
-  public boolean isFromSsl() {
+  public final boolean isFromSsl() {
 <span class="nc" id="L103">    return fromSsl;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

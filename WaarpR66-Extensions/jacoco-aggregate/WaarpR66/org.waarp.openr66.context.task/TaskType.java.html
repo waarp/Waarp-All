@@ -38,18 +38,18 @@ import java.util.Set;
  * If a new task type is to be created, this is the place where it should be
  * referenced.
  */
-<span class="nc" id="L41">public enum TaskType {</span>
-<span class="nc" id="L42">  LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,</span>
-<span class="nc" id="L43">  VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,</span>
-<span class="nc" id="L44">  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP, EXTENDED,</span>
-<span class="nc" id="L45">  COMPRESS;</span>
+<span class="fc" id="L41">public enum TaskType {</span>
+<span class="fc" id="L42">  LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,</span>
+<span class="fc" id="L43">  VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,</span>
+<span class="fc" id="L44">  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP, EXTENDED,</span>
+<span class="fc" id="L45">  COMPRESS;</span>
 
   public static final String UNVALID_TASK = &quot;Unvalid Task: &quot;;
 
   public static final String NAME_UNKNOWN = &quot;name unknown: &quot;;
 
   private static final Map&lt;String, AbstractExtendedTaskFactory&gt;
-<span class="nc" id="L52">      extendedTaskTypeMap = new HashMap&lt;String, AbstractExtendedTaskFactory&gt;();</span>
+<span class="fc" id="L52">      extendedTaskTypeMap = new HashMap&lt;String, AbstractExtendedTaskFactory&gt;();</span>
 
   final int type;
 
@@ -57,13 +57,13 @@ import java.util.Set;
   /**
    * Internal Logger
    */
-<span class="nc" id="L60">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L61">      WaarpLoggerFactory.getLogger(TaskType.class);</span>
+<span class="fc" id="L60">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L61">      WaarpLoggerFactory.getLogger(TaskType.class);</span>
 
-<span class="nc" id="L63">  TaskType() {</span>
-<span class="nc" id="L64">    type = ordinal();</span>
-<span class="nc" id="L65">    name = name();</span>
-<span class="nc" id="L66">  }</span>
+<span class="fc" id="L63">  TaskType() {</span>
+<span class="fc" id="L64">    type = ordinal();</span>
+<span class="fc" id="L65">    name = name();</span>
+<span class="fc" id="L66">  }</span>
 
   /**
    * Allow to add extended task that will be denoted as EXTENDED
@@ -74,12 +74,12 @@ import java.util.Set;
   public static void addExtendedTaskFactory(
       final Set&lt;String&gt; associatedTaskNames,
       final AbstractExtendedTaskFactory extendedTaskFactory) {
-<span class="nc bnc" id="L77" title="All 2 branches missed.">    for (final String associatedName : associatedTaskNames) {</span>
-<span class="nc" id="L78">      logger.debug(&quot;Add {} with {}&quot;, associatedName,</span>
-<span class="nc" id="L79">                   extendedTaskFactory.getName());</span>
-<span class="nc" id="L80">      extendedTaskTypeMap.put(associatedName, extendedTaskFactory);</span>
-<span class="nc" id="L81">    }</span>
-<span class="nc" id="L82">  }</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">    for (final String associatedName : associatedTaskNames) {</span>
+<span class="fc" id="L78">      logger.debug(&quot;Add {} with {}&quot;, associatedName,</span>
+<span class="fc" id="L79">                   extendedTaskFactory.getName());</span>
+<span class="fc" id="L80">      extendedTaskTypeMap.put(associatedName, extendedTaskFactory);</span>
+<span class="fc" id="L81">    }</span>
+<span class="fc" id="L82">  }</span>
 
   public static final String S_3_TASK_FACTORY =
       &quot;org.waarp.openr66.s3.taskfactory.S3TaskFactory&quot;;
@@ -87,19 +87,19 @@ import java.util.Set;
   static {
     // Try to load S3 Tasks if S3TaskFactory exists
     try {
-<span class="nc" id="L90">      final Class s3TaskFactoryClass = Class.forName(S_3_TASK_FACTORY);</span>
-<span class="nc" id="L91">      WaarpSystemUtil.newInstance(s3TaskFactoryClass);</span>
-<span class="nc" id="L92">    } catch (final Exception ignore) {</span>
+<span class="fc" id="L90">      final Class s3TaskFactoryClass = Class.forName(S_3_TASK_FACTORY);</span>
+<span class="fc" id="L91">      WaarpSystemUtil.newInstance(s3TaskFactoryClass);</span>
+<span class="fc" id="L92">    } catch (final Exception ignore) {</span>
       // Not found and ignore
-<span class="nc" id="L94">      SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
-<span class="nc" id="L95">    }</span>
-<span class="nc" id="L96">  }</span>
+<span class="fc" id="L94">      SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="fc" id="L95">    }</span>
+<span class="fc" id="L96">  }</span>
 
   /**
    * @return the current Set of ExtendedTaskFactories
    */
   public static Collection&lt;AbstractExtendedTaskFactory&gt; getExtendedFactories() {
-<span class="nc" id="L102">    return extendedTaskTypeMap.values();</span>
+<span class="fc" id="L102">    return extendedTaskTypeMap.values();</span>
   }
 
   /**
@@ -111,12 +111,12 @@ import java.util.Set;
    */
   public static boolean isValidTask(final String task) {
     try {
-<span class="nc" id="L114">      TaskType.valueOf(task);</span>
-<span class="nc" id="L115">      return true;</span>
-<span class="nc" id="L116">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L117">      logger.debug(&quot;{} is in keys: {}&quot;, task,</span>
-<span class="nc" id="L118">                   extendedTaskTypeMap.containsKey(task));</span>
-<span class="nc" id="L119">      return extendedTaskTypeMap.containsKey(task);</span>
+<span class="fc" id="L114">      TaskType.valueOf(task);</span>
+<span class="fc" id="L115">      return true;</span>
+<span class="fc" id="L116">    } catch (final IllegalArgumentException e) {</span>
+<span class="fc" id="L117">      logger.debug(&quot;{} is in keys: {}&quot;, task,</span>
+<span class="fc" id="L118">                   extendedTaskTypeMap.containsKey(task));</span>
+<span class="fc" id="L119">      return extendedTaskTypeMap.containsKey(task);</span>
     }
   }
 
@@ -135,16 +135,16 @@ import java.util.Set;
                                             final int delay,
                                             final R66Session session)
       throws OpenR66RunnerErrorException {
-<span class="nc bnc" id="L138" title="All 27 branches missed.">    switch (type) {</span>
+<span class="pc bpc" id="L138" title="20 of 27 branches missed.">    switch (type) {</span>
       case LOG:
-<span class="nc" id="L140">        return new LogTask(argRule, delay,</span>
-<span class="nc" id="L141">                           session.getRunner().getFileInformation(), session);</span>
+<span class="fc" id="L140">        return new LogTask(argRule, delay,</span>
+<span class="fc" id="L141">                           session.getRunner().getFileInformation(), session);</span>
       case MOVE:
 <span class="nc" id="L143">        return new MoveTask(argRule, delay,</span>
 <span class="nc" id="L144">                            session.getRunner().getFileInformation(), session);</span>
       case MOVERENAME:
-<span class="nc" id="L146">        return new MoveRenameTask(argRule, delay,</span>
-<span class="nc" id="L147">                                  session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L146">        return new MoveRenameTask(argRule, delay,</span>
+<span class="fc" id="L147">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case COPY:
 <span class="nc" id="L150">        return new CopyTask(argRule, delay,</span>
@@ -165,16 +165,16 @@ import java.util.Set;
 <span class="nc" id="L165">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case TRANSFER:
-<span class="nc" id="L168">        return new TransferTask(argRule, delay,</span>
-<span class="nc" id="L169">                                session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L168">        return new TransferTask(argRule, delay,</span>
+<span class="fc" id="L169">                                session.getRunner().getFileInformation(),</span>
                                 session);
       case VALIDFILEPATH:
 <span class="nc" id="L172">        return new ValidFilePathTask(argRule, delay,</span>
 <span class="nc" id="L173">                                     session.getRunner().getFileInformation(),</span>
                                      session);
       case DELETE:
-<span class="nc" id="L176">        return new DeleteTask(argRule, delay,</span>
-<span class="nc" id="L177">                              session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L176">        return new DeleteTask(argRule, delay,</span>
+<span class="fc" id="L177">                              session.getRunner().getFileInformation(),</span>
                               session);
       case TAR:
 <span class="nc" id="L180">        return new TarTask(argRule, delay,</span>
@@ -183,8 +183,8 @@ import java.util.Set;
 <span class="nc" id="L183">        return new ZipTask(argRule, delay,</span>
 <span class="nc" id="L184">                           session.getRunner().getFileInformation(), session);</span>
       case EXECOUTPUT:
-<span class="nc" id="L186">        return new ExecOutputTask(argRule, delay,</span>
-<span class="nc" id="L187">                                  session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L186">        return new ExecOutputTask(argRule, delay,</span>
+<span class="fc" id="L187">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case RESCHEDULE:
 <span class="nc" id="L190">        return new RescheduleTransferTask(argRule, delay, session.getRunner()</span>
@@ -225,11 +225,11 @@ import java.util.Set;
 <span class="nc" id="L225">                                 session.getRunner().getFileInformation(),</span>
                                  session);
       case ICAP:
-<span class="nc" id="L228">        return new IcapTask(argRule, delay,</span>
-<span class="nc" id="L229">                            session.getRunner().getFileInformation(), session);</span>
+<span class="fc" id="L228">        return new IcapTask(argRule, delay,</span>
+<span class="fc" id="L229">                            session.getRunner().getFileInformation(), session);</span>
       case COMPRESS:
-<span class="nc" id="L231">        return new CompressTask(argRule, delay,</span>
-<span class="nc" id="L232">                                session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L231">        return new CompressTask(argRule, delay,</span>
+<span class="fc" id="L232">                                session.getRunner().getFileInformation(),</span>
                                 session);
       case EXTENDED:
         // Should not arrived here
@@ -255,21 +255,21 @@ import java.util.Set;
                                            final R66Session session)
       throws OpenR66RunnerErrorException {
     // EXTENDED first
-<span class="nc" id="L258">    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (factory != null) {</span>
-<span class="nc" id="L260">      return factory.getTaskFromId(name, argRule, delay, session);</span>
+<span class="fc" id="L258">    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">    if (factory != null) {</span>
+<span class="fc" id="L260">      return factory.getTaskFromId(name, argRule, delay, session);</span>
     }
     final TaskType type;
     try {
-<span class="nc" id="L264">      type = valueOf(name);</span>
+<span class="fc" id="L264">      type = valueOf(name);</span>
 <span class="nc" id="L265">    } catch (final NullPointerException e) {</span>
 <span class="nc" id="L266">      logger.error(&quot;name empty &quot; + name);</span>
 <span class="nc" id="L267">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
 <span class="nc" id="L268">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L269">      logger.error(NAME_UNKNOWN + name);</span>
 <span class="nc" id="L270">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
-<span class="nc" id="L271">    }</span>
-<span class="nc" id="L272">    return getTaskFromId(type, argRule, delay, session);</span>
+<span class="fc" id="L271">    }</span>
+<span class="fc" id="L272">    return getTaskFromId(type, argRule, delay, session);</span>
   }
 
   /**
@@ -290,13 +290,13 @@ import java.util.Set;
                                                       final R66Session session)
       throws OpenR66RunnerErrorException {
     // EXTENDED first
-<span class="nc" id="L293">    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);</span>
-<span class="nc bnc" id="L294" title="All 2 branches missed.">    if (factory != null) {</span>
+<span class="fc" id="L293">    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">    if (factory != null) {</span>
 <span class="nc" id="L295">      return factory.getTaskFromIdForBusiness(name, argRule, delay, session);</span>
     }
     final TaskType type;
     try {
-<span class="nc" id="L299">      type = valueOf(name);</span>
+<span class="fc" id="L299">      type = valueOf(name);</span>
 <span class="nc" id="L300">    } catch (final NullPointerException e) {</span>
 <span class="nc" id="L301">      logger.error(&quot;name empty &quot; + name);</span>
 <span class="nc" id="L302">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
@@ -304,14 +304,14 @@ import java.util.Set;
       // FIXME EXTENDED
 <span class="nc" id="L305">      logger.error(NAME_UNKNOWN + name);</span>
 <span class="nc" id="L306">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
-<span class="nc" id="L307">    }</span>
-<span class="nc bnc" id="L308" title="All 13 branches missed.">    switch (type) {</span>
+<span class="fc" id="L307">    }</span>
+<span class="pc bpc" id="L308" title="11 of 13 branches missed.">    switch (type) {</span>
       case LOG:
-<span class="nc" id="L310">        int newdelay = delay;</span>
-<span class="nc bnc" id="L311" title="All 2 branches missed.">        if (newdelay == 0) {</span>
+<span class="fc" id="L310">        int newdelay = delay;</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (newdelay == 0) {</span>
 <span class="nc" id="L312">          newdelay = 1;</span>
         }
-<span class="nc" id="L314">        return new LogTask(argRule, newdelay, &quot;&quot;, session);</span>
+<span class="fc" id="L314">        return new LogTask(argRule, newdelay, &quot;&quot;, session);</span>
       case EXEC:
 <span class="nc" id="L316">        return new ExecTask(argRule, delay, &quot;&quot;, session);</span>
       case TRANSFER:
@@ -323,7 +323,7 @@ import java.util.Set;
       case EXECOUTPUT:
 <span class="nc" id="L324">        return new ExecOutputTask(argRule, delay, &quot;&quot;, session);</span>
       case EXECJAVA:
-<span class="nc" id="L326">        return new ExecJavaTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="fc" id="L326">        return new ExecJavaTask(argRule, delay, &quot;&quot;, session);</span>
       case SNMP:
 <span class="nc" id="L328">        return new SnmpTask(argRule, delay, &quot;&quot;, session);</span>
       case FTP:

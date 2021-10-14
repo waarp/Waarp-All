@@ -23,10 +23,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
@@ -58,121 +60,126 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(HttpRestServerR66Handler.class);</span>
+<span class="fc" id="L63">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L64">      WaarpLoggerFactory.getLogger(HttpRestServerR66Handler.class);</span>
 
   public HttpRestServerR66Handler(final RestConfiguration config,
                                   final METHOD... methods) {
-<span class="fc" id="L66">    super(BASEURI, config, METHOD.OPTIONS);</span>
-<span class="fc" id="L67">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
-<span class="fc" id="L68">  }</span>
+<span class="fc" id="L68">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L69">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
+<span class="fc" id="L70">  }</span>
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="nc" id="L75">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (body != null) {</span>
-<span class="nc" id="L77">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    try {
+<span class="nc" id="L79">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="nc" id="L80">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L81">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
+<span class="nc" id="L82">    }</span>
+<span class="nc" id="L83">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L85">      logger.debug(&quot;Obj: {}&quot;, body);</span>
     }
-<span class="nc" id="L79">    handler.setWillClose(false);</span>
-<span class="nc" id="L80">    final ServerActions serverHandler =</span>
-<span class="nc" id="L81">        ((HttpRestR66Handler) handler).getServerHandler();</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (arguments.getMethod() == METHOD.GET) {</span>
+<span class="nc" id="L87">    handler.setWillClose(false);</span>
+<span class="nc" id="L88">    final ServerActions serverHandler =</span>
+<span class="nc" id="L89">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (arguments.getMethod() == METHOD.GET) {</span>
       // status Json
-<span class="nc" id="L84">      result.setCommand(ACTIONS_TYPE.GetStatus.name());</span>
-<span class="nc" id="L85">      Configuration.configuration.getMonitoring().run(0, true);</span>
-<span class="nc" id="L86">      final ObjectNode node =</span>
-<span class="nc" id="L87">          Configuration.configuration.getMonitoring().exportAsJson(true);</span>
-<span class="nc" id="L88">      result.setDetail(&quot;Current Waarp R66 status&quot;);</span>
-<span class="nc" id="L89">      result.addResult(node);</span>
-<span class="nc" id="L90">      setOk(handler, result, null, HttpResponseStatus.OK);</span>
-<span class="nc" id="L91">      return;</span>
+<span class="nc" id="L92">      result.setCommand(ACTIONS_TYPE.GetStatus.name());</span>
+<span class="nc" id="L93">      Configuration.configuration.getMonitoring().run(0, true);</span>
+<span class="nc" id="L94">      final ObjectNode node =</span>
+<span class="nc" id="L95">          Configuration.configuration.getMonitoring().exportAsJson(true);</span>
+<span class="nc" id="L96">      result.setDetail(&quot;Current Waarp R66 status&quot;);</span>
+<span class="nc" id="L97">      result.addResult(node);</span>
+<span class="nc" id="L98">      setOk(handler, result, null, HttpResponseStatus.OK);</span>
+<span class="nc" id="L99">      return;</span>
     }
     // now action according to body
-<span class="nc" id="L94">    final JsonPacket json = (JsonPacket) body;</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (json == null) {</span>
-<span class="nc" id="L96">      result.setDetail(&quot;not enough information&quot;);</span>
-<span class="nc" id="L97">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
-<span class="nc" id="L98">      return;</span>
+<span class="nc" id="L102">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (json == null) {</span>
+<span class="nc" id="L104">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="nc" id="L105">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L106">      return;</span>
     }
-<span class="nc" id="L100">    result.getAnswer()</span>
-<span class="nc" id="L101">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Server.name());</span>
+<span class="nc" id="L108">    result.getAnswer()</span>
+<span class="nc" id="L109">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Server.name());</span>
     try {
-<span class="nc bnc" id="L103" title="All 2 branches missed.">      if (json instanceof ShutdownOrBlockJsonPacket) {//</span>
-<span class="nc" id="L104">        final ShutdownOrBlockJsonPacket node = (ShutdownOrBlockJsonPacket) json;</span>
-<span class="nc" id="L105">        result.setCommand(ACTIONS_TYPE.ShutdownOrBlock.name());</span>
-<span class="nc" id="L106">        final byte[] key = node.getKey();</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (node.isShutdownOrBlock()) {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (json instanceof ShutdownOrBlockJsonPacket) {//</span>
+<span class="nc" id="L112">        final ShutdownOrBlockJsonPacket node = (ShutdownOrBlockJsonPacket) json;</span>
+<span class="nc" id="L113">        result.setCommand(ACTIONS_TYPE.ShutdownOrBlock.name());</span>
+<span class="nc" id="L114">        final byte[] key = node.getKey();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (node.isShutdownOrBlock()) {</span>
           // Shutdown
-<span class="nc" id="L109">          serverHandler.shutdown(key, node.isRestartOrBlock());</span>
-<span class="nc" id="L110">          result.setDetail(&quot;Shutdown on going&quot;);</span>
+<span class="nc" id="L117">          serverHandler.shutdown(key, node.isRestartOrBlock());</span>
+<span class="nc" id="L118">          result.setDetail(&quot;Shutdown on going&quot;);</span>
         } else {
           // Block
-<span class="nc" id="L113">          serverHandler.blockRequest(key, node.isRestartOrBlock());</span>
-<span class="nc" id="L114">          node.setComment(</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">              (node.isRestartOrBlock()? &quot;Block&quot; : &quot;Unblock&quot;) + &quot; new request&quot;);</span>
-<span class="nc" id="L116">          result.setDetail(</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">              (node.isRestartOrBlock()? &quot;Block&quot; : &quot;Unblock&quot;) + &quot; new request&quot;);</span>
+<span class="nc" id="L121">          serverHandler.blockRequest(key, node.isRestartOrBlock());</span>
+<span class="nc" id="L122">          node.setComment(</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">              (node.isRestartOrBlock()? &quot;Block&quot; : &quot;Unblock&quot;) + &quot; new request&quot;);</span>
+<span class="nc" id="L124">          result.setDetail(</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">              (node.isRestartOrBlock()? &quot;Block&quot; : &quot;Unblock&quot;) + &quot; new request&quot;);</span>
         }
-<span class="nc" id="L119">        setOk(handler, result, json, HttpResponseStatus.OK);</span>
-<span class="nc" id="L120">      } else {</span>
-<span class="nc" id="L121">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
-<span class="nc" id="L122">        result.setDetail(&quot;Unknown command&quot;);</span>
-<span class="nc" id="L123">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+<span class="nc" id="L127">        setOk(handler, result, json, HttpResponseStatus.OK);</span>
+<span class="nc" id="L128">      } else {</span>
+<span class="nc" id="L129">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
+<span class="nc" id="L130">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L131">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
       }
-<span class="nc" id="L125">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
-<span class="nc" id="L126">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="nc" id="L127">    } catch (final OpenR66ProtocolBusinessException e) {</span>
-<span class="nc" id="L128">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L129">    } catch (final OpenR66ProtocolShutdownException e) {</span>
-<span class="nc" id="L130">      result.setDetail(&quot;Shutdown on going&quot;);</span>
-<span class="nc" id="L131">      setOk(handler, result, json, HttpResponseStatus.OK);</span>
-<span class="nc" id="L132">      WaarpShutdownHook.shutdownWillStart();</span>
-<span class="nc" id="L133">      logger.warn(Messages.getString(&quot;LocalServerHandler.0&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L134">                  serverHandler.getSession().getAuth().getUser());</span>
+<span class="nc" id="L133">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L134">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L135">    } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L136">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L137">    } catch (final OpenR66ProtocolShutdownException e) {</span>
+<span class="nc" id="L138">      result.setDetail(&quot;Shutdown on going&quot;);</span>
+<span class="nc" id="L139">      setOk(handler, result, json, HttpResponseStatus.OK);</span>
+<span class="nc" id="L140">      WaarpShutdownHook.shutdownWillStart();</span>
+<span class="nc" id="L141">      logger.warn(Messages.getString(&quot;LocalServerHandler.0&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L142">                  serverHandler.getSession().getAuth().getUser());</span>
       // dont'close, thread will do
-<span class="nc" id="L136">      ChannelUtils.startShutdown();</span>
-<span class="nc" id="L137">    }</span>
-<span class="nc" id="L138">  }</span>
+<span class="nc" id="L144">      ChannelUtils.startShutdown();</span>
+<span class="nc" id="L145">    }</span>
+<span class="nc" id="L146">  }</span>
 
   @Override
-  protected ArrayNode getDetailedAllow() {
-<span class="nc" id="L142">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+  protected final ArrayNode getDetailedAllow() {
+<span class="nc" id="L150">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="nc bnc" id="L144" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="nc" id="L145">      final ShutdownOrBlockJsonPacket node3 = new ShutdownOrBlockJsonPacket();</span>
-<span class="nc" id="L146">      node3.setComment(&quot;Shutdown Or Block request (PUT)&quot;);</span>
-<span class="nc" id="L147">      node3.setKey(&quot;Key&quot;.getBytes());</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="nc" id="L153">      final ShutdownOrBlockJsonPacket node3 = new ShutdownOrBlockJsonPacket();</span>
+<span class="nc" id="L154">      node3.setComment(&quot;Shutdown Or Block request (PUT)&quot;);</span>
+<span class="nc" id="L155">      node3.setKey(&quot;Key&quot;.getBytes(WaarpStringUtils.UTF8));</span>
       final ObjectNode node2;
-<span class="nc" id="L149">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L157">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="nc" id="L151">        node1.add(node3.createObjectNode());</span>
-<span class="nc" id="L152">        node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
-                                               ACTIONS_TYPE.ShutdownOrBlock
-<span class="nc" id="L154">                                                   .name(),</span>
-<span class="nc" id="L155">                                               node3.createObjectNode(), node1);</span>
-<span class="nc" id="L156">        node.add(node2);</span>
-<span class="nc" id="L157">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L159">        node1.add(node3.createObjectNode());</span>
+<span class="nc" id="L160">        node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="nc" id="L161">                                               ACTIONS_TYPE.ShutdownOrBlock.name(),</span>
+<span class="nc" id="L162">                                               node3.createObjectNode(), node1);</span>
+<span class="nc" id="L163">        node.add(node2);</span>
+<span class="nc" id="L164">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="nc" id="L159">      }</span>
+<span class="nc" id="L166">      }</span>
     }
-<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="nc" id="L162">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
-<span class="nc" id="L163">      node1.add(Configuration.configuration.getMonitoring().exportAsJson(true));</span>
-<span class="nc" id="L164">      final ObjectNode node2 = RestArgument</span>
-<span class="nc" id="L165">          .fillDetailedAllow(METHOD.GET, path, ACTIONS_TYPE.GetStatus.name(),</span>
-                             null, node1);
-<span class="nc" id="L167">      node.add(node2);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="nc" id="L169">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L170">      node1.add(Configuration.configuration.getMonitoring().exportAsJson(true));</span>
+<span class="nc" id="L171">      final ObjectNode node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="nc" id="L172">                                                              ACTIONS_TYPE.GetStatus.name(),</span>
+                                                              null, node1);
+<span class="nc" id="L174">      node.add(node2);</span>
     }
 
-<span class="nc" id="L170">    final ObjectNode node2 = RestArgument</span>
-<span class="nc" id="L171">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
-                           null, null);
-<span class="nc" id="L173">    node.add(node2);</span>
+<span class="nc" id="L177">    final ObjectNode node2 =</span>
+<span class="nc" id="L178">        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="nc" id="L179">                                       COMMAND_TYPE.OPTIONS.name(), null, null);</span>
+<span class="nc" id="L180">    node.add(node2);</span>
 
-<span class="nc" id="L175">    return node;</span>
+<span class="nc" id="L182">    return node;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

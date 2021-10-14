@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -32,6 +33,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoCorrectAuthenticationException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
@@ -50,124 +52,133 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L53">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L54">      WaarpLoggerFactory.getLogger(HttpRestBandwidthR66Handler.class);</span>
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(HttpRestBandwidthR66Handler.class);</span>
 
   public HttpRestBandwidthR66Handler(final RestConfiguration config,
                                      final METHOD... methods) {
-<span class="fc" id="L58">    super(BASEURI, config, METHOD.OPTIONS);</span>
-<span class="fc" id="L59">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
-<span class="fc" id="L60">  }</span>
+<span class="fc" id="L60">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L61">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
+<span class="fc" id="L62">  }</span>
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpInvalidAuthenticationException {
-<span class="fc" id="L67">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (body != null) {</span>
-<span class="nc" id="L69">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    try {
+<span class="fc" id="L71">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="nc" id="L72">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L73">      throw new HttpInvalidAuthenticationException(&quot;Issue on values&quot;, e);</span>
+<span class="fc" id="L74">    }</span>
+<span class="fc" id="L75">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L77">      logger.debug(&quot;Obj: {}&quot;, body);</span>
     }
-<span class="fc" id="L71">    handler.setWillClose(false);</span>
-<span class="fc" id="L72">    final ServerActions serverHandler =</span>
-<span class="fc" id="L73">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+<span class="fc" id="L79">    handler.setWillClose(false);</span>
+<span class="fc" id="L80">    final ServerActions serverHandler =</span>
+<span class="fc" id="L81">        ((HttpRestR66Handler) handler).getServerHandler();</span>
     // now action according to body
-<span class="fc" id="L75">    final JsonPacket json = (JsonPacket) body;</span>
-<span class="pc bpc" id="L76" title="3 of 4 branches missed.">    if (json != null &amp;&amp; !(json instanceof BandwidthJsonPacket)) {</span>
-<span class="nc" id="L77">      logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
-<span class="nc" id="L78">      result.setDetail(&quot;Unknown command&quot;);</span>
-<span class="nc" id="L79">      setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
-<span class="nc" id="L80">      return;</span>
+<span class="fc" id="L83">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="pc bpc" id="L84" title="3 of 4 branches missed.">    if (json != null &amp;&amp; !(json instanceof BandwidthJsonPacket)) {</span>
+<span class="nc" id="L85">      logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
+<span class="nc" id="L86">      result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L87">      setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+<span class="nc" id="L88">      return;</span>
     }
-<span class="fc" id="L82">    result.getAnswer()</span>
-<span class="fc" id="L83">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Bandwidth.name());</span>
+<span class="fc" id="L90">    result.getAnswer()</span>
+<span class="fc" id="L91">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Bandwidth.name());</span>
     try {
       final long[] lresult;
       final boolean setter;
       final BandwidthJsonPacket node;
-<span class="pc bpc" id="L88" title="3 of 4 branches missed.">      if (json != null &amp;&amp; json instanceof BandwidthJsonPacket) {//</span>
+<span class="pc bpc" id="L96" title="3 of 4 branches missed.">      if (json != null &amp;&amp; json instanceof BandwidthJsonPacket) {//</span>
         // setter, writeglobal, readglobal, writesession, readsession
-<span class="nc" id="L90">        node = (BandwidthJsonPacket) json;</span>
-<span class="nc" id="L91">        setter = node.isSetter();</span>
-<span class="nc bnc" id="L92" title="All 4 branches missed.">        if (setter &amp;&amp; arguments.getMethod() != METHOD.PUT) {</span>
+<span class="nc" id="L98">        node = (BandwidthJsonPacket) json;</span>
+<span class="nc" id="L99">        setter = node.isSetter();</span>
+<span class="nc bnc" id="L100" title="All 4 branches missed.">        if (setter &amp;&amp; arguments.getMethod() != METHOD.PUT) {</span>
           // wrong
-<span class="nc" id="L94">          result.setDetail(&quot;Setter should be requested with a PUT method&quot;);</span>
-<span class="nc" id="L95">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
-<span class="nc" id="L96">          return;</span>
-<span class="nc bnc" id="L97" title="All 4 branches missed.">        } else if (!setter &amp;&amp; arguments.getMethod() != METHOD.GET) {</span>
+<span class="nc" id="L102">          result.setDetail(&quot;Setter should be requested with a PUT method&quot;);</span>
+<span class="nc" id="L103">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
+<span class="nc" id="L104">          return;</span>
+<span class="nc bnc" id="L105" title="All 4 branches missed.">        } else if (!setter &amp;&amp; arguments.getMethod() != METHOD.GET) {</span>
           // wrong
-<span class="nc" id="L99">          result.setDetail(&quot;Getter should not be requested with a GET method&quot;);</span>
-<span class="nc" id="L100">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
-<span class="nc" id="L101">          return;</span>
+<span class="nc" id="L107">          result.setDetail(&quot;Getter should not be requested with a GET method&quot;);</span>
+<span class="nc" id="L108">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
+<span class="nc" id="L109">          return;</span>
         }
       } else {
-<span class="pc bpc" id="L104" title="2 of 4 branches missed.">        if (json == null &amp;&amp; arguments.getMethod() != METHOD.GET) {</span>
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">        if (json == null &amp;&amp; arguments.getMethod() != METHOD.GET) {</span>
           // wrong
-<span class="nc" id="L106">          result.setDetail(&quot;Setter should be requested with a JSON argument&quot;);</span>
-<span class="nc" id="L107">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
-<span class="nc" id="L108">          return;</span>
+<span class="nc" id="L114">          result.setDetail(&quot;Setter should be requested with a JSON argument&quot;);</span>
+<span class="nc" id="L115">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
+<span class="nc" id="L116">          return;</span>
         }
-<span class="fc" id="L110">        setter = false;</span>
-<span class="fc" id="L111">        node = new BandwidthJsonPacket();</span>
+<span class="fc" id="L118">        setter = false;</span>
+<span class="fc" id="L119">        node = new BandwidthJsonPacket();</span>
       }
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">      if (setter) {</span>
-<span class="nc" id="L114">        result.setCommand(ACTIONS_TYPE.SetBandwidth.name());</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">      if (setter) {</span>
+<span class="nc" id="L122">        result.setCommand(ACTIONS_TYPE.SetBandwidth.name());</span>
       } else {
-<span class="fc" id="L116">        result.setCommand(ACTIONS_TYPE.GetBandwidth.name());</span>
+<span class="fc" id="L124">        result.setCommand(ACTIONS_TYPE.GetBandwidth.name());</span>
       }
       // request of current values or set new values
-<span class="fc" id="L119">      lresult = serverHandler</span>
-<span class="fc" id="L120">          .bandwidth(setter, node.getWriteglobal(), node.getReadglobal(),</span>
-<span class="fc" id="L121">                     node.getWritesession(), node.getReadsession());</span>
+<span class="fc" id="L127">      lresult = serverHandler.bandwidth(setter, node.getWriteglobal(),</span>
+<span class="fc" id="L128">                                        node.getReadglobal(),</span>
+<span class="fc" id="L129">                                        node.getWritesession(),</span>
+<span class="fc" id="L130">                                        node.getReadsession());</span>
       // Now answer
-<span class="fc" id="L123">      node.setWriteglobal(lresult[0]);</span>
-<span class="fc" id="L124">      node.setReadglobal(lresult[1]);</span>
-<span class="fc" id="L125">      node.setWritesession(lresult[2]);</span>
-<span class="fc" id="L126">      node.setReadsession(lresult[3]);</span>
-<span class="fc" id="L127">      setOk(handler, result, node, HttpResponseStatus.OK);</span>
-<span class="nc" id="L128">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
-<span class="nc" id="L129">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="fc" id="L130">    }</span>
-<span class="fc" id="L131">  }</span>
+<span class="fc" id="L132">      node.setWriteglobal(lresult[0]);</span>
+<span class="fc" id="L133">      node.setReadglobal(lresult[1]);</span>
+<span class="fc" id="L134">      node.setWritesession(lresult[2]);</span>
+<span class="fc" id="L135">      node.setReadsession(lresult[3]);</span>
+<span class="fc" id="L136">      setOk(handler, result, node, HttpResponseStatus.OK);</span>
+<span class="nc" id="L137">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L138">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L139">    } catch (final OpenR66ProtocolNoCorrectAuthenticationException e) {</span>
+<span class="nc" id="L140">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="fc" id="L141">    }</span>
+<span class="fc" id="L142">  }</span>
 
   @Override
-  protected ArrayNode getDetailedAllow() {
-<span class="fc" id="L135">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+  protected final ArrayNode getDetailedAllow() {
+<span class="fc" id="L146">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="fc" id="L137">    final BandwidthJsonPacket node3 = new BandwidthJsonPacket();</span>
-<span class="fc" id="L138">    node3.setComment(&quot;Bandwidth getter (GET)&quot;);</span>
-<span class="fc" id="L139">    node3.setRequestUserPacket();</span>
+<span class="fc" id="L148">    final BandwidthJsonPacket node3 = new BandwidthJsonPacket();</span>
+<span class="fc" id="L149">    node3.setComment(&quot;Bandwidth getter (GET)&quot;);</span>
+<span class="fc" id="L150">    node3.setRequestUserPacket();</span>
     ObjectNode node2;
-<span class="fc" id="L141">    final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L152">    final ArrayNode node1 = JsonHandler.createArrayNode();</span>
     try {
-<span class="fc" id="L143">      node1.add(node3.createObjectNode());</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">      if (methods.contains(METHOD.GET)) {</span>
-<span class="fc" id="L145">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
-<span class="fc" id="L146">                                               ACTIONS_TYPE.GetBandwidth.name(),</span>
-<span class="fc" id="L147">                                               node3.createObjectNode(), node1);</span>
-<span class="fc" id="L148">        node.add(node2);</span>
+<span class="fc" id="L154">      node1.add(node3.createObjectNode());</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">      if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L156">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L157">                                               ACTIONS_TYPE.GetBandwidth.name(),</span>
+<span class="fc" id="L158">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L159">        node.add(node2);</span>
       }
-<span class="nc" id="L150">    } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L161">    } catch (final OpenR66ProtocolPacketException ignored) {</span>
       // ignore
-<span class="fc" id="L152">    }</span>
+<span class="fc" id="L163">    }</span>
 
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="fc" id="L155">      node3.setComment(&quot;Bandwidth setter (PUT)&quot;);</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="fc" id="L166">      node3.setComment(&quot;Bandwidth setter (PUT)&quot;);</span>
       try {
-<span class="fc" id="L157">        node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
-<span class="fc" id="L158">                                               ACTIONS_TYPE.SetBandwidth.name(),</span>
-<span class="fc" id="L159">                                               node3.createObjectNode(), node1);</span>
-<span class="fc" id="L160">        node.add(node2);</span>
-<span class="nc" id="L161">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L168">        node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="fc" id="L169">                                               ACTIONS_TYPE.SetBandwidth.name(),</span>
+<span class="fc" id="L170">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L171">        node.add(node2);</span>
+<span class="nc" id="L172">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="fc" id="L163">      }</span>
+<span class="fc" id="L174">      }</span>
     }
-<span class="fc" id="L165">    node2 = RestArgument</span>
-<span class="fc" id="L166">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
-                           null, null);
-<span class="fc" id="L168">    node.add(node2);</span>
+<span class="fc" id="L176">    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="fc" id="L177">                                           COMMAND_TYPE.OPTIONS.name(), null,</span>
+                                           null);
+<span class="fc" id="L179">    node.add(node2);</span>
 
-<span class="fc" id="L170">    return node;</span>
+<span class="fc" id="L181">    return node;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

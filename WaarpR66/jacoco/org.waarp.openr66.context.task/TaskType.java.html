@@ -19,10 +19,18 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.context.task.extension.AbstractExtendedTaskFactory;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This enum class references all available tasks.
@@ -30,14 +38,18 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
  * If a new task type is to be created, this is the place where it should be
  * referenced.
  */
-<span class="fc" id="L33">public enum TaskType {</span>
-<span class="fc" id="L34">  LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,</span>
-<span class="fc" id="L35">  VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,</span>
-<span class="fc" id="L36">  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP;</span>
+<span class="fc" id="L41">public enum TaskType {</span>
+<span class="fc" id="L42">  LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,</span>
+<span class="fc" id="L43">  VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,</span>
+<span class="fc" id="L44">  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP, EXTENDED,</span>
+<span class="fc" id="L45">  COMPRESS;</span>
 
-  private static final String UNVALID_TASK = &quot;Unvalid Task: &quot;;
+  public static final String UNVALID_TASK = &quot;Unvalid Task: &quot;;
 
-  private static final String NAME_UNKNOWN = &quot;name unknown: &quot;;
+  public static final String NAME_UNKNOWN = &quot;name unknown: &quot;;
+
+  private static final Map&lt;String, AbstractExtendedTaskFactory&gt;
+<span class="fc" id="L52">      extendedTaskTypeMap = new HashMap&lt;String, AbstractExtendedTaskFactory&gt;();</span>
 
   final int type;
 
@@ -45,13 +57,68 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
   /**
    * Internal Logger
    */
-<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(TaskType.class);</span>
+<span class="fc" id="L60">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L61">      WaarpLoggerFactory.getLogger(TaskType.class);</span>
 
-<span class="fc" id="L51">  TaskType() {</span>
-<span class="fc" id="L52">    type = ordinal();</span>
-<span class="fc" id="L53">    name = name();</span>
-<span class="fc" id="L54">  }</span>
+<span class="fc" id="L63">  TaskType() {</span>
+<span class="fc" id="L64">    type = ordinal();</span>
+<span class="fc" id="L65">    name = name();</span>
+<span class="fc" id="L66">  }</span>
+
+  /**
+   * Allow to add extended task that will be denoted as EXTENDED
+   *
+   * @param associatedTaskNames if a previously TASK name was already set, it is replaced by the new Factory, including standard TASK_TYPE
+   * @param extendedTaskFactory the Factory to use to create the associated Task with its name
+   */
+  public static void addExtendedTaskFactory(
+      final Set&lt;String&gt; associatedTaskNames,
+      final AbstractExtendedTaskFactory extendedTaskFactory) {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    for (final String associatedName : associatedTaskNames) {</span>
+<span class="nc" id="L78">      logger.debug(&quot;Add {} with {}&quot;, associatedName,</span>
+<span class="nc" id="L79">                   extendedTaskFactory.getName());</span>
+<span class="nc" id="L80">      extendedTaskTypeMap.put(associatedName, extendedTaskFactory);</span>
+<span class="nc" id="L81">    }</span>
+<span class="nc" id="L82">  }</span>
+
+  public static final String S_3_TASK_FACTORY =
+      &quot;org.waarp.openr66.s3.taskfactory.S3TaskFactory&quot;;
+
+  static {
+    // Try to load S3 Tasks if S3TaskFactory exists
+    try {
+<span class="nc" id="L90">      final Class s3TaskFactoryClass = Class.forName(S_3_TASK_FACTORY);</span>
+<span class="nc" id="L91">      WaarpSystemUtil.newInstance(s3TaskFactoryClass);</span>
+<span class="fc" id="L92">    } catch (final Exception ignore) {</span>
+      // Not found and ignore
+<span class="fc" id="L94">      SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="nc" id="L95">    }</span>
+<span class="fc" id="L96">  }</span>
+
+  /**
+   * @return the current Set of ExtendedTaskFactories
+   */
+  public static Collection&lt;AbstractExtendedTaskFactory&gt; getExtendedFactories() {
+<span class="nc" id="L102">    return extendedTaskTypeMap.values();</span>
+  }
+
+  /**
+   * Check if the given Task exists
+   *
+   * @param task
+   *
+   * @return True if this task is known
+   */
+  public static boolean isValidTask(final String task) {
+    try {
+<span class="fc" id="L114">      TaskType.valueOf(task);</span>
+<span class="fc" id="L115">      return true;</span>
+<span class="nc" id="L116">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L117">      logger.debug(&quot;{} is in keys: {}&quot;, task,</span>
+<span class="nc" id="L118">                   extendedTaskTypeMap.containsKey(task));</span>
+<span class="nc" id="L119">      return extendedTaskTypeMap.containsKey(task);</span>
+    }
+  }
 
   /**
    * @param type
@@ -63,106 +130,112 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static AbstractTask getTaskFromId(final TaskType type,
-                                           final String argRule,
-                                           final int delay,
-                                           final R66Session session)
+  private static AbstractTask getTaskFromId(final TaskType type,
+                                            final String argRule,
+                                            final int delay,
+                                            final R66Session session)
       throws OpenR66RunnerErrorException {
-<span class="pc bpc" id="L71" title="20 of 26 branches missed.">    switch (type) {</span>
+<span class="pc bpc" id="L138" title="20 of 27 branches missed.">    switch (type) {</span>
       case LOG:
-<span class="fc" id="L73">        return new LogTask(argRule, delay,</span>
-<span class="fc" id="L74">                           session.getRunner().getFileInformation(), session);</span>
+<span class="fc" id="L140">        return new LogTask(argRule, delay,</span>
+<span class="fc" id="L141">                           session.getRunner().getFileInformation(), session);</span>
       case MOVE:
-<span class="nc" id="L76">        return new MoveTask(argRule, delay,</span>
-<span class="nc" id="L77">                            session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L143">        return new MoveTask(argRule, delay,</span>
+<span class="nc" id="L144">                            session.getRunner().getFileInformation(), session);</span>
       case MOVERENAME:
-<span class="fc" id="L79">        return new MoveRenameTask(argRule, delay,</span>
-<span class="fc" id="L80">                                  session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L146">        return new MoveRenameTask(argRule, delay,</span>
+<span class="fc" id="L147">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case COPY:
-<span class="nc" id="L83">        return new CopyTask(argRule, delay,</span>
-<span class="nc" id="L84">                            session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L150">        return new CopyTask(argRule, delay,</span>
+<span class="nc" id="L151">                            session.getRunner().getFileInformation(), session);</span>
       case COPYRENAME:
-<span class="nc" id="L86">        return new CopyRenameTask(argRule, delay,</span>
-<span class="nc" id="L87">                                  session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L153">        return new CopyRenameTask(argRule, delay,</span>
+<span class="nc" id="L154">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case EXEC:
-<span class="nc" id="L90">        return new ExecTask(argRule, delay,</span>
-<span class="nc" id="L91">                            session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L157">        return new ExecTask(argRule, delay,</span>
+<span class="nc" id="L158">                            session.getRunner().getFileInformation(), session);</span>
       case EXECMOVE:
-<span class="nc" id="L93">        return new ExecMoveTask(argRule, delay,</span>
-<span class="nc" id="L94">                                session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L160">        return new ExecMoveTask(argRule, delay,</span>
+<span class="nc" id="L161">                                session.getRunner().getFileInformation(),</span>
                                 session);
       case LINKRENAME:
-<span class="nc" id="L97">        return new LinkRenameTask(argRule, delay,</span>
-<span class="nc" id="L98">                                  session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L164">        return new LinkRenameTask(argRule, delay,</span>
+<span class="nc" id="L165">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case TRANSFER:
-<span class="fc" id="L101">        return new TransferTask(argRule, delay,</span>
-<span class="fc" id="L102">                                session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L168">        return new TransferTask(argRule, delay,</span>
+<span class="fc" id="L169">                                session.getRunner().getFileInformation(),</span>
                                 session);
       case VALIDFILEPATH:
-<span class="nc" id="L105">        return new ValidFilePathTask(argRule, delay,</span>
-<span class="nc" id="L106">                                     session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L172">        return new ValidFilePathTask(argRule, delay,</span>
+<span class="nc" id="L173">                                     session.getRunner().getFileInformation(),</span>
                                      session);
       case DELETE:
-<span class="fc" id="L109">        return new DeleteTask(argRule, delay,</span>
-<span class="fc" id="L110">                              session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L176">        return new DeleteTask(argRule, delay,</span>
+<span class="fc" id="L177">                              session.getRunner().getFileInformation(),</span>
                               session);
       case TAR:
-<span class="nc" id="L113">        return new TarTask(argRule, delay,</span>
-<span class="nc" id="L114">                           session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L180">        return new TarTask(argRule, delay,</span>
+<span class="nc" id="L181">                           session.getRunner().getFileInformation(), session);</span>
       case ZIP:
-<span class="nc" id="L116">        return new ZipTask(argRule, delay,</span>
-<span class="nc" id="L117">                           session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L183">        return new ZipTask(argRule, delay,</span>
+<span class="nc" id="L184">                           session.getRunner().getFileInformation(), session);</span>
       case EXECOUTPUT:
-<span class="fc" id="L119">        return new ExecOutputTask(argRule, delay,</span>
-<span class="fc" id="L120">                                  session.getRunner().getFileInformation(),</span>
+<span class="fc" id="L186">        return new ExecOutputTask(argRule, delay,</span>
+<span class="fc" id="L187">                                  session.getRunner().getFileInformation(),</span>
                                   session);
       case RESCHEDULE:
-<span class="nc" id="L123">        return new RescheduleTransferTask(argRule, delay, session.getRunner()</span>
-<span class="nc" id="L124">                                                                 .getFileInformation(),</span>
+<span class="nc" id="L190">        return new RescheduleTransferTask(argRule, delay, session.getRunner()</span>
+<span class="nc" id="L191">                                                                 .getFileInformation(),</span>
                                           session);
       case EXECJAVA:
-<span class="nc" id="L127">        return new ExecJavaTask(argRule, delay,</span>
-<span class="nc" id="L128">                                session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L194">        return new ExecJavaTask(argRule, delay,</span>
+<span class="nc" id="L195">                                session.getRunner().getFileInformation(),</span>
                                 session);
       case TRANSCODE:
-<span class="nc" id="L131">        return new TranscodeTask(argRule, delay,</span>
-<span class="nc" id="L132">                                 session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L198">        return new TranscodeTask(argRule, delay,</span>
+<span class="nc" id="L199">                                 session.getRunner().getFileInformation(),</span>
                                  session);
       case SNMP:
-<span class="nc" id="L135">        return new SnmpTask(argRule, delay,</span>
-<span class="nc" id="L136">                            session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L202">        return new SnmpTask(argRule, delay,</span>
+<span class="nc" id="L203">                            session.getRunner().getFileInformation(), session);</span>
       case FTP:
-<span class="nc" id="L138">        return new FtpTransferTask(argRule, delay,</span>
-<span class="nc" id="L139">                                   session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L205">        return new FtpTransferTask(argRule, delay,</span>
+<span class="nc" id="L206">                                   session.getRunner().getFileInformation(),</span>
                                    session);
       case RENAME:
-<span class="nc" id="L142">        return new RenameTask(argRule, delay,</span>
-<span class="nc" id="L143">                              session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L209">        return new RenameTask(argRule, delay,</span>
+<span class="nc" id="L210">                              session.getRunner().getFileInformation(),</span>
                               session);
       case RESTART:
-<span class="nc" id="L146">        return new RestartServerTask(argRule, delay,</span>
-<span class="nc" id="L147">                                     session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L213">        return new RestartServerTask(argRule, delay,</span>
+<span class="nc" id="L214">                                     session.getRunner().getFileInformation(),</span>
                                      session);
       case UNZEROED:
-<span class="nc" id="L150">        return new UnzeroedFileTask(argRule, delay,</span>
-<span class="nc" id="L151">                                    session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L217">        return new UnzeroedFileTask(argRule, delay,</span>
+<span class="nc" id="L218">                                    session.getRunner().getFileInformation(),</span>
                                     session);
       case CHMOD:
-<span class="nc" id="L154">        return new ChModTask(argRule, delay,</span>
-<span class="nc" id="L155">                             session.getRunner().getFileInformation(), session);</span>
+<span class="nc" id="L221">        return new ChModTask(argRule, delay,</span>
+<span class="nc" id="L222">                             session.getRunner().getFileInformation(), session);</span>
       case CHKFILE:
-<span class="nc" id="L157">        return new FileCheckTask(argRule, delay,</span>
-<span class="nc" id="L158">                                 session.getRunner().getFileInformation(),</span>
+<span class="nc" id="L224">        return new FileCheckTask(argRule, delay,</span>
+<span class="nc" id="L225">                                 session.getRunner().getFileInformation(),</span>
                                  session);
       case ICAP:
-<span class="fc" id="L161">        return new IcapTask(argRule, delay,</span>
-<span class="fc" id="L162">                            session.getRunner().getFileInformation(), session);</span>
+<span class="fc" id="L228">        return new IcapTask(argRule, delay,</span>
+<span class="fc" id="L229">                            session.getRunner().getFileInformation(), session);</span>
+      case COMPRESS:
+<span class="fc" id="L231">        return new CompressTask(argRule, delay,</span>
+<span class="fc" id="L232">                                session.getRunner().getFileInformation(),</span>
+                                session);
+      case EXTENDED:
+        // Should not arrived here
       default:
-<span class="nc" id="L164">        logger.error(NAME_UNKNOWN + type.name);</span>
-<span class="nc" id="L165">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
+<span class="nc" id="L237">        logger.error(NAME_UNKNOWN + type.name);</span>
+<span class="nc" id="L238">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
     }
   }
 
@@ -181,17 +254,22 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
                                            final int delay,
                                            final R66Session session)
       throws OpenR66RunnerErrorException {
+    // EXTENDED first
+<span class="fc" id="L258">    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">    if (factory != null) {</span>
+<span class="nc" id="L260">      return factory.getTaskFromId(name, argRule, delay, session);</span>
+    }
     final TaskType type;
     try {
-<span class="fc" id="L186">      type = valueOf(name);</span>
-<span class="nc" id="L187">    } catch (final NullPointerException e) {</span>
-<span class="nc" id="L188">      logger.error(&quot;name empty &quot; + name);</span>
-<span class="nc" id="L189">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
-<span class="nc" id="L190">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L191">      logger.error(NAME_UNKNOWN + name);</span>
-<span class="nc" id="L192">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
-<span class="fc" id="L193">    }</span>
-<span class="fc" id="L194">    return getTaskFromId(type, argRule, delay, session);</span>
+<span class="fc" id="L264">      type = valueOf(name);</span>
+<span class="nc" id="L265">    } catch (final NullPointerException e) {</span>
+<span class="nc" id="L266">      logger.error(&quot;name empty &quot; + name);</span>
+<span class="nc" id="L267">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="nc" id="L268">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L269">      logger.error(NAME_UNKNOWN + name);</span>
+<span class="nc" id="L270">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="fc" id="L271">    }</span>
+<span class="fc" id="L272">    return getTaskFromId(type, argRule, delay, session);</span>
   }
 
   /**
@@ -211,43 +289,51 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
                                                       final int delay,
                                                       final R66Session session)
       throws OpenR66RunnerErrorException {
+    // EXTENDED first
+<span class="fc" id="L293">    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">    if (factory != null) {</span>
+<span class="nc" id="L295">      return factory.getTaskFromIdForBusiness(name, argRule, delay, session);</span>
+    }
     final TaskType type;
     try {
-<span class="fc" id="L216">      type = valueOf(name);</span>
-<span class="nc" id="L217">    } catch (final NullPointerException e) {</span>
-<span class="nc" id="L218">      logger.error(&quot;name empty &quot; + name);</span>
-<span class="nc" id="L219">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
-<span class="nc" id="L220">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L221">      logger.error(NAME_UNKNOWN + name);</span>
-<span class="nc" id="L222">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
-<span class="fc" id="L223">    }</span>
-<span class="pc bpc" id="L224" title="11 of 13 branches missed.">    switch (type) {</span>
+<span class="fc" id="L299">      type = valueOf(name);</span>
+<span class="nc" id="L300">    } catch (final NullPointerException e) {</span>
+<span class="nc" id="L301">      logger.error(&quot;name empty &quot; + name);</span>
+<span class="nc" id="L302">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="nc" id="L303">    } catch (final IllegalArgumentException e) {</span>
+      // FIXME EXTENDED
+<span class="nc" id="L305">      logger.error(NAME_UNKNOWN + name);</span>
+<span class="nc" id="L306">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="fc" id="L307">    }</span>
+<span class="pc bpc" id="L308" title="11 of 13 branches missed.">    switch (type) {</span>
       case LOG:
-<span class="fc" id="L226">        int newdelay = delay;</span>
-<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        if (newdelay == 0) {</span>
-<span class="nc" id="L228">          newdelay = 1;</span>
+<span class="fc" id="L310">        int newdelay = delay;</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (newdelay == 0) {</span>
+<span class="nc" id="L312">          newdelay = 1;</span>
         }
-<span class="fc" id="L230">        return new LogTask(argRule, newdelay, &quot;&quot;, session);</span>
+<span class="fc" id="L314">        return new LogTask(argRule, newdelay, &quot;&quot;, session);</span>
       case EXEC:
-<span class="nc" id="L232">        return new ExecTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L316">        return new ExecTask(argRule, delay, &quot;&quot;, session);</span>
       case TRANSFER:
-<span class="nc" id="L234">        return new TransferTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L318">        return new TransferTask(argRule, delay, &quot;&quot;, session);</span>
       case TAR:
-<span class="nc" id="L236">        return new TarTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L320">        return new TarTask(argRule, delay, &quot;&quot;, session);</span>
       case ZIP:
-<span class="nc" id="L238">        return new ZipTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L322">        return new ZipTask(argRule, delay, &quot;&quot;, session);</span>
       case EXECOUTPUT:
-<span class="nc" id="L240">        return new ExecOutputTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L324">        return new ExecOutputTask(argRule, delay, &quot;&quot;, session);</span>
       case EXECJAVA:
-<span class="fc" id="L242">        return new ExecJavaTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="fc" id="L326">        return new ExecJavaTask(argRule, delay, &quot;&quot;, session);</span>
       case SNMP:
-<span class="nc" id="L244">        return new SnmpTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L328">        return new SnmpTask(argRule, delay, &quot;&quot;, session);</span>
       case FTP:
-<span class="nc" id="L246">        return new FtpTransferTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L330">        return new FtpTransferTask(argRule, delay, &quot;&quot;, session);</span>
       case RESTART:
-<span class="nc" id="L248">        return new RestartServerTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L332">        return new RestartServerTask(argRule, delay, &quot;&quot;, session);</span>
       case ICAP:
-<span class="nc" id="L250">        return new IcapTask(argRule, delay, &quot;&quot;, session);</span>
+<span class="nc" id="L334">        return new IcapTask(argRule, delay, &quot;&quot;, session);</span>
+      case EXTENDED:
+        // Not allowed
       case MOVE:
       case MOVERENAME:
       case COPY:
@@ -262,11 +348,12 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
       case UNZEROED:
       case CHMOD:
       case CHKFILE:
-<span class="nc" id="L265">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
+      case COMPRESS:
+<span class="nc" id="L352">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
       default:
-<span class="nc" id="L267">        logger.error(NAME_UNKNOWN + type.name);</span>
-<span class="nc" id="L268">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
+<span class="nc" id="L354">        logger.error(NAME_UNKNOWN + type.name);</span>
+<span class="nc" id="L355">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
     }
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

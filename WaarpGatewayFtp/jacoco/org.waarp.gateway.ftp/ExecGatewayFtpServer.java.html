@@ -59,8 +59,8 @@ public class ExecGatewayFtpServer {
           &quot; &lt;config-file&gt; [&lt;r66config-file&gt;]&quot;);
 <span class="nc" id="L60">      return;</span>
     }
-<span class="fc" id="L62">    WaarpLoggerFactory</span>
-<span class="fc" id="L63">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="fc" id="L62">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="fc" id="L64">    logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.class);</span>
 <span class="pc bpc" id="L65" title="1 of 2 branches missed.">    initialize(args[0], args.length &gt; 1? args[1] : null);</span>
 <span class="fc" id="L66">  }</span>
@@ -89,46 +89,45 @@ public class ExecGatewayFtpServer {
 <span class="pc bpc" id="L89" title="1 of 2 branches missed.">    if (AbstractExecutor.useDatabase) {</span>
       // Use R66 module
 <span class="nc bnc" id="L91" title="All 2 branches missed.">      if (r66file != null) {</span>
-<span class="nc" id="L92">        if (!org.waarp.openr66.configuration.FileBasedConfiguration</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">            .setSubmitClientConfigurationFromXml(Configuration.configuration,</span>
-                                                 r66file)) {
-<span class="nc" id="L95">          SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad R66 configuration&quot;);</span>
-<span class="nc" id="L96">          return false;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (!org.waarp.openr66.configuration.FileBasedConfiguration.setSubmitClientConfigurationFromXml(</span>
+            Configuration.configuration, r66file)) {
+<span class="nc" id="L94">          SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad R66 configuration&quot;);</span>
+<span class="nc" id="L95">          return false;</span>
         }
       } else {
         // Cannot get R66 functional
-<span class="nc" id="L100">        SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L101">            .syserr(&quot;No R66PrepareTransfer configuration file&quot;);</span>
+<span class="nc" id="L99">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+            &quot;No R66PrepareTransfer configuration file&quot;);
       }
     } else {
-<span class="fc" id="L104">      SysErrLogger.FAKE_LOGGER.syserr(&quot;No R66PrepareTransfer support&quot;);</span>
+<span class="fc" id="L103">      SysErrLogger.FAKE_LOGGER.syserr(&quot;No R66PrepareTransfer support&quot;);</span>
     }
-<span class="fc" id="L106">    FileBasedConfiguration.fileBasedConfiguration = configuration;</span>
+<span class="fc" id="L105">    FileBasedConfiguration.fileBasedConfiguration = configuration;</span>
     // Start server.
-<span class="fc" id="L108">    configuration.configureLExec();</span>
+<span class="fc" id="L107">    configuration.configureLExec();</span>
     try {
-<span class="fc" id="L110">      configuration.serverStartup();</span>
-<span class="nc" id="L111">    } catch (final FtpNoConnectionException e1) {</span>
-<span class="nc" id="L112">      SysErrLogger.FAKE_LOGGER.syserr(e1);</span>
-<span class="nc" id="L113">      configuration.releaseResources();</span>
-<span class="nc" id="L114">      return false;</span>
-<span class="fc" id="L115">    }</span>
-<span class="fc" id="L116">    configuration.configureHttps();</span>
-<span class="fc" id="L117">    configuration.configureConstraint();</span>
+<span class="fc" id="L109">      configuration.serverStartup();</span>
+<span class="nc" id="L110">    } catch (final FtpNoConnectionException e1) {</span>
+<span class="nc" id="L111">      SysErrLogger.FAKE_LOGGER.syserr(e1);</span>
+<span class="nc" id="L112">      configuration.releaseResources();</span>
+<span class="nc" id="L113">      return false;</span>
+<span class="fc" id="L114">    }</span>
+<span class="fc" id="L115">    configuration.configureHttps();</span>
+<span class="fc" id="L116">    configuration.configureConstraint();</span>
     try {
-<span class="fc" id="L119">      configuration.configureSnmp();</span>
-<span class="nc" id="L120">    } catch (final FtpNoConnectionException e) {</span>
-<span class="nc" id="L121">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L122">          .syserr(&quot;Cannot start SNMP support: &quot; + e.getMessage());</span>
-<span class="fc" id="L123">    }</span>
-<span class="fc" id="L124">    logger.warn(&quot;FTP started &quot; +</span>
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?</span>
+<span class="fc" id="L118">      configuration.configureSnmp();</span>
+<span class="nc" id="L119">    } catch (final FtpNoConnectionException e) {</span>
+<span class="nc" id="L120">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L121">          &quot;Cannot start SNMP support: &quot; + e.getMessage());</span>
+<span class="fc" id="L122">    }</span>
+<span class="fc" id="L123">    logger.warn(&quot;FTP started &quot; +</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">                (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?</span>
                     &quot;Implicit SSL On&quot; :
-<span class="fc" id="L127">                    configuration.getFtpInternalConfiguration()</span>
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">                                 .isAcceptAuthProt()? &quot;Explicit SSL On&quot; :</span>
+<span class="fc" id="L126">                    configuration.getFtpInternalConfiguration()</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                                 .isAcceptAuthProt()? &quot;Explicit SSL On&quot; :</span>
                         &quot;with SSL Off&quot;));
-<span class="fc" id="L130">    return true;</span>
+<span class="fc" id="L129">    return true;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

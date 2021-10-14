@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ConfigurationProxyR66.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpProxyR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.proxy.configuration</a> &gt; <span class="el_source">ConfigurationProxyR66.java</span></div><h1>ConfigurationProxyR66.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.proxy.configuration;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.group.DefaultChannelGroup;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.proxy.network.NetworkServerInitializerProxy;
+import org.waarp.openr66.proxy.network.ProxyBridge;
+import org.waarp.openr66.proxy.network.ProxyEntry;
+import org.waarp.openr66.proxy.network.ssl.NetworkSslServerInitializerProxy;
+import org.waarp.openr66.proxy.protocol.http.HttpInitializer;
+import org.waarp.openr66.proxy.protocol.http.adminssl.HttpSslInitializer;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ */
+public class ConfigurationProxyR66 extends Configuration {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(ConfigurationProxyR66.class);</span>
+
+  /**
+   *
+   */
+<span class="fc" id="L57">  public ConfigurationProxyR66() {</span>
+    // nothing
+<span class="fc" id="L59">  }</span>
+
+  @Override
+  public final void computeNbThreads() {
+<span class="fc" id="L63">    final int nb = Runtime.getRuntime().availableProcessors() + 1;</span>
+<span class="fc" id="L64">    setServerThread(nb);</span>
+<span class="fc" id="L65">    setClientThread(getServerThread() + 1);</span>
+<span class="fc" id="L66">    setRunnerThread(10);</span>
+<span class="fc" id="L67">  }</span>
+
+  @Override
+  public final void serverStartup() {
+<span class="fc" id="L71">    setServer(true);</span>
+<span class="fc" id="L72">    getShutdownConfiguration().timeout = getTimeoutCon();</span>
+<span class="fc" id="L73">    WaarpShutdownHook.addShutdownHook();</span>
+<span class="pc bpc" id="L74" title="3 of 4 branches missed.">    if (!isUseNOSSL() &amp;&amp; !isUseSSL()) {</span>
+<span class="nc" id="L75">      logger.error(</span>
+          &quot;OpenR66 has neither NOSSL nor SSL support included! Stop here!&quot;);
+<span class="nc" id="L77">      WaarpSystemUtil.systemExit(-1);</span>
+<span class="nc" id="L78">      return;</span>
+    }
+<span class="fc" id="L80">    pipelineInit();</span>
+<span class="fc" id="L81">    serverPipelineInit();</span>
+<span class="fc" id="L82">    r66Startup();</span>
+<span class="fc" id="L83">    startHttpSupport();</span>
+    try {
+<span class="fc" id="L85">      startMonitoring();</span>
+<span class="nc" id="L86">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+      // nothing
+<span class="fc" id="L88">    }</span>
+<span class="fc" id="L89">    logger.warn(toString());</span>
+<span class="fc" id="L90">  }</span>
+
+  @Override
+  public final void r66Startup() {
+<span class="fc" id="L94">    logger.debug(&quot;Start R66: {}&quot;, getHostSslId());</span>
+    // add into configuration
+<span class="fc" id="L96">    getConstraintLimitHandler().setServer(true);</span>
+    // Global Server
+<span class="fc" id="L98">    serverChannelGroup =</span>
+<span class="fc" id="L99">        new DefaultChannelGroup(&quot;OpenR66&quot;, subTaskGroup.next());</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    if (isUseNOSSL()) {</span>
+<span class="fc" id="L101">      serverBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L102">      WaarpNettyUtil.setServerBootstrap(serverBootstrap, serverGroup,</span>
+<span class="fc" id="L103">                                        workerGroup, (int) getTimeoutCon(),</span>
+<span class="fc" id="L104">                                        getBlockSize() + 64, false);</span>
+<span class="fc" id="L105">      networkServerInitializer = new NetworkServerInitializerProxy(true);</span>
+<span class="fc" id="L106">      serverBootstrap.childHandler(networkServerInitializer);</span>
+      // FIXME take into account multiple address
+<span class="fc" id="L108">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (!entry.isLocalSsl()) {</span>
+<span class="fc" id="L111">          logger.debug(&quot;Future Activation: {}&quot;, entry.getLocalSocketAddress());</span>
+<span class="fc" id="L112">          futures.add(serverBootstrap.bind(entry.getLocalSocketAddress()));</span>
+        }
+<span class="fc" id="L114">      }</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">      for (final ChannelFuture future : futures) {</span>
+<span class="fc" id="L116">        future.syncUninterruptibly();</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
+<span class="fc" id="L118">          bindNoSSL = future.channel();</span>
+<span class="fc" id="L119">          serverChannelGroup.add(bindNoSSL);</span>
+<span class="fc" id="L120">          logger.debug(&quot;Activation: {}&quot;, bindNoSSL.localAddress());</span>
+        } else {
+<span class="nc" id="L122">          logger.warn(</span>
+<span class="nc" id="L123">              Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;) + &quot; for &quot; +</span>
+<span class="nc" id="L124">              bindNoSSL.localAddress()); //$NON-NLS-2$</span>
+        }
+<span class="fc" id="L126">      }</span>
+<span class="fc" id="L127">    } else {</span>
+<span class="nc" id="L128">      networkServerInitializer = null;</span>
+<span class="nc" id="L129">      logger.warn(</span>
+<span class="nc" id="L130">          Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;)); //$NON-NLS-1$</span>
+    }
+
+<span class="pc bpc" id="L133" title="2 of 4 branches missed.">    if (isUseSSL() &amp;&amp; getHostSslId() != null) {</span>
+<span class="fc" id="L134">      serverSslBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L135">      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, serverGroup,</span>
+<span class="fc" id="L136">                                        workerGroup, (int) getTimeoutCon(),</span>
+<span class="fc" id="L137">                                        getBlockSize() + 64, false);</span>
+<span class="fc" id="L138">      networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);</span>
+<span class="fc" id="L139">      serverSslBootstrap.childHandler(networkSslServerInitializer);</span>
+      // FIXME take into account multiple address
+<span class="fc" id="L141">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        if (entry.isLocalSsl()) {</span>
+<span class="fc" id="L144">          logger.debug(</span>
+<span class="fc" id="L145">              &quot;Future SslActivation: &quot; + entry.getLocalSocketAddress());</span>
+<span class="fc" id="L146">          futures.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));</span>
+        }
+<span class="fc" id="L148">      }</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">      for (final ChannelFuture future : futures) {</span>
+<span class="fc" id="L150">        future.syncUninterruptibly();</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
+<span class="fc" id="L152">          bindSSL = future.channel();</span>
+<span class="fc" id="L153">          serverChannelGroup.add(bindSSL);</span>
+<span class="fc" id="L154">          logger.debug(&quot;SslActivation: {}&quot;, bindSSL.localAddress());</span>
+        } else {
+<span class="nc" id="L156">          logger.warn(</span>
+<span class="nc" id="L157">              Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;) + &quot; for &quot; +</span>
+<span class="nc" id="L158">              bindSSL.localAddress()); //$NON-NLS-2$</span>
+        }
+<span class="fc" id="L160">      }</span>
+<span class="fc" id="L161">    } else {</span>
+<span class="nc" id="L162">      networkSslServerInitializer = null;</span>
+<span class="nc" id="L163">      logger.warn(</span>
+<span class="nc" id="L164">          Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;)); //$NON-NLS-1$</span>
+    }
+
+    // Factory for TrafficShapingHandler
+<span class="fc" id="L168">    setupLimitHandler();</span>
+<span class="fc" id="L169">    ProxyBridge.initialize();</span>
+<span class="fc" id="L170">    setThriftService(null);</span>
+<span class="fc" id="L171">  }</span>
+
+  @Override
+  public final void startHttpSupport() {
+    // Now start the HTTP support
+<span class="fc" id="L176">    logger.info(</span>
+<span class="fc" id="L177">        Messages.getString(&quot;Configuration.HTTPStart&quot;) + getServerHttpport() +</span>
+        //$NON-NLS-1$
+<span class="fc" id="L179">        &quot; HTTPS: &quot; + getServerHttpsPort());</span>
+<span class="fc" id="L180">    httpChannelGroup =</span>
+<span class="fc" id="L181">        new DefaultChannelGroup(&quot;HttpOpenR66&quot;, subTaskGroup.next());</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">    if (getServerHttpport() &gt; 0) {</span>
+      // Configure the server.
+<span class="fc" id="L184">      httpBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L185">      WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,</span>
+<span class="fc" id="L186">                                        httpWorkerGroup, (int) getTimeoutCon());</span>
+      // Set up the event pipeline factory.
+<span class="fc" id="L188">      httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));</span>
+      // Bind and start to accept incoming connections.
+<span class="fc" id="L190">      final ChannelFuture future =</span>
+<span class="fc" id="L191">          httpBootstrap.bind(new InetSocketAddress(getServerHttpport()))</span>
+<span class="fc" id="L192">                       .awaitUninterruptibly();</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="fc" id="L194">        httpChannelGroup.add(future.channel());</span>
+      }
+    }
+    // Now start the HTTPS support
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">    if (getServerHttpsPort() &gt; 0) {</span>
+      // Configure the server.
+<span class="fc" id="L200">      httpsBootstrap = new ServerBootstrap();</span>
+      // Set up the event pipeline factory.
+<span class="fc" id="L202">      WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,</span>
+<span class="fc" id="L203">                                        httpWorkerGroup, (int) getTimeoutCon());</span>
+<span class="fc" id="L204">      httpsBootstrap.childHandler(</span>
+<span class="fc" id="L205">          new HttpSslInitializer(isUseHttpCompression()));</span>
+      // Bind and start to accept incoming connections.
+<span class="fc" id="L207">      final ChannelFuture future =</span>
+<span class="fc" id="L208">          httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))</span>
+<span class="fc" id="L209">                        .awaitUninterruptibly();</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="fc" id="L211">        httpChannelGroup.add(future.channel());</span>
+      }
+    }
+<span class="fc" id="L214">  }</span>
+
+  @Override
+  public final void serverStop() {
+<span class="fc" id="L218">    super.serverStop();</span>
+<span class="fc" id="L219">    ProxyBridge.transaction.closeAll();</span>
+<span class="fc" id="L220">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

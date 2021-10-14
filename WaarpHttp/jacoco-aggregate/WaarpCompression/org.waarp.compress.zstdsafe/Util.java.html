@@ -43,30 +43,30 @@ final class Util {
   }
 
   public static int highestBit(final int value) {
-<span class="nc" id="L46">    return 31 - Integer.numberOfLeadingZeros(value);</span>
+<span class="fc" id="L46">    return 31 - Integer.numberOfLeadingZeros(value);</span>
   }
 
   public static boolean isPowerOf2(final int value) {
-<span class="nc bnc" id="L50" title="All 2 branches missed.">    return (value &amp; (value - 1)) == 0;</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">    return (value &amp; (value - 1)) == 0;</span>
   }
 
   public static int mask(final int bits) {
-<span class="nc" id="L54">    return (1 &lt;&lt; bits) - 1;</span>
+<span class="fc" id="L54">    return (1 &lt;&lt; bits) - 1;</span>
   }
 
   public static void verify(final boolean condition, final int offset,
                             final String reason) {
-<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (!condition) {</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">    if (!condition) {</span>
 <span class="nc" id="L60">      throw new MalformedInputException(offset, reason);</span>
     }
-<span class="nc" id="L62">  }</span>
+<span class="fc" id="L62">  }</span>
 
   public static void checkArgument(final boolean condition,
                                    final String reason) {
-<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (!condition) {</span>
-<span class="nc" id="L67">      throw new IllegalArgumentException(reason);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">    if (!condition) {</span>
+<span class="fc" id="L67">      throw new IllegalArgumentException(reason);</span>
     }
-<span class="nc" id="L69">  }</span>
+<span class="fc" id="L69">  }</span>
 
   public static void checkState(final boolean condition, final String reason) {
 <span class="nc bnc" id="L72" title="All 2 branches missed.">    if (!condition) {</span>
@@ -81,32 +81,32 @@ final class Util {
 
   public static int cycleLog(final int hashLog,
                              final CompressionParameters.Strategy strategy) {
-<span class="nc" id="L84">    int cycleLog = hashLog;</span>
-<span class="nc bnc" id="L85" title="All 6 branches missed.">    if (strategy == CompressionParameters.Strategy.BTLAZY2 ||</span>
+<span class="fc" id="L84">    int cycleLog = hashLog;</span>
+<span class="pc bpc" id="L85" title="3 of 6 branches missed.">    if (strategy == CompressionParameters.Strategy.BTLAZY2 ||</span>
         strategy == CompressionParameters.Strategy.BTOPT ||
         strategy == CompressionParameters.Strategy.BTULTRA) {
 <span class="nc" id="L88">      cycleLog = hashLog - 1;</span>
     }
-<span class="nc" id="L90">    return cycleLog;</span>
+<span class="fc" id="L90">    return cycleLog;</span>
   }
 
   public static void put24BitLittleEndian(final byte[] outputBase,
                                           final int outputAddress,
                                           final int value) {
-<span class="nc" id="L96">    putShort(outputBase, outputAddress, (short) value);</span>
-<span class="nc" id="L97">    outputBase[outputAddress + SIZE_OF_SHORT] = (byte) (value &gt;&gt;&gt; Short.SIZE);</span>
-<span class="nc" id="L98">  }</span>
+<span class="fc" id="L96">    putShort(outputBase, outputAddress, (short) value);</span>
+<span class="fc" id="L97">    outputBase[outputAddress + SIZE_OF_SHORT] = (byte) (value &gt;&gt;&gt; Short.SIZE);</span>
+<span class="fc" id="L98">  }</span>
 
   // provides the minimum logSize to safely represent a distribution
   public static int minTableLog(final int inputSize, final int maxSymbolValue) {
-<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (inputSize &lt;= 1) {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (inputSize &lt;= 1) {</span>
 <span class="nc" id="L103">      throw new IllegalArgumentException(</span>
           &quot;Not supported. RLE should be used instead&quot;); // TODO
     }
 
-<span class="nc" id="L107">    final int minBitsSrc = highestBit((inputSize - 1)) + 1;</span>
-<span class="nc" id="L108">    final int minBitsSymbols = highestBit(maxSymbolValue) + 2;</span>
-<span class="nc" id="L109">    return Math.min(minBitsSrc, minBitsSymbols);</span>
+<span class="fc" id="L107">    final int minBitsSrc = highestBit((inputSize - 1)) + 1;</span>
+<span class="fc" id="L108">    final int minBitsSymbols = highestBit(maxSymbolValue) + 2;</span>
+<span class="fc" id="L109">    return Math.min(minBitsSrc, minBitsSymbols);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

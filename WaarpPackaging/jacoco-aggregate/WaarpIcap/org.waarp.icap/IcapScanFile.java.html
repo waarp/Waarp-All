@@ -1,0 +1,918 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>IcapScanFile.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpIcap</a> &gt; <a href="index.source.html" class="el_package">org.waarp.icap</a> &gt; <span class="el_source">IcapScanFile.java</span></div><h1>IcapScanFile.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.icap;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+
+/**
+ * IcapScanFile command to ask an ICAP server to scan a file
+ * through network ICAP protocol.&lt;br&gt;
+ * &lt;br&gt;
+ * Options:&lt;br&gt;
+ * -file path_to_file &lt;br&gt;
+ * -to hostname &lt;br&gt;
+ * [-port port, default 1344] &lt;br&gt;
+ * -service name | -model name &lt;br&gt;
+ * [-previewSize size, default none] &lt;br&gt;
+ * [-blockSize size, default 8192] &lt;br&gt;
+ * [-receiveSize size, default 65536] &lt;br&gt;
+ * [-maxSize size, default MAX_INTEGER] &lt;br&gt;
+ * [-timeout in_ms, default equiv to 10 min] &lt;br&gt;
+ * [-errorMove path | -errorDelete | -sendOnError] &lt;br&gt;
+ * [-ignoreNetworkError] &lt;br&gt;
+ * [-ignoreTooBigFileError] &lt;br&gt;
+ * [-keyPreview key -stringPreview string, default none] &lt;br&gt;
+ * [-key204 key -string204 string, default none] &lt;br&gt;
+ * [-key200 key -string200 string, default none] &lt;br&gt;
+ * [-stringHttp string, default none] &lt;br&gt;
+ * [-logger DEBUG|INFO|WARN|ERROR, default none] &lt;br&gt;
+ * &lt;br&gt;
+ * Exit with values:&lt;br&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;0: Scan OK&lt;/li&gt;
+ *   &lt;li&gt;1: Bad arguments&lt;/li&gt;
+ *   &lt;li&gt;2: ICAP protocol error&lt;/li&gt;
+ *   &lt;li&gt;3: Network error&lt;/li&gt;
+ *   &lt;li&gt;4: Scan KO&lt;/li&gt;
+ *   &lt;li&gt;5: Scan KO but post action required in error&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class IcapScanFile {
+<span class="fc" id="L77">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L78">      WaarpLoggerFactory.getLogger(IcapScanFile.class);</span>
+
+  public static final int STATUS_OK = 0;
+  public static final int STATUS_BAD_ARGUMENT = 1;
+  public static final int STATUS_ICAP_ISSUE = 2;
+  public static final int STATUS_NETWORK_ISSUE = 3;
+  public static final int STATUS_KO_SCAN = 4;
+  public static final int STATUS_KO_SCAN_POST_ACTION_ERROR = 5;
+
+  private static final String ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL =
+      &quot;Arguments cannot be empty or null&quot;;
+
+  private static final String FILE = &quot;file&quot;;
+  public static final String FILE_ARG = &quot;-&quot; + FILE;
+<span class="fc" id="L92">  private static final Option FILE_OPTION =</span>
+<span class="fc" id="L93">      Option.builder(FILE).required(true).hasArg(true)</span>
+<span class="fc" id="L94">            .desc(&quot;Specify the file path to operate on&quot;).build();</span>
+  private static final String TO = &quot;to&quot;;
+  public static final String TO_ARG = &quot;-&quot; + TO;
+<span class="fc" id="L97">  private static final Option HOST_OPTION =</span>
+<span class="fc" id="L98">      Option.builder(TO).required(true).hasArg(true)</span>
+<span class="fc" id="L99">            .desc(&quot;Specify the requested Host&quot;).build();</span>
+  private static final String SERVICE = &quot;service&quot;;
+  public static final String SERVICE_ARG = &quot;-&quot; + SERVICE;
+<span class="fc" id="L102">  private static final Option SERVICE_OPTION =</span>
+<span class="fc" id="L103">      Option.builder(SERVICE).required(true).hasArg(true)</span>
+<span class="fc" id="L104">            .desc(&quot;Specify the service on remote host to use&quot;).build();</span>
+  private static final String MODEL = &quot;model&quot;;
+  public static final String MODEL_ARG = &quot;-&quot; + MODEL;
+<span class="fc" id="L107">  private static final Option MODEL_OPTION =</span>
+<span class="fc" id="L108">      Option.builder(MODEL).required(true).hasArg(true)</span>
+<span class="fc" id="L109">            .desc(&quot;Specify the model of remote host service to use&quot;).build();</span>
+  private static final String PORT_FIELD = &quot;port&quot;;
+<span class="fc" id="L111">  private static final Option PORT_OPTION =</span>
+<span class="fc" id="L112">      Option.builder(PORT_FIELD).required(false).hasArg(true)</span>
+<span class="fc" id="L113">            .desc(&quot;Specify the port on remote host to use&quot;).type(Number.class)</span>
+<span class="fc" id="L114">            .build();</span>
+  private static final String PREVIEW_SIZE = &quot;previewSize&quot;;
+<span class="fc" id="L116">  private static final Option PREVIEW_OPTION =</span>
+<span class="fc" id="L117">      Option.builder(PREVIEW_SIZE).required(false).hasArg(true)</span>
+<span class="fc" id="L118">            .desc(&quot;Specify the Preview size to use&quot;).build();</span>
+  private static final String BLOCK_SIZE = &quot;blockSize&quot;;
+<span class="fc" id="L120">  private static final Option BLOCK_OPTION =</span>
+<span class="fc" id="L121">      Option.builder(BLOCK_SIZE).required(false).hasArg(true)</span>
+<span class="fc" id="L122">            .desc(&quot;Specify the Block size to use&quot;).build();</span>
+  private static final String RECEIVE_SIZE = &quot;receiveSize&quot;;
+<span class="fc" id="L124">  private static final Option RECEIVE_OPTION =</span>
+<span class="fc" id="L125">      Option.builder(RECEIVE_SIZE).required(false).hasArg(true)</span>
+<span class="fc" id="L126">            .desc(&quot;Specify the Receive size to use&quot;).build();</span>
+  private static final String MAX_SIZE = &quot;maxSize&quot;;
+<span class="fc" id="L128">  private static final Option MAX_SIZE_OPTION =</span>
+<span class="fc" id="L129">      Option.builder(MAX_SIZE).required(false).hasArg(true)</span>
+<span class="fc" id="L130">            .desc(&quot;Specify the Max size to use&quot;).build();</span>
+  private static final String TIMEOUT_ARG = &quot;timeout&quot;;
+<span class="fc" id="L132">  private static final Option TIMEOUT_OPTION =</span>
+<span class="fc" id="L133">      Option.builder(TIMEOUT_ARG).required(false).hasArg(true)</span>
+<span class="fc" id="L134">            .desc(&quot;Specify the timeout on socket to use&quot;).build();</span>
+  private static final String ERROR_MOVE = &quot;errorMove&quot;;
+<span class="fc" id="L136">  private static final Option ERROR_MOVE_OPTION =</span>
+<span class="fc" id="L137">      Option.builder(ERROR_MOVE).required(false).hasArg(true)</span>
+<span class="fc" id="L138">            .desc(&quot;Specify the path to use if wrong scan&quot;).build();</span>
+  private static final String ERROR_DELETE = &quot;errorDelete&quot;;
+<span class="fc" id="L140">  private static final Option ERROR_DELETE_OPTION =</span>
+<span class="fc" id="L141">      Option.builder(ERROR_DELETE).required(false).hasArg(false)</span>
+<span class="fc" id="L142">            .desc(&quot;Specify the error delete action if wrong scan&quot;).build();</span>
+  private static final String ERROR_SEND = &quot;sendOnError&quot;;
+  public static final String ERROR_SEND_ARG = &quot;-&quot; + ERROR_SEND;
+<span class="fc" id="L145">  private static final Option ERROR_SEND_OPTION =</span>
+<span class="fc" id="L146">      Option.builder(ERROR_SEND).required(false).hasArg(false)</span>
+<span class="fc" id="L147">            .desc(&quot;Specify that scan error should be followed by an r66send&quot;)</span>
+<span class="fc" id="L148">            .build();</span>
+  private static final String IGNORE_NETWORK_CONTINUE = &quot;ignoreNetworkError&quot;;
+<span class="fc" id="L150">  private static final Option IGNORE_NETWORK_CONTINUE_OPTION =</span>
+<span class="fc" id="L151">      Option.builder(IGNORE_NETWORK_CONTINUE).required(false).hasArg(false)</span>
+<span class="fc" id="L152">            .desc(&quot;Specify that a network error should not be followed by a ko&quot;)</span>
+<span class="fc" id="L153">            .build();</span>
+  private static final String IGNORE_TOO_BIG_FILE_CONTINUE =
+      &quot;ignoreTooBigFileError&quot;;
+<span class="fc" id="L156">  private static final Option IGNORE_TOO_BIG_FILE_CONTINUE_OPTION =</span>
+<span class="fc" id="L157">      Option.builder(IGNORE_TOO_BIG_FILE_CONTINUE).required(false).hasArg(false)</span>
+<span class="fc" id="L158">            .desc(&quot;Specify that a too big file should not be followed by a ko&quot;)</span>
+<span class="fc" id="L159">            .build();</span>
+  private static final String KEY_PREVIEW = &quot;keyPreview&quot;;
+<span class="fc" id="L161">  private static final Option PREVIEW_KEY_OPTION =</span>
+<span class="fc" id="L162">      Option.builder(KEY_PREVIEW).required(false).hasArg(true)</span>
+<span class="fc" id="L163">            .desc(&quot;Specify the key for Options to validate&quot;).build();</span>
+  private static final String STRING_PREVIEW = &quot;stringPreview&quot;;
+<span class="fc" id="L165">  private static final Option PREVIEW_STRING_OPTION =</span>
+<span class="fc" id="L166">      Option.builder(STRING_PREVIEW).required(false).hasArg(true)</span>
+<span class="fc" id="L167">            .desc(&quot;Specify the substring for key for Options to validate&quot;)</span>
+<span class="fc" id="L168">            .build();</span>
+  private static final String KEY_204 = &quot;key204&quot;;
+<span class="fc" id="L170">  private static final Option ICAP_204_KEY_OPTION =</span>
+<span class="fc" id="L171">      Option.builder(KEY_204).required(false).hasArg(true)</span>
+<span class="fc" id="L172">            .desc(&quot;Specify the key for 204 ICAP to validate&quot;).build();</span>
+  private static final String STRING_204 = &quot;string204&quot;;
+<span class="fc" id="L174">  private static final Option ICAP_204_STRING_OPTION =</span>
+<span class="fc" id="L175">      Option.builder(STRING_204).required(false).hasArg(true)</span>
+<span class="fc" id="L176">            .desc(&quot;Specify the substring for key for 204 ICAP to validate&quot;)</span>
+<span class="fc" id="L177">            .build();</span>
+  private static final String KEY_200 = &quot;key200&quot;;
+<span class="fc" id="L179">  private static final Option ICAP_200_KEY_OPTION =</span>
+<span class="fc" id="L180">      Option.builder(KEY_200).required(false).hasArg(true)</span>
+<span class="fc" id="L181">            .desc(&quot;Specify the key for 200 ICAP to validate&quot;).build();</span>
+  private static final String STRING_200 = &quot;string200&quot;;
+<span class="fc" id="L183">  private static final Option ICAP_200_STRING_OPTION =</span>
+<span class="fc" id="L184">      Option.builder(STRING_200).required(false).hasArg(true)</span>
+<span class="fc" id="L185">            .desc(&quot;Specify the substring for key for 200 ICAP to validate&quot;)</span>
+<span class="fc" id="L186">            .build();</span>
+  private static final String STRING_HTTP = &quot;stringHttp&quot;;
+<span class="fc" id="L188">  private static final Option HTTP_STRING_OPTION =</span>
+<span class="fc" id="L189">      Option.builder(STRING_HTTP).required(false).hasArg(true)</span>
+<span class="fc" id="L190">            .desc(&quot;Specify the substring for HTTP 200 ICAP status to validate&quot;)</span>
+<span class="fc" id="L191">            .build();</span>
+  private static final String LOGGER_ARG = &quot;logger&quot;;
+  private static final String DEBUG_LEVEL = &quot;DEBUG&quot;;
+  private static final String INFO_LEVEL = &quot;INFO&quot;;
+  private static final String WARN_LEVEL = &quot;WARN&quot;;
+  private static final String ERROR_LEVEL = &quot;ERROR&quot;;
+<span class="fc" id="L197">  private static final Option LOGGER_OPTION =</span>
+<span class="fc" id="L198">      Option.builder(LOGGER_ARG).required(false).hasArg(true).desc(</span>
+          &quot;Specify the level of log between &quot; + DEBUG_LEVEL + &quot; | &quot; +
+<span class="fc" id="L200">          INFO_LEVEL + &quot; | &quot; + WARN_LEVEL + &quot; | &quot; + ERROR_LEVEL).build();</span>
+
+<span class="fc" id="L202">  private static final OptionGroup ERROR_OPTIONS =</span>
+<span class="fc" id="L203">      new OptionGroup().addOption(ERROR_DELETE_OPTION)</span>
+<span class="fc" id="L204">                       .addOption(ERROR_MOVE_OPTION)</span>
+<span class="fc" id="L205">                       .addOption(ERROR_SEND_OPTION);</span>
+<span class="fc" id="L206">  private static final OptionGroup SERVICE_OPTIONS =</span>
+<span class="fc" id="L207">      new OptionGroup().addOption(SERVICE_OPTION).addOption(MODEL_OPTION);</span>
+<span class="fc" id="L208">  private static final Options ICAP_OPTIONS =</span>
+<span class="fc" id="L209">      new Options().addOption(FILE_OPTION).addOption(HOST_OPTION)</span>
+<span class="fc" id="L210">                   .addOption(PORT_OPTION).addOptionGroup(SERVICE_OPTIONS)</span>
+<span class="fc" id="L211">                   .addOption(PREVIEW_OPTION).addOption(BLOCK_OPTION)</span>
+<span class="fc" id="L212">                   .addOption(RECEIVE_OPTION).addOption(MAX_SIZE_OPTION)</span>
+<span class="fc" id="L213">                   .addOption(TIMEOUT_OPTION)</span>
+<span class="fc" id="L214">                   .addOption(IGNORE_NETWORK_CONTINUE_OPTION)</span>
+<span class="fc" id="L215">                   .addOption(IGNORE_TOO_BIG_FILE_CONTINUE_OPTION)</span>
+<span class="fc" id="L216">                   .addOption(PREVIEW_KEY_OPTION)</span>
+<span class="fc" id="L217">                   .addOption(PREVIEW_STRING_OPTION)</span>
+<span class="fc" id="L218">                   .addOption(ICAP_200_KEY_OPTION)</span>
+<span class="fc" id="L219">                   .addOption(ICAP_200_STRING_OPTION)</span>
+<span class="fc" id="L220">                   .addOption(ICAP_204_KEY_OPTION)</span>
+<span class="fc" id="L221">                   .addOption(ICAP_204_STRING_OPTION).addOption(LOGGER_OPTION)</span>
+<span class="fc" id="L222">                   .addOption(HTTP_STRING_OPTION).addOptionGroup(ERROR_OPTIONS);</span>
+<span class="fc" id="L223">  private static final Options ICAP_MODEL_OPTIONS =</span>
+<span class="fc" id="L224">      new Options().addOption(PORT_OPTION).addOption(SERVICE_OPTION)</span>
+<span class="fc" id="L225">                   .addOption(PREVIEW_OPTION).addOption(BLOCK_OPTION)</span>
+<span class="fc" id="L226">                   .addOption(RECEIVE_OPTION).addOption(MAX_SIZE_OPTION)</span>
+<span class="fc" id="L227">                   .addOption(TIMEOUT_OPTION)</span>
+<span class="fc" id="L228">                   .addOption(IGNORE_NETWORK_CONTINUE_OPTION)</span>
+<span class="fc" id="L229">                   .addOption(IGNORE_TOO_BIG_FILE_CONTINUE_OPTION)</span>
+<span class="fc" id="L230">                   .addOption(PREVIEW_KEY_OPTION)</span>
+<span class="fc" id="L231">                   .addOption(PREVIEW_STRING_OPTION)</span>
+<span class="fc" id="L232">                   .addOption(ICAP_200_KEY_OPTION)</span>
+<span class="fc" id="L233">                   .addOption(ICAP_200_STRING_OPTION)</span>
+<span class="fc" id="L234">                   .addOption(ICAP_204_KEY_OPTION)</span>
+<span class="fc" id="L235">                   .addOption(ICAP_204_STRING_OPTION).addOption(LOGGER_OPTION)</span>
+<span class="fc" id="L236">                   .addOption(HTTP_STRING_OPTION).addOptionGroup(ERROR_OPTIONS);</span>
+  public static final String SEPARATOR_SEND = &quot;--&quot;;
+
+  // Standard configuration
+<span class="fc" id="L240">  private String serverIP = null;</span>
+<span class="fc" id="L241">  private int port = IcapClient.DEFAULT_ICAP_PORT;</span>
+<span class="fc" id="L242">  private String icapService = null;</span>
+<span class="fc" id="L243">  private IcapModel icapModel = null;</span>
+<span class="fc" id="L244">  private String filepath = null;</span>
+
+  // Extra configuration
+<span class="fc" id="L247">  private int receiveLength = IcapClient.STD_RECEIVE_LENGTH;</span>
+<span class="fc" id="L248">  private int sendLength = IcapClient.STD_SEND_LENGTH;</span>
+<span class="fc" id="L249">  private int timeout = IcapClient.DEFAULT_TIMEOUT;</span>
+<span class="fc" id="L250">  private String keyIcapPreview = null;</span>
+<span class="fc" id="L251">  private String subStringFromKeyIcapPreview = null;</span>
+<span class="fc" id="L252">  private String substringHttpStatus200 = null;</span>
+<span class="fc" id="L253">  private String keyIcap200 = null;</span>
+<span class="fc" id="L254">  private String subStringFromKeyIcap200 = null;</span>
+<span class="fc" id="L255">  private String keyIcap204 = null;</span>
+<span class="fc" id="L256">  private String subStringFromKeyIcap204 = null;</span>
+<span class="fc" id="L257">  private long maxSize = Integer.MAX_VALUE;</span>
+<span class="fc" id="L258">  private int stdPreviewSize = -1;</span>
+<span class="fc" id="L259">  private String pathMoveError = null;</span>
+<span class="fc" id="L260">  private boolean deleteOnError = false;</span>
+<span class="fc" id="L261">  private boolean sendOnError = false;</span>
+<span class="fc" id="L262">  private boolean ignoreNetworkError = false;</span>
+<span class="fc" id="L263">  private boolean ignoreTooBigFileError = false;</span>
+<span class="fc" id="L264">  private WaarpLogLevel logLevel = null;</span>
+
+<span class="fc" id="L266">  private Map&lt;String, String&gt; result = null;</span>
+
+  /**
+   * Private constructor
+   */
+<span class="fc" id="L271">  private IcapScanFile() {</span>
+    // Empty
+<span class="fc" id="L273">  }</span>
+
+  /**
+   * Partial setter from source (not file, host, icapModel)
+   *
+   * @param from partial source
+   */
+  private IcapScanFile partialSetFrom(final IcapScanFile from) {
+<span class="fc" id="L281">    this.port = from.port;</span>
+<span class="fc" id="L282">    this.icapService = from.icapService;</span>
+<span class="fc" id="L283">    this.receiveLength = from.receiveLength;</span>
+<span class="fc" id="L284">    this.sendLength = from.sendLength;</span>
+<span class="fc" id="L285">    this.timeout = from.timeout;</span>
+<span class="fc" id="L286">    this.keyIcapPreview = from.keyIcapPreview;</span>
+<span class="fc" id="L287">    this.subStringFromKeyIcapPreview = from.subStringFromKeyIcapPreview;</span>
+<span class="fc" id="L288">    this.substringHttpStatus200 = from.substringHttpStatus200;</span>
+<span class="fc" id="L289">    this.keyIcap200 = from.keyIcap200;</span>
+<span class="fc" id="L290">    this.subStringFromKeyIcap200 = from.subStringFromKeyIcap200;</span>
+<span class="fc" id="L291">    this.keyIcap204 = from.keyIcap204;</span>
+<span class="fc" id="L292">    this.subStringFromKeyIcap204 = from.subStringFromKeyIcap204;</span>
+<span class="fc" id="L293">    this.maxSize = from.maxSize;</span>
+<span class="fc" id="L294">    this.stdPreviewSize = from.stdPreviewSize;</span>
+<span class="fc" id="L295">    this.pathMoveError = from.pathMoveError;</span>
+<span class="fc" id="L296">    this.deleteOnError = from.deleteOnError;</span>
+<span class="fc" id="L297">    this.sendOnError = from.sendOnError;</span>
+<span class="fc" id="L298">    this.ignoreNetworkError = from.ignoreNetworkError;</span>
+<span class="fc" id="L299">    this.ignoreTooBigFileError = from.ignoreTooBigFileError;</span>
+<span class="fc" id="L300">    this.logLevel = from.getLogLevel();</span>
+<span class="fc" id="L301">    return this;</span>
+  }
+
+  /**
+   * Print to standard output the help of this command
+   */
+  public static void printHelp() {
+<span class="fc" id="L308">    final HelpFormatter formatter = new HelpFormatter();</span>
+<span class="fc" id="L309">    formatter.printHelp(&quot;IcapScanFile&quot;, ICAP_OPTIONS);</span>
+<span class="fc" id="L310">  }</span>
+
+  /**
+   * If file argument are -file EICARTEST, then a EICAR test file will be
+   * sent.&lt;br&gt;&lt;br&gt;
+   * &quot;-file path_to_file &lt;br&gt;
+   * -to hostname &lt;br&gt;
+   * [-port port, default 1344] &lt;br&gt;
+   * -service name | -model name &lt;br&gt;
+   * [-previewSize size, default none] &lt;br&gt;
+   * [-blockSize size, default 8192] &lt;br&gt;
+   * [-receiveSize size, default 65536] &lt;br&gt;
+   * [-maxSize size, default MAX_INTEGER] &lt;br&gt;
+   * [-timeout in_ms, default equiv to 10 min] &lt;br&gt;
+   * [-errorMove path | -errorDelete | -sendOnError] &lt;br&gt;
+   * [-ignoreNetworkError] &lt;br&gt;
+   * [-ignoreTooBigFileError] &lt;br&gt;
+   * [-keyPreview key -stringPreview string, default none] &lt;br&gt;
+   * [-key204 key -string204 string, default none] &lt;br&gt;
+   * [-key200 key -string200 string, default none] &lt;br&gt;
+   * [-stringHttp string, default none] &lt;br&gt;
+   * [-logger DEBUG|INFO|WARN|ERROR, default none]&quot;&lt;br&gt;
+   * &lt;br&gt;
+   *
+   * @param args must be already replaced values (getReplacedValue)
+   *
+   * @return the IcapScanFile
+   *
+   * @throws IcapException if an error occurs during argument parsing
+   */
+  public static IcapScanFile getIcapScanFileArgs(final String[] args)
+      throws IcapException {
+<span class="fc bfc" id="L342" title="All 4 branches covered.">    if (args == null || args.length == 0) {</span>
+<span class="fc" id="L343">      throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);</span>
+    }
+<span class="fc" id="L345">    String[] realArgs = args;</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">      if (SEPARATOR_SEND.equals(args[i])) {</span>
+<span class="fc" id="L348">        realArgs = Arrays.copyOf(args, i);</span>
+<span class="fc" id="L349">        break;</span>
+      }
+    }
+<span class="fc" id="L352">    return getIcapScanFileArgs(realArgs, ICAP_OPTIONS);</span>
+  }
+
+  /**
+   * @param args must be already replaced values (getReplacedValue)
+   * @param options the options matcher to use
+   *
+   * @return the IcapScanFile
+   *
+   * @throws IcapException if an error occurs during argument parsing
+   */
+  private static IcapScanFile getIcapScanFileArgs(final String[] args,
+                                                  final Options options)
+      throws IcapException {
+<span class="fc" id="L366">    final IcapScanFile icapScanFile = new IcapScanFile();</span>
+<span class="fc" id="L367">    final CommandLineParser parser = new DefaultParser();</span>
+    try {
+<span class="fc" id="L369">      final CommandLine cmd = parser.parse(options, args, true);</span>
+
+<span class="fc bfc" id="L371" title="All 4 branches covered.">      if (options != ICAP_MODEL_OPTIONS &amp;&amp; cmd.hasOption(MODEL)) {</span>
+<span class="fc" id="L372">        getModelParameters(icapScanFile, cmd);</span>
+      } else {
+<span class="fc" id="L374">        icapScanFile.icapService = cmd.getOptionValue(SERVICE);</span>
+      }
+<span class="fc" id="L376">      icapScanFile.filepath = cmd.getOptionValue(FILE);</span>
+<span class="fc" id="L377">      icapScanFile.serverIP = cmd.getOptionValue(TO);</span>
+<span class="fc" id="L378">      getPort(icapScanFile, cmd);</span>
+<span class="fc" id="L379">      getNumbers(icapScanFile, cmd);</span>
+<span class="fc" id="L380">      getOtherOptions(icapScanFile, cmd);</span>
+<span class="fc bfc" id="L381" title="All 2 branches covered.">      if (cmd.hasOption(LOGGER_ARG)) {</span>
+<span class="fc" id="L382">        final String level =</span>
+<span class="fc" id="L383">            cmd.getOptionValue(LOGGER_ARG).trim().toUpperCase();</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">        if (DEBUG_LEVEL.equals(level)) {</span>
+<span class="fc" id="L385">          icapScanFile.logLevel = WaarpLogLevel.DEBUG;</span>
+<span class="fc bfc" id="L386" title="All 2 branches covered.">        } else if (INFO_LEVEL.equals(level)) {</span>
+<span class="fc" id="L387">          icapScanFile.logLevel = WaarpLogLevel.INFO;</span>
+<span class="fc bfc" id="L388" title="All 2 branches covered.">        } else if (WARN_LEVEL.equals(level)) {</span>
+<span class="fc" id="L389">          icapScanFile.logLevel = WaarpLogLevel.WARN;</span>
+<span class="fc bfc" id="L390" title="All 2 branches covered.">        } else if (ERROR_LEVEL.equals(level)) {</span>
+<span class="fc" id="L391">          icapScanFile.logLevel = WaarpLogLevel.ERROR;</span>
+        } else {
+<span class="fc" id="L393">          logger.warn(&quot;Unknown log level {}&quot;, level);</span>
+        }
+      }
+<span class="fc" id="L396">    } catch (final ParseException e) {</span>
+<span class="fc" id="L397">      throw new IcapException(&quot;Parsing error&quot;, e,</span>
+                              IcapError.ICAP_ARGUMENT_ERROR);
+<span class="fc" id="L399">    }</span>
+<span class="fc" id="L400">    return icapScanFile;</span>
+  }
+
+  /**
+   * @param icapScanFile the original IcapScanFile
+   * @param cmd the command to parse
+   *
+   * @throws IcapException if an error occurs during argument parsing
+   */
+  private static void getModelParameters(final IcapScanFile icapScanFile,
+                                         final CommandLine cmd)
+      throws IcapException {
+    try {
+<span class="fc" id="L413">      icapScanFile.icapModel = IcapModel.valueOf(cmd.getOptionValue(MODEL));</span>
+<span class="fc" id="L414">      final IcapScanFile modelIcapScanFile =</span>
+<span class="fc" id="L415">          getIcapScanFileArgs(icapScanFile.icapModel.getDefaultArgs(),</span>
+                              ICAP_MODEL_OPTIONS);
+<span class="fc" id="L417">      icapScanFile.partialSetFrom(modelIcapScanFile);</span>
+<span class="nc" id="L418">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L419">      throw new IcapException(&quot;Parsing error&quot;, e,</span>
+                              IcapError.ICAP_ARGUMENT_ERROR);
+<span class="fc" id="L421">    }</span>
+<span class="fc" id="L422">  }</span>
+
+  /**
+   * Get the other options from command
+   *
+   * @param icapScanFile the current IcapScanFile
+   * @param cmd the command to parse from
+   */
+  private static void getOtherOptions(final IcapScanFile icapScanFile,
+                                      final CommandLine cmd) {
+<span class="fc bfc" id="L432" title="All 2 branches covered.">    if (cmd.hasOption(ERROR_MOVE)) {</span>
+<span class="fc" id="L433">      icapScanFile.pathMoveError = cmd.getOptionValue(ERROR_MOVE);</span>
+    }
+<span class="fc bfc" id="L435" title="All 2 branches covered.">    if (cmd.hasOption(ERROR_DELETE)) {</span>
+<span class="fc" id="L436">      icapScanFile.deleteOnError = true;</span>
+    }
+<span class="fc bfc" id="L438" title="All 2 branches covered.">    if (cmd.hasOption(ERROR_SEND)) {</span>
+<span class="fc" id="L439">      icapScanFile.sendOnError = true;</span>
+    }
+<span class="fc bfc" id="L441" title="All 2 branches covered.">    if (cmd.hasOption(IGNORE_NETWORK_CONTINUE)) {</span>
+<span class="fc" id="L442">      icapScanFile.ignoreNetworkError = true;</span>
+    }
+<span class="fc bfc" id="L444" title="All 2 branches covered.">    if (cmd.hasOption(IGNORE_TOO_BIG_FILE_CONTINUE)) {</span>
+<span class="fc" id="L445">      icapScanFile.ignoreTooBigFileError = true;</span>
+    }
+<span class="fc bfc" id="L447" title="All 2 branches covered.">    if (cmd.hasOption(KEY_PREVIEW)) {</span>
+<span class="fc" id="L448">      icapScanFile.keyIcapPreview = cmd.getOptionValue(KEY_PREVIEW);</span>
+    }
+<span class="fc bfc" id="L450" title="All 2 branches covered.">    if (cmd.hasOption(STRING_PREVIEW)) {</span>
+<span class="fc" id="L451">      icapScanFile.subStringFromKeyIcapPreview =</span>
+<span class="fc" id="L452">          cmd.getOptionValue(STRING_PREVIEW);</span>
+    }
+<span class="fc bfc" id="L454" title="All 2 branches covered.">    if (cmd.hasOption(KEY_204)) {</span>
+<span class="fc" id="L455">      icapScanFile.keyIcap204 = cmd.getOptionValue(KEY_204);</span>
+    }
+<span class="fc bfc" id="L457" title="All 2 branches covered.">    if (cmd.hasOption(STRING_204)) {</span>
+<span class="fc" id="L458">      icapScanFile.subStringFromKeyIcap204 = cmd.getOptionValue(STRING_204);</span>
+    }
+<span class="fc bfc" id="L460" title="All 2 branches covered.">    if (cmd.hasOption(KEY_200)) {</span>
+<span class="fc" id="L461">      icapScanFile.keyIcap200 = cmd.getOptionValue(KEY_200);</span>
+    }
+<span class="fc bfc" id="L463" title="All 2 branches covered.">    if (cmd.hasOption(STRING_200)) {</span>
+<span class="fc" id="L464">      icapScanFile.subStringFromKeyIcap200 = cmd.getOptionValue(STRING_200);</span>
+    }
+<span class="fc bfc" id="L466" title="All 2 branches covered.">    if (cmd.hasOption(STRING_HTTP)) {</span>
+<span class="fc" id="L467">      icapScanFile.substringHttpStatus200 = cmd.getOptionValue(STRING_HTTP);</span>
+    }
+<span class="fc" id="L469">  }</span>
+
+  /**
+   * Check the numbers
+   *
+   * @param icapScanFile the IcapScanFile object
+   * @param cmd the command line to check On
+   *
+   * @throws IcapException
+   */
+  private static void getNumbers(final IcapScanFile icapScanFile,
+                                 final CommandLine cmd) throws IcapException {
+    try {
+<span class="fc bfc" id="L482" title="All 2 branches covered.">      if (cmd.hasOption(PREVIEW_SIZE)) {</span>
+<span class="fc" id="L483">        icapScanFile.stdPreviewSize =</span>
+<span class="fc" id="L484">            Integer.parseInt(cmd.getOptionValue(PREVIEW_SIZE));</span>
+<span class="fc bfc" id="L485" title="All 2 branches covered.">        if (icapScanFile.stdPreviewSize &lt; 0) {</span>
+<span class="fc" id="L486">          throw new NumberFormatException(&quot;Preview size must be positive or 0&quot;);</span>
+        }
+      }
+<span class="fc bfc" id="L489" title="All 2 branches covered.">      if (cmd.hasOption(BLOCK_SIZE)) {</span>
+<span class="fc" id="L490">        icapScanFile.sendLength =</span>
+<span class="fc" id="L491">            Integer.parseInt(cmd.getOptionValue(BLOCK_SIZE));</span>
+<span class="fc bfc" id="L492" title="All 2 branches covered.">        if (icapScanFile.sendLength &lt; IcapClient.MINIMAL_SIZE) {</span>
+<span class="fc" id="L493">          throw new NumberFormatException(</span>
+              &quot;Block size must be greater than &quot; + IcapClient.MINIMAL_SIZE);
+        }
+      }
+<span class="fc bfc" id="L497" title="All 2 branches covered.">      if (cmd.hasOption(RECEIVE_SIZE)) {</span>
+<span class="fc" id="L498">        icapScanFile.receiveLength =</span>
+<span class="fc" id="L499">            Integer.parseInt(cmd.getOptionValue(RECEIVE_SIZE));</span>
+<span class="fc bfc" id="L500" title="All 2 branches covered.">        if (icapScanFile.receiveLength &lt; IcapClient.MINIMAL_SIZE) {</span>
+<span class="fc" id="L501">          throw new NumberFormatException(</span>
+              &quot;Receive size must be greater than &quot; + IcapClient.MINIMAL_SIZE);
+        }
+      }
+<span class="fc bfc" id="L505" title="All 2 branches covered.">      if (cmd.hasOption(MAX_SIZE)) {</span>
+<span class="fc" id="L506">        icapScanFile.maxSize = Long.parseLong(cmd.getOptionValue(MAX_SIZE));</span>
+<span class="fc bfc" id="L507" title="All 2 branches covered.">        if (icapScanFile.maxSize &lt; IcapClient.MINIMAL_SIZE) {</span>
+<span class="fc" id="L508">          throw new NumberFormatException(</span>
+              &quot;Max file size must be greater than &quot; + IcapClient.MINIMAL_SIZE);
+        }
+      }
+<span class="fc bfc" id="L512" title="All 2 branches covered.">      if (cmd.hasOption(TIMEOUT_ARG)) {</span>
+<span class="fc" id="L513">        icapScanFile.timeout =</span>
+<span class="fc" id="L514">            Integer.parseInt(cmd.getOptionValue(TIMEOUT_ARG));</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">        if (icapScanFile.timeout &lt; IcapClient.MINIMAL_SIZE) {</span>
+<span class="fc" id="L516">          throw new NumberFormatException(</span>
+              &quot;Timeout must be greater than &quot; + IcapClient.MINIMAL_SIZE);
+        }
+      }
+<span class="fc" id="L520">    } catch (final NumberFormatException e) {</span>
+<span class="fc" id="L521">      throw new IcapException(&quot;Incorrect Number Format&quot;, e,</span>
+                              IcapError.ICAP_ARGUMENT_ERROR);
+<span class="fc" id="L523">    }</span>
+<span class="fc" id="L524">  }</span>
+
+  /**
+   * Get the port
+   *
+   * @param icapScanFile the IcapScanFile object
+   * @param cmd the command line to check On
+   *
+   * @throws IcapException
+   */
+  private static void getPort(final IcapScanFile icapScanFile,
+                              final CommandLine cmd) throws IcapException {
+    try {
+<span class="fc bfc" id="L537" title="All 2 branches covered.">      if (cmd.hasOption(PORT_FIELD)) {</span>
+<span class="fc" id="L538">        icapScanFile.port = Integer.parseInt(cmd.getOptionValue(PORT_FIELD));</span>
+<span class="fc bfc" id="L539" title="All 2 branches covered.">        if (icapScanFile.port &lt; 0) {</span>
+<span class="fc" id="L540">          throw new NumberFormatException(&quot;Port must be positive&quot;);</span>
+        }
+      }
+<span class="fc" id="L543">    } catch (final NumberFormatException e) {</span>
+<span class="fc" id="L544">      throw new IcapException(&quot;Port incorrect&quot;, e,</span>
+                              IcapError.ICAP_ARGUMENT_ERROR);
+<span class="fc" id="L546">    }</span>
+<span class="fc" id="L547">  }</span>
+
+  /**
+   * Create the IcapClient according to IcapScanFile
+   *
+   * @param icapScanFile used to setup IcapClient
+   *
+   * @return the IcapClient
+   */
+  public static IcapClient getIcapClient(final IcapScanFile icapScanFile) {
+<span class="fc bfc" id="L557" title="All 2 branches covered.">    if (icapScanFile == null) {</span>
+<span class="fc" id="L558">      throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);</span>
+    }
+<span class="fc" id="L560">    final IcapClient icapClient =</span>
+        new IcapClient(icapScanFile.serverIP, icapScanFile.port,
+                       icapScanFile.icapService, icapScanFile.stdPreviewSize);
+<span class="fc" id="L563">    icapClient.setSendLength(icapScanFile.sendLength)</span>
+<span class="fc" id="L564">              .setReceiveLength(icapScanFile.receiveLength)</span>
+<span class="fc" id="L565">              .setMaxSize(icapScanFile.maxSize).setTimeout(icapScanFile.timeout)</span>
+<span class="fc" id="L566">              .setKeyIcapPreview(icapScanFile.keyIcapPreview)</span>
+<span class="fc" id="L567">              .setSubStringFromKeyIcapPreview(</span>
+                  icapScanFile.subStringFromKeyIcapPreview)
+<span class="fc" id="L569">              .setKeyIcap204(icapScanFile.keyIcap204)</span>
+<span class="fc" id="L570">              .setSubStringFromKeyIcap204(icapScanFile.subStringFromKeyIcap204)</span>
+<span class="fc" id="L571">              .setKeyIcap200(icapScanFile.keyIcap200)</span>
+<span class="fc" id="L572">              .setSubStringFromKeyIcap200(icapScanFile.subStringFromKeyIcap200)</span>
+<span class="fc" id="L573">              .setSubstringHttpStatus200(icapScanFile.substringHttpStatus200);</span>
+<span class="fc" id="L574">    return icapClient;</span>
+  }
+
+  /**
+   * Finalize the current ICAP scan when an error occurs
+   *
+   * @param icapScanFile used to get options for Error tasks
+   *
+   * @throws IOException if an error occurs during post error tasks
+   */
+  public static void finalizeOnError(final IcapScanFile icapScanFile)
+      throws IOException {
+<span class="fc bfc" id="L586" title="All 2 branches covered.">    if (icapScanFile == null) {</span>
+<span class="fc" id="L587">      throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);</span>
+    }
+<span class="fc" id="L589">    logger.error(&quot;Scan is incorrect: {}&quot;,</span>
+<span class="fc bfc" id="L590" title="All 2 branches covered.">                 icapScanFile.getResult() == null? &quot;No Result&quot; :</span>
+<span class="fc" id="L591">                     icapScanFile.getResult());</span>
+<span class="fc bfc" id="L592" title="All 2 branches covered.">    if (icapScanFile.deleteOnError) {</span>
+<span class="fc" id="L593">      final File file = new File(icapScanFile.filepath);</span>
+<span class="pc bpc" id="L594" title="1 of 2 branches missed.">      if (!file.delete()) {</span>
+<span class="nc" id="L595">        logger.error(&quot;File cannot be deleted!&quot;);</span>
+<span class="nc" id="L596">        throw new IOException(&quot;File cannot be deleted!&quot;);</span>
+      } else {
+<span class="fc" id="L598">        logger.warn(&quot;File is deleted&quot;);</span>
+      }
+<span class="fc bfc" id="L600" title="All 2 branches covered.">    } else if (icapScanFile.pathMoveError != null) {</span>
+<span class="fc" id="L601">      final File file = new File(icapScanFile.filepath);</span>
+<span class="fc" id="L602">      final File dir = new File(icapScanFile.pathMoveError);</span>
+<span class="fc bfc" id="L603" title="All 2 branches covered.">      if (dir.exists()) {</span>
+<span class="pc bpc" id="L604" title="1 of 2 branches missed.">        if (dir.isDirectory()) {</span>
+          try {
+<span class="fc" id="L606">            final File to = new File(dir, file.getName());</span>
+<span class="fc" id="L607">            FileUtils.copy(file, to, true, false);</span>
+<span class="fc" id="L608">            logger.warn(&quot;File is moved to &quot; + to.getAbsolutePath());</span>
+<span class="nc" id="L609">          } catch (final Reply550Exception e) {</span>
+<span class="nc" id="L610">            logger.error(&quot;Cannot move to directory: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L611">            throw new IOException(&quot;Cannot move to directory&quot;, e);</span>
+<span class="fc" id="L612">          }</span>
+        } else {
+<span class="nc" id="L614">          logger.error(&quot;Move path already exists and is not a directory&quot;);</span>
+<span class="nc" id="L615">          throw new IOException(</span>
+              &quot;Move path already exists and is not a directory&quot;);
+        }
+      } else {
+<span class="fc bfc" id="L619" title="All 2 branches covered.">        if (dir.getParentFile().isDirectory()) {</span>
+          try {
+<span class="fc" id="L621">            FileUtils.copy(file, dir, true, false);</span>
+<span class="fc" id="L622">            logger.warn(&quot;File is moved to &quot; + dir.getAbsolutePath());</span>
+<span class="nc" id="L623">          } catch (final Reply550Exception e) {</span>
+<span class="nc" id="L624">            logger.error(&quot;Cannot move to file: {}&quot;, e.getMessage());</span>
+<span class="pc" id="L625">          }</span>
+        } else {
+<span class="fc" id="L627">          logger.error(&quot;Move path is not a directory or existing sub-path&quot;);</span>
+<span class="fc" id="L628">          throw new IOException(</span>
+              &quot;Move path is not a directory or existing sub-path&quot;);
+        }
+      }
+    }
+<span class="fc" id="L633">  }</span>
+
+  /**
+   * @return the file path
+   */
+  public final String getFilePath() {
+<span class="fc" id="L639">    return filepath;</span>
+  }
+
+  /**
+   * @param filePath the file path to use
+   *
+   * @return This
+   */
+  public final IcapScanFile setFilePath(final String filePath) {
+<span class="fc" id="L648">    this.filepath = filePath;</span>
+<span class="fc" id="L649">    return this;</span>
+  }
+
+  /**
+   * @return the server IP
+   */
+  public final String getServerIP() {
+<span class="fc" id="L656">    return serverIP;</span>
+  }
+
+  /**
+   * @param serverIP the server IP to use
+   *
+   * @return This
+   */
+  public final IcapScanFile setServerIP(final String serverIP) {
+<span class="fc" id="L665">    this.serverIP = serverIP;</span>
+<span class="fc" id="L666">    return this;</span>
+  }
+
+  /**
+   * @return the Icap Model if any (null if none)
+   */
+  public final IcapModel getIcapModel() {
+<span class="fc" id="L673">    return icapModel;</span>
+  }
+
+  /**
+   * @return the path to move in error or null
+   */
+  public final String getPathMoveError() {
+<span class="fc" id="L680">    return pathMoveError;</span>
+  }
+
+  /**
+   * @return True if the file will be deleted in error
+   */
+  public final boolean isDeleteOnError() {
+<span class="fc" id="L687">    return deleteOnError;</span>
+  }
+
+  /**
+   * @return True if the send on error option is set
+   */
+  public final boolean isSendOnError() {
+<span class="fc" id="L694">    return sendOnError;</span>
+  }
+
+  /**
+   * @return True if a network error option is set to ignore such
+   */
+  public final boolean isIgnoreNetworkError() {
+<span class="fc" id="L701">    return ignoreNetworkError;</span>
+  }
+
+  /**
+   * @return True if a too big file error option is set to ignore such
+   */
+  public final boolean isIgnoreTooBigFileError() {
+<span class="fc" id="L708">    return ignoreTooBigFileError;</span>
+  }
+
+  /**
+   * @return the Logger Level desired during ICAP operation or null if none
+   */
+  public final WaarpLogLevel getLogLevel() {
+<span class="fc" id="L715">    return logLevel;</span>
+  }
+
+  /**
+   * @return the Map of key from ICAP if any (null if none)
+   */
+  public final Map&lt;String, String&gt; getResult() {
+<span class="fc" id="L722">    return result;</span>
+  }
+
+  /**
+   * If file argument are -file EICARTEST, then a EICAR test file will be
+   * sent.&lt;br&gt;&lt;br&gt;
+   * &quot;-file path_to_file &lt;br&gt;
+   * -to hostname &lt;br&gt;
+   * [-port port, default 1344] &lt;br&gt;
+   * -service name | -model name &lt;br&gt;
+   * [-previewSize size, default none] &lt;br&gt;
+   * [-blockSize size, default 8192] &lt;br&gt;
+   * [-receiveSize size, default 65536] &lt;br&gt;
+   * [-maxSize size, default MAX_INTEGER] &lt;br&gt;
+   * [-timeout in_ms, default equiv to 10 min] &lt;br&gt;
+   * [-errorMove path | -errorDelete | -sendOnError] &lt;br&gt;
+   * [-ignoreNetworkError] &lt;br&gt;
+   * [-ignoreTooBigFileError] &lt;br&gt;
+   * [-keyPreview key -stringPreview string, default none] &lt;br&gt;
+   * [-key204 key -string204 string, default none] &lt;br&gt;
+   * [-key200 key -string200 string, default none] &lt;br&gt;
+   * [-stringHttp string, default none] &lt;br&gt;
+   * [-logger DEBUG|INFO|WARN|ERROR, default none]&quot;&lt;br&gt;
+   * &lt;br&gt;
+   * &lt;br&gt;
+   * Exit with values:&lt;br&gt;
+   * &lt;ul&gt;
+   *   &lt;li&gt;0: Scan OK&lt;/li&gt;
+   *   &lt;li&gt;1: Bad arguments&lt;/li&gt;
+   *   &lt;li&gt;2: ICAP protocol error&lt;/li&gt;
+   *   &lt;li&gt;3: Network error&lt;/li&gt;
+   *   &lt;li&gt;4: Scan KO&lt;/li&gt;
+   *   &lt;li&gt;5: Scan KO but post action required in error&lt;/li&gt;
+   * &lt;/ul&gt;
+   *
+   * @param args to get parameters from
+   */
+  public static void main(final String[] args) {
+<span class="nc" id="L760">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc" id="L762">    System.exit(scanFile(args));</span>
+<span class="nc" id="L763">  }</span>
+
+  /**
+   * If file argument are -file EICARTEST, then a EICAR test file will be
+   * sent.&lt;br&gt;&lt;br&gt;
+   * &quot;-file path_to_file &lt;br&gt;
+   * -to hostname &lt;br&gt;
+   * [-port port, default 1344] &lt;br&gt;
+   * Not -service name | -model name (should be set through Model)&lt;br&gt;
+   * [-previewSize size, default none] &lt;br&gt;
+   * [-blockSize size, default 8192] &lt;br&gt;
+   * [-receiveSize size, default 65536] &lt;br&gt;
+   * [-maxSize size, default MAX_INTEGER] &lt;br&gt;
+   * [-timeout in_ms, default equiv to 10 min] &lt;br&gt;
+   * [-errorMove path | -errorDelete | -sendOnError] &lt;br&gt;
+   * [-ignoreNetworkError] &lt;br&gt;
+   * [-ignoreTooBigFileError] &lt;br&gt;
+   * [-keyPreview key -stringPreview string, default none] &lt;br&gt;
+   * [-key204 key -string204 string, default none] &lt;br&gt;
+   * [-key200 key -string200 string, default none] &lt;br&gt;
+   * [-stringHttp string, default none] &lt;br&gt;
+   * [-logger DEBUG|INFO|WARN|ERROR, default none]&quot;&lt;br&gt;
+   * &lt;br&gt;
+   *
+   * @param model default model to apply in addition to parameters
+   * @param args to get parameters from
+   *
+   * @return 0 if OK, 1 if arguments are incorrect, 2 if an issue occurs
+   *     during ICAP protool, 3 if a nework error occurs, 4 if scan KO, 5 if
+   *     the post actions are in error while scan is KO
+   */
+  public static int scanFile(final String[] model, final String[] args) {
+<span class="pc bpc" id="L795" title="1 of 8 branches missed.">    if (model == null || model.length == 0 || args == null ||</span>
+        args.length == 0) {
+<span class="fc" id="L797">      throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);</span>
+    }
+<span class="fc" id="L799">    final String[] realArgs = Arrays.copyOf(model, model.length + args.length);</span>
+<span class="fc" id="L800">    System.arraycopy(args, 0, realArgs, model.length, args.length);</span>
+<span class="fc" id="L801">    return scanFile(realArgs);</span>
+  }
+
+  /**
+   * If file argument are -file EICARTEST, then a EICAR test file will be
+   * sent.&lt;br&gt;&lt;br&gt;
+   * &quot;-file path_to_file &lt;br&gt;
+   * -to hostname &lt;br&gt;
+   * [-port port, default 1344] &lt;br&gt;
+   * -service name | -model name
+   * [-previewSize size, default none] &lt;br&gt;
+   * [-blockSize size, default 8192] &lt;br&gt;
+   * [-receiveSize size, default 65536] &lt;br&gt;
+   * [-maxSize size, default MAX_INTEGER] &lt;br&gt;
+   * [-timeout in_ms, default equiv to 10 min] &lt;br&gt;
+   * [-errorMove path | -errorDelete | -sendOnError] &lt;br&gt;
+   * [-ignoreNetworkError] &lt;br&gt;
+   * [-ignoreTooBigFileError] &lt;br&gt;
+   * [-keyPreview key -stringPreview string, default none] &lt;br&gt;
+   * [-key204 key -string204 string, default none] &lt;br&gt;
+   * [-key200 key -string200 string, default none] &lt;br&gt;
+   * [-stringHttp string, default none] &lt;br&gt;
+   * [-logger DEBUG|INFO|WARN|ERROR, default none]&quot;&lt;br&gt;
+   * &lt;br&gt;
+   *
+   * @param args to get parameters from
+   *
+   * @return 0 if OK, 1 if arguments are incorrect, 2 if an issue occurs
+   *     during ICAP protool, 3 if a nework error occurs, 4 if scan KO, 5 if
+   *     the post actions are in error while scan is KO
+   */
+  public static int scanFile(final String[] args) {
+<span class="fc bfc" id="L833" title="All 4 branches covered.">    if (args == null || args.length == 0) {</span>
+<span class="fc" id="L834">      throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);</span>
+    }
+<span class="fc" id="L836">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+    final IcapScanFile icapScanFile;
+    try {
+<span class="fc" id="L840">      icapScanFile = getIcapScanFileArgs(args);</span>
+<span class="fc" id="L841">    } catch (final IcapException e) {</span>
+<span class="fc" id="L842">      printHelp();</span>
+<span class="fc" id="L843">      logger.error(&quot;Arguments are incorrect: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L844">      return STATUS_BAD_ARGUMENT;</span>
+<span class="fc" id="L845">    }</span>
+    try {
+<span class="fc" id="L847">      return icapScanFile.scanFile();</span>
+<span class="fc" id="L848">    } catch (final IcapException e) {</span>
+<span class="fc" id="L849">      logger.error(&quot;Error during scan: {}&quot;, e.getMessage());</span>
+<span class="fc bfc" id="L850" title="All 2 branches covered.">      if (e.getError() == IcapError.ICAP_CANT_CONNECT ||</span>
+<span class="pc bpc" id="L851" title="1 of 2 branches missed.">          e.getError() == IcapError.ICAP_NETWORK_ERROR ||</span>
+<span class="pc bpc" id="L852" title="1 of 2 branches missed.">          e.getError() == IcapError.ICAP_TIMEOUT_ERROR) {</span>
+<span class="pc bpc" id="L853" title="1 of 2 branches missed.">        if (icapScanFile.ignoreNetworkError) {</span>
+<span class="nc" id="L854">          return STATUS_OK;</span>
+        }
+<span class="fc" id="L856">        return STATUS_NETWORK_ISSUE;</span>
+      }
+<span class="pc bpc" id="L858" title="1 of 2 branches missed.">      if (e.getError() == IcapError.ICAP_ARGUMENT_ERROR ||</span>
+<span class="fc bfc" id="L859" title="All 2 branches covered.">          e.getError() == IcapError.ICAP_FILE_LENGTH_ERROR) {</span>
+<span class="fc bfc" id="L860" title="All 2 branches covered.">        if (icapScanFile.ignoreTooBigFileError &amp;&amp;</span>
+<span class="pc bpc" id="L861" title="1 of 2 branches missed.">            e.getError() == IcapError.ICAP_FILE_LENGTH_ERROR) {</span>
+<span class="fc" id="L862">          return STATUS_OK;</span>
+        }
+<span class="fc" id="L864">        return STATUS_BAD_ARGUMENT;</span>
+      }
+<span class="fc" id="L866">      return STATUS_ICAP_ISSUE;</span>
+<span class="fc" id="L867">    } catch (final IOException e) {</span>
+<span class="fc" id="L868">      logger.error(&quot;Moving file is in error: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L869">      return STATUS_KO_SCAN_POST_ACTION_ERROR;</span>
+    }
+  }
+
+  /**
+   * Scan a file through ICAP antivirus server from IcapScanFile
+   *
+   * @return 0 if scan is OK, 1 if the file is infected
+   *
+   * @throws IcapException if an error occurs during connection or ICAP protocol
+   * @throws IOException if the file is infected and a post error action is
+   *     in error
+   */
+  public final int scanFile() throws IcapException, IOException {
+<span class="fc" id="L883">    final WaarpLogLevel waarpLogLevel = getLogLevel();</span>
+<span class="fc" id="L884">    WaarpLogLevel oldLevel = null;</span>
+    try {
+<span class="fc bfc" id="L886" title="All 2 branches covered.">      if (waarpLogLevel != null) {</span>
+<span class="pc bpc" id="L887" title="1 of 2 branches missed.">        if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L888">          oldLevel = WaarpLogLevel.TRACE;</span>
+<span class="pc bpc" id="L889" title="1 of 2 branches missed.">        } else if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L890">          oldLevel = WaarpLogLevel.DEBUG;</span>
+<span class="pc bpc" id="L891" title="1 of 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L892">          oldLevel = WaarpLogLevel.INFO;</span>
+<span class="pc bpc" id="L893" title="1 of 2 branches missed.">        } else if (logger.isWarnEnabled()) {</span>
+<span class="fc" id="L894">          oldLevel = WaarpLogLevel.WARN;</span>
+<span class="nc bnc" id="L895" title="All 2 branches missed.">        } else if (logger.isErrorEnabled()) {</span>
+<span class="nc" id="L896">          oldLevel = WaarpLogLevel.ERROR;</span>
+        }
+<span class="fc" id="L898">        WaarpLoggerFactory.setLogLevel(waarpLogLevel);</span>
+      }
+<span class="fc" id="L900">      final IcapClient icapClient = getIcapClient(this);</span>
+<span class="fc bfc" id="L901" title="All 2 branches covered.">      if (icapClient.scanFile(filepath)) {</span>
+<span class="fc" id="L902">        icapClient.close();</span>
+<span class="fc" id="L903">        logger.info(&quot;File is OK&quot;);</span>
+<span class="fc" id="L904">        return STATUS_OK;</span>
+      } else {
+<span class="fc" id="L906">        icapClient.close();</span>
+<span class="fc" id="L907">        result = icapClient.getFinalResult();</span>
+<span class="fc" id="L908">        finalizeOnError(this);</span>
+<span class="fc" id="L909">        return STATUS_KO_SCAN;</span>
+      }
+    } finally {
+<span class="pc bpc" id="L912" title="1 of 4 branches missed.">      if (waarpLogLevel != null &amp;&amp; oldLevel != null) {</span>
+<span class="fc" id="L913">        WaarpLoggerFactory.setLogLevel(oldLevel);</span>
+      }
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

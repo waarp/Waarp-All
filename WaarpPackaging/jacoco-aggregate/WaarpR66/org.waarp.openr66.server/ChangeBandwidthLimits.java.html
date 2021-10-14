@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ChangeBandwidthLimits.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.server</a> &gt; <span class="el_source">ChangeBandwidthLimits.java</span></div><h1>ChangeBandwidthLimits.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.server;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.openr66.client.AbstractTransfer;
+import org.waarp.openr66.configuration.FileBasedConfiguration;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
+import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.BandwidthJsonPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * This command enables the dynamic change of bandwidth limitation. It does not
+ * changed the valuesin the
+ * database but only dynamic values while the server is running and until it is
+ * shutdown.
+ */
+public class ChangeBandwidthLimits implements Runnable {
+  /**
+   * Internal Logger
+   */
+  static volatile WaarpLogger logger;
+
+  protected static final String INFO_ARGS =
+      &quot;Need the configuration file as first argument then at least one of\n&quot; +
+      &quot;   -wglob limitGlobalWrite\n&quot; + &quot;   -rglob limitGlobalRead\n&quot; +
+      &quot;   -wsess limitSessionWrite\n&quot; + &quot;   -rsess limitSessionWrite\n&quot; +
+      &quot;   -host host (optional)&quot;;
+
+  protected final R66Future future;
+  protected final long writeGlobalLimit;
+  protected final long readGlobalLimit;
+  protected final long writeSessionLimit;
+  protected final long readSessionLimit;
+  protected final NetworkTransaction networkTransaction;
+  protected DbHostAuth host;
+
+  public ChangeBandwidthLimits(final R66Future future, final long wgl,
+                               final long rgl, final long wsl, final long rsl,
+<span class="nc" id="L73">                               final NetworkTransaction networkTransaction) {</span>
+<span class="nc" id="L74">    this.future = future;</span>
+<span class="nc" id="L75">    writeGlobalLimit = wgl;</span>
+<span class="nc" id="L76">    readGlobalLimit = rgl;</span>
+<span class="nc" id="L77">    writeSessionLimit = wsl;</span>
+<span class="nc" id="L78">    readSessionLimit = rsl;</span>
+<span class="nc" id="L79">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L80">    host = Configuration.configuration.getHostSslAuth();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L82">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
+    }
+<span class="nc" id="L84">  }</span>
+
+  public void setHost(final DbHostAuth host) {
+<span class="nc" id="L87">    this.host = host;</span>
+<span class="nc" id="L88">  }</span>
+
+  /**
+   * Prior to call this method, the pipeline and NetworkTransaction must have
+   * been initialized. It is the
+   * responsibility of the caller to finish all network resources.
+   */
+  @Override
+  public void run() {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L98">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
+    }
+<span class="nc" id="L100">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L101">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L103">      return;</span>
+    }
+<span class="nc" id="L105">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+    final AbstractLocalPacket valid;
+<span class="nc" id="L107">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
+<span class="nc" id="L108">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (useJson) {</span>
+<span class="nc" id="L110">      final BandwidthJsonPacket node = new BandwidthJsonPacket();</span>
+<span class="nc bnc" id="L111" title="All 8 branches missed.">      if (writeGlobalLimit &lt; 0 &amp;&amp; readGlobalLimit &lt; 0 &amp;&amp;</span>
+          writeSessionLimit &lt; 0 &amp;&amp; readSessionLimit &lt; 0) {
+        // will ask current values instead
+<span class="nc" id="L114">        node.setSetter(false);</span>
+      } else {
+<span class="nc" id="L116">        node.setSetter(true);</span>
+<span class="nc" id="L117">        node.setWriteglobal(writeGlobalLimit);</span>
+<span class="nc" id="L118">        node.setReadglobal(readGlobalLimit);</span>
+<span class="nc" id="L119">        node.setWritesession(writeSessionLimit);</span>
+<span class="nc" id="L120">        node.setReadsession(readSessionLimit);</span>
+      }
+<span class="nc" id="L122">      valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);</span>
+<span class="nc" id="L123">    } else {</span>
+<span class="nc bnc" id="L124" title="All 8 branches missed.">      if (writeGlobalLimit &lt; 0 &amp;&amp; readGlobalLimit &lt; 0 &amp;&amp;</span>
+          writeSessionLimit &lt; 0 &amp;&amp; readSessionLimit &lt; 0) {
+        // will ask current values instead
+<span class="nc" id="L127">        valid = new ValidPacket(&quot;-1&quot;, &quot;-1&quot;, LocalPacketFactory.BANDWIDTHPACKET);</span>
+      } else {
+<span class="nc" id="L129">        valid = new ValidPacket(writeGlobalLimit + &quot; &quot; + readGlobalLimit,</span>
+                                writeSessionLimit + &quot; &quot; + readSessionLimit,
+                                LocalPacketFactory.BANDWIDTHPACKET);
+      }
+    }
+<span class="nc" id="L134">    AbstractTransfer.sendValidPacket(host, localChannelReference, valid,</span>
+                                     future);
+<span class="nc" id="L136">    logger.info(</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L138">  }</span>
+
+<span class="nc" id="L140">  protected static long swriteGlobalLimit = -1;</span>
+<span class="nc" id="L141">  protected static long sreadGlobalLimit = -1;</span>
+<span class="nc" id="L142">  protected static long swriteSessionLimit = -1;</span>
+<span class="nc" id="L143">  protected static long sreadSessionLimit = -1;</span>
+  protected static String stohost;
+
+  protected static boolean getParams(final String[] args) {
+<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L148">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
+    }
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L151">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L152">      return false;</span>
+    }
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
+<span class="nc" id="L156">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L157">      return false;</span>
+    }
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+      try {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (&quot;-wglob&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L162">          i++;</span>
+<span class="nc" id="L163">          swriteGlobalLimit = Long.parseLong(args[i]);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        } else if (&quot;-rglob&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L165">          i++;</span>
+<span class="nc" id="L166">          sreadGlobalLimit = Long.parseLong(args[i]);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        } else if (&quot;-wsess&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L168">          i++;</span>
+<span class="nc" id="L169">          swriteSessionLimit = Long.parseLong(args[i]);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        } else if (&quot;-rsess&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L171">          i++;</span>
+<span class="nc" id="L172">          sreadSessionLimit = Long.parseLong(args[i]);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        } else if (&quot;-host&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L174">          i++;</span>
+<span class="nc" id="L175">          stohost = args[i];</span>
+        }
+<span class="nc" id="L177">      } catch (final NumberFormatException ignored) {</span>
+        // nothing
+<span class="nc" id="L179">      }</span>
+    }
+<span class="nc bnc" id="L181" title="All 8 branches missed.">    if (swriteGlobalLimit == -1 &amp;&amp; sreadGlobalLimit == -1 &amp;&amp;</span>
+        swriteSessionLimit == -1 &amp;&amp; sreadSessionLimit == -1) {
+<span class="nc" id="L183">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L184">      return false;</span>
+    }
+<span class="nc" id="L186">    return true;</span>
+  }
+
+  public static void main(final String[] args) {
+<span class="nc" id="L190">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L192" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L193">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
+    }
+<span class="nc bnc" id="L195" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L196">      logger.error(&quot;Wrong initialization&quot;);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L198">        admin.close();</span>
+      }
+<span class="nc" id="L200">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc" id="L202">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L203">    final R66Future future = new R66Future(true);</span>
+
+<span class="nc" id="L205">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L206">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+    try {
+<span class="nc" id="L208">      final ChangeBandwidthLimits transaction =</span>
+          new ChangeBandwidthLimits(future, swriteGlobalLimit, sreadGlobalLimit,
+                                    swriteSessionLimit, sreadSessionLimit,
+                                    networkTransaction);
+<span class="nc bnc" id="L212" title="All 2 branches missed.">      if (stohost != null) {</span>
+        try {
+<span class="nc" id="L214">          transaction.setHost(new DbHostAuth(stohost));</span>
+<span class="nc" id="L215">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L216">          logger.error(</span>
+              &quot;Bandwidth in     FAILURE since Host is not found: &quot; + stohost,
+              e);
+<span class="nc" id="L219">          networkTransaction.closeAll();</span>
+<span class="nc" id="L220">          System.exit(10);//NOSONAR</span>
+<span class="nc" id="L221">        }</span>
+      } else {
+<span class="nc" id="L223">        stohost = Configuration.configuration.getHostSslId();</span>
+      }
+<span class="nc" id="L225">      transaction.run();</span>
+<span class="nc" id="L226">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L227">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L228">      final long delay = time2 - time1;</span>
+<span class="nc" id="L229">      final R66Result result = future.getResult();</span>
+<span class="nc" id="L230">      final boolean useJson = PartnerConfiguration.useJson(stohost);</span>
+<span class="nc" id="L231">      logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+        final String sresult;
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (result.getOther() != null) {</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">          if (useJson) {</span>
+<span class="nc" id="L236">            sresult = ((JsonCommandPacket) result.getOther()).getRequest();</span>
+          } else {
+<span class="nc" id="L238">            sresult = ((ValidPacket) result.getOther()).getSheader();</span>
+          }
+        } else {
+<span class="nc" id="L241">          sresult = &quot;no result&quot;;</span>
+        }
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L244">          logger.warn(</span>
+              &quot;WARNED on bandwidth:     &quot; + sresult + &quot;     delay: &quot; + delay);
+        } else {
+<span class="nc" id="L247">          logger.warn(</span>
+              &quot;SUCCESS on Bandwidth:     &quot; + sresult + &quot;     delay: &quot; + delay);
+        }
+<span class="nc" id="L250">      } else {</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L252">          logger.warn(&quot;Bandwidth is     WARNED&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                      future.getCause() != null?</span>
+<span class="nc" id="L254">                          future.getCause().getMessage() : &quot;&quot;);</span>
+        } else {
+<span class="nc" id="L256">          logger.error(&quot;Bandwidth in     FAILURE&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                       future.getCause() != null?</span>
+<span class="nc" id="L258">                           future.getCause().getMessage() : &quot;&quot;);</span>
+        }
+<span class="nc" id="L260">        networkTransaction.closeAll();</span>
+<span class="nc" id="L261">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+      }
+    } finally {
+<span class="nc" id="L264">      networkTransaction.closeAll();</span>
+<span class="nc" id="L265">      System.exit(0);//NOSONAR</span>
+    }
+<span class="nc" id="L267">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

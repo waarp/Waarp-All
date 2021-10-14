@@ -196,7 +196,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * releaseResources
    */
   @Override
-  public void initialize() {
+  public final void initialize() {
 <span class="pc bpc" id="L200" title="2 of 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
 <span class="nc" id="L201">      logger.warn(&quot;Cannot Initialize monitoring&quot;);</span>
 <span class="nc" id="L202">      return;</span>
@@ -206,557 +206,569 @@ public class Monitoring implements WaarpInterfaceMonitor {
       // Overall status including past, future and current transfers
 <span class="fc" id="L207">      countInfo = DbTaskRunner.getCountInfoPrepareStatement(dbSession);</span>
       // Count of Active/All In/Out transfers
-<span class="fc" id="L209">      countInActiveTransfer = DbTaskRunner</span>
-<span class="fc" id="L210">          .getCountInOutRunningPrepareStatement(dbSession, true, true);</span>
-<span class="fc" id="L211">      countOutActiveTransfer = DbTaskRunner</span>
-<span class="fc" id="L212">          .getCountInOutRunningPrepareStatement(dbSession, false, true);</span>
-<span class="fc" id="L213">      countInTotalTransfer = DbTaskRunner</span>
-<span class="fc" id="L214">          .getCountInOutRunningPrepareStatement(dbSession, true, false);</span>
-<span class="fc" id="L215">      countOutTotalTransfer = DbTaskRunner</span>
-<span class="fc" id="L216">          .getCountInOutRunningPrepareStatement(dbSession, false, false);</span>
+<span class="fc" id="L209">      countInActiveTransfer =</span>
+<span class="fc" id="L210">          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, true,</span>
+                                                            true);
+<span class="fc" id="L212">      countOutActiveTransfer =</span>
+<span class="fc" id="L213">          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, false,</span>
+                                                            true);
+<span class="fc" id="L215">      countInTotalTransfer =</span>
+<span class="fc" id="L216">          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, true,</span>
+                                                            false);
+<span class="fc" id="L218">      countOutTotalTransfer =</span>
+<span class="fc" id="L219">          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, false,</span>
+                                                            false);
 
-<span class="fc" id="L218">      countInErrorTransfer =</span>
-<span class="fc" id="L219">          DbTaskRunner.getCountInOutErrorPrepareStatement(dbSession, true);</span>
-<span class="fc" id="L220">      countOutErrorTransfer =</span>
-<span class="fc" id="L221">          DbTaskRunner.getCountInOutErrorPrepareStatement(dbSession, false);</span>
+<span class="fc" id="L222">      countInErrorTransfer =</span>
+<span class="fc" id="L223">          DbTaskRunner.getCountInOutErrorPrepareStatement(dbSession, true);</span>
+<span class="fc" id="L224">      countOutErrorTransfer =</span>
+<span class="fc" id="L225">          DbTaskRunner.getCountInOutErrorPrepareStatement(dbSession, false);</span>
 
       // Current situation of all transfers, running or not
-<span class="fc" id="L224">      countStepAllTransfer =</span>
-<span class="fc" id="L225">          DbTaskRunner.getCountStepPrepareStatement(dbSession, null);</span>
-<span class="fc" id="L226">      countStepNotask =</span>
-<span class="fc" id="L227">          DbTaskRunner.getCountStepPrepareStatement(dbSession, TASKSTEP.NOTASK);</span>
-<span class="fc" id="L228">      countStepPretask = DbTaskRunner</span>
-<span class="fc" id="L229">          .getCountStepPrepareStatement(dbSession, TASKSTEP.PRETASK);</span>
-<span class="fc" id="L230">      countStepTransfer = DbTaskRunner</span>
-<span class="fc" id="L231">          .getCountStepPrepareStatement(dbSession, TASKSTEP.TRANSFERTASK);</span>
-<span class="fc" id="L232">      countStepPosttask = DbTaskRunner</span>
-<span class="fc" id="L233">          .getCountStepPrepareStatement(dbSession, TASKSTEP.POSTTASK);</span>
-<span class="fc" id="L234">      countStepAllDone = DbTaskRunner</span>
-<span class="fc" id="L235">          .getCountStepPrepareStatement(dbSession, TASKSTEP.ALLDONETASK);</span>
-<span class="fc" id="L236">      countStepError = DbTaskRunner</span>
-<span class="fc" id="L237">          .getCountStepPrepareStatement(dbSession, TASKSTEP.ERRORTASK);</span>
+<span class="fc" id="L228">      countStepAllTransfer =</span>
+<span class="fc" id="L229">          DbTaskRunner.getCountStepPrepareStatement(dbSession, null);</span>
+<span class="fc" id="L230">      countStepNotask =</span>
+<span class="fc" id="L231">          DbTaskRunner.getCountStepPrepareStatement(dbSession, TASKSTEP.NOTASK);</span>
+<span class="fc" id="L232">      countStepPretask = DbTaskRunner.getCountStepPrepareStatement(dbSession,</span>
+                                                                   TASKSTEP.PRETASK);
+<span class="fc" id="L234">      countStepTransfer = DbTaskRunner.getCountStepPrepareStatement(dbSession,</span>
+                                                                    TASKSTEP.TRANSFERTASK);
+<span class="fc" id="L236">      countStepPosttask = DbTaskRunner.getCountStepPrepareStatement(dbSession,</span>
+                                                                    TASKSTEP.POSTTASK);
+<span class="fc" id="L238">      countStepAllDone = DbTaskRunner.getCountStepPrepareStatement(dbSession,</span>
+                                                                   TASKSTEP.ALLDONETASK);
+<span class="fc" id="L240">      countStepError = DbTaskRunner.getCountStepPrepareStatement(dbSession,</span>
+                                                                 TASKSTEP.ERRORTASK);
 
       // First on Running Transfers only
-<span class="fc" id="L240">      countAllRunningStep =</span>
-<span class="fc" id="L241">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession, null);</span>
-<span class="fc" id="L242">      countRunningStep = DbTaskRunner</span>
-<span class="fc" id="L243">          .getCountStatusRunningPrepareStatement(dbSession, ErrorCode.Running);</span>
-<span class="fc" id="L244">      countInitOkStep = DbTaskRunner</span>
-<span class="fc" id="L245">          .getCountStatusRunningPrepareStatement(dbSession, ErrorCode.InitOk);</span>
-<span class="fc" id="L246">      countPreProcessingOkStep = DbTaskRunner</span>
-<span class="fc" id="L247">          .getCountStatusRunningPrepareStatement(dbSession,</span>
-                                                 ErrorCode.PreProcessingOk);
-<span class="fc" id="L249">      countTransferOkStep = DbTaskRunner</span>
-<span class="fc" id="L250">          .getCountStatusRunningPrepareStatement(dbSession,</span>
-                                                 ErrorCode.TransferOk);
-<span class="fc" id="L252">      countPostProcessingOkStep = DbTaskRunner</span>
-<span class="fc" id="L253">          .getCountStatusRunningPrepareStatement(dbSession,</span>
-                                                 ErrorCode.PostProcessingOk);
-<span class="fc" id="L255">      countCompleteOkStep = DbTaskRunner</span>
-<span class="fc" id="L256">          .getCountStatusRunningPrepareStatement(dbSession,</span>
-                                                 ErrorCode.CompleteOk);
+<span class="fc" id="L244">      countAllRunningStep =</span>
+<span class="fc" id="L245">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession, null);</span>
+<span class="fc" id="L246">      countRunningStep =</span>
+<span class="fc" id="L247">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,</span>
+                                                             ErrorCode.Running);
+<span class="fc" id="L249">      countInitOkStep =</span>
+<span class="fc" id="L250">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,</span>
+                                                             ErrorCode.InitOk);
+<span class="fc" id="L252">      countPreProcessingOkStep =</span>
+<span class="fc" id="L253">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,</span>
+                                                             ErrorCode.PreProcessingOk);
+<span class="fc" id="L255">      countTransferOkStep =</span>
+<span class="fc" id="L256">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,</span>
+                                                             ErrorCode.TransferOk);
+<span class="fc" id="L258">      countPostProcessingOkStep =</span>
+<span class="fc" id="L259">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,</span>
+                                                             ErrorCode.PostProcessingOk);
+<span class="fc" id="L261">      countCompleteOkStep =</span>
+<span class="fc" id="L262">          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,</span>
+                                                             ErrorCode.CompleteOk);
 
       // Error Status on all transfers
-<span class="fc" id="L260">      countStatus = DbTaskRunner.getCountStatusPrepareStatement(dbSession);</span>
-<span class="nc" id="L261">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="fc" id="L266">      countStatus = DbTaskRunner.getCountStatusPrepareStatement(dbSession);</span>
+<span class="nc" id="L267">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
       // ignore
-<span class="nc" id="L263">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L269">    } catch (final WaarpDatabaseSqlException ignored) {</span>
       // ignore
-<span class="pc" id="L265">    }</span>
-<span class="fc" id="L266">  }</span>
+<span class="pc" id="L271">    }</span>
+<span class="fc" id="L272">  }</span>
 
   /**
    * Release all Db Requests
    */
   @Override
-  public void releaseResources() {
-<span class="pc bpc" id="L273" title="2 of 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
-<span class="nc" id="L274">      return;</span>
+  public final void releaseResources() {
+<span class="pc bpc" id="L279" title="2 of 4 branches missed.">    if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="nc" id="L280">      return;</span>
     }
     try {
-<span class="fc" id="L277">      logger.debug(&quot;Release monitoring&quot;);</span>
+<span class="fc" id="L283">      logger.debug(&quot;Release monitoring&quot;);</span>
       // Overall status including past, future and current transfers
-<span class="fc" id="L279">      countInfo.realClose();</span>
+<span class="fc" id="L285">      countInfo.realClose();</span>
 
-<span class="fc" id="L281">      countInActiveTransfer.realClose();</span>
-<span class="fc" id="L282">      countOutActiveTransfer.realClose();</span>
-<span class="fc" id="L283">      countInTotalTransfer.realClose();</span>
-<span class="fc" id="L284">      countOutTotalTransfer.realClose();</span>
-<span class="fc" id="L285">      countInErrorTransfer.realClose();</span>
-<span class="fc" id="L286">      countOutErrorTransfer.realClose();</span>
+<span class="fc" id="L287">      countInActiveTransfer.realClose();</span>
+<span class="fc" id="L288">      countOutActiveTransfer.realClose();</span>
+<span class="fc" id="L289">      countInTotalTransfer.realClose();</span>
+<span class="fc" id="L290">      countOutTotalTransfer.realClose();</span>
+<span class="fc" id="L291">      countInErrorTransfer.realClose();</span>
+<span class="fc" id="L292">      countOutErrorTransfer.realClose();</span>
 
       // Current situation of all transfers, running or not
-<span class="fc" id="L289">      countStepAllTransfer.realClose();</span>
-<span class="fc" id="L290">      countStepNotask.realClose();</span>
-<span class="fc" id="L291">      countStepPretask.realClose();</span>
-<span class="fc" id="L292">      countStepTransfer.realClose();</span>
-<span class="fc" id="L293">      countStepPosttask.realClose();</span>
-<span class="fc" id="L294">      countStepAllDone.realClose();</span>
-<span class="fc" id="L295">      countStepError.realClose();</span>
+<span class="fc" id="L295">      countStepAllTransfer.realClose();</span>
+<span class="fc" id="L296">      countStepNotask.realClose();</span>
+<span class="fc" id="L297">      countStepPretask.realClose();</span>
+<span class="fc" id="L298">      countStepTransfer.realClose();</span>
+<span class="fc" id="L299">      countStepPosttask.realClose();</span>
+<span class="fc" id="L300">      countStepAllDone.realClose();</span>
+<span class="fc" id="L301">      countStepError.realClose();</span>
 
       // First on Running Transfers only
-<span class="fc" id="L298">      countAllRunningStep.realClose();</span>
-<span class="fc" id="L299">      countRunningStep.realClose();</span>
-<span class="fc" id="L300">      countInitOkStep.realClose();</span>
-<span class="fc" id="L301">      countPreProcessingOkStep.realClose();</span>
-<span class="fc" id="L302">      countTransferOkStep.realClose();</span>
-<span class="fc" id="L303">      countPostProcessingOkStep.realClose();</span>
-<span class="fc" id="L304">      countCompleteOkStep.realClose();</span>
+<span class="fc" id="L304">      countAllRunningStep.realClose();</span>
+<span class="fc" id="L305">      countRunningStep.realClose();</span>
+<span class="fc" id="L306">      countInitOkStep.realClose();</span>
+<span class="fc" id="L307">      countPreProcessingOkStep.realClose();</span>
+<span class="fc" id="L308">      countTransferOkStep.realClose();</span>
+<span class="fc" id="L309">      countPostProcessingOkStep.realClose();</span>
+<span class="fc" id="L310">      countCompleteOkStep.realClose();</span>
 
       // Error Status on all transfers
-<span class="fc" id="L307">      countStatus.realClose();</span>
-<span class="nc" id="L308">    } catch (final Exception ignored) {</span>
+<span class="fc" id="L313">      countStatus.realClose();</span>
+<span class="nc" id="L314">    } catch (final Exception ignored) {</span>
       // nothing
-<span class="fc" id="L310">    }</span>
-<span class="pc bpc" id="L311" title="1 of 2 branches missed.">    if (!dbSession.equals(admin.getSession())) {</span>
-<span class="pc bpc" id="L312" title="1 of 2 branches missed.">      if (DbAdmin.getNbConnection() &gt; 0) {</span>
-<span class="nc" id="L313">        dbSession.forceDisconnect();</span>
+<span class="fc" id="L316">    }</span>
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">    if (!dbSession.equals(admin.getSession())) {</span>
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">      if (DbAdmin.getNbConnection() &gt; 0) {</span>
+<span class="nc" id="L319">        dbSession.forceDisconnect();</span>
       }
-<span class="fc" id="L315">      dbSession = null;</span>
+<span class="fc" id="L321">      dbSession = null;</span>
     }
-<span class="fc" id="L317">  }</span>
+<span class="fc" id="L323">  }</span>
 
   /**
    * @return the last Time in ms of the execution
    */
-  public long lastRunTimeMs() {
-<span class="nc" id="L323">    return lastTry;</span>
+  public final long lastRunTimeMs() {
+<span class="nc" id="L329">    return lastTry;</span>
   }
 
   /**
    * Default execution of testing with default pastLimit
    */
-  public void run() {
-<span class="nc" id="L330">    run(-1, false);</span>
-<span class="nc" id="L331">  }</span>
+  public final void run() {
+<span class="nc" id="L336">    run(-1, false);</span>
+<span class="nc" id="L337">  }</span>
 
   /**
    * @param nbSecond as specific PastLimit
    */
-  public void run(final long nbSecond) {
-<span class="nc" id="L337">    run(nbSecond, false);</span>
-<span class="nc" id="L338">  }</span>
+  public final void run(final long nbSecond) {
+<span class="nc" id="L343">    run(nbSecond, false);</span>
+<span class="nc" id="L344">  }</span>
 
   /**
    * Default execution of testing with default pastLimit
    *
    * @param detail as to get detailed information
    */
-  public void run(final boolean detail) {
-<span class="nc" id="L346">    run(-1, detail);</span>
-<span class="nc" id="L347">  }</span>
+  public final void run(final boolean detail) {
+<span class="nc" id="L352">    run(-1, detail);</span>
+<span class="nc" id="L353">  }</span>
 
   /**
    * @return False if too early, else return True
    */
   private boolean reCompute() {
-<span class="fc" id="L353">    final long limitDate = System.currentTimeMillis();</span>
-<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (limitDate &lt; lastTry + minimalDelay) {</span>
+<span class="fc" id="L359">    final long limitDate = System.currentTimeMillis();</span>
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">    if (limitDate &lt; lastTry + minimalDelay) {</span>
       // too early
-<span class="nc" id="L356">      return false;</span>
+<span class="nc" id="L362">      return false;</span>
     }
-<span class="fc" id="L358">    lastTry = limitDate;</span>
-<span class="fc" id="L359">    return true;</span>
+<span class="fc" id="L364">    lastTry = limitDate;</span>
+<span class="fc" id="L365">    return true;</span>
   }
 
   /**
    * @param nbSecond as specific PastLimit
    * @param detail as to get detailed information
    */
-  public void run(final long nbSecond, final boolean detail) {
-<span class="fc" id="L367">    synchronized (trafficCounter) {</span>
-<span class="fc" id="L368">      long limitDate = System.currentTimeMillis();</span>
+  public final void run(final long nbSecond, final boolean detail) {
+<span class="fc" id="L373">    synchronized (trafficCounter) {</span>
+<span class="fc" id="L374">      long limitDate = System.currentTimeMillis();</span>
       final long nbMs;
-<span class="pc bpc" id="L370" title="1 of 2 branches missed.">      if (nbSecond &lt;= 0) {</span>
-<span class="nc" id="L371">        nbMs = pastLimit;</span>
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">      if (nbSecond &lt;= 0) {</span>
+<span class="nc" id="L377">        nbMs = pastLimit;</span>
       } else {
-<span class="fc" id="L373">        nbMs = nbSecond * 1000;</span>
+<span class="fc" id="L379">        nbMs = nbSecond * 1000;</span>
       }
-<span class="pc bpc" id="L375" title="2 of 4 branches missed.">      if (dbSession != null &amp;&amp; dbSession.isDisActive()) {</span>
-<span class="nc" id="L376">        dbSession.checkConnectionNoException();</span>
+<span class="pc bpc" id="L381" title="2 of 4 branches missed.">      if (dbSession != null &amp;&amp; dbSession.isDisActive()) {</span>
+<span class="nc" id="L382">        dbSession.checkConnectionNoException();</span>
       }
-<span class="pc bpc" id="L378" title="2 of 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
-<span class="nc" id="L379">        nbNetworkConnection =</span>
-<span class="nc" id="L380">            ChannelUtils.nbCommandChannels(Configuration.configuration);</span>
-<span class="nc" id="L381">        bandwidthIn = trafficCounter.lastReadThroughput() &gt;&gt; 7;// B/s -&gt; Kb/s</span>
-<span class="nc" id="L382">        bandwidthOut = trafficCounter.lastWriteThroughput() &gt;&gt; 7;</span>
-<span class="nc" id="L383">        nbThread = Thread.activeCount();</span>
-<span class="nc" id="L384">        secondsRunning = (limitDate - startMonitor) / 1000;</span>
+<span class="pc bpc" id="L384" title="2 of 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="nc" id="L385">        nbNetworkConnection =</span>
+<span class="nc" id="L386">            ChannelUtils.nbCommandChannels(Configuration.configuration);</span>
+<span class="nc" id="L387">        bandwidthIn = trafficCounter.lastReadThroughput() &gt;&gt; 7;// B/s -&gt; Kb/s</span>
+<span class="nc" id="L388">        bandwidthOut = trafficCounter.lastWriteThroughput() &gt;&gt; 7;</span>
+<span class="nc" id="L389">        nbThread = Thread.activeCount();</span>
+<span class="nc" id="L390">        secondsRunning = (limitDate - startMonitor) / 1000;</span>
 
-<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (!reCompute()) {</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">        if (!reCompute()) {</span>
           // too early
-<span class="nc" id="L388">          return;</span>
+<span class="nc" id="L394">          return;</span>
         }
-<span class="nc" id="L390">        limitDate -= nbMs;</span>
-<span class="nc" id="L391">        currentLimit = limitDate;</span>
+<span class="nc" id="L396">        limitDate -= nbMs;</span>
+<span class="nc" id="L397">        currentLimit = limitDate;</span>
         // Update value
         // Overall status including past, future and current transfers
-<span class="nc" id="L394">        nbCountInfoToSubmit = CommanderNoDb.todoList.size();</span>
-<span class="nc bnc" id="L395" title="All 2 branches missed.">        if (Configuration.configuration.getInternalRunner() != null) {</span>
-<span class="nc" id="L396">          nbCountInfoRunning = Configuration.configuration.getInternalRunner()</span>
-<span class="nc" id="L397">                                                          .nbInternalRunner();</span>
+<span class="nc" id="L400">        nbCountInfoToSubmit = CommanderNoDb.todoList.size();</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">        if (Configuration.configuration.getInternalRunner() != null) {</span>
+<span class="nc" id="L402">          nbCountInfoRunning = Configuration.configuration.getInternalRunner()</span>
+<span class="nc" id="L403">                                                          .nbInternalRunner();</span>
         } else {
-<span class="nc bnc" id="L399" title="All 2 branches missed.">          if (Configuration.configuration.getServerConnectedChannelGroup() !=</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">          if (Configuration.configuration.getServerConnectedChannelGroup() !=</span>
               null) {
-<span class="nc" id="L401">            nbCountInfoRunning =</span>
-<span class="nc" id="L402">                Configuration.configuration.getServerConnectedChannelGroup()</span>
-<span class="nc" id="L403">                                           .size();</span>
+<span class="nc" id="L407">            nbCountInfoRunning =</span>
+<span class="nc" id="L408">                Configuration.configuration.getServerConnectedChannelGroup()</span>
+<span class="nc" id="L409">                                           .size();</span>
           } else {
-<span class="nc" id="L405">            nbCountInfoRunning =</span>
-<span class="nc" id="L406">                Configuration.configuration.getServerChannelGroup().size();</span>
+<span class="nc" id="L411">            nbCountInfoRunning =</span>
+<span class="nc" id="L412">                Configuration.configuration.getServerChannelGroup().size();</span>
           }
         }
         // Current situation of all transfers, running or not
-<span class="nc" id="L410">        nbCountAllRunningStep = nbCountInfoRunning;</span>
+<span class="nc" id="L416">        nbCountAllRunningStep = nbCountInfoRunning;</span>
       } else {
-<span class="fc" id="L412">        nbNetworkConnection = DbAdmin.getNbConnection();</span>
-<span class="fc" id="L413">        bandwidthIn = trafficCounter.lastReadThroughput() &gt;&gt; 7;// B/s -&gt; Kb/s</span>
-<span class="fc" id="L414">        bandwidthOut = trafficCounter.lastWriteThroughput() &gt;&gt; 7;</span>
-<span class="fc" id="L415">        nbThread = Thread.activeCount();</span>
-<span class="fc" id="L416">        secondsRunning = (limitDate - startMonitor) / 1000;</span>
+<span class="fc" id="L418">        nbNetworkConnection = DbAdmin.getNbConnection();</span>
+<span class="fc" id="L419">        bandwidthIn = trafficCounter.lastReadThroughput() &gt;&gt; 7;// B/s -&gt; Kb/s</span>
+<span class="fc" id="L420">        bandwidthOut = trafficCounter.lastWriteThroughput() &gt;&gt; 7;</span>
+<span class="fc" id="L421">        nbThread = Thread.activeCount();</span>
+<span class="fc" id="L422">        secondsRunning = (limitDate - startMonitor) / 1000;</span>
 
-<span class="pc bpc" id="L418" title="1 of 2 branches missed.">        if (!reCompute()) {</span>
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">        if (!reCompute()) {</span>
           // too early
-<span class="nc" id="L420">          return;</span>
+<span class="nc" id="L426">          return;</span>
         }
-<span class="fc" id="L422">        limitDate -= nbMs;</span>
-<span class="fc" id="L423">        currentLimit = limitDate;</span>
+<span class="fc" id="L428">        limitDate -= nbMs;</span>
+<span class="fc" id="L429">        currentLimit = limitDate;</span>
         // Update value
         try {
           // Overall status including past, future and current transfers
-<span class="fc" id="L427">          nbCountInfoUnknown = DbTaskRunner</span>
-<span class="fc" id="L428">              .getResultCountPrepareStatement(countInfo, UpdatedInfo.UNKNOWN,</span>
-                                              limitDate);
-<span class="fc" id="L430">          nbCountInfoNotUpdated = DbTaskRunner</span>
-<span class="fc" id="L431">              .getResultCountPrepareStatement(countInfo, UpdatedInfo.NOTUPDATED,</span>
-                                              limitDate);
-<span class="fc" id="L433">          nbCountInfoInterrupted = DbTaskRunner</span>
-<span class="fc" id="L434">              .getResultCountPrepareStatement(countInfo,</span>
-                                              UpdatedInfo.INTERRUPTED,
-                                              limitDate);
-<span class="fc" id="L437">          nbCountInfoToSubmit = DbTaskRunner</span>
-<span class="fc" id="L438">              .getResultCountPrepareStatement(countInfo, UpdatedInfo.TOSUBMIT,</span>
-                                              limitDate);
-<span class="fc" id="L440">          nbCountInfoError = DbTaskRunner</span>
-<span class="fc" id="L441">              .getResultCountPrepareStatement(countInfo, UpdatedInfo.INERROR,</span>
-                                              limitDate);
-<span class="fc" id="L443">          nbCountInfoRunning = DbTaskRunner</span>
-<span class="fc" id="L444">              .getResultCountPrepareStatement(countInfo, UpdatedInfo.RUNNING,</span>
-                                              limitDate);
-<span class="fc" id="L446">          nbCountInfoDone = DbTaskRunner</span>
-<span class="fc" id="L447">              .getResultCountPrepareStatement(countInfo, UpdatedInfo.DONE,</span>
-                                              limitDate);
+<span class="fc" id="L433">          nbCountInfoUnknown =</span>
+<span class="fc" id="L434">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.UNKNOWN,
+                                                          limitDate);
+<span class="fc" id="L437">          nbCountInfoNotUpdated =</span>
+<span class="fc" id="L438">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.NOTUPDATED,
+                                                          limitDate);
+<span class="fc" id="L441">          nbCountInfoInterrupted =</span>
+<span class="fc" id="L442">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.INTERRUPTED,
+                                                          limitDate);
+<span class="fc" id="L445">          nbCountInfoToSubmit =</span>
+<span class="fc" id="L446">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.TOSUBMIT,
+                                                          limitDate);
+<span class="fc" id="L449">          nbCountInfoError =</span>
+<span class="fc" id="L450">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.INERROR,
+                                                          limitDate);
+<span class="fc" id="L453">          nbCountInfoRunning =</span>
+<span class="fc" id="L454">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.RUNNING,
+                                                          limitDate);
+<span class="fc" id="L457">          nbCountInfoDone =</span>
+<span class="fc" id="L458">              DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                          UpdatedInfo.DONE,
+                                                          limitDate);
 
           // Current situation of all transfers, running or not
-<span class="fc" id="L451">          DbTaskRunner</span>
-<span class="fc" id="L452">              .finishSelectOrCountPrepareStatement(countInActiveTransfer,</span>
-                                                   limitDate);
-<span class="fc" id="L454">          nbInActiveTransfer = DbTaskRunner</span>
-<span class="fc" id="L455">              .getResultCountPrepareStatement(countInActiveTransfer);</span>
-<span class="fc" id="L456">          DbTaskRunner</span>
-<span class="fc" id="L457">              .finishSelectOrCountPrepareStatement(countOutActiveTransfer,</span>
-                                                   limitDate);
-<span class="fc" id="L459">          nbOutActiveTransfer = DbTaskRunner</span>
-<span class="fc" id="L460">              .getResultCountPrepareStatement(countOutActiveTransfer);</span>
-<span class="fc" id="L461">          DbTaskRunner.finishSelectOrCountPrepareStatement(countInTotalTransfer,</span>
+<span class="fc" id="L463">          DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+              countInActiveTransfer, limitDate);
+<span class="fc" id="L465">          nbInActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+              countInActiveTransfer);
+<span class="fc" id="L467">          DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+              countOutActiveTransfer, limitDate);
+<span class="fc" id="L469">          nbOutActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+              countOutActiveTransfer);
+<span class="fc" id="L471">          DbTaskRunner.finishSelectOrCountPrepareStatement(countInTotalTransfer,</span>
                                                            limitDate);
-<span class="fc" id="L463">          nbInTotalTransfer =</span>
-<span class="fc" id="L464">              DbTaskRunner.getResultCountPrepareStatement(countInTotalTransfer);</span>
-<span class="fc" id="L465">          DbTaskRunner</span>
-<span class="fc" id="L466">              .finishSelectOrCountPrepareStatement(countOutTotalTransfer,</span>
-                                                   limitDate);
-<span class="fc" id="L468">          nbOutTotalTransfer = DbTaskRunner</span>
-<span class="fc" id="L469">              .getResultCountPrepareStatement(countOutTotalTransfer);</span>
+<span class="fc" id="L473">          nbInTotalTransfer =</span>
+<span class="fc" id="L474">              DbTaskRunner.getResultCountPrepareStatement(countInTotalTransfer);</span>
+<span class="fc" id="L475">          DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+              countOutTotalTransfer, limitDate);
+<span class="fc" id="L477">          nbOutTotalTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+              countOutTotalTransfer);
 
-<span class="fc" id="L471">          DbTaskRunner</span>
-<span class="fc" id="L472">              .finishSelectOrCountPrepareStatement(countOutErrorTransfer,</span>
-                                                   limitDate);
-<span class="fc" id="L474">          nbOutErrorTransfer = DbTaskRunner</span>
-<span class="fc" id="L475">              .getResultCountPrepareStatement(countOutErrorTransfer);</span>
-<span class="fc" id="L476">          DbTaskRunner.finishSelectOrCountPrepareStatement(countInErrorTransfer,</span>
+<span class="fc" id="L480">          DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+              countOutErrorTransfer, limitDate);
+<span class="fc" id="L482">          nbOutErrorTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+              countOutErrorTransfer);
+<span class="fc" id="L484">          DbTaskRunner.finishSelectOrCountPrepareStatement(countInErrorTransfer,</span>
                                                            limitDate);
-<span class="fc" id="L478">          nbInErrorTransfer =</span>
-<span class="fc" id="L479">              DbTaskRunner.getResultCountPrepareStatement(countInErrorTransfer);</span>
+<span class="fc" id="L486">          nbInErrorTransfer =</span>
+<span class="fc" id="L487">              DbTaskRunner.getResultCountPrepareStatement(countInErrorTransfer);</span>
 
-<span class="fc" id="L481">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepAllTransfer,</span>
+<span class="fc" id="L489">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepAllTransfer,</span>
                                                            limitDate);
-<span class="fc" id="L483">          nbCountStepAllTransfer =</span>
-<span class="fc" id="L484">              DbTaskRunner.getResultCountPrepareStatement(countStepAllTransfer);</span>
-<span class="fc" id="L485">          DbTaskRunner</span>
-<span class="fc" id="L486">              .finishSelectOrCountPrepareStatement(countStepNotask, limitDate);</span>
-<span class="fc" id="L487">          nbCountStepNotask =</span>
-<span class="fc" id="L488">              DbTaskRunner.getResultCountPrepareStatement(countStepNotask);</span>
-<span class="fc" id="L489">          DbTaskRunner</span>
-<span class="fc" id="L490">              .finishSelectOrCountPrepareStatement(countStepPretask, limitDate);</span>
-<span class="fc" id="L491">          nbCountStepPretask =</span>
-<span class="fc" id="L492">              DbTaskRunner.getResultCountPrepareStatement(countStepPretask);</span>
-<span class="fc" id="L493">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepTransfer,</span>
+<span class="fc" id="L491">          nbCountStepAllTransfer =</span>
+<span class="fc" id="L492">              DbTaskRunner.getResultCountPrepareStatement(countStepAllTransfer);</span>
+<span class="fc" id="L493">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepNotask,</span>
                                                            limitDate);
-<span class="fc" id="L495">          nbCountStepTransfer =</span>
-<span class="fc" id="L496">              DbTaskRunner.getResultCountPrepareStatement(countStepTransfer);</span>
-<span class="fc" id="L497">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPosttask,</span>
+<span class="fc" id="L495">          nbCountStepNotask =</span>
+<span class="fc" id="L496">              DbTaskRunner.getResultCountPrepareStatement(countStepNotask);</span>
+<span class="fc" id="L497">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPretask,</span>
                                                            limitDate);
-<span class="fc" id="L499">          nbCountStepPosttask =</span>
-<span class="fc" id="L500">              DbTaskRunner.getResultCountPrepareStatement(countStepPosttask);</span>
-<span class="fc" id="L501">          DbTaskRunner</span>
-<span class="fc" id="L502">              .finishSelectOrCountPrepareStatement(countStepAllDone, limitDate);</span>
-<span class="fc" id="L503">          nbCountStepAllDone =</span>
-<span class="fc" id="L504">              DbTaskRunner.getResultCountPrepareStatement(countStepAllDone);</span>
-<span class="fc" id="L505">          DbTaskRunner</span>
-<span class="fc" id="L506">              .finishSelectOrCountPrepareStatement(countStepError, limitDate);</span>
-<span class="fc" id="L507">          nbCountStepError =</span>
-<span class="fc" id="L508">              DbTaskRunner.getResultCountPrepareStatement(countStepError);</span>
+<span class="fc" id="L499">          nbCountStepPretask =</span>
+<span class="fc" id="L500">              DbTaskRunner.getResultCountPrepareStatement(countStepPretask);</span>
+<span class="fc" id="L501">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepTransfer,</span>
+                                                           limitDate);
+<span class="fc" id="L503">          nbCountStepTransfer =</span>
+<span class="fc" id="L504">              DbTaskRunner.getResultCountPrepareStatement(countStepTransfer);</span>
+<span class="fc" id="L505">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPosttask,</span>
+                                                           limitDate);
+<span class="fc" id="L507">          nbCountStepPosttask =</span>
+<span class="fc" id="L508">              DbTaskRunner.getResultCountPrepareStatement(countStepPosttask);</span>
+<span class="fc" id="L509">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepAllDone,</span>
+                                                           limitDate);
+<span class="fc" id="L511">          nbCountStepAllDone =</span>
+<span class="fc" id="L512">              DbTaskRunner.getResultCountPrepareStatement(countStepAllDone);</span>
+<span class="fc" id="L513">          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepError,</span>
+                                                           limitDate);
+<span class="fc" id="L515">          nbCountStepError =</span>
+<span class="fc" id="L516">              DbTaskRunner.getResultCountPrepareStatement(countStepError);</span>
 
-<span class="fc" id="L510">          DbTaskRunner.finishSelectOrCountPrepareStatement(countAllRunningStep,</span>
+<span class="fc" id="L518">          DbTaskRunner.finishSelectOrCountPrepareStatement(countAllRunningStep,</span>
                                                            limitDate);
-<span class="fc" id="L512">          nbCountAllRunningStep =</span>
-<span class="fc" id="L513">              DbTaskRunner.getResultCountPrepareStatement(countAllRunningStep);</span>
+<span class="fc" id="L520">          nbCountAllRunningStep =</span>
+<span class="fc" id="L521">              DbTaskRunner.getResultCountPrepareStatement(countAllRunningStep);</span>
 
-<span class="pc bpc" id="L515" title="1 of 2 branches missed.">          if (detail) {</span>
+<span class="pc bpc" id="L523" title="1 of 2 branches missed.">          if (detail) {</span>
             // First on Running Transfers only
-<span class="fc" id="L517">            DbTaskRunner.finishSelectOrCountPrepareStatement(countRunningStep,</span>
+<span class="fc" id="L525">            DbTaskRunner.finishSelectOrCountPrepareStatement(countRunningStep,</span>
                                                              limitDate);
-<span class="fc" id="L519">            nbCountRunningStep =</span>
-<span class="fc" id="L520">                DbTaskRunner.getResultCountPrepareStatement(countRunningStep);</span>
-<span class="fc" id="L521">            DbTaskRunner.finishSelectOrCountPrepareStatement(countInitOkStep,</span>
+<span class="fc" id="L527">            nbCountRunningStep =</span>
+<span class="fc" id="L528">                DbTaskRunner.getResultCountPrepareStatement(countRunningStep);</span>
+<span class="fc" id="L529">            DbTaskRunner.finishSelectOrCountPrepareStatement(countInitOkStep,</span>
                                                              limitDate);
-<span class="fc" id="L523">            nbCountInitOkStep =</span>
-<span class="fc" id="L524">                DbTaskRunner.getResultCountPrepareStatement(countInitOkStep);</span>
-<span class="fc" id="L525">            DbTaskRunner</span>
-<span class="fc" id="L526">                .finishSelectOrCountPrepareStatement(countPreProcessingOkStep,</span>
-                                                     limitDate);
-<span class="fc" id="L528">            nbCountPreProcessingOkStep = DbTaskRunner</span>
-<span class="fc" id="L529">                .getResultCountPrepareStatement(countPreProcessingOkStep);</span>
-<span class="fc" id="L530">            DbTaskRunner</span>
-<span class="fc" id="L531">                .finishSelectOrCountPrepareStatement(countTransferOkStep,</span>
-                                                     limitDate);
-<span class="fc" id="L533">            nbCountTransferOkStep = DbTaskRunner</span>
-<span class="fc" id="L534">                .getResultCountPrepareStatement(countTransferOkStep);</span>
-<span class="fc" id="L535">            DbTaskRunner</span>
-<span class="fc" id="L536">                .finishSelectOrCountPrepareStatement(countPostProcessingOkStep,</span>
-                                                     limitDate);
-<span class="fc" id="L538">            nbCountPostProcessingOkStep = DbTaskRunner</span>
-<span class="fc" id="L539">                .getResultCountPrepareStatement(countPostProcessingOkStep);</span>
-<span class="fc" id="L540">            DbTaskRunner</span>
-<span class="fc" id="L541">                .finishSelectOrCountPrepareStatement(countCompleteOkStep,</span>
-                                                     limitDate);
-<span class="fc" id="L543">            nbCountCompleteOkStep = DbTaskRunner</span>
-<span class="fc" id="L544">                .getResultCountPrepareStatement(countCompleteOkStep);</span>
+<span class="fc" id="L531">            nbCountInitOkStep =</span>
+<span class="fc" id="L532">                DbTaskRunner.getResultCountPrepareStatement(countInitOkStep);</span>
+<span class="fc" id="L533">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countPreProcessingOkStep, limitDate);
+<span class="fc" id="L535">            nbCountPreProcessingOkStep =</span>
+<span class="fc" id="L536">                DbTaskRunner.getResultCountPrepareStatement(</span>
+                    countPreProcessingOkStep);
+<span class="fc" id="L538">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countTransferOkStep, limitDate);
+<span class="fc" id="L540">            nbCountTransferOkStep = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countTransferOkStep);
+<span class="fc" id="L542">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countPostProcessingOkStep, limitDate);
+<span class="fc" id="L544">            nbCountPostProcessingOkStep =</span>
+<span class="fc" id="L545">                DbTaskRunner.getResultCountPrepareStatement(</span>
+                    countPostProcessingOkStep);
+<span class="fc" id="L547">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countCompleteOkStep, limitDate);
+<span class="fc" id="L549">            nbCountCompleteOkStep = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countCompleteOkStep);
 
             // Error Status on all transfers
-<span class="fc" id="L547">            nbCountStatusConnectionImpossible = DbTaskRunner</span>
-<span class="fc" id="L548">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.ConnectionImpossible,
-                                                limitDate);
-<span class="fc" id="L551">            nbCountStatusServerOverloaded = DbTaskRunner</span>
-<span class="fc" id="L552">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.ServerOverloaded,
-                                                limitDate);
-<span class="fc" id="L555">            nbCountStatusBadAuthent = DbTaskRunner</span>
-<span class="fc" id="L556">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.BadAuthent,
-                                                limitDate);
-<span class="fc" id="L559">            nbCountStatusExternalOp = DbTaskRunner</span>
-<span class="fc" id="L560">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.ExternalOp,
-                                                limitDate);
-<span class="fc" id="L563">            nbCountStatusTransferError = DbTaskRunner</span>
-<span class="fc" id="L564">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.TransferError,
-                                                limitDate);
-<span class="fc" id="L567">            nbCountStatusMD5Error = DbTaskRunner</span>
-<span class="fc" id="L568">                .getResultCountPrepareStatement(countStatus, ErrorCode.MD5Error,</span>
-                                                limitDate);
-<span class="fc" id="L570">            nbCountStatusDisconnection = DbTaskRunner</span>
-<span class="fc" id="L571">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.Disconnection,
-                                                limitDate);
-<span class="fc" id="L574">            nbCountStatusFinalOp = DbTaskRunner</span>
-<span class="fc" id="L575">                .getResultCountPrepareStatement(countStatus, ErrorCode.FinalOp,</span>
-                                                limitDate);
-<span class="fc" id="L577">            nbCountStatusUnimplemented = DbTaskRunner</span>
-<span class="fc" id="L578">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.Unimplemented,
-                                                limitDate);
-<span class="fc" id="L581">            nbCountStatusInternal = DbTaskRunner</span>
-<span class="fc" id="L582">                .getResultCountPrepareStatement(countStatus, ErrorCode.Internal,</span>
-                                                limitDate);
-<span class="fc" id="L584">            nbCountStatusWarning = DbTaskRunner</span>
-<span class="fc" id="L585">                .getResultCountPrepareStatement(countStatus, ErrorCode.Warning,</span>
-                                                limitDate);
-<span class="fc" id="L587">            nbCountStatusQueryAlreadyFinished = DbTaskRunner</span>
-<span class="fc" id="L588">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.QueryAlreadyFinished,
-                                                limitDate);
-<span class="fc" id="L591">            nbCountStatusQueryStillRunning = DbTaskRunner</span>
-<span class="fc" id="L592">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.QueryStillRunning,
-                                                limitDate);
-<span class="fc" id="L595">            nbCountStatusNotKnownHost = DbTaskRunner</span>
-<span class="fc" id="L596">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.NotKnownHost,
-                                                limitDate);
-<span class="fc" id="L599">            nbCountStatusQueryRemotelyUnknown = DbTaskRunner</span>
-<span class="fc" id="L600">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.QueryRemotelyUnknown,
-                                                limitDate);
-<span class="fc" id="L603">            nbCountStatusCommandNotFound = DbTaskRunner</span>
-<span class="fc" id="L604">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.CommandNotFound,
-                                                limitDate);
-<span class="fc" id="L607">            nbCountStatusPassThroughMode = DbTaskRunner</span>
-<span class="fc" id="L608">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.PassThroughMode,
-                                                limitDate);
-<span class="fc" id="L611">            nbCountStatusRemoteShutdown = DbTaskRunner</span>
-<span class="fc" id="L612">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.RemoteShutdown,
-                                                limitDate);
-<span class="fc" id="L615">            nbCountStatusShutdown = DbTaskRunner</span>
-<span class="fc" id="L616">                .getResultCountPrepareStatement(countStatus, ErrorCode.Shutdown,</span>
-                                                limitDate);
-<span class="fc" id="L618">            nbCountStatusRemoteError = DbTaskRunner</span>
-<span class="fc" id="L619">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.RemoteError,
-                                                limitDate);
-<span class="fc" id="L622">            nbCountStatusStopped = DbTaskRunner</span>
-<span class="fc" id="L623">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.StoppedTransfer,
-                                                limitDate);
-<span class="fc" id="L626">            nbCountStatusCanceled = DbTaskRunner</span>
-<span class="fc" id="L627">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.CanceledTransfer,
-                                                limitDate);
-<span class="fc" id="L630">            nbCountStatusFileNotFound = DbTaskRunner</span>
-<span class="fc" id="L631">                .getResultCountPrepareStatement(countStatus,</span>
-                                                ErrorCode.FileNotFound,
-                                                limitDate);
-<span class="fc" id="L634">            nbCountStatusUnknown = DbTaskRunner</span>
-<span class="fc" id="L635">                .getResultCountPrepareStatement(countStatus, ErrorCode.Unknown,</span>
-                                                limitDate);
+<span class="fc" id="L553">            nbCountStatusConnectionImpossible =</span>
+<span class="fc" id="L554">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.ConnectionImpossible,
+                                                            limitDate);
+<span class="fc" id="L557">            nbCountStatusServerOverloaded =</span>
+<span class="fc" id="L558">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.ServerOverloaded,
+                                                            limitDate);
+<span class="fc" id="L561">            nbCountStatusBadAuthent =</span>
+<span class="fc" id="L562">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.BadAuthent,
+                                                            limitDate);
+<span class="fc" id="L565">            nbCountStatusExternalOp =</span>
+<span class="fc" id="L566">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.ExternalOp,
+                                                            limitDate);
+<span class="fc" id="L569">            nbCountStatusTransferError =</span>
+<span class="fc" id="L570">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.TransferError,
+                                                            limitDate);
+<span class="fc" id="L573">            nbCountStatusMD5Error =</span>
+<span class="fc" id="L574">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.MD5Error,
+                                                            limitDate);
+<span class="fc" id="L577">            nbCountStatusDisconnection =</span>
+<span class="fc" id="L578">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.Disconnection,
+                                                            limitDate);
+<span class="fc" id="L581">            nbCountStatusFinalOp =</span>
+<span class="fc" id="L582">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.FinalOp,
+                                                            limitDate);
+<span class="fc" id="L585">            nbCountStatusUnimplemented =</span>
+<span class="fc" id="L586">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.Unimplemented,
+                                                            limitDate);
+<span class="fc" id="L589">            nbCountStatusInternal =</span>
+<span class="fc" id="L590">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.Internal,
+                                                            limitDate);
+<span class="fc" id="L593">            nbCountStatusWarning =</span>
+<span class="fc" id="L594">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.Warning,
+                                                            limitDate);
+<span class="fc" id="L597">            nbCountStatusQueryAlreadyFinished =</span>
+<span class="fc" id="L598">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.QueryAlreadyFinished,
+                                                            limitDate);
+<span class="fc" id="L601">            nbCountStatusQueryStillRunning =</span>
+<span class="fc" id="L602">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.QueryStillRunning,
+                                                            limitDate);
+<span class="fc" id="L605">            nbCountStatusNotKnownHost =</span>
+<span class="fc" id="L606">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.NotKnownHost,
+                                                            limitDate);
+<span class="fc" id="L609">            nbCountStatusQueryRemotelyUnknown =</span>
+<span class="fc" id="L610">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.QueryRemotelyUnknown,
+                                                            limitDate);
+<span class="fc" id="L613">            nbCountStatusCommandNotFound =</span>
+<span class="fc" id="L614">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.CommandNotFound,
+                                                            limitDate);
+<span class="fc" id="L617">            nbCountStatusPassThroughMode =</span>
+<span class="fc" id="L618">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.PassThroughMode,
+                                                            limitDate);
+<span class="fc" id="L621">            nbCountStatusRemoteShutdown =</span>
+<span class="fc" id="L622">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.RemoteShutdown,
+                                                            limitDate);
+<span class="fc" id="L625">            nbCountStatusShutdown =</span>
+<span class="fc" id="L626">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.Shutdown,
+                                                            limitDate);
+<span class="fc" id="L629">            nbCountStatusRemoteError =</span>
+<span class="fc" id="L630">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.RemoteError,
+                                                            limitDate);
+<span class="fc" id="L633">            nbCountStatusStopped =</span>
+<span class="fc" id="L634">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.StoppedTransfer,
+                                                            limitDate);
+<span class="fc" id="L637">            nbCountStatusCanceled =</span>
+<span class="fc" id="L638">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.CanceledTransfer,
+                                                            limitDate);
+<span class="fc" id="L641">            nbCountStatusFileNotFound =</span>
+<span class="fc" id="L642">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.FileNotFound,
+                                                            limitDate);
+<span class="fc" id="L645">            nbCountStatusUnknown =</span>
+<span class="fc" id="L646">                DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                            ErrorCode.Unknown,
+                                                            limitDate);
           }
-<span class="nc" id="L638">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L650">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // ignore
-<span class="nc" id="L640">        } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L652">        } catch (final WaarpDatabaseSqlException ignored) {</span>
           // ignore
-<span class="pc" id="L642">        }</span>
+<span class="pc" id="L654">        }</span>
       }
-<span class="fc" id="L644">    }</span>
-<span class="fc" id="L645">  }</span>
+<span class="fc" id="L656">    }</span>
+<span class="fc" id="L657">  }</span>
 
   /**
    * @param detail
    *
    * @return The XML representation of the current status
    */
-  public String exportXml(final boolean detail) {
-<span class="nc" id="L653">    final StringBuilder builder = new StringBuilder(&quot;&lt;STATUS&gt;&quot;)</span>
+  public final String exportXml(final boolean detail) {
+<span class="nc" id="L665">    final StringBuilder builder = new StringBuilder(&quot;&lt;STATUS&gt;&quot;)</span>
         // Global Informations
-<span class="nc" id="L655">        .append(&quot;&lt;HostID&gt;&quot;).append(Configuration.configuration.getHostId())</span>
-<span class="nc" id="L656">        .append(&quot;&lt;/HostID&gt;&quot;).append(&quot;&lt;Date&gt;&quot;).append(new DateTime())</span>
-<span class="nc" id="L657">        .append(&quot;&lt;/Date&gt;&quot;).append(&quot;&lt;LastRun&gt;&quot;).append(new DateTime(lastTry))</span>
-<span class="nc" id="L658">        .append(&quot;&lt;/LastRun&gt;&quot;).append(&quot;&lt;FromDate&gt;&quot;)</span>
-<span class="nc" id="L659">        .append(new DateTime(currentLimit)).append(&quot;&lt;/FromDate&gt;&quot;)</span>
-<span class="nc" id="L660">        .append(&quot;&lt;SecondsRunning&gt;&quot;).append(secondsRunning)</span>
-<span class="nc" id="L661">        .append(&quot;&lt;/SecondsRunning&gt;&quot;).append(&quot;&lt;NetworkConnections&gt;&quot;)</span>
-<span class="nc" id="L662">        .append(nbNetworkConnection).append(&quot;&lt;/NetworkConnections&gt;&quot;)</span>
-<span class="nc" id="L663">        .append(&quot;&lt;NbThreads&gt;&quot;).append(nbThread).append(&quot;&lt;/NbThreads&gt;&quot;)</span>
-<span class="nc" id="L664">        .append(&quot;&lt;InBandwidth&gt;&quot;).append(bandwidthIn).append(&quot;&lt;/InBandwidth&gt;&quot;)</span>
-<span class="nc" id="L665">        .append(&quot;&lt;OutBandwidth&gt;&quot;).append(bandwidthOut).append(&quot;&lt;/OutBandwidth&gt;&quot;)</span>
+<span class="nc" id="L667">        .append(&quot;&lt;HostID&gt;&quot;).append(Configuration.configuration.getHostId())</span>
+<span class="nc" id="L668">        .append(&quot;&lt;/HostID&gt;&quot;).append(&quot;&lt;Date&gt;&quot;).append(new DateTime())</span>
+<span class="nc" id="L669">        .append(&quot;&lt;/Date&gt;&quot;).append(&quot;&lt;LastRun&gt;&quot;).append(new DateTime(lastTry))</span>
+<span class="nc" id="L670">        .append(&quot;&lt;/LastRun&gt;&quot;).append(&quot;&lt;FromDate&gt;&quot;)</span>
+<span class="nc" id="L671">        .append(new DateTime(currentLimit)).append(&quot;&lt;/FromDate&gt;&quot;)</span>
+<span class="nc" id="L672">        .append(&quot;&lt;SecondsRunning&gt;&quot;).append(secondsRunning)</span>
+<span class="nc" id="L673">        .append(&quot;&lt;/SecondsRunning&gt;&quot;).append(&quot;&lt;NetworkConnections&gt;&quot;)</span>
+<span class="nc" id="L674">        .append(nbNetworkConnection).append(&quot;&lt;/NetworkConnections&gt;&quot;)</span>
+<span class="nc" id="L675">        .append(&quot;&lt;NbThreads&gt;&quot;).append(nbThread).append(&quot;&lt;/NbThreads&gt;&quot;)</span>
+<span class="nc" id="L676">        .append(&quot;&lt;InBandwidth&gt;&quot;).append(bandwidthIn).append(&quot;&lt;/InBandwidth&gt;&quot;)</span>
+<span class="nc" id="L677">        .append(&quot;&lt;OutBandwidth&gt;&quot;).append(bandwidthOut).append(&quot;&lt;/OutBandwidth&gt;&quot;)</span>
 
         // Overall status including past, future and current transfers
-<span class="nc" id="L668">        .append(&quot;&lt;OVERALL&gt;&quot;).append(&quot;&lt;AllTransfer&gt;&quot;)</span>
-<span class="nc" id="L669">        .append(nbCountStepAllTransfer).append(&quot;&lt;/AllTransfer&gt;&quot;)</span>
-<span class="nc" id="L670">        .append(&quot;&lt;Unknown&gt;&quot;).append(nbCountInfoUnknown).append(&quot;&lt;/Unknown&gt;&quot;)</span>
-<span class="nc" id="L671">        .append(&quot;&lt;NotUpdated&gt;&quot;).append(nbCountInfoNotUpdated)</span>
-<span class="nc" id="L672">        .append(&quot;&lt;/NotUpdated&gt;&quot;).append(&quot;&lt;Interrupted&gt;&quot;)</span>
-<span class="nc" id="L673">        .append(nbCountInfoInterrupted).append(&quot;&lt;/Interrupted&gt;&quot;)</span>
-<span class="nc" id="L674">        .append(&quot;&lt;ToSubmit&gt;&quot;).append(nbCountInfoToSubmit).append(&quot;&lt;/ToSubmit&gt;&quot;)</span>
-<span class="nc" id="L675">        .append(&quot;&lt;Error&gt;&quot;).append(nbCountInfoError).append(&quot;&lt;/Error&gt;&quot;)</span>
-<span class="nc" id="L676">        .append(&quot;&lt;Running&gt;&quot;).append(nbCountInfoRunning).append(&quot;&lt;/Running&gt;&quot;)</span>
-<span class="nc" id="L677">        .append(&quot;&lt;Done&gt;&quot;).append(nbCountInfoDone).append(&quot;&lt;/Done&gt;&quot;)</span>
-<span class="nc" id="L678">        .append(&quot;&lt;InRunning&gt;&quot;).append(nbInActiveTransfer).append(&quot;&lt;/InRunning&gt;&quot;)</span>
-<span class="nc" id="L679">        .append(&quot;&lt;OutRunning&gt;&quot;).append(nbOutActiveTransfer)</span>
-<span class="nc" id="L680">        .append(&quot;&lt;/OutRunning&gt;&quot;).append(&quot;&lt;LastInRunning&gt;&quot;)</span>
-<span class="nc" id="L681">        .append(new DateTime(lastInActiveTransfer)).append(&quot;&lt;/LastInRunning&gt;&quot;)</span>
-<span class="nc" id="L682">        .append(&quot;&lt;LastOutRunning&gt;&quot;).append(new DateTime(lastOutActiveTransfer))</span>
-<span class="nc" id="L683">        .append(&quot;&lt;/LastOutRunning&gt;&quot;).append(&quot;&lt;InAll&gt;&quot;).append(nbInTotalTransfer)</span>
-<span class="nc" id="L684">        .append(&quot;&lt;/InAll&gt;&quot;).append(&quot;&lt;OutAll&gt;&quot;).append(nbOutTotalTransfer)</span>
-<span class="nc" id="L685">        .append(&quot;&lt;/OutAll&gt;&quot;).append(&quot;&lt;InError&gt;&quot;).append(nbInErrorTransfer)</span>
-<span class="nc" id="L686">        .append(&quot;&lt;/InError&gt;&quot;).append(&quot;&lt;OutError&gt;&quot;).append(nbOutErrorTransfer)</span>
-<span class="nc" id="L687">        .append(&quot;&lt;/OutError&gt;&quot;).append(&quot;&lt;/OVERALL&gt;&quot;)</span>
+<span class="nc" id="L680">        .append(&quot;&lt;OVERALL&gt;&quot;).append(&quot;&lt;AllTransfer&gt;&quot;)</span>
+<span class="nc" id="L681">        .append(nbCountStepAllTransfer).append(&quot;&lt;/AllTransfer&gt;&quot;)</span>
+<span class="nc" id="L682">        .append(&quot;&lt;Unknown&gt;&quot;).append(nbCountInfoUnknown).append(&quot;&lt;/Unknown&gt;&quot;)</span>
+<span class="nc" id="L683">        .append(&quot;&lt;NotUpdated&gt;&quot;).append(nbCountInfoNotUpdated)</span>
+<span class="nc" id="L684">        .append(&quot;&lt;/NotUpdated&gt;&quot;).append(&quot;&lt;Interrupted&gt;&quot;)</span>
+<span class="nc" id="L685">        .append(nbCountInfoInterrupted).append(&quot;&lt;/Interrupted&gt;&quot;)</span>
+<span class="nc" id="L686">        .append(&quot;&lt;ToSubmit&gt;&quot;).append(nbCountInfoToSubmit).append(&quot;&lt;/ToSubmit&gt;&quot;)</span>
+<span class="nc" id="L687">        .append(&quot;&lt;Error&gt;&quot;).append(nbCountInfoError).append(&quot;&lt;/Error&gt;&quot;)</span>
+<span class="nc" id="L688">        .append(&quot;&lt;Running&gt;&quot;).append(nbCountInfoRunning).append(&quot;&lt;/Running&gt;&quot;)</span>
+<span class="nc" id="L689">        .append(&quot;&lt;Done&gt;&quot;).append(nbCountInfoDone).append(&quot;&lt;/Done&gt;&quot;)</span>
+<span class="nc" id="L690">        .append(&quot;&lt;InRunning&gt;&quot;).append(nbInActiveTransfer).append(&quot;&lt;/InRunning&gt;&quot;)</span>
+<span class="nc" id="L691">        .append(&quot;&lt;OutRunning&gt;&quot;).append(nbOutActiveTransfer)</span>
+<span class="nc" id="L692">        .append(&quot;&lt;/OutRunning&gt;&quot;).append(&quot;&lt;LastInRunning&gt;&quot;)</span>
+<span class="nc" id="L693">        .append(new DateTime(lastInActiveTransfer)).append(&quot;&lt;/LastInRunning&gt;&quot;)</span>
+<span class="nc" id="L694">        .append(&quot;&lt;LastOutRunning&gt;&quot;).append(new DateTime(lastOutActiveTransfer))</span>
+<span class="nc" id="L695">        .append(&quot;&lt;/LastOutRunning&gt;&quot;).append(&quot;&lt;InAll&gt;&quot;).append(nbInTotalTransfer)</span>
+<span class="nc" id="L696">        .append(&quot;&lt;/InAll&gt;&quot;).append(&quot;&lt;OutAll&gt;&quot;).append(nbOutTotalTransfer)</span>
+<span class="nc" id="L697">        .append(&quot;&lt;/OutAll&gt;&quot;).append(&quot;&lt;InError&gt;&quot;).append(nbInErrorTransfer)</span>
+<span class="nc" id="L698">        .append(&quot;&lt;/InError&gt;&quot;).append(&quot;&lt;OutError&gt;&quot;).append(nbOutErrorTransfer)</span>
+<span class="nc" id="L699">        .append(&quot;&lt;/OutError&gt;&quot;).append(&quot;&lt;/OVERALL&gt;&quot;)</span>
 
         // Current situation of all transfers, running or not
-<span class="nc" id="L690">        .append(&quot;&lt;STEPS&gt;&quot;).append(&quot;&lt;Notask&gt;&quot;).append(nbCountStepNotask)</span>
-<span class="nc" id="L691">        .append(&quot;&lt;/Notask&gt;&quot;).append(&quot;&lt;Pretask&gt;&quot;).append(nbCountStepPretask)</span>
-<span class="nc" id="L692">        .append(&quot;&lt;/Pretask&gt;&quot;).append(&quot;&lt;Transfer&gt;&quot;).append(nbCountStepTransfer)</span>
-<span class="nc" id="L693">        .append(&quot;&lt;/Transfer&gt;&quot;).append(&quot;&lt;Posttask&gt;&quot;).append(nbCountStepPosttask)</span>
-<span class="nc" id="L694">        .append(&quot;&lt;/Posttask&gt;&quot;).append(&quot;&lt;AllDone&gt;&quot;).append(nbCountStepAllDone)</span>
-<span class="nc" id="L695">        .append(&quot;&lt;/AllDone&gt;&quot;).append(&quot;&lt;Error&gt;&quot;).append(nbCountStepError)</span>
-<span class="nc" id="L696">        .append(&quot;&lt;/Error&gt;&quot;).append(&quot;&lt;/STEPS&gt;&quot;)</span>
+<span class="nc" id="L702">        .append(&quot;&lt;STEPS&gt;&quot;).append(&quot;&lt;Notask&gt;&quot;).append(nbCountStepNotask)</span>
+<span class="nc" id="L703">        .append(&quot;&lt;/Notask&gt;&quot;).append(&quot;&lt;Pretask&gt;&quot;).append(nbCountStepPretask)</span>
+<span class="nc" id="L704">        .append(&quot;&lt;/Pretask&gt;&quot;).append(&quot;&lt;Transfer&gt;&quot;).append(nbCountStepTransfer)</span>
+<span class="nc" id="L705">        .append(&quot;&lt;/Transfer&gt;&quot;).append(&quot;&lt;Posttask&gt;&quot;).append(nbCountStepPosttask)</span>
+<span class="nc" id="L706">        .append(&quot;&lt;/Posttask&gt;&quot;).append(&quot;&lt;AllDone&gt;&quot;).append(nbCountStepAllDone)</span>
+<span class="nc" id="L707">        .append(&quot;&lt;/AllDone&gt;&quot;).append(&quot;&lt;Error&gt;&quot;).append(nbCountStepError)</span>
+<span class="nc" id="L708">        .append(&quot;&lt;/Error&gt;&quot;).append(&quot;&lt;/STEPS&gt;&quot;)</span>
 
         // On Running Transfers only
-<span class="nc" id="L699">        .append(&quot;&lt;RUNNINGSTEPS&gt;&quot;).append(&quot;&lt;AllRunning&gt;&quot;)</span>
-<span class="nc" id="L700">        .append(nbCountAllRunningStep).append(&quot;&lt;/AllRunning&gt;&quot;);</span>
-<span class="nc bnc" id="L701" title="All 2 branches missed.">    if (detail) {</span>
-<span class="nc" id="L702">      builder.append(&quot;&lt;Running&gt;&quot;).append(nbCountRunningStep)</span>
-<span class="nc" id="L703">             .append(&quot;&lt;/Running&gt;&quot;).append(&quot;&lt;InitOk&gt;&quot;).append(nbCountInitOkStep)</span>
-<span class="nc" id="L704">             .append(&quot;&lt;/InitOk&gt;&quot;).append(&quot;&lt;PreProcessingOk&gt;&quot;)</span>
-<span class="nc" id="L705">             .append(nbCountPreProcessingOkStep).append(&quot;&lt;/PreProcessingOk&gt;&quot;)</span>
-<span class="nc" id="L706">             .append(&quot;&lt;TransferOk&gt;&quot;).append(nbCountTransferOkStep)</span>
-<span class="nc" id="L707">             .append(&quot;&lt;/TransferOk&gt;&quot;).append(&quot;&lt;PostProcessingOk&gt;&quot;)</span>
-<span class="nc" id="L708">             .append(nbCountPostProcessingOkStep).append(&quot;&lt;/PostProcessingOk&gt;&quot;)</span>
-<span class="nc" id="L709">             .append(&quot;&lt;CompleteOk&gt;&quot;).append(nbCountCompleteOkStep)</span>
-<span class="nc" id="L710">             .append(&quot;&lt;/CompleteOk&gt;&quot;);</span>
+<span class="nc" id="L711">        .append(&quot;&lt;RUNNINGSTEPS&gt;&quot;).append(&quot;&lt;AllRunning&gt;&quot;)</span>
+<span class="nc" id="L712">        .append(nbCountAllRunningStep).append(&quot;&lt;/AllRunning&gt;&quot;);</span>
+<span class="nc bnc" id="L713" title="All 2 branches missed.">    if (detail) {</span>
+<span class="nc" id="L714">      builder.append(&quot;&lt;Running&gt;&quot;).append(nbCountRunningStep)</span>
+<span class="nc" id="L715">             .append(&quot;&lt;/Running&gt;&quot;).append(&quot;&lt;InitOk&gt;&quot;).append(nbCountInitOkStep)</span>
+<span class="nc" id="L716">             .append(&quot;&lt;/InitOk&gt;&quot;).append(&quot;&lt;PreProcessingOk&gt;&quot;)</span>
+<span class="nc" id="L717">             .append(nbCountPreProcessingOkStep).append(&quot;&lt;/PreProcessingOk&gt;&quot;)</span>
+<span class="nc" id="L718">             .append(&quot;&lt;TransferOk&gt;&quot;).append(nbCountTransferOkStep)</span>
+<span class="nc" id="L719">             .append(&quot;&lt;/TransferOk&gt;&quot;).append(&quot;&lt;PostProcessingOk&gt;&quot;)</span>
+<span class="nc" id="L720">             .append(nbCountPostProcessingOkStep).append(&quot;&lt;/PostProcessingOk&gt;&quot;)</span>
+<span class="nc" id="L721">             .append(&quot;&lt;CompleteOk&gt;&quot;).append(nbCountCompleteOkStep)</span>
+<span class="nc" id="L722">             .append(&quot;&lt;/CompleteOk&gt;&quot;);</span>
     }
-<span class="nc" id="L712">    builder.append(&quot;&lt;/RUNNINGSTEPS&gt;&quot;);</span>
+<span class="nc" id="L724">    builder.append(&quot;&lt;/RUNNINGSTEPS&gt;&quot;);</span>
 
-<span class="nc bnc" id="L714" title="All 2 branches missed.">    if (detail) {</span>
+<span class="nc bnc" id="L726" title="All 2 branches missed.">    if (detail) {</span>
       // Error Status on all transfers
-<span class="nc" id="L716">      builder.append(&quot;&lt;ERRORTYPES&gt;&quot;).append(&quot;&lt;ConnectionImpossible&gt;&quot;)</span>
-<span class="nc" id="L717">             .append(nbCountStatusConnectionImpossible)</span>
-<span class="nc" id="L718">             .append(&quot;&lt;/ConnectionImpossible&gt;&quot;).append(&quot;&lt;ServerOverloaded&gt;&quot;)</span>
-<span class="nc" id="L719">             .append(nbCountStatusServerOverloaded)</span>
-<span class="nc" id="L720">             .append(&quot;&lt;/ServerOverloaded&gt;&quot;).append(&quot;&lt;BadAuthent&gt;&quot;)</span>
-<span class="nc" id="L721">             .append(nbCountStatusBadAuthent).append(&quot;&lt;/BadAuthent&gt;&quot;)</span>
-<span class="nc" id="L722">             .append(&quot;&lt;ExternalOp&gt;&quot;).append(nbCountStatusExternalOp)</span>
-<span class="nc" id="L723">             .append(&quot;&lt;/ExternalOp&gt;&quot;).append(&quot;&lt;TransferError&gt;&quot;)</span>
-<span class="nc" id="L724">             .append(nbCountStatusTransferError).append(&quot;&lt;/TransferError&gt;&quot;)</span>
-<span class="nc" id="L725">             .append(&quot;&lt;MD5Error&gt;&quot;).append(nbCountStatusMD5Error)</span>
-<span class="nc" id="L726">             .append(&quot;&lt;/MD5Error&gt;&quot;).append(&quot;&lt;Disconnection&gt;&quot;)</span>
-<span class="nc" id="L727">             .append(nbCountStatusDisconnection).append(&quot;&lt;/Disconnection&gt;&quot;)</span>
-<span class="nc" id="L728">             .append(&quot;&lt;FinalOp&gt;&quot;).append(nbCountStatusFinalOp)</span>
-<span class="nc" id="L729">             .append(&quot;&lt;/FinalOp&gt;&quot;).append(&quot;&lt;Unimplemented&gt;&quot;)</span>
-<span class="nc" id="L730">             .append(nbCountStatusUnimplemented).append(&quot;&lt;/Unimplemented&gt;&quot;)</span>
-<span class="nc" id="L731">             .append(&quot;&lt;Internal&gt;&quot;).append(nbCountStatusInternal)</span>
-<span class="nc" id="L732">             .append(&quot;&lt;/Internal&gt;&quot;).append(&quot;&lt;Warning&gt;&quot;)</span>
-<span class="nc" id="L733">             .append(nbCountStatusWarning).append(&quot;&lt;/Warning&gt;&quot;)</span>
-<span class="nc" id="L734">             .append(&quot;&lt;QueryAlreadyFinished&gt;&quot;)</span>
-<span class="nc" id="L735">             .append(nbCountStatusQueryAlreadyFinished)</span>
-<span class="nc" id="L736">             .append(&quot;&lt;/QueryAlreadyFinished&gt;&quot;).append(&quot;&lt;QueryStillRunning&gt;&quot;)</span>
-<span class="nc" id="L737">             .append(nbCountStatusQueryStillRunning)</span>
-<span class="nc" id="L738">             .append(&quot;&lt;/QueryStillRunning&gt;&quot;).append(&quot;&lt;KnownHost&gt;&quot;)</span>
-<span class="nc" id="L739">             .append(nbCountStatusNotKnownHost).append(&quot;&lt;/KnownHost&gt;&quot;)</span>
-<span class="nc" id="L740">             .append(&quot;&lt;RemotelyUnknown&gt;&quot;)</span>
-<span class="nc" id="L741">             .append(nbCountStatusQueryRemotelyUnknown)</span>
-<span class="nc" id="L742">             .append(&quot;&lt;/RemotelyUnknown&gt;&quot;).append(&quot;&lt;CommandNotFound&gt;&quot;)</span>
-<span class="nc" id="L743">             .append(nbCountStatusCommandNotFound).append(&quot;&lt;/CommandNotFound&gt;&quot;)</span>
-<span class="nc" id="L744">             .append(&quot;&lt;PassThroughMode&gt;&quot;).append(nbCountStatusPassThroughMode)</span>
-<span class="nc" id="L745">             .append(&quot;&lt;/PassThroughMode&gt;&quot;).append(&quot;&lt;RemoteShutdown&gt;&quot;)</span>
-<span class="nc" id="L746">             .append(nbCountStatusRemoteShutdown).append(&quot;&lt;/RemoteShutdown&gt;&quot;)</span>
-<span class="nc" id="L747">             .append(&quot;&lt;Shutdown&gt;&quot;).append(nbCountStatusShutdown)</span>
-<span class="nc" id="L748">             .append(&quot;&lt;/Shutdown&gt;&quot;).append(&quot;&lt;RemoteError&gt;&quot;)</span>
-<span class="nc" id="L749">             .append(nbCountStatusRemoteError).append(&quot;&lt;/RemoteError&gt;&quot;)</span>
-<span class="nc" id="L750">             .append(&quot;&lt;Stopped&gt;&quot;).append(nbCountStatusStopped)</span>
-<span class="nc" id="L751">             .append(&quot;&lt;/Stopped&gt;&quot;).append(&quot;&lt;Canceled&gt;&quot;)</span>
-<span class="nc" id="L752">             .append(nbCountStatusCanceled).append(&quot;&lt;/Canceled&gt;&quot;)</span>
-<span class="nc" id="L753">             .append(&quot;&lt;FileNotFound&gt;&quot;).append(nbCountStatusFileNotFound)</span>
-<span class="nc" id="L754">             .append(&quot;&lt;/FileNotFound&gt;&quot;).append(&quot;&lt;Unknown&gt;&quot;)</span>
-<span class="nc" id="L755">             .append(nbCountStatusUnknown).append(&quot;&lt;/Unknown&gt;&quot;)</span>
-<span class="nc" id="L756">             .append(&quot;&lt;/ERRORTYPES&gt;&quot;);</span>
+<span class="nc" id="L728">      builder.append(&quot;&lt;ERRORTYPES&gt;&quot;).append(&quot;&lt;ConnectionImpossible&gt;&quot;)</span>
+<span class="nc" id="L729">             .append(nbCountStatusConnectionImpossible)</span>
+<span class="nc" id="L730">             .append(&quot;&lt;/ConnectionImpossible&gt;&quot;).append(&quot;&lt;ServerOverloaded&gt;&quot;)</span>
+<span class="nc" id="L731">             .append(nbCountStatusServerOverloaded)</span>
+<span class="nc" id="L732">             .append(&quot;&lt;/ServerOverloaded&gt;&quot;).append(&quot;&lt;BadAuthent&gt;&quot;)</span>
+<span class="nc" id="L733">             .append(nbCountStatusBadAuthent).append(&quot;&lt;/BadAuthent&gt;&quot;)</span>
+<span class="nc" id="L734">             .append(&quot;&lt;ExternalOp&gt;&quot;).append(nbCountStatusExternalOp)</span>
+<span class="nc" id="L735">             .append(&quot;&lt;/ExternalOp&gt;&quot;).append(&quot;&lt;TransferError&gt;&quot;)</span>
+<span class="nc" id="L736">             .append(nbCountStatusTransferError).append(&quot;&lt;/TransferError&gt;&quot;)</span>
+<span class="nc" id="L737">             .append(&quot;&lt;MD5Error&gt;&quot;).append(nbCountStatusMD5Error)</span>
+<span class="nc" id="L738">             .append(&quot;&lt;/MD5Error&gt;&quot;).append(&quot;&lt;Disconnection&gt;&quot;)</span>
+<span class="nc" id="L739">             .append(nbCountStatusDisconnection).append(&quot;&lt;/Disconnection&gt;&quot;)</span>
+<span class="nc" id="L740">             .append(&quot;&lt;FinalOp&gt;&quot;).append(nbCountStatusFinalOp)</span>
+<span class="nc" id="L741">             .append(&quot;&lt;/FinalOp&gt;&quot;).append(&quot;&lt;Unimplemented&gt;&quot;)</span>
+<span class="nc" id="L742">             .append(nbCountStatusUnimplemented).append(&quot;&lt;/Unimplemented&gt;&quot;)</span>
+<span class="nc" id="L743">             .append(&quot;&lt;Internal&gt;&quot;).append(nbCountStatusInternal)</span>
+<span class="nc" id="L744">             .append(&quot;&lt;/Internal&gt;&quot;).append(&quot;&lt;Warning&gt;&quot;)</span>
+<span class="nc" id="L745">             .append(nbCountStatusWarning).append(&quot;&lt;/Warning&gt;&quot;)</span>
+<span class="nc" id="L746">             .append(&quot;&lt;QueryAlreadyFinished&gt;&quot;)</span>
+<span class="nc" id="L747">             .append(nbCountStatusQueryAlreadyFinished)</span>
+<span class="nc" id="L748">             .append(&quot;&lt;/QueryAlreadyFinished&gt;&quot;).append(&quot;&lt;QueryStillRunning&gt;&quot;)</span>
+<span class="nc" id="L749">             .append(nbCountStatusQueryStillRunning)</span>
+<span class="nc" id="L750">             .append(&quot;&lt;/QueryStillRunning&gt;&quot;).append(&quot;&lt;KnownHost&gt;&quot;)</span>
+<span class="nc" id="L751">             .append(nbCountStatusNotKnownHost).append(&quot;&lt;/KnownHost&gt;&quot;)</span>
+<span class="nc" id="L752">             .append(&quot;&lt;RemotelyUnknown&gt;&quot;)</span>
+<span class="nc" id="L753">             .append(nbCountStatusQueryRemotelyUnknown)</span>
+<span class="nc" id="L754">             .append(&quot;&lt;/RemotelyUnknown&gt;&quot;).append(&quot;&lt;CommandNotFound&gt;&quot;)</span>
+<span class="nc" id="L755">             .append(nbCountStatusCommandNotFound).append(&quot;&lt;/CommandNotFound&gt;&quot;)</span>
+<span class="nc" id="L756">             .append(&quot;&lt;PassThroughMode&gt;&quot;).append(nbCountStatusPassThroughMode)</span>
+<span class="nc" id="L757">             .append(&quot;&lt;/PassThroughMode&gt;&quot;).append(&quot;&lt;RemoteShutdown&gt;&quot;)</span>
+<span class="nc" id="L758">             .append(nbCountStatusRemoteShutdown).append(&quot;&lt;/RemoteShutdown&gt;&quot;)</span>
+<span class="nc" id="L759">             .append(&quot;&lt;Shutdown&gt;&quot;).append(nbCountStatusShutdown)</span>
+<span class="nc" id="L760">             .append(&quot;&lt;/Shutdown&gt;&quot;).append(&quot;&lt;RemoteError&gt;&quot;)</span>
+<span class="nc" id="L761">             .append(nbCountStatusRemoteError).append(&quot;&lt;/RemoteError&gt;&quot;)</span>
+<span class="nc" id="L762">             .append(&quot;&lt;Stopped&gt;&quot;).append(nbCountStatusStopped)</span>
+<span class="nc" id="L763">             .append(&quot;&lt;/Stopped&gt;&quot;).append(&quot;&lt;Canceled&gt;&quot;)</span>
+<span class="nc" id="L764">             .append(nbCountStatusCanceled).append(&quot;&lt;/Canceled&gt;&quot;)</span>
+<span class="nc" id="L765">             .append(&quot;&lt;FileNotFound&gt;&quot;).append(nbCountStatusFileNotFound)</span>
+<span class="nc" id="L766">             .append(&quot;&lt;/FileNotFound&gt;&quot;).append(&quot;&lt;Unknown&gt;&quot;)</span>
+<span class="nc" id="L767">             .append(nbCountStatusUnknown).append(&quot;&lt;/Unknown&gt;&quot;)</span>
+<span class="nc" id="L768">             .append(&quot;&lt;/ERRORTYPES&gt;&quot;);</span>
     }
-<span class="nc" id="L758">    builder.append(&quot;&lt;/STATUS&gt;&quot;);</span>
-<span class="nc" id="L759">    return builder.toString();</span>
+<span class="nc" id="L770">    builder.append(&quot;&lt;/STATUS&gt;&quot;);</span>
+<span class="nc" id="L771">    return builder.toString();</span>
   }
 
   /**
@@ -764,8 +776,8 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The Json representation of the current status
    */
-  public String exportJson(final boolean detail) {
-<span class="nc" id="L768">    return JsonHandler.prettyPrint(exportAsJson(detail));</span>
+  public final String exportJson(final boolean detail) {
+<span class="nc" id="L780">    return JsonHandler.prettyPrint(exportAsJson(detail));</span>
   }
 
   /**
@@ -773,97 +785,97 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The Json representation of the current status
    */
-  public ObjectNode exportAsJson(final boolean detail) {
-<span class="nc" id="L777">    ObjectNode node = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L778">    node = node.putObject(&quot;STATUS&quot;);</span>
+  public final ObjectNode exportAsJson(final boolean detail) {
+<span class="nc" id="L789">    ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L790">    node = node.putObject(&quot;STATUS&quot;);</span>
     // Global Informations
-<span class="nc" id="L780">    node.put(&quot;HostID&quot;, Configuration.configuration.getHostId());</span>
-<span class="nc" id="L781">    node.put(&quot;Date&quot;, new DateTime().toString());</span>
-<span class="nc" id="L782">    node.put(&quot;LastRun&quot;, new DateTime(lastTry).toString());</span>
-<span class="nc" id="L783">    node.put(&quot;FromDate&quot;, new DateTime(currentLimit).toString());</span>
-<span class="nc" id="L784">    node.put(&quot;SecondsRunning&quot;, secondsRunning);</span>
-<span class="nc" id="L785">    node.put(&quot;NetworkConnections&quot;, nbNetworkConnection);</span>
-<span class="nc" id="L786">    node.put(&quot;NbThreads&quot;, nbThread);</span>
-<span class="nc" id="L787">    node.put(&quot;InBandwidth&quot;, bandwidthIn);</span>
-<span class="nc" id="L788">    node.put(&quot;OutBandwidth&quot;, bandwidthOut);</span>
+<span class="nc" id="L792">    node.put(&quot;HostID&quot;, Configuration.configuration.getHostId());</span>
+<span class="nc" id="L793">    node.put(&quot;Date&quot;, new DateTime().toString());</span>
+<span class="nc" id="L794">    node.put(&quot;LastRun&quot;, new DateTime(lastTry).toString());</span>
+<span class="nc" id="L795">    node.put(&quot;FromDate&quot;, new DateTime(currentLimit).toString());</span>
+<span class="nc" id="L796">    node.put(&quot;SecondsRunning&quot;, secondsRunning);</span>
+<span class="nc" id="L797">    node.put(&quot;NetworkConnections&quot;, nbNetworkConnection);</span>
+<span class="nc" id="L798">    node.put(&quot;NbThreads&quot;, nbThread);</span>
+<span class="nc" id="L799">    node.put(&quot;InBandwidth&quot;, bandwidthIn);</span>
+<span class="nc" id="L800">    node.put(&quot;OutBandwidth&quot;, bandwidthOut);</span>
 
     // Overall status including past, future and current transfers
-<span class="nc" id="L791">    ObjectNode node2 = node.putObject(&quot;OVERALL&quot;);</span>
-<span class="nc" id="L792">    node2.put(&quot;AllTransfer&quot;, nbCountStepAllTransfer);</span>
-<span class="nc" id="L793">    node2.put(&quot;Unknown&quot;, nbCountInfoUnknown);</span>
-<span class="nc" id="L794">    node2.put(&quot;NotUpdated&quot;, nbCountInfoNotUpdated);</span>
-<span class="nc" id="L795">    node2.put(&quot;Interrupted&quot;, nbCountInfoInterrupted);</span>
-<span class="nc" id="L796">    node2.put(&quot;ToSubmit&quot;, nbCountInfoToSubmit);</span>
-<span class="nc" id="L797">    node2.put(&quot;Error&quot;, nbCountInfoError);</span>
-<span class="nc" id="L798">    node2.put(&quot;Running&quot;, nbCountInfoRunning);</span>
-<span class="nc" id="L799">    node2.put(&quot;Done&quot;, nbCountInfoDone);</span>
-<span class="nc" id="L800">    node2.put(&quot;InRunning&quot;, nbInActiveTransfer);</span>
-<span class="nc" id="L801">    node2.put(&quot;OutRunning&quot;, nbOutActiveTransfer);</span>
-<span class="nc" id="L802">    node2.put(&quot;LastInRunning&quot;, new DateTime(lastInActiveTransfer).toString());</span>
-<span class="nc" id="L803">    node2.put(&quot;LastOutRunning&quot;, new DateTime(lastOutActiveTransfer).toString());</span>
-<span class="nc" id="L804">    node2.put(&quot;InAll&quot;, nbInTotalTransfer);</span>
-<span class="nc" id="L805">    node2.put(&quot;OutAll&quot;, nbOutTotalTransfer);</span>
-<span class="nc" id="L806">    node2.put(&quot;InError&quot;, nbInErrorTransfer);</span>
-<span class="nc" id="L807">    node2.put(&quot;OutError&quot;, nbOutErrorTransfer);</span>
+<span class="nc" id="L803">    ObjectNode node2 = node.putObject(&quot;OVERALL&quot;);</span>
+<span class="nc" id="L804">    node2.put(&quot;AllTransfer&quot;, nbCountStepAllTransfer);</span>
+<span class="nc" id="L805">    node2.put(&quot;Unknown&quot;, nbCountInfoUnknown);</span>
+<span class="nc" id="L806">    node2.put(&quot;NotUpdated&quot;, nbCountInfoNotUpdated);</span>
+<span class="nc" id="L807">    node2.put(&quot;Interrupted&quot;, nbCountInfoInterrupted);</span>
+<span class="nc" id="L808">    node2.put(&quot;ToSubmit&quot;, nbCountInfoToSubmit);</span>
+<span class="nc" id="L809">    node2.put(&quot;Error&quot;, nbCountInfoError);</span>
+<span class="nc" id="L810">    node2.put(&quot;Running&quot;, nbCountInfoRunning);</span>
+<span class="nc" id="L811">    node2.put(&quot;Done&quot;, nbCountInfoDone);</span>
+<span class="nc" id="L812">    node2.put(&quot;InRunning&quot;, nbInActiveTransfer);</span>
+<span class="nc" id="L813">    node2.put(&quot;OutRunning&quot;, nbOutActiveTransfer);</span>
+<span class="nc" id="L814">    node2.put(&quot;LastInRunning&quot;, new DateTime(lastInActiveTransfer).toString());</span>
+<span class="nc" id="L815">    node2.put(&quot;LastOutRunning&quot;, new DateTime(lastOutActiveTransfer).toString());</span>
+<span class="nc" id="L816">    node2.put(&quot;InAll&quot;, nbInTotalTransfer);</span>
+<span class="nc" id="L817">    node2.put(&quot;OutAll&quot;, nbOutTotalTransfer);</span>
+<span class="nc" id="L818">    node2.put(&quot;InError&quot;, nbInErrorTransfer);</span>
+<span class="nc" id="L819">    node2.put(&quot;OutError&quot;, nbOutErrorTransfer);</span>
 
     // Current situation of all transfers, running or not
-<span class="nc" id="L810">    node2 = node.putObject(&quot;STEPS&quot;);</span>
-<span class="nc" id="L811">    node2.put(&quot;Notask&quot;, nbCountStepNotask);</span>
-<span class="nc" id="L812">    node2.put(&quot;Pretask&quot;, nbCountStepPretask);</span>
-<span class="nc" id="L813">    node2.put(&quot;Transfer&quot;, nbCountStepTransfer);</span>
-<span class="nc" id="L814">    node2.put(&quot;Posttask&quot;, nbCountStepPosttask);</span>
-<span class="nc" id="L815">    node2.put(&quot;AllDone&quot;, nbCountStepAllDone);</span>
-<span class="nc" id="L816">    node2.put(&quot;Error&quot;, nbCountStepError);</span>
+<span class="nc" id="L822">    node2 = node.putObject(&quot;STEPS&quot;);</span>
+<span class="nc" id="L823">    node2.put(&quot;Notask&quot;, nbCountStepNotask);</span>
+<span class="nc" id="L824">    node2.put(&quot;Pretask&quot;, nbCountStepPretask);</span>
+<span class="nc" id="L825">    node2.put(&quot;Transfer&quot;, nbCountStepTransfer);</span>
+<span class="nc" id="L826">    node2.put(&quot;Posttask&quot;, nbCountStepPosttask);</span>
+<span class="nc" id="L827">    node2.put(&quot;AllDone&quot;, nbCountStepAllDone);</span>
+<span class="nc" id="L828">    node2.put(&quot;Error&quot;, nbCountStepError);</span>
 
     // On Running Transfers only
-<span class="nc" id="L819">    node2 = node.putObject(&quot;RUNNINGSTEPS&quot;);</span>
-<span class="nc" id="L820">    node2.put(&quot;AllRunning&quot;, nbCountAllRunningStep);</span>
-<span class="nc bnc" id="L821" title="All 2 branches missed.">    if (detail) {</span>
-<span class="nc" id="L822">      node2.put(&quot;Running&quot;, nbCountRunningStep);</span>
-<span class="nc" id="L823">      node2.put(&quot;InitOk&quot;, nbCountInitOkStep);</span>
-<span class="nc" id="L824">      node2.put(&quot;PreProcessingOk&quot;, nbCountPreProcessingOkStep);</span>
-<span class="nc" id="L825">      node2.put(&quot;TransferOk&quot;, nbCountTransferOkStep);</span>
-<span class="nc" id="L826">      node2.put(&quot;PostProcessingOk&quot;, nbCountPostProcessingOkStep);</span>
-<span class="nc" id="L827">      node2.put(&quot;CompleteOk&quot;, nbCountCompleteOkStep);</span>
+<span class="nc" id="L831">    node2 = node.putObject(&quot;RUNNINGSTEPS&quot;);</span>
+<span class="nc" id="L832">    node2.put(&quot;AllRunning&quot;, nbCountAllRunningStep);</span>
+<span class="nc bnc" id="L833" title="All 2 branches missed.">    if (detail) {</span>
+<span class="nc" id="L834">      node2.put(&quot;Running&quot;, nbCountRunningStep);</span>
+<span class="nc" id="L835">      node2.put(&quot;InitOk&quot;, nbCountInitOkStep);</span>
+<span class="nc" id="L836">      node2.put(&quot;PreProcessingOk&quot;, nbCountPreProcessingOkStep);</span>
+<span class="nc" id="L837">      node2.put(&quot;TransferOk&quot;, nbCountTransferOkStep);</span>
+<span class="nc" id="L838">      node2.put(&quot;PostProcessingOk&quot;, nbCountPostProcessingOkStep);</span>
+<span class="nc" id="L839">      node2.put(&quot;CompleteOk&quot;, nbCountCompleteOkStep);</span>
     }
 
-<span class="nc bnc" id="L830" title="All 2 branches missed.">    if (detail) {</span>
+<span class="nc bnc" id="L842" title="All 2 branches missed.">    if (detail) {</span>
       // Error Status on all transfers
-<span class="nc" id="L832">      node2 = node.putObject(&quot;ERRORTYPES&quot;);</span>
-<span class="nc" id="L833">      node2.put(&quot;ConnectionImpossible&quot;, nbCountStatusConnectionImpossible);</span>
-<span class="nc" id="L834">      node2.put(&quot;ServerOverloaded&quot;, nbCountStatusServerOverloaded);</span>
-<span class="nc" id="L835">      node2.put(&quot;BadAuthent&quot;, nbCountStatusBadAuthent);</span>
-<span class="nc" id="L836">      node2.put(&quot;ExternalOp&quot;, nbCountStatusExternalOp);</span>
-<span class="nc" id="L837">      node2.put(&quot;TransferError&quot;, nbCountStatusTransferError);</span>
-<span class="nc" id="L838">      node2.put(&quot;MD5Error&quot;, nbCountStatusMD5Error);</span>
-<span class="nc" id="L839">      node2.put(&quot;Disconnection&quot;, nbCountStatusDisconnection);</span>
-<span class="nc" id="L840">      node2.put(&quot;FinalOp&quot;, nbCountStatusFinalOp);</span>
-<span class="nc" id="L841">      node2.put(&quot;Unimplemented&quot;, nbCountStatusUnimplemented);</span>
-<span class="nc" id="L842">      node2.put(&quot;Internal&quot;, nbCountStatusInternal);</span>
-<span class="nc" id="L843">      node2.put(&quot;Warning&quot;, nbCountStatusWarning);</span>
-<span class="nc" id="L844">      node2.put(&quot;QueryAlreadyFinished&quot;, nbCountStatusQueryAlreadyFinished);</span>
-<span class="nc" id="L845">      node2.put(&quot;QueryStillRunning&quot;, nbCountStatusQueryStillRunning);</span>
-<span class="nc" id="L846">      node2.put(&quot;KnownHost&quot;, nbCountStatusNotKnownHost);</span>
-<span class="nc" id="L847">      node2.put(&quot;RemotelyUnknown&quot;, nbCountStatusQueryRemotelyUnknown);</span>
-<span class="nc" id="L848">      node2.put(&quot;CommandNotFound&quot;, nbCountStatusCommandNotFound);</span>
-<span class="nc" id="L849">      node2.put(&quot;PassThroughMode&quot;, nbCountStatusPassThroughMode);</span>
-<span class="nc" id="L850">      node2.put(&quot;RemoteShutdown&quot;, nbCountStatusRemoteShutdown);</span>
-<span class="nc" id="L851">      node2.put(&quot;Shutdown&quot;, nbCountStatusShutdown);</span>
-<span class="nc" id="L852">      node2.put(&quot;RemoteError&quot;, nbCountStatusRemoteError);</span>
-<span class="nc" id="L853">      node2.put(&quot;Stopped&quot;, nbCountStatusStopped);</span>
-<span class="nc" id="L854">      node2.put(&quot;Canceled&quot;, nbCountStatusCanceled);</span>
-<span class="nc" id="L855">      node2.put(&quot;FileNotFound&quot;, nbCountStatusFileNotFound);</span>
-<span class="nc" id="L856">      node2.put(&quot;Unknown&quot;, nbCountStatusUnknown);</span>
+<span class="nc" id="L844">      node2 = node.putObject(&quot;ERRORTYPES&quot;);</span>
+<span class="nc" id="L845">      node2.put(&quot;ConnectionImpossible&quot;, nbCountStatusConnectionImpossible);</span>
+<span class="nc" id="L846">      node2.put(&quot;ServerOverloaded&quot;, nbCountStatusServerOverloaded);</span>
+<span class="nc" id="L847">      node2.put(&quot;BadAuthent&quot;, nbCountStatusBadAuthent);</span>
+<span class="nc" id="L848">      node2.put(&quot;ExternalOp&quot;, nbCountStatusExternalOp);</span>
+<span class="nc" id="L849">      node2.put(&quot;TransferError&quot;, nbCountStatusTransferError);</span>
+<span class="nc" id="L850">      node2.put(&quot;MD5Error&quot;, nbCountStatusMD5Error);</span>
+<span class="nc" id="L851">      node2.put(&quot;Disconnection&quot;, nbCountStatusDisconnection);</span>
+<span class="nc" id="L852">      node2.put(&quot;FinalOp&quot;, nbCountStatusFinalOp);</span>
+<span class="nc" id="L853">      node2.put(&quot;Unimplemented&quot;, nbCountStatusUnimplemented);</span>
+<span class="nc" id="L854">      node2.put(&quot;Internal&quot;, nbCountStatusInternal);</span>
+<span class="nc" id="L855">      node2.put(&quot;Warning&quot;, nbCountStatusWarning);</span>
+<span class="nc" id="L856">      node2.put(&quot;QueryAlreadyFinished&quot;, nbCountStatusQueryAlreadyFinished);</span>
+<span class="nc" id="L857">      node2.put(&quot;QueryStillRunning&quot;, nbCountStatusQueryStillRunning);</span>
+<span class="nc" id="L858">      node2.put(&quot;KnownHost&quot;, nbCountStatusNotKnownHost);</span>
+<span class="nc" id="L859">      node2.put(&quot;RemotelyUnknown&quot;, nbCountStatusQueryRemotelyUnknown);</span>
+<span class="nc" id="L860">      node2.put(&quot;CommandNotFound&quot;, nbCountStatusCommandNotFound);</span>
+<span class="nc" id="L861">      node2.put(&quot;PassThroughMode&quot;, nbCountStatusPassThroughMode);</span>
+<span class="nc" id="L862">      node2.put(&quot;RemoteShutdown&quot;, nbCountStatusRemoteShutdown);</span>
+<span class="nc" id="L863">      node2.put(&quot;Shutdown&quot;, nbCountStatusShutdown);</span>
+<span class="nc" id="L864">      node2.put(&quot;RemoteError&quot;, nbCountStatusRemoteError);</span>
+<span class="nc" id="L865">      node2.put(&quot;Stopped&quot;, nbCountStatusStopped);</span>
+<span class="nc" id="L866">      node2.put(&quot;Canceled&quot;, nbCountStatusCanceled);</span>
+<span class="nc" id="L867">      node2.put(&quot;FileNotFound&quot;, nbCountStatusFileNotFound);</span>
+<span class="nc" id="L868">      node2.put(&quot;Unknown&quot;, nbCountStatusUnknown);</span>
     }
-<span class="nc" id="L858">    return node;</span>
+<span class="nc" id="L870">    return node;</span>
   }
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
-<span class="nc" id="L863">    this.agent = agent;</span>
-<span class="nc" id="L864">    lastInActiveTransfer = this.agent.getUptimeSystemTime();</span>
-<span class="nc" id="L865">    lastOutActiveTransfer = this.agent.getUptimeSystemTime();</span>
-<span class="nc" id="L866">  }</span>
+  public final void setAgent(final WaarpSnmpAgent agent) {
+<span class="nc" id="L875">    this.agent = agent;</span>
+<span class="nc" id="L876">    lastInActiveTransfer = this.agent.getUptimeSystemTime();</span>
+<span class="nc" id="L877">    lastOutActiveTransfer = this.agent.getUptimeSystemTime();</span>
+<span class="nc" id="L878">  }</span>
 
   /**
    * Update the value for one particular MIB entry
@@ -871,32 +883,32 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param type
    * @param entry
    */
-  public void run(final int type, final int entry) {
-<span class="nc" id="L875">    final long nbMs =</span>
-<span class="nc" id="L876">        Configuration.configuration.getAgentSnmp().getUptime() + 100;</span>
-<span class="nc" id="L877">    final MibLevel level = MibLevel.values()[type];</span>
-<span class="nc bnc" id="L878" title="All 4 branches missed.">    switch (level) {</span>
+  public final void run(final int type, final int entry) {
+<span class="nc" id="L887">    final long nbMs =</span>
+<span class="nc" id="L888">        Configuration.configuration.getAgentSnmp().getUptime() + 100;</span>
+<span class="nc" id="L889">    final MibLevel level = MibLevel.values()[type];</span>
+<span class="nc bnc" id="L890" title="All 4 branches missed.">    switch (level) {</span>
       case globalInfo:// Global
-<span class="nc bnc" id="L880" title="All 2 branches missed.">        if (((R66PrivateMib) agent.getMib()).rowGlobal != null) {</span>
-<span class="nc" id="L881">          run(nbMs, WaarpGlobalValuesIndex.values()[entry]);</span>
+<span class="nc bnc" id="L892" title="All 2 branches missed.">        if (((R66PrivateMib) agent.getMib()).rowGlobal != null) {</span>
+<span class="nc" id="L893">          run(nbMs, WaarpGlobalValuesIndex.values()[entry]);</span>
         }
-<span class="nc" id="L883">        return;</span>
+<span class="nc" id="L895">        return;</span>
       case detailedInfo:// Detailed
-<span class="nc bnc" id="L885" title="All 2 branches missed.">        if (((R66PrivateMib) agent.getMib()).rowDetailed != null) {</span>
-<span class="nc" id="L886">          run(nbMs, WaarpDetailedValuesIndex.values()[entry]);</span>
+<span class="nc bnc" id="L897" title="All 2 branches missed.">        if (((R66PrivateMib) agent.getMib()).rowDetailed != null) {</span>
+<span class="nc" id="L898">          run(nbMs, WaarpDetailedValuesIndex.values()[entry]);</span>
         }
-<span class="nc" id="L888">        return;</span>
+<span class="nc" id="L900">        return;</span>
       case errorInfo:// Error
-<span class="nc bnc" id="L890" title="All 2 branches missed.">        if (((R66PrivateMib) agent.getMib()).rowError != null) {</span>
-<span class="nc" id="L891">          run(nbMs, WaarpErrorValuesIndex.values()[entry]);</span>
+<span class="nc bnc" id="L902" title="All 2 branches missed.">        if (((R66PrivateMib) agent.getMib()).rowError != null) {</span>
+<span class="nc" id="L903">          run(nbMs, WaarpErrorValuesIndex.values()[entry]);</span>
         }
-<span class="nc" id="L893">        return;</span>
+<span class="nc" id="L905">        return;</span>
       case trapInfo:
       case staticInfo:
       default:
         break;
     }
-<span class="nc" id="L899">  }</span>
+<span class="nc" id="L911">  }</span>
 
   /**
    * Update a value in Global MIB part
@@ -904,9 +916,9 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateGlobalValue(final int rank, final long value) {
-<span class="nc" id="L908">    ((R66PrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);</span>
-<span class="nc" id="L909">  }</span>
+  protected final void updateGlobalValue(final int rank, final long value) {
+<span class="nc" id="L920">    ((R66PrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);</span>
+<span class="nc" id="L921">  }</span>
 
   /**
    * Update a value in Detailed MIB part
@@ -914,9 +926,9 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateDetailedValue(final int rank, final long value) {
-<span class="nc" id="L918">    ((R66PrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);</span>
-<span class="nc" id="L919">  }</span>
+  protected final void updateDetailedValue(final int rank, final long value) {
+<span class="nc" id="L930">    ((R66PrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);</span>
+<span class="nc" id="L931">  }</span>
 
   /**
    * Update a value in Error MIB part
@@ -924,9 +936,9 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateErrorValue(final int rank, final long value) {
-<span class="nc" id="L928">    ((R66PrivateMib) agent.getMib()).rowError.setValue(rank, value);</span>
-<span class="nc" id="L929">  }</span>
+  protected final void updateErrorValue(final int rank, final long value) {
+<span class="nc" id="L940">    ((R66PrivateMib) agent.getMib()).rowError.setValue(rank, value);</span>
+<span class="nc" id="L941">  }</span>
 
   /**
    * Update a value in Global MIB part
@@ -934,245 +946,245 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpGlobalValuesIndex entry) {
-<span class="nc" id="L938">    synchronized (trafficCounter) {</span>
+  protected final void run(final long nbMs,
+                           final WaarpGlobalValuesIndex entry) {
+<span class="nc" id="L951">    synchronized (trafficCounter) {</span>
       long val;
-<span class="nc" id="L940">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
-<span class="nc bnc" id="L941" title="All 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
-<span class="nc bnc" id="L942" title="All 22 branches missed.">        switch (entry) {</span>
+<span class="nc" id="L953">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
+<span class="nc bnc" id="L954" title="All 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="nc bnc" id="L955" title="All 22 branches missed.">        switch (entry) {</span>
           case applUptime:
           case memoryUsed:
           case memoryFree:
           case memoryTotal:
           case applLastChange:
           case applOperStatus:
-<span class="nc" id="L949">            return;</span>
+<span class="nc" id="L962">            return;</span>
           case applInboundAssociations:
-<span class="nc" id="L951">            updateGlobalValue(entry.ordinal(), nbInActiveTransfer);</span>
-<span class="nc" id="L952">            return;</span>
+<span class="nc" id="L964">            updateGlobalValue(entry.ordinal(), nbInActiveTransfer);</span>
+<span class="nc" id="L965">            return;</span>
           case applOutboundAssociations:
-<span class="nc" id="L954">            updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);</span>
-<span class="nc" id="L955">            return;</span>
-          case applAccumInboundAssociations:
-<span class="nc" id="L957">            updateGlobalValue(entry.ordinal(), nbInTotalTransfer);</span>
-<span class="nc" id="L958">            return;</span>
-          case applAccumOutboundAssociations:
-<span class="nc" id="L960">            updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);</span>
-<span class="nc" id="L961">            return;</span>
-          case applLastInboundActivity:
-<span class="nc" id="L963">            val = (lastInActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
-<span class="nc bnc" id="L964" title="All 2 branches missed.">            if (val &lt; 0) {</span>
-<span class="nc" id="L965">              val = 0;</span>
-            }
-<span class="nc" id="L967">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L967">            updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);</span>
 <span class="nc" id="L968">            return;</span>
-          case applLastOutboundActivity:
-<span class="nc" id="L970">            val = (lastOutActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
-<span class="nc bnc" id="L971" title="All 2 branches missed.">            if (val &lt; 0) {</span>
-<span class="nc" id="L972">              val = 0;</span>
+          case applAccumInboundAssociations:
+<span class="nc" id="L970">            updateGlobalValue(entry.ordinal(), nbInTotalTransfer);</span>
+<span class="nc" id="L971">            return;</span>
+          case applAccumOutboundAssociations:
+<span class="nc" id="L973">            updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);</span>
+<span class="nc" id="L974">            return;</span>
+          case applLastInboundActivity:
+<span class="nc" id="L976">            val = (lastInActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L977" title="All 2 branches missed.">            if (val &lt; 0) {</span>
+<span class="nc" id="L978">              val = 0;</span>
             }
-<span class="nc" id="L974">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L975">            return;</span>
-          case applRejectedInboundAssociations:
-<span class="nc" id="L977">            updateGlobalValue(entry.ordinal(), nbInErrorTransfer);</span>
-<span class="nc" id="L978">            return;</span>
-          case applFailedOutboundAssociations:
-<span class="nc" id="L980">            updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);</span>
+<span class="nc" id="L980">            updateGlobalValue(entry.ordinal(), val);</span>
 <span class="nc" id="L981">            return;</span>
+          case applLastOutboundActivity:
+<span class="nc" id="L983">            val = (lastOutActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L984" title="All 2 branches missed.">            if (val &lt; 0) {</span>
+<span class="nc" id="L985">              val = 0;</span>
+            }
+<span class="nc" id="L987">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L988">            return;</span>
+          case applRejectedInboundAssociations:
+<span class="nc" id="L990">            updateGlobalValue(entry.ordinal(), nbInErrorTransfer);</span>
+<span class="nc" id="L991">            return;</span>
+          case applFailedOutboundAssociations:
+<span class="nc" id="L993">            updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);</span>
+<span class="nc" id="L994">            return;</span>
           case applInboundBandwidthKBS:
-<span class="nc" id="L983">            val = trafficCounter.lastReadThroughput() &gt;&gt; 10;// B/s -&gt; KB/s</span>
-<span class="nc" id="L984">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L985">            return;</span>
-          case applOutboundBandwidthKBS:
-<span class="nc" id="L987">            val = trafficCounter.lastWriteThroughput() &gt;&gt; 10;</span>
-<span class="nc" id="L988">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L989">            return;</span>
-          case nbInfoUnknown:
-<span class="nc" id="L991">            updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);</span>
-<span class="nc" id="L992">            return;</span>
-          case nbInfoNotUpdated:
-<span class="nc" id="L994">            updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);</span>
-<span class="nc" id="L995">            return;</span>
-          case nbInfoInterrupted:
-<span class="nc" id="L997">            updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);</span>
+<span class="nc" id="L996">            val = trafficCounter.lastReadThroughput() &gt;&gt; 10;// B/s -&gt; KB/s</span>
+<span class="nc" id="L997">            updateGlobalValue(entry.ordinal(), val);</span>
 <span class="nc" id="L998">            return;</span>
-          case nbInfoToSubmit:
-<span class="nc" id="L1000">            nbCountInfoToSubmit = CommanderNoDb.todoList.size();</span>
-<span class="nc" id="L1001">            updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);</span>
+          case applOutboundBandwidthKBS:
+<span class="nc" id="L1000">            val = trafficCounter.lastWriteThroughput() &gt;&gt; 10;</span>
+<span class="nc" id="L1001">            updateGlobalValue(entry.ordinal(), val);</span>
 <span class="nc" id="L1002">            return;</span>
-          case nbInfoError:
-<span class="nc" id="L1004">            updateGlobalValue(entry.ordinal(), nbCountInfoError);</span>
+          case nbInfoUnknown:
+<span class="nc" id="L1004">            updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);</span>
 <span class="nc" id="L1005">            return;</span>
+          case nbInfoNotUpdated:
+<span class="nc" id="L1007">            updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);</span>
+<span class="nc" id="L1008">            return;</span>
+          case nbInfoInterrupted:
+<span class="nc" id="L1010">            updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);</span>
+<span class="nc" id="L1011">            return;</span>
+          case nbInfoToSubmit:
+<span class="nc" id="L1013">            nbCountInfoToSubmit = CommanderNoDb.todoList.size();</span>
+<span class="nc" id="L1014">            updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);</span>
+<span class="nc" id="L1015">            return;</span>
+          case nbInfoError:
+<span class="nc" id="L1017">            updateGlobalValue(entry.ordinal(), nbCountInfoError);</span>
+<span class="nc" id="L1018">            return;</span>
           case nbInfoRunning:
-<span class="nc" id="L1007">            nbCountInfoRunning = Configuration.configuration.getInternalRunner()</span>
-<span class="nc" id="L1008">                                                            .nbInternalRunner();</span>
-<span class="nc" id="L1009">            updateGlobalValue(entry.ordinal(), nbCountInfoRunning);</span>
-<span class="nc" id="L1010">            return;</span>
+<span class="nc" id="L1020">            nbCountInfoRunning = Configuration.configuration.getInternalRunner()</span>
+<span class="nc" id="L1021">                                                            .nbInternalRunner();</span>
+<span class="nc" id="L1022">            updateGlobalValue(entry.ordinal(), nbCountInfoRunning);</span>
+<span class="nc" id="L1023">            return;</span>
           case nbInfoDone:
-<span class="nc" id="L1012">            updateGlobalValue(entry.ordinal(), nbCountInfoDone);</span>
-<span class="nc" id="L1013">            return;</span>
+<span class="nc" id="L1025">            updateGlobalValue(entry.ordinal(), nbCountInfoDone);</span>
+<span class="nc" id="L1026">            return;</span>
           case nbStepAllTransfer:
-<span class="nc" id="L1015">            updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);</span>
-<span class="nc" id="L1016">            return;</span>
+<span class="nc" id="L1028">            updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);</span>
+<span class="nc" id="L1029">            return;</span>
           case nbThreads:
-<span class="nc" id="L1018">            nbThread = Thread.activeCount();</span>
-<span class="nc" id="L1019">            updateGlobalValue(entry.ordinal(), nbThread);</span>
-<span class="nc" id="L1020">            return;</span>
+<span class="nc" id="L1031">            nbThread = Thread.activeCount();</span>
+<span class="nc" id="L1032">            updateGlobalValue(entry.ordinal(), nbThread);</span>
+<span class="nc" id="L1033">            return;</span>
           case nbNetworkConnection:
-<span class="nc" id="L1022">            nbNetworkConnection =</span>
-<span class="nc" id="L1023">                ChannelUtils.nbCommandChannels(Configuration.configuration);</span>
-<span class="nc" id="L1024">            updateGlobalValue(entry.ordinal(), nbNetworkConnection);</span>
-<span class="nc" id="L1025">            return;</span>
+<span class="nc" id="L1035">            nbNetworkConnection =</span>
+<span class="nc" id="L1036">                ChannelUtils.nbCommandChannels(Configuration.configuration);</span>
+<span class="nc" id="L1037">            updateGlobalValue(entry.ordinal(), nbNetworkConnection);</span>
+<span class="nc" id="L1038">            return;</span>
         }
-<span class="nc" id="L1027">        return;</span>
+<span class="nc" id="L1040">        return;</span>
       }
       // Global
       try {
-<span class="nc bnc" id="L1031" title="All 22 branches missed.">        switch (entry) {</span>
+<span class="nc bnc" id="L1044" title="All 22 branches missed.">        switch (entry) {</span>
           case applUptime:
           case memoryUsed:
           case memoryFree:
           case memoryTotal:
           case applLastChange:
           case applOperStatus:
-<span class="nc" id="L1038">            return;</span>
+<span class="nc" id="L1051">            return;</span>
           case applInboundAssociations:
-<span class="nc" id="L1040">            DbTaskRunner</span>
-<span class="nc" id="L1041">                .finishSelectOrCountPrepareStatement(countInActiveTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1043">            nbInActiveTransfer = DbTaskRunner</span>
-<span class="nc" id="L1044">                .getResultCountPrepareStatement(countInActiveTransfer);</span>
-<span class="nc" id="L1045">            updateGlobalValue(entry.ordinal(), nbInActiveTransfer);</span>
-<span class="nc" id="L1046">            return;</span>
+<span class="nc" id="L1053">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countInActiveTransfer, limitDate);
+<span class="nc" id="L1055">            nbInActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countInActiveTransfer);
+<span class="nc" id="L1057">            updateGlobalValue(entry.ordinal(), nbInActiveTransfer);</span>
+<span class="nc" id="L1058">            return;</span>
           case applOutboundAssociations:
-<span class="nc" id="L1048">            DbTaskRunner</span>
-<span class="nc" id="L1049">                .finishSelectOrCountPrepareStatement(countOutActiveTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1051">            nbOutActiveTransfer = DbTaskRunner</span>
-<span class="nc" id="L1052">                .getResultCountPrepareStatement(countOutActiveTransfer);</span>
-<span class="nc" id="L1053">            updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);</span>
-<span class="nc" id="L1054">            return;</span>
+<span class="nc" id="L1060">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countOutActiveTransfer, limitDate);
+<span class="nc" id="L1062">            nbOutActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countOutActiveTransfer);
+<span class="nc" id="L1064">            updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);</span>
+<span class="nc" id="L1065">            return;</span>
           case applAccumInboundAssociations:
-<span class="nc" id="L1056">            DbTaskRunner</span>
-<span class="nc" id="L1057">                .finishSelectOrCountPrepareStatement(countInTotalTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1059">            nbInTotalTransfer = DbTaskRunner</span>
-<span class="nc" id="L1060">                .getResultCountPrepareStatement(countInTotalTransfer);</span>
-<span class="nc" id="L1061">            updateGlobalValue(entry.ordinal(), nbInTotalTransfer);</span>
-<span class="nc" id="L1062">            return;</span>
+<span class="nc" id="L1067">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countInTotalTransfer, limitDate);
+<span class="nc" id="L1069">            nbInTotalTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countInTotalTransfer);
+<span class="nc" id="L1071">            updateGlobalValue(entry.ordinal(), nbInTotalTransfer);</span>
+<span class="nc" id="L1072">            return;</span>
           case applAccumOutboundAssociations:
-<span class="nc" id="L1064">            DbTaskRunner</span>
-<span class="nc" id="L1065">                .finishSelectOrCountPrepareStatement(countOutTotalTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1067">            nbOutTotalTransfer = DbTaskRunner</span>
-<span class="nc" id="L1068">                .getResultCountPrepareStatement(countOutTotalTransfer);</span>
-<span class="nc" id="L1069">            updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);</span>
-<span class="nc" id="L1070">            return;</span>
+<span class="nc" id="L1074">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countOutTotalTransfer, limitDate);
+<span class="nc" id="L1076">            nbOutTotalTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countOutTotalTransfer);
+<span class="nc" id="L1078">            updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);</span>
+<span class="nc" id="L1079">            return;</span>
           case applLastInboundActivity:
-<span class="nc" id="L1072">            val = (lastInActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
-<span class="nc bnc" id="L1073" title="All 2 branches missed.">            if (val &lt; 0) {</span>
-<span class="nc" id="L1074">              val = 0;</span>
+<span class="nc" id="L1081">            val = (lastInActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L1082" title="All 2 branches missed.">            if (val &lt; 0) {</span>
+<span class="nc" id="L1083">              val = 0;</span>
             }
-<span class="nc" id="L1076">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L1077">            return;</span>
+<span class="nc" id="L1085">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L1086">            return;</span>
           case applLastOutboundActivity:
-<span class="nc" id="L1079">            val = (lastOutActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
-<span class="nc bnc" id="L1080" title="All 2 branches missed.">            if (val &lt; 0) {</span>
-<span class="nc" id="L1081">              val = 0;</span>
+<span class="nc" id="L1088">            val = (lastOutActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L1089" title="All 2 branches missed.">            if (val &lt; 0) {</span>
+<span class="nc" id="L1090">              val = 0;</span>
             }
-<span class="nc" id="L1083">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L1084">            return;</span>
+<span class="nc" id="L1092">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L1093">            return;</span>
           case applRejectedInboundAssociations:
-<span class="nc" id="L1086">            DbTaskRunner</span>
-<span class="nc" id="L1087">                .finishSelectOrCountPrepareStatement(countInErrorTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1089">            nbInErrorTransfer = DbTaskRunner</span>
-<span class="nc" id="L1090">                .getResultCountPrepareStatement(countInErrorTransfer);</span>
-<span class="nc" id="L1091">            updateGlobalValue(entry.ordinal(), nbInErrorTransfer);</span>
-<span class="nc" id="L1092">            return;</span>
-          case applFailedOutboundAssociations:
-<span class="nc" id="L1094">            DbTaskRunner</span>
-<span class="nc" id="L1095">                .finishSelectOrCountPrepareStatement(countOutErrorTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1097">            nbOutErrorTransfer = DbTaskRunner</span>
-<span class="nc" id="L1098">                .getResultCountPrepareStatement(countOutErrorTransfer);</span>
-<span class="nc" id="L1099">            updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);</span>
+<span class="nc" id="L1095">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countInErrorTransfer, limitDate);
+<span class="nc" id="L1097">            nbInErrorTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countInErrorTransfer);
+<span class="nc" id="L1099">            updateGlobalValue(entry.ordinal(), nbInErrorTransfer);</span>
 <span class="nc" id="L1100">            return;</span>
+          case applFailedOutboundAssociations:
+<span class="nc" id="L1102">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countOutErrorTransfer, limitDate);
+<span class="nc" id="L1104">            nbOutErrorTransfer = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countOutErrorTransfer);
+<span class="nc" id="L1106">            updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);</span>
+<span class="nc" id="L1107">            return;</span>
           case applInboundBandwidthKBS:
-<span class="nc" id="L1102">            val = trafficCounter.lastReadThroughput() &gt;&gt; 10;// B/s -&gt; KB/s</span>
-<span class="nc" id="L1103">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L1104">            return;</span>
+<span class="nc" id="L1109">            val = trafficCounter.lastReadThroughput() &gt;&gt; 10;// B/s -&gt; KB/s</span>
+<span class="nc" id="L1110">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L1111">            return;</span>
           case applOutboundBandwidthKBS:
-<span class="nc" id="L1106">            val = trafficCounter.lastWriteThroughput() &gt;&gt; 10;</span>
-<span class="nc" id="L1107">            updateGlobalValue(entry.ordinal(), val);</span>
-<span class="nc" id="L1108">            return;</span>
+<span class="nc" id="L1113">            val = trafficCounter.lastWriteThroughput() &gt;&gt; 10;</span>
+<span class="nc" id="L1114">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L1115">            return;</span>
           case nbInfoUnknown:
-<span class="nc" id="L1110">            nbCountInfoUnknown = DbTaskRunner</span>
-<span class="nc" id="L1111">                .getResultCountPrepareStatement(countInfo, UpdatedInfo.UNKNOWN,</span>
-                                                limitDate);
-<span class="nc" id="L1113">            updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);</span>
-<span class="nc" id="L1114">            return;</span>
+<span class="nc" id="L1117">            nbCountInfoUnknown =</span>
+<span class="nc" id="L1118">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.UNKNOWN,
+                                                            limitDate);
+<span class="nc" id="L1121">            updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);</span>
+<span class="nc" id="L1122">            return;</span>
           case nbInfoNotUpdated:
-<span class="nc" id="L1116">            nbCountInfoNotUpdated = DbTaskRunner</span>
-<span class="nc" id="L1117">                .getResultCountPrepareStatement(countInfo,</span>
-                                                UpdatedInfo.NOTUPDATED,
-                                                limitDate);
-<span class="nc" id="L1120">            updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);</span>
-<span class="nc" id="L1121">            return;</span>
+<span class="nc" id="L1124">            nbCountInfoNotUpdated =</span>
+<span class="nc" id="L1125">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.NOTUPDATED,
+                                                            limitDate);
+<span class="nc" id="L1128">            updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);</span>
+<span class="nc" id="L1129">            return;</span>
           case nbInfoInterrupted:
-<span class="nc" id="L1123">            nbCountInfoInterrupted = DbTaskRunner</span>
-<span class="nc" id="L1124">                .getResultCountPrepareStatement(countInfo,</span>
-                                                UpdatedInfo.INTERRUPTED,
-                                                limitDate);
-<span class="nc" id="L1127">            updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);</span>
-<span class="nc" id="L1128">            return;</span>
+<span class="nc" id="L1131">            nbCountInfoInterrupted =</span>
+<span class="nc" id="L1132">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.INTERRUPTED,
+                                                            limitDate);
+<span class="nc" id="L1135">            updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);</span>
+<span class="nc" id="L1136">            return;</span>
           case nbInfoToSubmit:
-<span class="nc" id="L1130">            nbCountInfoToSubmit = DbTaskRunner</span>
-<span class="nc" id="L1131">                .getResultCountPrepareStatement(countInfo, UpdatedInfo.TOSUBMIT,</span>
-                                                limitDate);
-<span class="nc" id="L1133">            updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);</span>
-<span class="nc" id="L1134">            return;</span>
+<span class="nc" id="L1138">            nbCountInfoToSubmit =</span>
+<span class="nc" id="L1139">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.TOSUBMIT,
+                                                            limitDate);
+<span class="nc" id="L1142">            updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);</span>
+<span class="nc" id="L1143">            return;</span>
           case nbInfoError:
-<span class="nc" id="L1136">            nbCountInfoError = DbTaskRunner</span>
-<span class="nc" id="L1137">                .getResultCountPrepareStatement(countInfo, UpdatedInfo.INERROR,</span>
-                                                limitDate);
-<span class="nc" id="L1139">            updateGlobalValue(entry.ordinal(), nbCountInfoError);</span>
-<span class="nc" id="L1140">            return;</span>
+<span class="nc" id="L1145">            nbCountInfoError =</span>
+<span class="nc" id="L1146">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.INERROR,
+                                                            limitDate);
+<span class="nc" id="L1149">            updateGlobalValue(entry.ordinal(), nbCountInfoError);</span>
+<span class="nc" id="L1150">            return;</span>
           case nbInfoRunning:
-<span class="nc" id="L1142">            nbCountInfoRunning = DbTaskRunner</span>
-<span class="nc" id="L1143">                .getResultCountPrepareStatement(countInfo, UpdatedInfo.RUNNING,</span>
-                                                limitDate);
-<span class="nc" id="L1145">            updateGlobalValue(entry.ordinal(), nbCountInfoRunning);</span>
-<span class="nc" id="L1146">            return;</span>
+<span class="nc" id="L1152">            nbCountInfoRunning =</span>
+<span class="nc" id="L1153">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.RUNNING,
+                                                            limitDate);
+<span class="nc" id="L1156">            updateGlobalValue(entry.ordinal(), nbCountInfoRunning);</span>
+<span class="nc" id="L1157">            return;</span>
           case nbInfoDone:
-<span class="nc" id="L1148">            nbCountInfoDone = DbTaskRunner</span>
-<span class="nc" id="L1149">                .getResultCountPrepareStatement(countInfo, UpdatedInfo.DONE,</span>
-                                                limitDate);
-<span class="nc" id="L1151">            updateGlobalValue(entry.ordinal(), nbCountInfoDone);</span>
-<span class="nc" id="L1152">            return;</span>
-          case nbStepAllTransfer:
-<span class="nc" id="L1154">            DbTaskRunner</span>
-<span class="nc" id="L1155">                .finishSelectOrCountPrepareStatement(countStepAllTransfer,</span>
-                                                     limitDate);
-<span class="nc" id="L1157">            nbCountStepAllTransfer = DbTaskRunner</span>
-<span class="nc" id="L1158">                .getResultCountPrepareStatement(countStepAllTransfer);</span>
-<span class="nc" id="L1159">            updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);</span>
-<span class="nc" id="L1160">            return;</span>
-          case nbThreads:
-<span class="nc" id="L1162">            nbThread = Thread.activeCount();</span>
-<span class="nc" id="L1163">            updateGlobalValue(entry.ordinal(), nbThread);</span>
+<span class="nc" id="L1159">            nbCountInfoDone =</span>
+<span class="nc" id="L1160">                DbTaskRunner.getResultCountPrepareStatement(countInfo,</span>
+                                                            UpdatedInfo.DONE,
+                                                            limitDate);
+<span class="nc" id="L1163">            updateGlobalValue(entry.ordinal(), nbCountInfoDone);</span>
 <span class="nc" id="L1164">            return;</span>
+          case nbStepAllTransfer:
+<span class="nc" id="L1166">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countStepAllTransfer, limitDate);
+<span class="nc" id="L1168">            nbCountStepAllTransfer =</span>
+<span class="nc" id="L1169">                DbTaskRunner.getResultCountPrepareStatement(</span>
+                    countStepAllTransfer);
+<span class="nc" id="L1171">            updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);</span>
+<span class="nc" id="L1172">            return;</span>
+          case nbThreads:
+<span class="nc" id="L1174">            nbThread = Thread.activeCount();</span>
+<span class="nc" id="L1175">            updateGlobalValue(entry.ordinal(), nbThread);</span>
+<span class="nc" id="L1176">            return;</span>
           case nbNetworkConnection:
-<span class="nc" id="L1166">            nbNetworkConnection = DbAdmin.getNbConnection();</span>
-<span class="nc" id="L1167">            updateGlobalValue(entry.ordinal(), nbNetworkConnection);</span>
+<span class="nc" id="L1178">            nbNetworkConnection = DbAdmin.getNbConnection();</span>
+<span class="nc" id="L1179">            updateGlobalValue(entry.ordinal(), nbNetworkConnection);</span>
         }
-<span class="nc" id="L1169">      } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L1181">      } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
         // ignore
-<span class="nc" id="L1171">      } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L1183">      } catch (final WaarpDatabaseSqlException ignored) {</span>
         // ignore
-<span class="nc" id="L1173">      }</span>
-<span class="nc" id="L1174">    }</span>
-<span class="nc" id="L1175">  }</span>
+<span class="nc" id="L1185">      }</span>
+<span class="nc" id="L1186">    }</span>
+<span class="nc" id="L1187">  }</span>
 
   /**
    * Update a value in Detailed MIB part
@@ -1180,174 +1192,172 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpDetailedValuesIndex entry) {
-<span class="nc" id="L1184">    synchronized (trafficCounter) {</span>
-<span class="nc" id="L1185">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
-<span class="nc bnc" id="L1186" title="All 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
-<span class="nc bnc" id="L1187" title="All 14 branches missed.">        switch (entry) {</span>
+  protected final void run(final long nbMs,
+                           final WaarpDetailedValuesIndex entry) {
+<span class="nc" id="L1197">    synchronized (trafficCounter) {</span>
+<span class="nc" id="L1198">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
+<span class="nc bnc" id="L1199" title="All 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="nc bnc" id="L1200" title="All 14 branches missed.">        switch (entry) {</span>
           case nbStepNotask:
-<span class="nc" id="L1189">            updateDetailedValue(entry.ordinal(), nbCountStepNotask);</span>
-<span class="nc" id="L1190">            return;</span>
+<span class="nc" id="L1202">            updateDetailedValue(entry.ordinal(), nbCountStepNotask);</span>
+<span class="nc" id="L1203">            return;</span>
           case nbStepPretask:
-<span class="nc" id="L1192">            updateDetailedValue(entry.ordinal(), nbCountStepPretask);</span>
-<span class="nc" id="L1193">            return;</span>
+<span class="nc" id="L1205">            updateDetailedValue(entry.ordinal(), nbCountStepPretask);</span>
+<span class="nc" id="L1206">            return;</span>
           case nbStepTransfer:
-<span class="nc" id="L1195">            updateDetailedValue(entry.ordinal(), nbCountStepTransfer);</span>
-<span class="nc" id="L1196">            return;</span>
+<span class="nc" id="L1208">            updateDetailedValue(entry.ordinal(), nbCountStepTransfer);</span>
+<span class="nc" id="L1209">            return;</span>
           case nbStepPosttask:
-<span class="nc" id="L1198">            updateDetailedValue(entry.ordinal(), nbCountStepPosttask);</span>
-<span class="nc" id="L1199">            return;</span>
+<span class="nc" id="L1211">            updateDetailedValue(entry.ordinal(), nbCountStepPosttask);</span>
+<span class="nc" id="L1212">            return;</span>
           case nbStepAllDone:
-<span class="nc" id="L1201">            updateDetailedValue(entry.ordinal(), nbCountStepAllDone);</span>
-<span class="nc" id="L1202">            return;</span>
+<span class="nc" id="L1214">            updateDetailedValue(entry.ordinal(), nbCountStepAllDone);</span>
+<span class="nc" id="L1215">            return;</span>
           case nbStepError:
-<span class="nc" id="L1204">            updateDetailedValue(entry.ordinal(), nbCountStepError);</span>
-<span class="nc" id="L1205">            return;</span>
+<span class="nc" id="L1217">            updateDetailedValue(entry.ordinal(), nbCountStepError);</span>
+<span class="nc" id="L1218">            return;</span>
           case nbAllRunningStep:
-<span class="nc" id="L1207">            nbCountAllRunningStep =</span>
-<span class="nc" id="L1208">                Configuration.configuration.getInternalRunner()</span>
-<span class="nc" id="L1209">                                           .nbInternalRunner();</span>
-<span class="nc" id="L1210">            updateDetailedValue(entry.ordinal(), nbCountAllRunningStep);</span>
-<span class="nc" id="L1211">            return;</span>
+<span class="nc" id="L1220">            nbCountAllRunningStep =</span>
+<span class="nc" id="L1221">                Configuration.configuration.getInternalRunner()</span>
+<span class="nc" id="L1222">                                           .nbInternalRunner();</span>
+<span class="nc" id="L1223">            updateDetailedValue(entry.ordinal(), nbCountAllRunningStep);</span>
+<span class="nc" id="L1224">            return;</span>
           case nbRunningStep:
-<span class="nc" id="L1213">            updateDetailedValue(entry.ordinal(), nbCountRunningStep);</span>
-<span class="nc" id="L1214">            return;</span>
+<span class="nc" id="L1226">            updateDetailedValue(entry.ordinal(), nbCountRunningStep);</span>
+<span class="nc" id="L1227">            return;</span>
           case nbInitOkStep:
-<span class="nc" id="L1216">            updateDetailedValue(entry.ordinal(), nbCountInitOkStep);</span>
-<span class="nc" id="L1217">            return;</span>
+<span class="nc" id="L1229">            updateDetailedValue(entry.ordinal(), nbCountInitOkStep);</span>
+<span class="nc" id="L1230">            return;</span>
           case nbPreProcessingOkStep:
-<span class="nc" id="L1219">            updateDetailedValue(entry.ordinal(), nbCountPreProcessingOkStep);</span>
-<span class="nc" id="L1220">            return;</span>
+<span class="nc" id="L1232">            updateDetailedValue(entry.ordinal(), nbCountPreProcessingOkStep);</span>
+<span class="nc" id="L1233">            return;</span>
           case nbTransferOkStep:
-<span class="nc" id="L1222">            updateDetailedValue(entry.ordinal(), nbCountTransferOkStep);</span>
-<span class="nc" id="L1223">            return;</span>
+<span class="nc" id="L1235">            updateDetailedValue(entry.ordinal(), nbCountTransferOkStep);</span>
+<span class="nc" id="L1236">            return;</span>
           case nbPostProcessingOkStep:
-<span class="nc" id="L1225">            updateDetailedValue(entry.ordinal(), nbCountPostProcessingOkStep);</span>
-<span class="nc" id="L1226">            return;</span>
+<span class="nc" id="L1238">            updateDetailedValue(entry.ordinal(), nbCountPostProcessingOkStep);</span>
+<span class="nc" id="L1239">            return;</span>
           case nbCompleteOkStep:
-<span class="nc" id="L1228">            updateDetailedValue(entry.ordinal(), nbCountCompleteOkStep);</span>
-<span class="nc" id="L1229">            return;</span>
+<span class="nc" id="L1241">            updateDetailedValue(entry.ordinal(), nbCountCompleteOkStep);</span>
+<span class="nc" id="L1242">            return;</span>
         }
-<span class="nc" id="L1231">        return;</span>
+<span class="nc" id="L1244">        return;</span>
       }
       // Detailed
       try {
-<span class="nc bnc" id="L1235" title="All 14 branches missed.">        switch (entry) {</span>
+<span class="nc bnc" id="L1248" title="All 14 branches missed.">        switch (entry) {</span>
           case nbStepNotask:
-<span class="nc" id="L1237">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepNotask,</span>
+<span class="nc" id="L1250">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepNotask,</span>
                                                              limitDate);
-<span class="nc" id="L1239">            nbCountStepNotask =</span>
-<span class="nc" id="L1240">                DbTaskRunner.getResultCountPrepareStatement(countStepNotask);</span>
-<span class="nc" id="L1241">            updateDetailedValue(entry.ordinal(), nbCountStepNotask);</span>
-<span class="nc" id="L1242">            return;</span>
+<span class="nc" id="L1252">            nbCountStepNotask =</span>
+<span class="nc" id="L1253">                DbTaskRunner.getResultCountPrepareStatement(countStepNotask);</span>
+<span class="nc" id="L1254">            updateDetailedValue(entry.ordinal(), nbCountStepNotask);</span>
+<span class="nc" id="L1255">            return;</span>
           case nbStepPretask:
-<span class="nc" id="L1244">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPretask,</span>
+<span class="nc" id="L1257">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPretask,</span>
                                                              limitDate);
-<span class="nc" id="L1246">            nbCountStepPretask =</span>
-<span class="nc" id="L1247">                DbTaskRunner.getResultCountPrepareStatement(countStepPretask);</span>
-<span class="nc" id="L1248">            updateDetailedValue(entry.ordinal(), nbCountStepPretask);</span>
-<span class="nc" id="L1249">            return;</span>
+<span class="nc" id="L1259">            nbCountStepPretask =</span>
+<span class="nc" id="L1260">                DbTaskRunner.getResultCountPrepareStatement(countStepPretask);</span>
+<span class="nc" id="L1261">            updateDetailedValue(entry.ordinal(), nbCountStepPretask);</span>
+<span class="nc" id="L1262">            return;</span>
           case nbStepTransfer:
-<span class="nc" id="L1251">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepTransfer,</span>
+<span class="nc" id="L1264">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepTransfer,</span>
                                                              limitDate);
-<span class="nc" id="L1253">            nbCountStepTransfer =</span>
-<span class="nc" id="L1254">                DbTaskRunner.getResultCountPrepareStatement(countStepTransfer);</span>
-<span class="nc" id="L1255">            updateDetailedValue(entry.ordinal(), nbCountStepTransfer);</span>
-<span class="nc" id="L1256">            return;</span>
+<span class="nc" id="L1266">            nbCountStepTransfer =</span>
+<span class="nc" id="L1267">                DbTaskRunner.getResultCountPrepareStatement(countStepTransfer);</span>
+<span class="nc" id="L1268">            updateDetailedValue(entry.ordinal(), nbCountStepTransfer);</span>
+<span class="nc" id="L1269">            return;</span>
           case nbStepPosttask:
-<span class="nc" id="L1258">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPosttask,</span>
+<span class="nc" id="L1271">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPosttask,</span>
                                                              limitDate);
-<span class="nc" id="L1260">            nbCountStepPosttask =</span>
-<span class="nc" id="L1261">                DbTaskRunner.getResultCountPrepareStatement(countStepPosttask);</span>
-<span class="nc" id="L1262">            updateDetailedValue(entry.ordinal(), nbCountStepPosttask);</span>
-<span class="nc" id="L1263">            return;</span>
+<span class="nc" id="L1273">            nbCountStepPosttask =</span>
+<span class="nc" id="L1274">                DbTaskRunner.getResultCountPrepareStatement(countStepPosttask);</span>
+<span class="nc" id="L1275">            updateDetailedValue(entry.ordinal(), nbCountStepPosttask);</span>
+<span class="nc" id="L1276">            return;</span>
           case nbStepAllDone:
-<span class="nc" id="L1265">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepAllDone,</span>
+<span class="nc" id="L1278">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepAllDone,</span>
                                                              limitDate);
-<span class="nc" id="L1267">            nbCountStepAllDone =</span>
-<span class="nc" id="L1268">                DbTaskRunner.getResultCountPrepareStatement(countStepAllDone);</span>
-<span class="nc" id="L1269">            updateDetailedValue(entry.ordinal(), nbCountStepAllDone);</span>
-<span class="nc" id="L1270">            return;</span>
+<span class="nc" id="L1280">            nbCountStepAllDone =</span>
+<span class="nc" id="L1281">                DbTaskRunner.getResultCountPrepareStatement(countStepAllDone);</span>
+<span class="nc" id="L1282">            updateDetailedValue(entry.ordinal(), nbCountStepAllDone);</span>
+<span class="nc" id="L1283">            return;</span>
           case nbStepError:
-<span class="nc" id="L1272">            DbTaskRunner</span>
-<span class="nc" id="L1273">                .finishSelectOrCountPrepareStatement(countStepError, limitDate);</span>
-<span class="nc" id="L1274">            nbCountStepError =</span>
-<span class="nc" id="L1275">                DbTaskRunner.getResultCountPrepareStatement(countStepError);</span>
-<span class="nc" id="L1276">            updateDetailedValue(entry.ordinal(), nbCountStepError);</span>
-<span class="nc" id="L1277">            return;</span>
+<span class="nc" id="L1285">            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepError,</span>
+                                                             limitDate);
+<span class="nc" id="L1287">            nbCountStepError =</span>
+<span class="nc" id="L1288">                DbTaskRunner.getResultCountPrepareStatement(countStepError);</span>
+<span class="nc" id="L1289">            updateDetailedValue(entry.ordinal(), nbCountStepError);</span>
+<span class="nc" id="L1290">            return;</span>
           case nbAllRunningStep:
-<span class="nc" id="L1279">            DbTaskRunner</span>
-<span class="nc" id="L1280">                .finishSelectOrCountPrepareStatement(countAllRunningStep,</span>
-                                                     limitDate);
-<span class="nc" id="L1282">            nbCountAllRunningStep = DbTaskRunner</span>
-<span class="nc" id="L1283">                .getResultCountPrepareStatement(countAllRunningStep);</span>
-<span class="nc" id="L1284">            updateDetailedValue(entry.ordinal(), nbCountAllRunningStep);</span>
-<span class="nc" id="L1285">            return;</span>
+<span class="nc" id="L1292">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countAllRunningStep, limitDate);
+<span class="nc" id="L1294">            nbCountAllRunningStep = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countAllRunningStep);
+<span class="nc" id="L1296">            updateDetailedValue(entry.ordinal(), nbCountAllRunningStep);</span>
+<span class="nc" id="L1297">            return;</span>
           case nbRunningStep:
-<span class="nc" id="L1287">            DbTaskRunner.finishSelectOrCountPrepareStatement(countRunningStep,</span>
+<span class="nc" id="L1299">            DbTaskRunner.finishSelectOrCountPrepareStatement(countRunningStep,</span>
                                                              limitDate);
-<span class="nc" id="L1289">            nbCountRunningStep =</span>
-<span class="nc" id="L1290">                DbTaskRunner.getResultCountPrepareStatement(countRunningStep);</span>
-<span class="nc" id="L1291">            updateDetailedValue(entry.ordinal(), nbCountRunningStep);</span>
-<span class="nc" id="L1292">            return;</span>
+<span class="nc" id="L1301">            nbCountRunningStep =</span>
+<span class="nc" id="L1302">                DbTaskRunner.getResultCountPrepareStatement(countRunningStep);</span>
+<span class="nc" id="L1303">            updateDetailedValue(entry.ordinal(), nbCountRunningStep);</span>
+<span class="nc" id="L1304">            return;</span>
           case nbInitOkStep:
-<span class="nc" id="L1294">            DbTaskRunner.finishSelectOrCountPrepareStatement(countInitOkStep,</span>
+<span class="nc" id="L1306">            DbTaskRunner.finishSelectOrCountPrepareStatement(countInitOkStep,</span>
                                                              limitDate);
-<span class="nc" id="L1296">            nbCountInitOkStep =</span>
-<span class="nc" id="L1297">                DbTaskRunner.getResultCountPrepareStatement(countInitOkStep);</span>
-<span class="nc" id="L1298">            updateDetailedValue(entry.ordinal(), nbCountInitOkStep);</span>
-<span class="nc" id="L1299">            return;</span>
+<span class="nc" id="L1308">            nbCountInitOkStep =</span>
+<span class="nc" id="L1309">                DbTaskRunner.getResultCountPrepareStatement(countInitOkStep);</span>
+<span class="nc" id="L1310">            updateDetailedValue(entry.ordinal(), nbCountInitOkStep);</span>
+<span class="nc" id="L1311">            return;</span>
           case nbPreProcessingOkStep:
-<span class="nc" id="L1301">            DbTaskRunner</span>
-<span class="nc" id="L1302">                .finishSelectOrCountPrepareStatement(countPreProcessingOkStep,</span>
-                                                     limitDate);
-<span class="nc" id="L1304">            nbCountPreProcessingOkStep = DbTaskRunner</span>
-<span class="nc" id="L1305">                .getResultCountPrepareStatement(countPreProcessingOkStep);</span>
-<span class="nc" id="L1306">            updateDetailedValue(entry.ordinal(), nbCountPreProcessingOkStep);</span>
-<span class="nc" id="L1307">            return;</span>
+<span class="nc" id="L1313">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countPreProcessingOkStep, limitDate);
+<span class="nc" id="L1315">            nbCountPreProcessingOkStep =</span>
+<span class="nc" id="L1316">                DbTaskRunner.getResultCountPrepareStatement(</span>
+                    countPreProcessingOkStep);
+<span class="nc" id="L1318">            updateDetailedValue(entry.ordinal(), nbCountPreProcessingOkStep);</span>
+<span class="nc" id="L1319">            return;</span>
           case nbTransferOkStep:
-<span class="nc" id="L1309">            DbTaskRunner</span>
-<span class="nc" id="L1310">                .finishSelectOrCountPrepareStatement(countTransferOkStep,</span>
-                                                     limitDate);
-<span class="nc" id="L1312">            nbCountTransferOkStep = DbTaskRunner</span>
-<span class="nc" id="L1313">                .getResultCountPrepareStatement(countTransferOkStep);</span>
-<span class="nc" id="L1314">            updateDetailedValue(entry.ordinal(), nbCountTransferOkStep);</span>
-<span class="nc" id="L1315">            return;</span>
+<span class="nc" id="L1321">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countTransferOkStep, limitDate);
+<span class="nc" id="L1323">            nbCountTransferOkStep = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countTransferOkStep);
+<span class="nc" id="L1325">            updateDetailedValue(entry.ordinal(), nbCountTransferOkStep);</span>
+<span class="nc" id="L1326">            return;</span>
           case nbPostProcessingOkStep:
-<span class="nc" id="L1317">            DbTaskRunner</span>
-<span class="nc" id="L1318">                .finishSelectOrCountPrepareStatement(countPostProcessingOkStep,</span>
-                                                     limitDate);
-<span class="nc" id="L1320">            nbCountPostProcessingOkStep = DbTaskRunner</span>
-<span class="nc" id="L1321">                .getResultCountPrepareStatement(countPostProcessingOkStep);</span>
-<span class="nc" id="L1322">            updateDetailedValue(entry.ordinal(), nbCountPostProcessingOkStep);</span>
-<span class="nc" id="L1323">            return;</span>
+<span class="nc" id="L1328">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countPostProcessingOkStep, limitDate);
+<span class="nc" id="L1330">            nbCountPostProcessingOkStep =</span>
+<span class="nc" id="L1331">                DbTaskRunner.getResultCountPrepareStatement(</span>
+                    countPostProcessingOkStep);
+<span class="nc" id="L1333">            updateDetailedValue(entry.ordinal(), nbCountPostProcessingOkStep);</span>
+<span class="nc" id="L1334">            return;</span>
           case nbCompleteOkStep:
-<span class="nc" id="L1325">            DbTaskRunner</span>
-<span class="nc" id="L1326">                .finishSelectOrCountPrepareStatement(countCompleteOkStep,</span>
-                                                     limitDate);
-<span class="nc" id="L1328">            nbCountCompleteOkStep = DbTaskRunner</span>
-<span class="nc" id="L1329">                .getResultCountPrepareStatement(countCompleteOkStep);</span>
-<span class="nc" id="L1330">            updateDetailedValue(entry.ordinal(), nbCountCompleteOkStep);</span>
+<span class="nc" id="L1336">            DbTaskRunner.finishSelectOrCountPrepareStatement(</span>
+                countCompleteOkStep, limitDate);
+<span class="nc" id="L1338">            nbCountCompleteOkStep = DbTaskRunner.getResultCountPrepareStatement(</span>
+                countCompleteOkStep);
+<span class="nc" id="L1340">            updateDetailedValue(entry.ordinal(), nbCountCompleteOkStep);</span>
         }
-<span class="nc" id="L1332">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L1333">        logger</span>
-<span class="nc" id="L1334">            .info(&quot;Database No Connection Error: Cannot execute Monitoring&quot;, e);</span>
+<span class="nc" id="L1342">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L1343">        logger.info(&quot;Database No Connection Error: Cannot execute Monitoring&quot;,</span>
+                    e);
         try {
-<span class="nc" id="L1336">          dbSession.getAdmin().getDbModel().validConnection(dbSession);</span>
-<span class="nc" id="L1337">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L1346">          dbSession.getAdmin().getDbModel().validConnection(dbSession);</span>
+<span class="nc" id="L1347">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // ignore
-<span class="nc" id="L1339">        }</span>
-<span class="nc" id="L1340">      } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L1341">        logger</span>
-<span class="nc" id="L1342">            .info(&quot;Database No Connection Error: Cannot execute Monitoring&quot;, e);</span>
+<span class="nc" id="L1349">        }</span>
+<span class="nc" id="L1350">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L1351">        logger.info(&quot;Database No Connection Error: Cannot execute Monitoring&quot;,</span>
+                    e);
         try {
-<span class="nc" id="L1344">          dbSession.getAdmin().getDbModel().validConnection(dbSession);</span>
-<span class="nc" id="L1345">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L1354">          dbSession.getAdmin().getDbModel().validConnection(dbSession);</span>
+<span class="nc" id="L1355">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
           // ignore
-<span class="nc" id="L1347">        }</span>
-<span class="nc" id="L1348">      }</span>
-<span class="nc" id="L1349">    }</span>
-<span class="nc" id="L1350">  }</span>
+<span class="nc" id="L1357">        }</span>
+<span class="nc" id="L1358">      }</span>
+<span class="nc" id="L1359">    }</span>
+<span class="nc" id="L1360">  }</span>
 
   /**
    * Update a value in Error MIB part
@@ -1355,174 +1365,183 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpErrorValuesIndex entry) {
-<span class="nc" id="L1359">    synchronized (trafficCounter) {</span>
-<span class="nc" id="L1360">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
-<span class="nc bnc" id="L1361" title="All 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
-<span class="nc" id="L1362">        return;</span>
+  protected final void run(final long nbMs, final WaarpErrorValuesIndex entry) {
+<span class="nc" id="L1369">    synchronized (trafficCounter) {</span>
+<span class="nc" id="L1370">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
+<span class="nc bnc" id="L1371" title="All 4 branches missed.">      if (dbSession == null || dbSession.isDisActive()) {</span>
+<span class="nc" id="L1372">        return;</span>
       }
       // Error
-<span class="nc bnc" id="L1365" title="All 25 branches missed.">      switch (entry) {</span>
+<span class="nc bnc" id="L1375" title="All 25 branches missed.">      switch (entry) {</span>
         case nbStatusConnectionImpossible:
-<span class="nc" id="L1367">          nbCountStatusConnectionImpossible = DbTaskRunner</span>
-<span class="nc" id="L1368">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.ConnectionImpossible,
-                                              limitDate);
-<span class="nc" id="L1371">          updateErrorValue(entry.ordinal(), nbCountStatusConnectionImpossible);</span>
-<span class="nc" id="L1372">          return;</span>
+<span class="nc" id="L1377">          nbCountStatusConnectionImpossible =</span>
+<span class="nc" id="L1378">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.ConnectionImpossible,
+                                                          limitDate);
+<span class="nc" id="L1381">          updateErrorValue(entry.ordinal(), nbCountStatusConnectionImpossible);</span>
+<span class="nc" id="L1382">          return;</span>
         case nbStatusServerOverloaded:
-<span class="nc" id="L1374">          nbCountStatusServerOverloaded = DbTaskRunner</span>
-<span class="nc" id="L1375">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.ServerOverloaded,
-                                              limitDate);
-<span class="nc" id="L1378">          updateErrorValue(entry.ordinal(), nbCountStatusServerOverloaded);</span>
-<span class="nc" id="L1379">          return;</span>
+<span class="nc" id="L1384">          nbCountStatusServerOverloaded =</span>
+<span class="nc" id="L1385">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.ServerOverloaded,
+                                                          limitDate);
+<span class="nc" id="L1388">          updateErrorValue(entry.ordinal(), nbCountStatusServerOverloaded);</span>
+<span class="nc" id="L1389">          return;</span>
         case nbStatusBadAuthent:
-<span class="nc" id="L1381">          nbCountStatusBadAuthent = DbTaskRunner</span>
-<span class="nc" id="L1382">              .getResultCountPrepareStatement(countStatus, ErrorCode.BadAuthent,</span>
-                                              limitDate);
-<span class="nc" id="L1384">          updateErrorValue(entry.ordinal(), nbCountStatusBadAuthent);</span>
-<span class="nc" id="L1385">          return;</span>
+<span class="nc" id="L1391">          nbCountStatusBadAuthent =</span>
+<span class="nc" id="L1392">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.BadAuthent,
+                                                          limitDate);
+<span class="nc" id="L1395">          updateErrorValue(entry.ordinal(), nbCountStatusBadAuthent);</span>
+<span class="nc" id="L1396">          return;</span>
         case nbStatusExternalOp:
-<span class="nc" id="L1387">          nbCountStatusExternalOp = DbTaskRunner</span>
-<span class="nc" id="L1388">              .getResultCountPrepareStatement(countStatus, ErrorCode.ExternalOp,</span>
-                                              limitDate);
-<span class="nc" id="L1390">          updateErrorValue(entry.ordinal(), nbCountStatusExternalOp);</span>
-<span class="nc" id="L1391">          return;</span>
+<span class="nc" id="L1398">          nbCountStatusExternalOp =</span>
+<span class="nc" id="L1399">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.ExternalOp,
+                                                          limitDate);
+<span class="nc" id="L1402">          updateErrorValue(entry.ordinal(), nbCountStatusExternalOp);</span>
+<span class="nc" id="L1403">          return;</span>
         case nbStatusTransferError:
-<span class="nc" id="L1393">          nbCountStatusTransferError = DbTaskRunner</span>
-<span class="nc" id="L1394">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.TransferError,
-                                              limitDate);
-<span class="nc" id="L1397">          updateErrorValue(entry.ordinal(), nbCountStatusTransferError);</span>
-<span class="nc" id="L1398">          return;</span>
+<span class="nc" id="L1405">          nbCountStatusTransferError =</span>
+<span class="nc" id="L1406">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.TransferError,
+                                                          limitDate);
+<span class="nc" id="L1409">          updateErrorValue(entry.ordinal(), nbCountStatusTransferError);</span>
+<span class="nc" id="L1410">          return;</span>
         case nbStatusMD5Error:
-<span class="nc" id="L1400">          nbCountStatusMD5Error = DbTaskRunner</span>
-<span class="nc" id="L1401">              .getResultCountPrepareStatement(countStatus, ErrorCode.MD5Error,</span>
-                                              limitDate);
-<span class="nc" id="L1403">          updateErrorValue(entry.ordinal(), nbCountStatusMD5Error);</span>
-<span class="nc" id="L1404">          return;</span>
-        case nbStatusDisconnection:
-<span class="nc" id="L1406">          nbCountStatusDisconnection = DbTaskRunner</span>
-<span class="nc" id="L1407">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.Disconnection,
-                                              limitDate);
-<span class="nc" id="L1410">          updateErrorValue(entry.ordinal(), nbCountStatusDisconnection);</span>
-<span class="nc" id="L1411">          return;</span>
-        case nbStatusFinalOp:
-<span class="nc" id="L1413">          nbCountStatusFinalOp = DbTaskRunner</span>
-<span class="nc" id="L1414">              .getResultCountPrepareStatement(countStatus, ErrorCode.FinalOp,</span>
-                                              limitDate);
-<span class="nc" id="L1416">          updateErrorValue(entry.ordinal(), nbCountStatusFinalOp);</span>
+<span class="nc" id="L1412">          nbCountStatusMD5Error =</span>
+<span class="nc" id="L1413">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.MD5Error,
+                                                          limitDate);
+<span class="nc" id="L1416">          updateErrorValue(entry.ordinal(), nbCountStatusMD5Error);</span>
 <span class="nc" id="L1417">          return;</span>
-        case nbStatusUnimplemented:
-<span class="nc" id="L1419">          nbCountStatusUnimplemented = DbTaskRunner</span>
-<span class="nc" id="L1420">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.Unimplemented,
-                                              limitDate);
-<span class="nc" id="L1423">          updateErrorValue(entry.ordinal(), nbCountStatusUnimplemented);</span>
+        case nbStatusDisconnection:
+<span class="nc" id="L1419">          nbCountStatusDisconnection =</span>
+<span class="nc" id="L1420">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.Disconnection,
+                                                          limitDate);
+<span class="nc" id="L1423">          updateErrorValue(entry.ordinal(), nbCountStatusDisconnection);</span>
 <span class="nc" id="L1424">          return;</span>
+        case nbStatusFinalOp:
+<span class="nc" id="L1426">          nbCountStatusFinalOp =</span>
+<span class="nc" id="L1427">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.FinalOp,
+                                                          limitDate);
+<span class="nc" id="L1430">          updateErrorValue(entry.ordinal(), nbCountStatusFinalOp);</span>
+<span class="nc" id="L1431">          return;</span>
+        case nbStatusUnimplemented:
+<span class="nc" id="L1433">          nbCountStatusUnimplemented =</span>
+<span class="nc" id="L1434">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.Unimplemented,
+                                                          limitDate);
+<span class="nc" id="L1437">          updateErrorValue(entry.ordinal(), nbCountStatusUnimplemented);</span>
+<span class="nc" id="L1438">          return;</span>
         case nbStatusInternal:
-<span class="nc" id="L1426">          nbCountStatusInternal = DbTaskRunner</span>
-<span class="nc" id="L1427">              .getResultCountPrepareStatement(countStatus, ErrorCode.Internal,</span>
-                                              limitDate);
-<span class="nc" id="L1429">          updateErrorValue(entry.ordinal(), nbCountStatusInternal);</span>
-<span class="nc" id="L1430">          return;</span>
+<span class="nc" id="L1440">          nbCountStatusInternal =</span>
+<span class="nc" id="L1441">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.Internal,
+                                                          limitDate);
+<span class="nc" id="L1444">          updateErrorValue(entry.ordinal(), nbCountStatusInternal);</span>
+<span class="nc" id="L1445">          return;</span>
         case nbStatusWarning:
-<span class="nc" id="L1432">          nbCountStatusWarning = DbTaskRunner</span>
-<span class="nc" id="L1433">              .getResultCountPrepareStatement(countStatus, ErrorCode.Warning,</span>
-                                              limitDate);
-<span class="nc" id="L1435">          updateErrorValue(entry.ordinal(), nbCountStatusWarning);</span>
-<span class="nc" id="L1436">          return;</span>
+<span class="nc" id="L1447">          nbCountStatusWarning =</span>
+<span class="nc" id="L1448">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.Warning,
+                                                          limitDate);
+<span class="nc" id="L1451">          updateErrorValue(entry.ordinal(), nbCountStatusWarning);</span>
+<span class="nc" id="L1452">          return;</span>
         case nbStatusQueryAlreadyFinished:
-<span class="nc" id="L1438">          nbCountStatusQueryAlreadyFinished = DbTaskRunner</span>
-<span class="nc" id="L1439">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.QueryAlreadyFinished,
-                                              limitDate);
-<span class="nc" id="L1442">          updateErrorValue(entry.ordinal(), nbCountStatusQueryAlreadyFinished);</span>
-<span class="nc" id="L1443">          return;</span>
+<span class="nc" id="L1454">          nbCountStatusQueryAlreadyFinished =</span>
+<span class="nc" id="L1455">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.QueryAlreadyFinished,
+                                                          limitDate);
+<span class="nc" id="L1458">          updateErrorValue(entry.ordinal(), nbCountStatusQueryAlreadyFinished);</span>
+<span class="nc" id="L1459">          return;</span>
         case nbStatusQueryStillRunning:
-<span class="nc" id="L1445">          nbCountStatusQueryStillRunning = DbTaskRunner</span>
-<span class="nc" id="L1446">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.QueryStillRunning,
-                                              limitDate);
-<span class="nc" id="L1449">          updateErrorValue(entry.ordinal(), nbCountStatusQueryStillRunning);</span>
-<span class="nc" id="L1450">          return;</span>
+<span class="nc" id="L1461">          nbCountStatusQueryStillRunning =</span>
+<span class="nc" id="L1462">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.QueryStillRunning,
+                                                          limitDate);
+<span class="nc" id="L1465">          updateErrorValue(entry.ordinal(), nbCountStatusQueryStillRunning);</span>
+<span class="nc" id="L1466">          return;</span>
         case nbStatusNotKnownHost:
-<span class="nc" id="L1452">          nbCountStatusNotKnownHost = DbTaskRunner</span>
-<span class="nc" id="L1453">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.NotKnownHost,
-                                              limitDate);
-<span class="nc" id="L1456">          updateErrorValue(entry.ordinal(), nbCountStatusNotKnownHost);</span>
-<span class="nc" id="L1457">          return;</span>
+<span class="nc" id="L1468">          nbCountStatusNotKnownHost =</span>
+<span class="nc" id="L1469">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.NotKnownHost,
+                                                          limitDate);
+<span class="nc" id="L1472">          updateErrorValue(entry.ordinal(), nbCountStatusNotKnownHost);</span>
+<span class="nc" id="L1473">          return;</span>
         case nbStatusQueryRemotelyUnknown:
-<span class="nc" id="L1459">          nbCountStatusQueryRemotelyUnknown = DbTaskRunner</span>
-<span class="nc" id="L1460">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.QueryRemotelyUnknown,
-                                              limitDate);
-<span class="nc" id="L1463">          updateErrorValue(entry.ordinal(), nbCountStatusQueryRemotelyUnknown);</span>
-<span class="nc" id="L1464">          return;</span>
+<span class="nc" id="L1475">          nbCountStatusQueryRemotelyUnknown =</span>
+<span class="nc" id="L1476">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.QueryRemotelyUnknown,
+                                                          limitDate);
+<span class="nc" id="L1479">          updateErrorValue(entry.ordinal(), nbCountStatusQueryRemotelyUnknown);</span>
+<span class="nc" id="L1480">          return;</span>
         case nbStatusCommandNotFound:
-<span class="nc" id="L1466">          nbCountStatusCommandNotFound = DbTaskRunner</span>
-<span class="nc" id="L1467">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.CommandNotFound,
-                                              limitDate);
-<span class="nc" id="L1470">          updateErrorValue(entry.ordinal(), nbCountStatusCommandNotFound);</span>
-<span class="nc" id="L1471">          return;</span>
+<span class="nc" id="L1482">          nbCountStatusCommandNotFound =</span>
+<span class="nc" id="L1483">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.CommandNotFound,
+                                                          limitDate);
+<span class="nc" id="L1486">          updateErrorValue(entry.ordinal(), nbCountStatusCommandNotFound);</span>
+<span class="nc" id="L1487">          return;</span>
         case nbStatusPassThroughMode:
-<span class="nc" id="L1473">          nbCountStatusPassThroughMode = DbTaskRunner</span>
-<span class="nc" id="L1474">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.PassThroughMode,
-                                              limitDate);
-<span class="nc" id="L1477">          updateErrorValue(entry.ordinal(), nbCountStatusPassThroughMode);</span>
-<span class="nc" id="L1478">          return;</span>
+<span class="nc" id="L1489">          nbCountStatusPassThroughMode =</span>
+<span class="nc" id="L1490">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.PassThroughMode,
+                                                          limitDate);
+<span class="nc" id="L1493">          updateErrorValue(entry.ordinal(), nbCountStatusPassThroughMode);</span>
+<span class="nc" id="L1494">          return;</span>
         case nbStatusRemoteShutdown:
-<span class="nc" id="L1480">          nbCountStatusRemoteShutdown = DbTaskRunner</span>
-<span class="nc" id="L1481">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.RemoteShutdown,
-                                              limitDate);
-<span class="nc" id="L1484">          updateErrorValue(entry.ordinal(), nbCountStatusRemoteShutdown);</span>
-<span class="nc" id="L1485">          return;</span>
+<span class="nc" id="L1496">          nbCountStatusRemoteShutdown =</span>
+<span class="nc" id="L1497">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.RemoteShutdown,
+                                                          limitDate);
+<span class="nc" id="L1500">          updateErrorValue(entry.ordinal(), nbCountStatusRemoteShutdown);</span>
+<span class="nc" id="L1501">          return;</span>
         case nbStatusShutdown:
-<span class="nc" id="L1487">          nbCountStatusShutdown = DbTaskRunner</span>
-<span class="nc" id="L1488">              .getResultCountPrepareStatement(countStatus, ErrorCode.Shutdown,</span>
-                                              limitDate);
-<span class="nc" id="L1490">          updateErrorValue(entry.ordinal(), nbCountStatusShutdown);</span>
-<span class="nc" id="L1491">          return;</span>
+<span class="nc" id="L1503">          nbCountStatusShutdown =</span>
+<span class="nc" id="L1504">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.Shutdown,
+                                                          limitDate);
+<span class="nc" id="L1507">          updateErrorValue(entry.ordinal(), nbCountStatusShutdown);</span>
+<span class="nc" id="L1508">          return;</span>
         case nbStatusRemoteError:
-<span class="nc" id="L1493">          nbCountStatusRemoteError = DbTaskRunner</span>
-<span class="nc" id="L1494">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.RemoteError, limitDate);
-<span class="nc" id="L1496">          updateErrorValue(entry.ordinal(), nbCountStatusRemoteError);</span>
-<span class="nc" id="L1497">          return;</span>
+<span class="nc" id="L1510">          nbCountStatusRemoteError =</span>
+<span class="nc" id="L1511">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.RemoteError,
+                                                          limitDate);
+<span class="nc" id="L1514">          updateErrorValue(entry.ordinal(), nbCountStatusRemoteError);</span>
+<span class="nc" id="L1515">          return;</span>
         case nbStatusStopped:
-<span class="nc" id="L1499">          nbCountStatusStopped = DbTaskRunner</span>
-<span class="nc" id="L1500">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.StoppedTransfer,
-                                              limitDate);
-<span class="nc" id="L1503">          updateErrorValue(entry.ordinal(), nbCountStatusStopped);</span>
-<span class="nc" id="L1504">          return;</span>
+<span class="nc" id="L1517">          nbCountStatusStopped =</span>
+<span class="nc" id="L1518">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.StoppedTransfer,
+                                                          limitDate);
+<span class="nc" id="L1521">          updateErrorValue(entry.ordinal(), nbCountStatusStopped);</span>
+<span class="nc" id="L1522">          return;</span>
         case nbStatusCanceled:
-<span class="nc" id="L1506">          nbCountStatusCanceled = DbTaskRunner</span>
-<span class="nc" id="L1507">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.CanceledTransfer,
-                                              limitDate);
-<span class="nc" id="L1510">          updateErrorValue(entry.ordinal(), nbCountStatusCanceled);</span>
-<span class="nc" id="L1511">          return;</span>
+<span class="nc" id="L1524">          nbCountStatusCanceled =</span>
+<span class="nc" id="L1525">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.CanceledTransfer,
+                                                          limitDate);
+<span class="nc" id="L1528">          updateErrorValue(entry.ordinal(), nbCountStatusCanceled);</span>
+<span class="nc" id="L1529">          return;</span>
         case nbStatusFileNotFound:
-<span class="nc" id="L1513">          nbCountStatusFileNotFound = DbTaskRunner</span>
-<span class="nc" id="L1514">              .getResultCountPrepareStatement(countStatus,</span>
-                                              ErrorCode.FileNotFound,
-                                              limitDate);
-<span class="nc" id="L1517">          updateErrorValue(entry.ordinal(), nbCountStatusFileNotFound);</span>
-<span class="nc" id="L1518">          return;</span>
+<span class="nc" id="L1531">          nbCountStatusFileNotFound =</span>
+<span class="nc" id="L1532">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.FileNotFound,
+                                                          limitDate);
+<span class="nc" id="L1535">          updateErrorValue(entry.ordinal(), nbCountStatusFileNotFound);</span>
+<span class="nc" id="L1536">          return;</span>
         case nbStatusUnknown:
-<span class="nc" id="L1520">          nbCountStatusUnknown = DbTaskRunner</span>
-<span class="nc" id="L1521">              .getResultCountPrepareStatement(countStatus, ErrorCode.Unknown,</span>
-                                              limitDate);
-<span class="nc" id="L1523">          updateErrorValue(entry.ordinal(), nbCountStatusUnknown);</span>
+<span class="nc" id="L1538">          nbCountStatusUnknown =</span>
+<span class="nc" id="L1539">              DbTaskRunner.getResultCountPrepareStatement(countStatus,</span>
+                                                          ErrorCode.Unknown,
+                                                          limitDate);
+<span class="nc" id="L1542">          updateErrorValue(entry.ordinal(), nbCountStatusUnknown);</span>
       }
-<span class="nc" id="L1525">    }</span>
-<span class="nc" id="L1526">  }</span>
+<span class="nc" id="L1544">    }</span>
+<span class="nc" id="L1545">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

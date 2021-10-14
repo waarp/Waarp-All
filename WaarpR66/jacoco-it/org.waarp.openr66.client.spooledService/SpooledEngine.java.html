@@ -25,6 +25,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.service.EngineAbstract;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
@@ -41,80 +42,79 @@ import java.util.concurrent.TimeUnit;
 /**
  * Engine used to start and stop the SpooledDirectory service
  */
-<span class="nc" id="L44">public class SpooledEngine extends EngineAbstract {</span>
+<span class="nc" id="L45">public class SpooledEngine extends EngineAbstract {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L48">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L49">      WaarpLoggerFactory.getLogger(SpooledEngine.class);</span>
+<span class="nc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L50">      WaarpLoggerFactory.getLogger(SpooledEngine.class);</span>
 
-<span class="nc" id="L51">  static final WaarpFuture closeFuture = new WaarpFuture(true);</span>
-<span class="nc" id="L52">  private static final String[] STRING_0_LENGTH = {};</span>
+<span class="nc" id="L52">  static final WaarpFuture closeFuture = new WaarpFuture(true);</span>
+<span class="nc" id="L53">  private static final String[] STRING_0_LENGTH = {};</span>
 
   @Override
   public void run() {
-<span class="nc" id="L56">    final String config =</span>
-<span class="nc" id="L57">        SystemPropertyUtil.get(R66SystemProperties.OPENR66_CONFIGFILE);</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (config == null) {</span>
-<span class="nc" id="L59">      logger.error(&quot;Cannot find &quot; + R66SystemProperties.OPENR66_CONFIGFILE +</span>
+<span class="nc" id="L57">    final String config =</span>
+<span class="nc" id="L58">        SystemPropertyUtil.get(R66SystemProperties.OPENR66_CONFIGFILE);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (config == null) {</span>
+<span class="nc" id="L60">      logger.error(&quot;Cannot find &quot; + R66SystemProperties.OPENR66_CONFIGFILE +</span>
                    &quot; parameter for SpooledEngine&quot;);
-<span class="nc" id="L61">      closeFuture.cancel();</span>
-<span class="nc" id="L62">      shutdown();</span>
-<span class="nc" id="L63">      return;</span>
+<span class="nc" id="L62">      closeFuture.cancel();</span>
+<span class="nc" id="L63">      shutdown();</span>
+<span class="nc" id="L64">      return;</span>
     }
-<span class="nc" id="L65">    Configuration.configuration.getShutdownConfiguration().serviceFuture =</span>
+<span class="nc" id="L66">    Configuration.configuration.getShutdownConfiguration().serviceFuture =</span>
         closeFuture;
     try {
-<span class="nc" id="L68">      final Properties prop = new Properties();</span>
-<span class="nc" id="L69">      final FileInputStream in = new FileInputStream(config);</span>
+<span class="nc" id="L69">      final Properties prop = new Properties();</span>
+<span class="nc" id="L70">      final FileInputStream in = new FileInputStream(config);</span>
       try {
-<span class="nc" id="L71">        prop.load(in);</span>
-<span class="nc" id="L72">        final ArrayList&lt;String&gt; array = new ArrayList&lt;String&gt;();</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (final Object okey : prop.keySet()) {</span>
-<span class="nc" id="L74">          final String key = (String) okey;</span>
-<span class="nc" id="L75">          final String val = prop.getProperty(key);</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">          if (&quot;xmlfile&quot;.equals(key)) {</span>
-<span class="nc bnc" id="L77" title="All 4 branches missed.">            if (val != null &amp;&amp; !val.trim().isEmpty()) {</span>
-<span class="nc" id="L78">              array.add(0, val);</span>
+<span class="nc" id="L72">        prop.load(in);</span>
+<span class="nc" id="L73">        final ArrayList&lt;String&gt; array = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (final Object okey : prop.keySet()) {</span>
+<span class="nc" id="L75">          final String key = (String) okey;</span>
+<span class="nc" id="L76">          final String val = prop.getProperty(key);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">          if (&quot;xmlfile&quot;.equals(key)) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (ParametersChecker.isNotEmpty(val)) {</span>
+<span class="nc" id="L79">              array.add(0, val);</span>
             } else {
-<span class="nc" id="L80">              throw new Exception(&quot;Initialization in error: missing xmlfile&quot;);</span>
+<span class="nc" id="L81">              throw new Exception(&quot;Initialization in error: missing xmlfile&quot;);</span>
             }
           } else {
-<span class="nc" id="L83">            array.add('-' + key);</span>
-<span class="nc bnc" id="L84" title="All 4 branches missed.">            if (val != null &amp;&amp; !val.trim().isEmpty()) {</span>
-<span class="nc" id="L85">              array.add(val);</span>
+<span class="nc" id="L84">            array.add('-' + key);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (ParametersChecker.isNotEmpty(val)) {</span>
+<span class="nc" id="L86">              array.add(val);</span>
             }
           }
-<span class="nc" id="L88">        }</span>
-<span class="nc" id="L89">        if (!SpooledDirectoryTransfer</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">            .initialize(array.toArray(STRING_0_LENGTH), false)) {</span>
-<span class="nc" id="L91">          throw new Exception(&quot;Initialization in error&quot;);</span>
+<span class="nc" id="L89">        }</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (!SpooledDirectoryTransfer.initialize(array.toArray(STRING_0_LENGTH),</span>
+                                                 false)) {
+<span class="nc" id="L92">          throw new Exception(&quot;Initialization in error&quot;);</span>
         }
       } finally {
-<span class="nc" id="L94">        FileUtils.close(in);</span>
+<span class="nc" id="L95">        FileUtils.close(in);</span>
       }
-<span class="nc" id="L96">    } catch (final Throwable e) {</span>
-<span class="nc" id="L97">      logger.error(&quot;Cannot start SpooledDirectory&quot;, e);</span>
-<span class="nc" id="L98">      closeFuture.cancel();</span>
-<span class="nc" id="L99">      shutdown();</span>
-<span class="nc" id="L100">      return;</span>
-<span class="nc" id="L101">    }</span>
-<span class="nc" id="L102">    logger.warn(&quot;SpooledDirectory Service started with &quot; + config);</span>
-<span class="nc" id="L103">  }</span>
+<span class="nc" id="L97">    } catch (final Throwable e) {</span>
+<span class="nc" id="L98">      logger.error(&quot;Cannot start SpooledDirectory&quot;, e);</span>
+<span class="nc" id="L99">      closeFuture.cancel();</span>
+<span class="nc" id="L100">      shutdown();</span>
+<span class="nc" id="L101">      return;</span>
+<span class="nc" id="L102">    }</span>
+<span class="nc" id="L103">    logger.warn(&quot;SpooledDirectory Service started with &quot; + config);</span>
+<span class="nc" id="L104">  }</span>
 
   @Override
-  public void shutdown() {
-<span class="nc" id="L107">    WaarpShutdownHook.shutdownWillStart();</span>
-<span class="nc" id="L108">    logger.info(&quot;Shutdown&quot;);</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    for (final SpooledDirectoryTransfer spooled : SpooledDirectoryTransfer.list) {</span>
-<span class="nc" id="L110">      spooled.stop();</span>
-<span class="nc" id="L111">    }</span>
-<span class="nc" id="L112">    Configuration.configuration</span>
-<span class="nc" id="L113">        .setTimeoutCon(Configuration.configuration.getTimeoutCon() / 10);</span>
+  public final void shutdown() {
+<span class="nc" id="L108">    WaarpShutdownHook.shutdownWillStart();</span>
+<span class="nc" id="L109">    logger.info(&quot;Shutdown&quot;);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    for (final SpooledDirectoryTransfer spooled : SpooledDirectoryTransfer.list) {</span>
+<span class="nc" id="L111">      spooled.stop();</span>
+<span class="nc" id="L112">    }</span>
+<span class="nc" id="L113">    Configuration.configuration.setTimeoutCon(</span>
+<span class="nc" id="L114">        Configuration.configuration.getTimeoutCon() / 10);</span>
     try {
-<span class="nc" id="L115">      while (!SpooledDirectoryTransfer.executorService</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">          .awaitTermination(Configuration.configuration.getTimeoutCon(),</span>
-                            TimeUnit.MILLISECONDS)) {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      while (!SpooledDirectoryTransfer.executorService.awaitTermination(</span>
+<span class="nc" id="L117">          Configuration.configuration.getTimeoutCon(), TimeUnit.MILLISECONDS)) {</span>
 <span class="nc" id="L118">        Thread.sleep(Configuration.configuration.getTimeoutCon());</span>
       }
 <span class="nc" id="L120">    } catch (final InterruptedException e) {//NOSONAR</span>
@@ -124,8 +124,8 @@ import java.util.concurrent.TimeUnit;
 <span class="nc" id="L124">      logger.warn(Messages.getString(&quot;SpooledDirectoryTransfer.58&quot;) +</span>
                   spooledDirectoryTransfer.name + &quot;: &quot; +
 <span class="nc" id="L126">                  spooledDirectoryTransfer.getSent() + &quot; success, &quot; +</span>
-<span class="nc" id="L127">                  spooledDirectoryTransfer.getError() + Messages</span>
-<span class="nc" id="L128">                      .getString(&quot;SpooledDirectoryTransfer.60&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L127">                  spooledDirectoryTransfer.getError() + Messages.getString(</span>
+          &quot;SpooledDirectoryTransfer.60&quot;)); //$NON-NLS-1$
 <span class="nc" id="L129">    }</span>
 <span class="nc" id="L130">    SpooledDirectoryTransfer.list.clear();</span>
 <span class="nc" id="L131">    logger.info(&quot;Shutdown network&quot;);</span>
@@ -137,15 +137,15 @@ import java.util.concurrent.TimeUnit;
 <span class="nc" id="L137">  }</span>
 
   @Override
-  public boolean isShutdown() {
+  public final boolean isShutdown() {
 <span class="nc" id="L141">    return closeFuture.isDone();</span>
   }
 
   @Override
-  public boolean waitShutdown() {
+  public final boolean waitShutdown() {
 <span class="nc" id="L146">    closeFuture.awaitOrInterruptible();</span>
 <span class="nc" id="L147">    logger.info(&quot;Shutdown on going: {}&quot;, closeFuture.isSuccess());</span>
 <span class="nc" id="L148">    return closeFuture.isSuccess();</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -231,9 +231,9 @@ public class RequestPacket extends AbstractLocalPacket {
 <span class="pc bpc" id="L231" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
 <span class="fc" id="L232">      buf.readBytes(bend);</span>
     }
-<span class="fc" id="L234">    final String sheader = new String(bheader);</span>
-<span class="fc" id="L235">    final String smiddle = new String(bmiddle);</span>
-<span class="fc" id="L236">    final String send = new String(bend);</span>
+<span class="fc" id="L234">    final String sheader = new String(bheader, WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L235">    final String smiddle = new String(bmiddle, WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L236">    final String send = new String(bend, WaarpStringUtils.UTF8);</span>
 
     // check if JSON on header since it will directly starts with a JSON, in contrary to middle
 <span class="pc bpc" id="L239" title="1 of 2 branches missed.">    if (sheader.startsWith(PartnerConfiguration.BAR_JSON_FIELD)) {</span>
@@ -353,26 +353,26 @@ public class RequestPacket extends AbstractLocalPacket {
 <span class="fc" id="L353">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
 <span class="fc" id="L357">    return false;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
 <span class="nc" id="L363">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr) {
+  public final synchronized void createEnd(final LocalChannelReference lcr) {
 <span class="pc bpc" id="L368" title="1 of 2 branches missed.">    if (transferInformation != null) {</span>
-<span class="fc" id="L369">      end = WaarpNettyUtil</span>
-<span class="fc" id="L370">          .wrappedBuffer(transferInformation.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L369">      end = WaarpNettyUtil.wrappedBuffer(</span>
+<span class="fc" id="L370">          transferInformation.getBytes(WaarpStringUtils.UTF8));</span>
     }
 <span class="fc" id="L372">  }</span>
 
   @Override
-  public void createHeader(final LocalChannelReference lcr)
+  public final synchronized void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
 <span class="pc bpc" id="L377" title="2 of 4 branches missed.">    if (rulename == null || mode &lt;= 0) {</span>
 <span class="nc" id="L378">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
@@ -385,59 +385,71 @@ public class RequestPacket extends AbstractLocalPacket {
 <span class="fc" id="L385">      header = WaarpNettyUtil.wrappedBuffer(</span>
 <span class="fc" id="L386">          JsonHandler.writeAsString(node).getBytes(WaarpStringUtils.UTF8));</span>
 <span class="fc" id="L387">    } else {</span>
-<span class="nc" id="L388">      header = WaarpNettyUtil.wrappedBuffer(rulename.getBytes(),</span>
-                                            PartnerConfiguration.BLANK_SEPARATOR_FIELD
-<span class="nc" id="L390">                                                .getBytes(),</span>
-<span class="nc" id="L391">                                            Integer.toString(mode).getBytes());</span>
+<span class="nc" id="L388">      header =</span>
+<span class="nc" id="L389">          WaarpNettyUtil.wrappedBuffer(rulename.getBytes(WaarpStringUtils.UTF8),</span>
+<span class="nc" id="L390">                                       PartnerConfiguration.BLANK_SEPARATOR_FIELD.getBytes(</span>
+                                           WaarpStringUtils.UTF8),
+<span class="nc" id="L392">                                       Integer.toString(mode)</span>
+<span class="nc" id="L393">                                              .getBytes(WaarpStringUtils.UTF8));</span>
     }
-<span class="fc" id="L393">  }</span>
+<span class="fc" id="L395">  }</span>
 
   @Override
-  public void createMiddle(final LocalChannelReference lcr)
+  public final synchronized void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (filename == null) {</span>
-<span class="nc" id="L399">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="pc bpc" id="L400" title="1 of 2 branches missed.">    if (filename == null) {</span>
+<span class="nc" id="L401">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="fc" id="L401">    final byte[] away = { way };</span>
-<span class="pc bpc" id="L402" title="2 of 4 branches missed.">    if (lcr.getPartner() != null &amp;&amp; lcr.getPartner().useJson()) {</span>
-<span class="fc" id="L403">      logger.debug(&quot;Request {} will use JSON {}&quot;, specialId, lcr.getPartner());</span>
-<span class="fc" id="L404">      final ObjectNode node = JsonHandler.createObjectNode();</span>
-<span class="fc" id="L405">      JsonHandler.setValue(node, FIELDS.filename, filename);</span>
-<span class="fc" id="L406">      JsonHandler.setValue(node, FIELDS.block, blocksize);</span>
-<span class="fc" id="L407">      JsonHandler.setValue(node, FIELDS.rank, rank);</span>
-<span class="fc" id="L408">      JsonHandler.setValue(node, FIELDS.id, specialId);</span>
-<span class="fc" id="L409">      JsonHandler.setValue(node, FIELDS.code, code);</span>
-<span class="fc" id="L410">      JsonHandler.setValue(node, FIELDS.length, originalSize);</span>
+<span class="fc" id="L403">    final byte[] away = { way };</span>
+<span class="pc bpc" id="L404" title="2 of 4 branches missed.">    if (lcr.getPartner() != null &amp;&amp; lcr.getPartner().useJson()) {</span>
+<span class="fc" id="L405">      logger.debug(&quot;Request {} will use JSON {}&quot;, specialId, lcr.getPartner());</span>
+<span class="fc" id="L406">      final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L407">      JsonHandler.setValue(node, FIELDS.filename, filename);</span>
+<span class="fc" id="L408">      JsonHandler.setValue(node, FIELDS.block, blocksize);</span>
+<span class="fc" id="L409">      JsonHandler.setValue(node, FIELDS.rank, rank);</span>
+<span class="fc" id="L410">      JsonHandler.setValue(node, FIELDS.id, specialId);</span>
+<span class="fc" id="L411">      JsonHandler.setValue(node, FIELDS.code, code);</span>
+<span class="fc" id="L412">      JsonHandler.setValue(node, FIELDS.length, originalSize);</span>
       // Add limit if specified
-<span class="fc" id="L412">      JsonHandler.setValue(node, FIELDS.limit, limit);</span>
-<span class="fc" id="L413">      middle = WaarpNettyUtil.wrappedBuffer(away,</span>
-<span class="fc" id="L414">                                            JsonHandler.writeAsString(node)</span>
-<span class="fc" id="L415">                                                       .getBytes(</span>
+<span class="fc" id="L414">      JsonHandler.setValue(node, FIELDS.limit, limit);</span>
+<span class="fc" id="L415">      middle = WaarpNettyUtil.wrappedBuffer(away,</span>
+<span class="fc" id="L416">                                            JsonHandler.writeAsString(node)</span>
+<span class="fc" id="L417">                                                       .getBytes(</span>
                                                            WaarpStringUtils.UTF8));
-<span class="fc" id="L417">    } else {</span>
-<span class="nc" id="L418">      middle = WaarpNettyUtil</span>
-<span class="nc" id="L419">          .wrappedBuffer(away, filename.getBytes(WaarpStringUtils.UTF8),</span>
-<span class="nc" id="L420">                         separator.getBytes(),</span>
-<span class="nc" id="L421">                         Integer.toString(blocksize).getBytes(),</span>
-<span class="nc" id="L422">                         separator.getBytes(),</span>
-<span class="nc" id="L423">                         Integer.toString(rank).getBytes(),</span>
-<span class="nc" id="L424">                         separator.getBytes(),</span>
-<span class="nc" id="L425">                         Long.toString(specialId).getBytes(),</span>
-<span class="nc" id="L426">                         separator.getBytes(),</span>
-<span class="nc" id="L427">                         Character.toString(code).getBytes(),</span>
-<span class="nc" id="L428">                         separator.getBytes(),</span>
-<span class="nc" id="L429">                         Long.toString(originalSize).getBytes());</span>
+<span class="fc" id="L419">    } else {</span>
+<span class="nc" id="L420">      middle = WaarpNettyUtil.wrappedBuffer(away, filename.getBytes(</span>
+<span class="nc" id="L421">                                                WaarpStringUtils.UTF8), separator.getBytes(WaarpStringUtils.UTF8),</span>
+<span class="nc" id="L422">                                            Integer.toString(blocksize)</span>
+<span class="nc" id="L423">                                                   .getBytes(</span>
+                                                       WaarpStringUtils.UTF8),
+<span class="nc" id="L425">                                            separator.getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L427">                                            Integer.toString(rank).getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L429">                                            separator.getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L431">                                            Long.toString(specialId).getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L433">                                            separator.getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L435">                                            Character.toString(code).getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L437">                                            separator.getBytes(</span>
+                                                WaarpStringUtils.UTF8),
+<span class="nc" id="L439">                                            Long.toString(originalSize)</span>
+<span class="nc" id="L440">                                                .getBytes(</span>
+                                                    WaarpStringUtils.UTF8));
     }
-<span class="fc" id="L431">  }</span>
+<span class="fc" id="L443">  }</span>
 
   @Override
-  public byte getType() {
-<span class="fc" id="L435">    return LocalPacketFactory.REQUESTPACKET;</span>
+  public final byte getType() {
+<span class="fc" id="L447">    return LocalPacketFactory.REQUESTPACKET;</span>
   }
 
   @Override
-  public String toString() {
-<span class="nc" id="L440">    return &quot;RequestPacket: &quot; + specialId + &quot; : &quot; + rulename + &quot; : &quot; + mode +</span>
+  public final String toString() {
+<span class="nc" id="L452">    return &quot;RequestPacket: &quot; + specialId + &quot; : &quot; + rulename + &quot; : &quot; + mode +</span>
            &quot; :  &quot; + filename + &quot; : &quot; + transferInformation + &quot; : &quot; + blocksize +
            &quot; : &quot; + rank + &quot; : &quot; + way + &quot; : &quot; + code + &quot; : &quot; + originalSize +
            &quot; : &quot; + limit;
@@ -446,129 +458,129 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @return the rulename
    */
-  public String getRulename() {
-<span class="fc" id="L450">    return rulename;</span>
+  public final String getRulename() {
+<span class="fc" id="L462">    return rulename;</span>
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
-<span class="fc" id="L457">    return filename;</span>
+  public final String getFilename() {
+<span class="fc" id="L469">    return filename;</span>
   }
 
   /**
    * @return the mode
    */
-  public int getMode() {
-<span class="fc" id="L464">    return mode;</span>
+  public final int getMode() {
+<span class="fc" id="L476">    return mode;</span>
   }
 
   /**
    * @return True if this packet concerns a Retrieve operation
    */
-  public boolean isRetrieve() {
-<span class="nc" id="L471">    return isRecvMode(mode);</span>
+  public final boolean isRetrieve() {
+<span class="fc" id="L483">    return isRecvMode(mode);</span>
   }
 
   /**
-   * @return the fileInformation
+   * @return the fifinal Information
    */
-  public String getTransferInformation() {
-<span class="fc" id="L478">    return transferInformation;</span>
+  public final String getTransferInformation() {
+<span class="fc" id="L490">    return transferInformation;</span>
   }
 
   /**
    * @return the blocksize
    */
-  public int getBlocksize() {
-<span class="fc" id="L485">    return blocksize;</span>
+  public final int getBlocksize() {
+<span class="fc" id="L497">    return blocksize;</span>
   }
 
   /**
    * @return the rank
    */
-  public int getRank() {
-<span class="fc" id="L492">    return rank;</span>
+  public final int getRank() {
+<span class="fc" id="L504">    return rank;</span>
   }
 
   /**
    * @param rank the rank to set
    */
-  public void setRank(final int rank) {
-<span class="fc" id="L499">    this.rank = rank;</span>
-<span class="fc" id="L500">  }</span>
+  public final void setRank(final int rank) {
+<span class="fc" id="L511">    this.rank = rank;</span>
+<span class="fc" id="L512">  }</span>
 
   /**
    * @return the originalSize
    */
-  public long getOriginalSize() {
-<span class="fc" id="L506">    return originalSize;</span>
+  public final long getOriginalSize() {
+<span class="fc" id="L518">    return originalSize;</span>
   }
 
   /**
    * @param originalSize the originalSize to set
    */
-  public void setOriginalSize(final long originalSize) {
-<span class="fc" id="L513">    this.originalSize = originalSize;</span>
-<span class="fc" id="L514">  }</span>
+  public final void setOriginalSize(final long originalSize) {
+<span class="fc" id="L525">    this.originalSize = originalSize;</span>
+<span class="fc" id="L526">  }</span>
 
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(final long specialId) {
-<span class="fc" id="L520">    this.specialId = specialId;</span>
-<span class="fc" id="L521">  }</span>
+  public final void setSpecialId(final long specialId) {
+<span class="fc" id="L532">    this.specialId = specialId;</span>
+<span class="fc" id="L533">  }</span>
 
   /**
    * @return the specialId
    */
-  public long getSpecialId() {
-<span class="fc" id="L527">    return specialId;</span>
+  public final long getSpecialId() {
+<span class="fc" id="L539">    return specialId;</span>
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
-<span class="fc bfc" id="L534" title="All 2 branches covered.">    return way == REQVALIDATE;</span>
+  public final boolean isToValidate() {
+<span class="fc bfc" id="L546" title="All 2 branches covered.">    return way == REQVALIDATE;</span>
   }
 
   /**
    * Validate the request
    */
-  public void validate() {
-<span class="fc" id="L541">    way = REQANSWERVALIDATE;</span>
-<span class="fc" id="L542">    middle = null;</span>
-<span class="fc" id="L543">  }</span>
+  public final synchronized void validate() {
+<span class="fc" id="L553">    way = REQANSWERVALIDATE;</span>
+<span class="fc" id="L554">    middle = null;</span>
+<span class="fc" id="L555">  }</span>
 
   /**
    * @param filename the filename to set
    */
   public void setFilename(final String filename) {
-<span class="fc" id="L549">    this.filename = filename;</span>
-<span class="fc" id="L550">  }</span>
+<span class="fc" id="L561">    this.filename = filename;</span>
+<span class="fc" id="L562">  }</span>
 
   /**
    * @return the code
    */
-  public char getCode() {
-<span class="fc" id="L556">    return code;</span>
+  public final char getCode() {
+<span class="fc" id="L568">    return code;</span>
   }
 
   /**
    * @param code the code to set
    */
-  public void setCode(final char code) {
-<span class="nc" id="L563">    this.code = code;</span>
-<span class="nc" id="L564">  }</span>
+  public final void setCode(final char code) {
+<span class="nc" id="L575">    this.code = code;</span>
+<span class="nc" id="L576">  }</span>
 
-  public long getLimit() {
-<span class="fc" id="L567">    return limit;</span>
+  public final long getLimit() {
+<span class="fc" id="L579">    return limit;</span>
   }
 
-  public void setLimit(final long limit) {
-<span class="fc" id="L571">    this.limit = limit;</span>
-<span class="fc" id="L572">  }</span>
+  public final void setLimit(final long limit) {
+<span class="fc" id="L583">    this.limit = limit;</span>
+<span class="fc" id="L584">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

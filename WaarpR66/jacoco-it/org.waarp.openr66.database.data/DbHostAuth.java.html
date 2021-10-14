@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.database.data;
 
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +34,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.dao.AbstractDAO;
@@ -69,59 +71,64 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
   /**
    * Internal Logger
    */
-<span class="fc" id="L72">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L73">      WaarpLoggerFactory.getLogger(DbHostAuth.class);</span>
-<span class="fc" id="L74">  private static final byte[] VALUE_0_BYTE = {};</span>
-<span class="fc" id="L75">  private static final DbHostAuth[] DBHOSTAUTH_0_SIZE = new DbHostAuth[0];</span>
-<span class="fc" id="L76">  private static final Pattern BACKSLASH =</span>
-<span class="fc" id="L77">      Pattern.compile(&quot;\&quot;&quot;, Pattern.LITERAL);</span>
-<span class="fc" id="L78">  private static final Pattern COMMA = Pattern.compile(&quot;,&quot;, Pattern.LITERAL);</span>
+<span class="fc" id="L74">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L75">      WaarpLoggerFactory.getLogger(DbHostAuth.class);</span>
+<span class="fc" id="L76">  private static final byte[] VALUE_0_BYTE = {};</span>
+<span class="fc" id="L77">  private static final DbHostAuth[] DBHOSTAUTH_0_SIZE = new DbHostAuth[0];</span>
+<span class="fc" id="L78">  private static final Pattern BACKSLASH =</span>
+<span class="fc" id="L79">      Pattern.compile(&quot;\&quot;&quot;, Pattern.LITERAL);</span>
+<span class="fc" id="L80">  private static final Pattern COMMA = Pattern.compile(&quot;,&quot;, Pattern.LITERAL);</span>
 
-<span class="fc" id="L80">  public enum Columns {</span>
-<span class="fc" id="L81">    ADDRESS, PORT, ISSSL, HOSTKEY, ADMINROLE, ISCLIENT, ISACTIVE, ISPROXIFIED,</span>
-<span class="fc" id="L82">    UPDATEDINFO, HOSTID</span>
+<span class="fc" id="L82">  public enum Columns {</span>
+<span class="fc" id="L83">    ADDRESS, PORT, ISSSL, HOSTKEY, ADMINROLE, ISCLIENT, ISACTIVE, ISPROXIFIED,</span>
+<span class="fc" id="L84">    UPDATEDINFO, HOSTID</span>
   }
 
-<span class="fc" id="L85">  public static final int[] dbTypes = {</span>
-      Types.VARCHAR, Types.INTEGER, Types.BIT, Types.VARBINARY, Types.BIT,
+<span class="fc" id="L87">  public static final int[] dbTypes = {</span>
+      Types.NVARCHAR, Types.INTEGER, Types.BIT, Types.VARBINARY, Types.BIT,
       Types.BIT, Types.BIT, Types.BIT, Types.INTEGER, Types.NVARCHAR
   };
 
   public static final String table = &quot; HOSTS &quot;;
 
-<span class="fc" id="L92">  protected static final String selectAllFields =</span>
-<span class="fc" id="L93">      Columns.ADDRESS.name() + ',' + Columns.PORT.name() + ',' +</span>
-<span class="fc" id="L94">      Columns.ISSSL.name() + ',' + Columns.HOSTKEY.name() + ',' +</span>
-<span class="fc" id="L95">      Columns.ADMINROLE.name() + ',' + Columns.ISCLIENT.name() + ',' +</span>
-<span class="fc" id="L96">      Columns.ISACTIVE.name() + ',' + Columns.ISPROXIFIED.name() + ',' +</span>
-<span class="fc" id="L97">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
+<span class="fc" id="L94">  protected static final String selectAllFields =</span>
+<span class="fc" id="L95">      Columns.ADDRESS.name() + ',' + Columns.PORT.name() + ',' +</span>
+<span class="fc" id="L96">      Columns.ISSSL.name() + ',' + Columns.HOSTKEY.name() + ',' +</span>
+<span class="fc" id="L97">      Columns.ADMINROLE.name() + ',' + Columns.ISCLIENT.name() + ',' +</span>
+<span class="fc" id="L98">      Columns.ISACTIVE.name() + ',' + Columns.ISPROXIFIED.name() + ',' +</span>
+<span class="fc" id="L99">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
+
+<span class="fc" id="L101">  public static final Columns[] indexes = {</span>
+      Columns.UPDATEDINFO
+  };
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     //nothing
-<span class="fc" id="L102">  }</span>
+<span class="fc" id="L108">  }</span>
 
   @Override
-  protected String getTable() {
-<span class="nc" id="L106">    return table;</span>
+  protected final String getTable() {
+<span class="nc" id="L112">    return table;</span>
   }
 
   @Override
-  protected AbstractDAO&lt;Host&gt; getDao() throws DAOConnectionException {
-<span class="fc" id="L111">    return DAOFactory.getInstance().getHostDAO();</span>
+  protected final AbstractDAO&lt;Host&gt; getDao(final boolean isCacheable)
+      throws DAOConnectionException {
+<span class="fc" id="L118">    return DAOFactory.getInstance().getHostDAO(isCacheable);</span>
   }
 
   @Override
-  protected String getPrimaryKey() {
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (pojo != null) {</span>
-<span class="fc" id="L117">      return pojo.getHostid();</span>
+  protected final String getPrimaryKey() {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (pojo != null) {</span>
+<span class="fc" id="L124">      return pojo.getHostid();</span>
     }
-<span class="nc" id="L119">    throw new IllegalArgumentException(&quot;pojo is null&quot;);</span>
+<span class="nc" id="L126">    throw new IllegalArgumentException(&quot;pojo is null&quot;);</span>
   }
 
   @Override
-  protected String getPrimaryField() {
-<span class="nc" id="L124">    return Columns.HOSTID.name();</span>
+  protected final String getPrimaryField() {
+<span class="nc" id="L131">    return Columns.HOSTID.name();</span>
   }
 
   /**
@@ -135,86 +142,160 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    */
   public DbHostAuth(final String hostid, final String address, final int port,
                     final boolean isSSL, final byte[] hostkey,
-<span class="fc" id="L138">                    final boolean adminrole, final boolean isClient) {</span>
-<span class="fc" id="L139">    pojo = new Host(hostid, address, port, hostkey, isSSL, isClient, false,</span>
+                    final boolean adminrole, final boolean isClient)
+<span class="fc" id="L146">      throws WaarpDatabaseSqlException {</span>
+<span class="fc" id="L147">    pojo = new Host(hostid, address, port, hostkey, isSSL, isClient, false,</span>
                     adminrole);
-<span class="pc bpc" id="L141" title="1 of 2 branches missed.">    if (hostkey != null) {</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">    if (hostkey != null) {</span>
       try {
         // Save as crypted with the local Key and HEX
-<span class="fc" id="L144">        pojo.setHostkey(</span>
-<span class="fc" id="L145">            Configuration.configuration.getCryptoKey().cryptToHex(hostkey)</span>
-<span class="fc" id="L146">                                       .getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L147">      } catch (final Exception e) {</span>
-<span class="nc" id="L148">        logger.warn(&quot;Error while cyphering hostkey&quot;, e);</span>
-<span class="nc" id="L149">        pojo.setHostkey(VALUE_0_BYTE);</span>
-<span class="fc" id="L150">      }</span>
+<span class="fc" id="L152">        pojo.setHostkey(</span>
+<span class="fc" id="L153">            Configuration.configuration.getCryptoKey().cryptToHex(hostkey)</span>
+<span class="fc" id="L154">                                       .getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L155">      } catch (final Exception e) {</span>
+<span class="nc" id="L156">        logger.warn(&quot;Error while cyphering hostkey&quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L157">        pojo.setHostkey(VALUE_0_BYTE);</span>
+<span class="fc" id="L158">      }</span>
     }
-<span class="fc bfc" id="L152" title="All 2 branches covered.">    if (port &lt; 0) {</span>
-<span class="fc" id="L153">      pojo.setClient(true);</span>
-<span class="fc" id="L154">      pojo.setAddress(DEFAULT_CLIENT_ADDRESS);</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">    if (port &lt; 0) {</span>
+<span class="fc" id="L161">      pojo.setClient(true);</span>
+<span class="fc" id="L162">      pojo.setAddress(DEFAULT_CLIENT_ADDRESS);</span>
     }
-<span class="fc" id="L156">    isSaved = false;</span>
-<span class="fc" id="L157">  }</span>
+<span class="fc" id="L164">    checkValues();</span>
+<span class="fc" id="L165">    isSaved = false;</span>
+<span class="fc" id="L166">  }</span>
 
-<span class="nc" id="L159">  private DbHostAuth(final Host host) {</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (host == null) {</span>
-<span class="nc" id="L161">      throw new IllegalArgumentException(</span>
+<span class="nc" id="L168">  private DbHostAuth(final Host host) {</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (host == null) {</span>
+<span class="nc" id="L170">      throw new IllegalArgumentException(</span>
           &quot;Argument in constructor cannot be null&quot;);
     }
-<span class="nc" id="L164">    this.pojo = host;</span>
-<span class="nc" id="L165">  }</span>
+<span class="nc" id="L173">    this.pojo = host;</span>
+<span class="nc" id="L174">  }</span>
 
-<span class="nc" id="L167">  public DbHostAuth(final ObjectNode source) throws WaarpDatabaseSqlException {</span>
-<span class="nc" id="L168">    pojo = new Host();</span>
-<span class="nc" id="L169">    setFromJson(source, false);</span>
-<span class="nc" id="L170">  }</span>
+<span class="nc" id="L176">  public DbHostAuth(final ObjectNode source) throws WaarpDatabaseSqlException {</span>
+<span class="nc" id="L177">    pojo = new Host();</span>
+<span class="nc" id="L178">    setFromJson(source, false);</span>
+<span class="nc" id="L179">  }</span>
 
   @Override
-  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
+  protected final void checkValues() throws WaarpDatabaseSqlException {
+<span class="fc" id="L183">    pojo.checkValues();</span>
+<span class="fc" id="L184">  }</span>
+
+  @Override
+  public final void setFromJson(final ObjectNode node,
+                                final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L175">    super.setFromJson(node, ignorePrimaryKey);</span>
-<span class="nc bnc" id="L176" title="All 4 branches missed.">    if (pojo.getHostkey() == null || pojo.getHostkey().length == 0 ||</span>
-<span class="nc bnc" id="L177" title="All 4 branches missed.">        pojo.getAddress() == null || pojo.getAddress().isEmpty() ||</span>
-<span class="nc bnc" id="L178" title="All 4 branches missed.">        pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
-<span class="nc" id="L179">      throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L190">    super.setFromJson(node, ignorePrimaryKey);</span>
+<span class="nc bnc" id="L191" title="All 4 branches missed.">    if (pojo.getHostkey() == null || pojo.getHostkey().length == 0 ||</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        ParametersChecker.isEmpty(pojo.getAddress()) ||</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        ParametersChecker.isEmpty(pojo.getHostid())) {</span>
+<span class="nc" id="L194">      throw new WaarpDatabaseSqlException(</span>
           &quot;Not enough argument to create the object&quot;);
     }
-<span class="nc bnc" id="L182" title="All 2 branches missed.">    if (pojo.getHostkey() != null) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    if (pojo.getHostkey() != null) {</span>
       try {
         // Save as crypted with the local Key and Base64
-<span class="nc" id="L185">        pojo.setHostkey(Configuration.configuration.getCryptoKey().cryptToHex(</span>
-<span class="nc" id="L186">            pojo.getHostkey()).getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L187">      } catch (final Exception e) {</span>
-<span class="nc" id="L188">        pojo.setHostkey(VALUE_0_BYTE);</span>
-<span class="nc" id="L189">      }</span>
+<span class="nc" id="L200">        pojo.setHostkey(Configuration.configuration.getCryptoKey().cryptToHex(</span>
+<span class="nc" id="L201">            pojo.getHostkey()).getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L202">      } catch (final Exception e) {</span>
+<span class="nc" id="L203">        pojo.setHostkey(VALUE_0_BYTE);</span>
+<span class="nc" id="L204">      }</span>
+<span class="nc" id="L205">      isSaved = false;</span>
     }
-<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (pojo.getPort() &lt; 0) {</span>
-<span class="nc" id="L192">      pojo.setClient(true);</span>
-<span class="nc" id="L193">      pojo.setAddress(DEFAULT_CLIENT_ADDRESS);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">    if (pojo.getPort() &lt; 0) {</span>
+<span class="nc" id="L208">      pojo.setClient(true);</span>
+<span class="nc" id="L209">      pojo.setAddress(DEFAULT_CLIENT_ADDRESS);</span>
+<span class="nc" id="L210">      isSaved = false;</span>
     }
-<span class="nc" id="L195">  }</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (!ignorePrimaryKey) {</span>
+      try {
+<span class="nc" id="L214">        insert();</span>
+<span class="nc" id="L215">      } catch (final WaarpDatabaseException e) {</span>
+        try {
+<span class="nc" id="L217">          update();</span>
+<span class="nc" id="L218">        } catch (final WaarpDatabaseException ex) {</span>
+<span class="nc" id="L219">          logger.error(&quot;Cannot save item: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L220">        }</span>
+<span class="nc" id="L221">      }</span>
+    }
+<span class="nc" id="L223">  }</span>
+
+  @Override
+  protected final void setFromJson(final String field, final JsonNode value) {
+<span class="nc bnc" id="L227" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L228">      return;</span>
+    }
+<span class="nc bnc" id="L230" title="All 2 branches missed.">    for (final Columns column : Columns.values()) {</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
+<span class="nc bnc" id="L232" title="All 11 branches missed.">        switch (column) {</span>
+          case ADDRESS:
+<span class="nc" id="L234">            pojo.setAddress(value.asText());</span>
+<span class="nc" id="L235">            break;</span>
+          case ADMINROLE:
+<span class="nc" id="L237">            pojo.setAdmin(value.asBoolean());</span>
+<span class="nc" id="L238">            break;</span>
+          case HOSTKEY:
+            // Change from Base64 to Byte for HostKey
+            try {
+              final byte[] key =
+<span class="nc" id="L243">                  Base64Variants.getDefaultVariant().decode(value.asText());</span>
+<span class="nc" id="L244">              pojo.setHostkey(key);</span>
+<span class="nc" id="L245">            } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L246">              logger.warn(&quot;HostKey not in Base64 from Jackson: {}&quot;,</span>
+<span class="nc" id="L247">                          e.getMessage());</span>
+<span class="nc" id="L248">              pojo.setHostkey(value.asText().getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L249">            }</span>
+<span class="nc" id="L250">            break;</span>
+          case ISACTIVE:
+<span class="nc" id="L252">            pojo.setActive(value.asBoolean());</span>
+<span class="nc" id="L253">            break;</span>
+          case ISCLIENT:
+<span class="nc" id="L255">            pojo.setClient(value.asBoolean());</span>
+<span class="nc" id="L256">            break;</span>
+          case ISPROXIFIED:
+<span class="nc" id="L258">            pojo.setProxified(value.asBoolean());</span>
+<span class="nc" id="L259">            break;</span>
+          case ISSSL:
+<span class="nc" id="L261">            pojo.setSSL(value.asBoolean());</span>
+<span class="nc" id="L262">            break;</span>
+          case PORT:
+<span class="nc" id="L264">            pojo.setPort(value.asInt());</span>
+<span class="nc" id="L265">            break;</span>
+          case UPDATEDINFO:
+<span class="nc" id="L267">            pojo.setUpdatedInfo(</span>
+<span class="nc" id="L268">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
+<span class="nc" id="L269">            break;</span>
+          case HOSTID:
+<span class="nc" id="L271">            pojo.setHostid(value.asText());</span>
+            break;
+        }
+      }
+    }
+<span class="nc" id="L276">  }</span>
 
   /**
    * @param hostid
    *
    * @throws WaarpDatabaseException
    */
-<span class="fc" id="L202">  public DbHostAuth(final String hostid) throws WaarpDatabaseException {</span>
-<span class="pc bpc" id="L203" title="1 of 2 branches missed.">    if (hostid == null) {</span>
-<span class="nc" id="L204">      throw new WaarpDatabaseException(&quot;No host id passed&quot;);</span>
+<span class="fc" id="L283">  public DbHostAuth(final String hostid) throws WaarpDatabaseException {</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">    if (hostid == null) {</span>
+<span class="nc" id="L285">      throw new WaarpDatabaseException(&quot;No host id passed&quot;);</span>
     }
-<span class="fc" id="L206">    HostDAO hostAccess = null;</span>
+<span class="fc" id="L287">    HostDAO hostAccess = null;</span>
     try {
-<span class="fc" id="L208">      hostAccess = DAOFactory.getInstance().getHostDAO();</span>
-<span class="fc" id="L209">      pojo = hostAccess.select(hostid);</span>
-<span class="nc" id="L210">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L211">      throw new WaarpDatabaseException(e);</span>
-<span class="nc" id="L212">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L213">      throw new WaarpDatabaseNoDataException(CANNOT_FIND_HOST, e);</span>
+<span class="fc" id="L289">      hostAccess = DAOFactory.getInstance().getHostDAO(true);</span>
+<span class="fc" id="L290">      pojo = hostAccess.select(hostid);</span>
+<span class="nc" id="L291">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L292">      throw new WaarpDatabaseException(e);</span>
+<span class="nc" id="L293">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L294">      throw new WaarpDatabaseNoDataException(CANNOT_FIND_HOST, e);</span>
     } finally {
-<span class="fc" id="L215">      DAOFactory.closeDAO(hostAccess);</span>
+<span class="fc" id="L296">      DAOFactory.closeDAO(hostAccess);</span>
     }
-<span class="fc" id="L217">  }</span>
+<span class="fc" id="L298">  }</span>
 
   /**
    * Delete all entries (used when purge and reload)
@@ -224,76 +305,32 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    * @throws WaarpDatabaseException
    */
   public static DbHostAuth[] deleteAll() throws WaarpDatabaseException {
-<span class="nc" id="L227">    HostDAO hostAccess = null;</span>
-<span class="nc" id="L228">    final List&lt;DbHostAuth&gt; res = new ArrayList&lt;DbHostAuth&gt;();</span>
+<span class="nc" id="L308">    HostDAO hostAccess = null;</span>
+<span class="nc" id="L309">    final List&lt;DbHostAuth&gt; res = new ArrayList&lt;DbHostAuth&gt;();</span>
     List&lt;Host&gt; hosts;
     try {
-<span class="nc" id="L231">      hostAccess = DAOFactory.getInstance().getHostDAO();</span>
-<span class="nc" id="L232">      hosts = hostAccess.getAll();</span>
-<span class="nc" id="L233">      hostAccess.deleteAll();</span>
-<span class="nc" id="L234">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L235">      throw new WaarpDatabaseException(e);</span>
+<span class="nc" id="L312">      hostAccess = DAOFactory.getInstance().getHostDAO(false);</span>
+<span class="nc" id="L313">      hosts = hostAccess.getAll();</span>
+<span class="nc" id="L314">      hostAccess.deleteAll();</span>
+<span class="nc" id="L315">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L316">      throw new WaarpDatabaseException(e);</span>
     } finally {
-<span class="nc" id="L237">      DAOFactory.closeDAO(hostAccess);</span>
+<span class="nc" id="L318">      DAOFactory.closeDAO(hostAccess);</span>
     }
-<span class="nc bnc" id="L239" title="All 2 branches missed.">    for (final Host host : hosts) {</span>
-<span class="nc" id="L240">      final DbHostAuth hostAuth = new DbHostAuth(host);</span>
-<span class="nc" id="L241">      hostAuth.isSaved = false;</span>
-<span class="nc" id="L242">      res.add(hostAuth);</span>
-<span class="nc" id="L243">    }</span>
-<span class="nc" id="L244">    return res.toArray(new DbHostAuth[0]);</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">    for (final Host host : hosts) {</span>
+<span class="nc" id="L321">      final DbHostAuth hostAuth = new DbHostAuth(host);</span>
+<span class="nc" id="L322">      hostAuth.isSaved = false;</span>
+<span class="nc" id="L323">      res.add(hostAuth);</span>
+<span class="nc" id="L324">    }</span>
+<span class="nc" id="L325">    return res.toArray(new DbHostAuth[0]);</span>
   }
-
-  @Override
-  protected void setFromJson(final String field, final JsonNode value) {
-<span class="nc bnc" id="L249" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L250">      return;</span>
-    }
-<span class="nc bnc" id="L252" title="All 2 branches missed.">    for (final Columns column : Columns.values()) {</span>
-<span class="nc bnc" id="L253" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
-<span class="nc bnc" id="L254" title="All 11 branches missed.">        switch (column) {</span>
-          case ADDRESS:
-<span class="nc" id="L256">            pojo.setAddress(value.asText());</span>
-<span class="nc" id="L257">            break;</span>
-          case ADMINROLE:
-<span class="nc" id="L259">            pojo.setAdmin(value.asBoolean());</span>
-<span class="nc" id="L260">            break;</span>
-          case HOSTKEY:
-<span class="nc" id="L262">            pojo.setHostkey(value.asText().getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L263">            break;</span>
-          case ISACTIVE:
-<span class="nc" id="L265">            pojo.setActive(value.asBoolean());</span>
-<span class="nc" id="L266">            break;</span>
-          case ISCLIENT:
-<span class="nc" id="L268">            pojo.setClient(value.asBoolean());</span>
-<span class="nc" id="L269">            break;</span>
-          case ISPROXIFIED:
-<span class="nc" id="L271">            pojo.setProxified(value.asBoolean());</span>
-<span class="nc" id="L272">            break;</span>
-          case ISSSL:
-<span class="nc" id="L274">            pojo.setSSL(value.asBoolean());</span>
-<span class="nc" id="L275">            break;</span>
-          case PORT:
-<span class="nc" id="L277">            pojo.setPort(value.asInt());</span>
-<span class="nc" id="L278">            break;</span>
-          case UPDATEDINFO:
-<span class="nc" id="L280">            pojo.setUpdatedInfo(</span>
-<span class="nc" id="L281">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
-<span class="nc" id="L282">            break;</span>
-          case HOSTID:
-<span class="nc" id="L284">            pojo.setHostid(value.asText());</span>
-            break;
-        }
-      }
-    }
-<span class="nc" id="L289">  }</span>
 
   /**
    * Private constructor for Commander only
    */
-<span class="nc" id="L294">  private DbHostAuth() {</span>
-<span class="nc" id="L295">    pojo = new Host();</span>
-<span class="nc" id="L296">  }</span>
+<span class="nc" id="L331">  private DbHostAuth() {</span>
+<span class="nc" id="L332">    pojo = new Host();</span>
+<span class="nc" id="L333">  }</span>
 
   /**
    * Get All DbHostAuth from database or from internal hashMap in case of no
@@ -306,21 +343,21 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    */
   public static DbHostAuth[] getAllHosts()
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L309">    HostDAO hostAccess = null;</span>
-<span class="nc" id="L310">    final List&lt;DbHostAuth&gt; res = new ArrayList&lt;DbHostAuth&gt;();</span>
+<span class="nc" id="L346">    HostDAO hostAccess = null;</span>
+<span class="nc" id="L347">    final List&lt;DbHostAuth&gt; res = new ArrayList&lt;DbHostAuth&gt;();</span>
     List&lt;Host&gt; hosts;
     try {
-<span class="nc" id="L313">      hostAccess = DAOFactory.getInstance().getHostDAO();</span>
-<span class="nc" id="L314">      hosts = hostAccess.getAll();</span>
-<span class="nc" id="L315">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L316">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="nc" id="L350">      hostAccess = DAOFactory.getInstance().getHostDAO(false);</span>
+<span class="nc" id="L351">      hosts = hostAccess.getAll();</span>
+<span class="nc" id="L352">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L353">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="nc" id="L318">      DAOFactory.closeDAO(hostAccess);</span>
+<span class="nc" id="L355">      DAOFactory.closeDAO(hostAccess);</span>
     }
-<span class="nc bnc" id="L320" title="All 2 branches missed.">    for (final Host host : hosts) {</span>
-<span class="nc" id="L321">      res.add(new DbHostAuth(host));</span>
-<span class="nc" id="L322">    }</span>
-<span class="nc" id="L323">    return res.toArray(DBHOSTAUTH_0_SIZE);</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">    for (final Host host : hosts) {</span>
+<span class="nc" id="L358">      res.add(new DbHostAuth(host));</span>
+<span class="nc" id="L359">    }</span>
+<span class="nc" id="L360">    return res.toArray(DBHOSTAUTH_0_SIZE);</span>
   }
 
   /**
@@ -336,46 +373,46 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
   public static DbHostAuth getFromStatement(
       final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L339">    final DbHostAuth dbHostAuth = new DbHostAuth();</span>
-<span class="nc" id="L340">    AbstractDAO&lt;Host&gt; hostDAO = null;</span>
+<span class="nc" id="L376">    final DbHostAuth dbHostAuth = new DbHostAuth();</span>
+<span class="nc" id="L377">    AbstractDAO&lt;Host&gt; hostDAO = null;</span>
     try {
-<span class="nc" id="L342">      hostDAO = dbHostAuth.getDao();</span>
-<span class="nc" id="L343">      dbHostAuth.pojo = ((StatementExecutor&lt;Host&gt;) hostDAO)</span>
-<span class="nc" id="L344">          .getFromResultSet(preparedStatement.getResultSet());</span>
-<span class="nc" id="L345">      return dbHostAuth;</span>
-<span class="nc" id="L346">    } catch (final SQLException e) {</span>
-<span class="nc" id="L347">      DbSession.error(e);</span>
-<span class="nc" id="L348">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
-<span class="nc" id="L349">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L350">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L379">      hostDAO = dbHostAuth.getDao(false);</span>
+<span class="nc" id="L380">      dbHostAuth.pojo = ((StatementExecutor&lt;Host&gt;) hostDAO).getFromResultSet(</span>
+<span class="nc" id="L381">          preparedStatement.getResultSet());</span>
+<span class="nc" id="L382">      return dbHostAuth;</span>
+<span class="nc" id="L383">    } catch (final SQLException e) {</span>
+<span class="nc" id="L384">      DbSession.error(e);</span>
+<span class="nc" id="L385">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L386">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L387">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
     } finally {
-<span class="nc" id="L352">      DAOFactory.closeDAO(hostDAO);</span>
+<span class="nc" id="L389">      DAOFactory.closeDAO(hostDAO);</span>
     }
   }
 
   public static DbHostAuth[] getUpdatedPreparedStatement()
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L358">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(1);</span>
-<span class="fc" id="L359">    filters.add(new Filter(DBHostDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
-<span class="fc" id="L360">                           org.waarp.openr66.pojo.UpdatedInfo</span>
-<span class="fc" id="L361">                               .fromLegacy(UpdatedInfo.TOSUBMIT).ordinal()));</span>
-<span class="fc" id="L362">    HostDAO hostAccess = null;</span>
+<span class="fc" id="L395">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(1);</span>
+<span class="fc" id="L396">    filters.add(new Filter(DBHostDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="fc" id="L397">                           org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(</span>
+<span class="fc" id="L398">                               UpdatedInfo.TOSUBMIT).ordinal()));</span>
+<span class="fc" id="L399">    HostDAO hostAccess = null;</span>
     List&lt;Host&gt; hosts;
     try {
-<span class="fc" id="L365">      hostAccess = DAOFactory.getInstance().getHostDAO();</span>
-<span class="fc" id="L366">      hosts = hostAccess.find(filters);</span>
-<span class="nc" id="L367">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L368">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="fc" id="L402">      hostAccess = DAOFactory.getInstance().getHostDAO(false);</span>
+<span class="fc" id="L403">      hosts = hostAccess.find(filters);</span>
+<span class="nc" id="L404">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L405">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="fc" id="L370">      DAOFactory.closeDAO(hostAccess);</span>
+<span class="fc" id="L407">      DAOFactory.closeDAO(hostAccess);</span>
     }
-<span class="fc" id="L372">    final DbHostAuth[] res = new DbHostAuth[hosts.size()];</span>
-<span class="fc" id="L373">    int i = 0;</span>
-<span class="pc bpc" id="L374" title="1 of 2 branches missed.">    for (final Host host : hosts) {</span>
-<span class="nc" id="L375">      res[i] = new DbHostAuth(host);</span>
-<span class="nc" id="L376">      i++;</span>
-<span class="nc" id="L377">    }</span>
-<span class="fc" id="L378">    return res;</span>
+<span class="fc" id="L409">    final DbHostAuth[] res = new DbHostAuth[hosts.size()];</span>
+<span class="fc" id="L410">    int i = 0;</span>
+<span class="pc bpc" id="L411" title="1 of 2 branches missed.">    for (final Host host : hosts) {</span>
+<span class="nc" id="L412">      res[i] = new DbHostAuth(host);</span>
+<span class="nc" id="L413">      i++;</span>
+<span class="nc" id="L414">    }</span>
+<span class="fc" id="L415">    return res;</span>
   }
 
   /**
@@ -394,39 +431,39 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
       final DbSession session, final String host, final String addr,
       final boolean ssl, final boolean active)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L397">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L434">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(session);
-<span class="nc" id="L399">    final String request =</span>
+<span class="nc" id="L436">    final String request =</span>
         &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table + &quot; WHERE &quot;;
-<span class="nc" id="L401">    String condition = null;</span>
-<span class="nc bnc" id="L402" title="All 2 branches missed.">    if (host != null) {</span>
-<span class="nc" id="L403">      condition = Columns.HOSTID.name() + &quot; LIKE '%&quot; + host + &quot;%' &quot;;</span>
+<span class="nc" id="L438">    String condition = null;</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(host)) {</span>
+<span class="nc" id="L440">      condition = Columns.HOSTID.name() + &quot; = '&quot; + host + &quot;' &quot;;</span>
     }
-<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (addr != null) {</span>
-<span class="nc bnc" id="L406" title="All 2 branches missed.">      if (condition != null) {</span>
-<span class="nc" id="L407">        condition += &quot; AND &quot;;</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(addr)) {</span>
+<span class="nc bnc" id="L443" title="All 2 branches missed.">      if (condition != null) {</span>
+<span class="nc" id="L444">        condition += &quot; AND &quot;;</span>
       } else {
-<span class="nc" id="L409">        condition = &quot;&quot;;</span>
+<span class="nc" id="L446">        condition = &quot;&quot;;</span>
       }
-<span class="nc" id="L411">      condition += Columns.ADDRESS.name() + &quot; LIKE '%&quot; + addr + &quot;%' &quot;;</span>
+<span class="nc" id="L448">      condition += Columns.ADDRESS.name() + &quot; = '&quot; + addr + &quot;' &quot;;</span>
     }
-<span class="nc bnc" id="L413" title="All 2 branches missed.">    if (condition != null) {</span>
-<span class="nc" id="L414">      condition += &quot; AND &quot;;</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">    if (condition != null) {</span>
+<span class="nc" id="L451">      condition += &quot; AND &quot;;</span>
     } else {
-<span class="nc" id="L416">      condition = &quot;&quot;;</span>
+<span class="nc" id="L453">      condition = &quot;&quot;;</span>
     }
-<span class="nc" id="L418">    condition += Columns.ISSSL.name() + &quot; = ? AND &quot;;</span>
-<span class="nc" id="L419">    condition += Columns.ISACTIVE.name() + &quot; = ? &quot;;</span>
-<span class="nc" id="L420">    preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L421">        request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
+<span class="nc" id="L455">    condition += Columns.ISSSL.name() + &quot; = ? AND &quot;;</span>
+<span class="nc" id="L456">    condition += Columns.ISACTIVE.name() + &quot; = ? &quot;;</span>
+<span class="nc" id="L457">    preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L458">        request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
     try {
-<span class="nc" id="L423">      preparedStatement.getPreparedStatement().setBoolean(1, ssl);</span>
-<span class="nc" id="L424">      preparedStatement.getPreparedStatement().setBoolean(2, active);</span>
-<span class="nc" id="L425">    } catch (final SQLException e) {</span>
-<span class="nc" id="L426">      preparedStatement.realClose();</span>
-<span class="nc" id="L427">      throw new WaarpDatabaseSqlException(e);</span>
-<span class="nc" id="L428">    }</span>
-<span class="nc" id="L429">    return preparedStatement;</span>
+<span class="nc" id="L460">      preparedStatement.getPreparedStatement().setBoolean(1, ssl);</span>
+<span class="nc" id="L461">      preparedStatement.getPreparedStatement().setBoolean(2, active);</span>
+<span class="nc" id="L462">    } catch (final SQLException e) {</span>
+<span class="nc" id="L463">      preparedStatement.realClose();</span>
+<span class="nc" id="L464">      throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L465">    }</span>
+<span class="nc" id="L466">    return preparedStatement;</span>
   }
 
   /**
@@ -442,63 +479,66 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
   public static DbPreparedStatement getFilterPrepareStament(
       final DbSession session, final String host, final String addr)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L445">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L482">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(session);
-<span class="nc" id="L447">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
-<span class="nc" id="L448">    String condition = null;</span>
-<span class="nc bnc" id="L449" title="All 2 branches missed.">    if (host != null) {</span>
-<span class="nc" id="L450">      condition = Columns.HOSTID.name() + &quot; LIKE '%&quot; + host + &quot;%' &quot;;</span>
+<span class="nc" id="L484">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="nc" id="L485">    String condition = null;</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(host)) {</span>
+<span class="nc" id="L487">      condition = Columns.HOSTID.name() + &quot; = '&quot; + host + &quot;' &quot;;</span>
     }
-<span class="nc bnc" id="L452" title="All 2 branches missed.">    if (addr != null) {</span>
-<span class="nc bnc" id="L453" title="All 2 branches missed.">      if (condition != null) {</span>
-<span class="nc" id="L454">        condition += &quot; AND &quot;;</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(addr)) {</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">      if (condition != null) {</span>
+<span class="nc" id="L491">        condition += &quot; AND &quot;;</span>
       } else {
-<span class="nc" id="L456">        condition = &quot;&quot;;</span>
+<span class="nc" id="L493">        condition = &quot;&quot;;</span>
       }
-<span class="nc" id="L458">      condition += Columns.ADDRESS.name() + &quot; LIKE '%&quot; + addr + &quot;%' &quot;;</span>
+<span class="nc" id="L495">      condition += Columns.ADDRESS.name() + &quot; = '&quot; + addr + &quot;' &quot;;</span>
     }
-<span class="nc bnc" id="L460" title="All 2 branches missed.">    if (condition != null) {</span>
-<span class="nc" id="L461">      condition = &quot; WHERE &quot; + condition;</span>
+<span class="nc bnc" id="L497" title="All 2 branches missed.">    if (condition != null) {</span>
+<span class="nc" id="L498">      condition = &quot; WHERE &quot; + condition;</span>
     } else {
-<span class="nc" id="L463">      condition = &quot;&quot;;</span>
+<span class="nc" id="L500">      condition = &quot;&quot;;</span>
     }
-<span class="nc" id="L465">    preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L466">        request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
-<span class="nc" id="L467">    return preparedStatement;</span>
+<span class="nc" id="L502">    preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L503">        request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
+<span class="nc" id="L504">    return preparedStatement;</span>
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
-<span class="nc" id="L472">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
-<span class="nc" id="L473">  }</span>
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
+<span class="nc" id="L509">    isSaved = false;</span>
+<span class="nc" id="L510">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
+<span class="nc" id="L511">  }</span>
 
   /**
    * @return the isActive
    */
-  public boolean isActive() {
-<span class="fc" id="L479">    return pojo.isActive();</span>
+  public final boolean isActive() {
+<span class="fc" id="L517">    return pojo.isActive();</span>
   }
 
   /**
    * @param isActive the isActive to set
    */
-  public void setActive(final boolean isActive) {
-<span class="fc" id="L486">    pojo.setActive(isActive);</span>
-<span class="fc" id="L487">  }</span>
+  public final void setActive(final boolean isActive) {
+<span class="fc" id="L524">    isSaved = false;</span>
+<span class="fc" id="L525">    pojo.setActive(isActive);</span>
+<span class="fc" id="L526">  }</span>
 
   /**
    * @return the isProxified
    */
-  public boolean isProxified() {
-<span class="fc" id="L493">    return pojo.isProxified();</span>
+  public final boolean isProxified() {
+<span class="fc" id="L532">    return pojo.isProxified();</span>
   }
 
   /**
    * @param isProxified the isProxified to set
    */
-  public void setProxified(final boolean isProxified) {
-<span class="fc" id="L500">    pojo.setProxified(isProxified);</span>
-<span class="fc" id="L501">  }</span>
+  public final void setProxified(final boolean isProxified) {
+<span class="fc" id="L539">    isSaved = false;</span>
+<span class="fc" id="L540">    pojo.setProxified(isProxified);</span>
+<span class="fc" id="L541">  }</span>
 
   /**
    * Is the given key a valid one
@@ -507,48 +547,48 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    *
    * @return True if the key is valid (or any key is valid)
    */
-  public boolean isKeyValid(final byte[] newkey) {
+  public final boolean isKeyValid(final byte[] newkey) {
     // It is valid to not have a key
     // Check before if any key is passed or if account is active
-<span class="pc bpc" id="L513" title="1 of 2 branches missed.">    if (pojo.getHostkey() == null) {</span>
-<span class="nc" id="L514">      return true;</span>
+<span class="pc bpc" id="L553" title="1 of 2 branches missed.">    if (pojo.getHostkey() == null) {</span>
+<span class="nc" id="L554">      return true;</span>
     }
     // Check before if any key is passed or if account is active
-<span class="pc bpc" id="L517" title="2 of 4 branches missed.">    if (newkey == null || !isActive()) {</span>
-<span class="nc" id="L518">      return false;</span>
+<span class="pc bpc" id="L557" title="2 of 4 branches missed.">    if (newkey == null || !isActive()) {</span>
+<span class="nc" id="L558">      return false;</span>
     }
     try {
-<span class="fc" id="L521">      return FilesystemBasedDigest.equalPasswd(</span>
-<span class="fc" id="L522">          Configuration.configuration.getCryptoKey()</span>
-<span class="fc" id="L523">                                     .decryptHexInBytes(pojo.getHostkey()),</span>
+<span class="fc" id="L561">      return FilesystemBasedDigest.equalPasswd(</span>
+<span class="fc" id="L562">          Configuration.configuration.getCryptoKey()</span>
+<span class="fc" id="L563">                                     .decryptHexInBytes(pojo.getHostkey()),</span>
           newkey);
-<span class="nc" id="L525">    } catch (final Exception e) {</span>
-<span class="nc" id="L526">      logger.info(&quot;Error while checking key&quot;, e);</span>
-<span class="nc" id="L527">      return false;</span>
+<span class="nc" id="L565">    } catch (final Exception e) {</span>
+<span class="nc" id="L566">      logger.info(&quot;Error while checking key&quot;, e);</span>
+<span class="nc" id="L567">      return false;</span>
     }
   }
 
   /**
    * @return the hostkey
    */
-  public byte[] getHostkey() {
-<span class="pc bpc" id="L535" title="1 of 2 branches missed.">    if (pojo.getHostkey() == null) {</span>
-<span class="nc" id="L536">      return null;</span>
+  public final byte[] getHostkey() {
+<span class="pc bpc" id="L575" title="1 of 2 branches missed.">    if (pojo.getHostkey() == null) {</span>
+<span class="nc" id="L576">      return null;</span>
     }
     try {
-<span class="fc" id="L539">      return Configuration.configuration.getCryptoKey()</span>
-<span class="fc" id="L540">                                        .decryptHexInBytes(pojo.getHostkey());</span>
-<span class="nc" id="L541">    } catch (final Exception e) {</span>
-<span class="nc" id="L542">      logger.info(&quot;Error while checking key&quot;, e);</span>
-<span class="nc" id="L543">      return VALUE_0_BYTE;</span>
+<span class="fc" id="L579">      return Configuration.configuration.getCryptoKey()</span>
+<span class="fc" id="L580">                                        .decryptHexInBytes(pojo.getHostkey());</span>
+<span class="nc" id="L581">    } catch (final Exception e) {</span>
+<span class="nc" id="L582">      logger.info(&quot;Error while checking key&quot;, e);</span>
+<span class="nc" id="L583">      return VALUE_0_BYTE;</span>
     }
   }
 
   /**
    * @return the adminrole
    */
-  public boolean isAdminrole() {
-<span class="fc" id="L551">    return pojo.isAdmin();</span>
+  public final boolean isAdminrole() {
+<span class="fc" id="L591">    return pojo.isAdmin();</span>
   }
 
   /**
@@ -556,8 +596,8 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    *
    * @return True if the address is a client address (0.0.0.0) or isClient
    */
-  public boolean isClient() {
-<span class="pc bpc" id="L560" title="1 of 4 branches missed.">    return pojo.isClient() || isNoAddress();</span>
+  public final boolean isClient() {
+<span class="pc bpc" id="L600" title="1 of 4 branches missed.">    return pojo.isClient() || isNoAddress();</span>
   }
 
   /**
@@ -566,9 +606,9 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    * @return True if the address is a client address (0.0.0.0) or if the port
    *     is &lt; 0
    */
-  public boolean isNoAddress() {
-<span class="fc bfc" id="L570" title="All 2 branches covered.">    return pojo.getAddress().equals(DEFAULT_CLIENT_ADDRESS) ||</span>
-<span class="pc bpc" id="L571" title="1 of 2 branches missed.">           pojo.getPort() &lt; 0;</span>
+  public final boolean isNoAddress() {
+<span class="fc bfc" id="L610" title="All 2 branches covered.">    return pojo.getAddress().equals(DEFAULT_CLIENT_ADDRESS) ||</span>
+<span class="pc bpc" id="L611" title="1 of 2 branches missed.">           pojo.getPort() &lt; 0;</span>
   }
 
   /**
@@ -578,88 +618,89 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    *     and
    *     therefore cannot be checked
    */
-  public SocketAddress getSocketAddress() throws IllegalArgumentException {
-<span class="fc bfc" id="L582" title="All 2 branches covered.">    if (isNoAddress()) {</span>
-<span class="fc" id="L583">      throw new IllegalArgumentException(&quot;Not a server&quot;);</span>
+  public final SocketAddress getSocketAddress()
+      throws IllegalArgumentException {
+<span class="fc bfc" id="L623" title="All 2 branches covered.">    if (isNoAddress()) {</span>
+<span class="fc" id="L624">      throw new IllegalArgumentException(&quot;Not a server&quot;);</span>
     }
-<span class="fc" id="L585">    return new InetSocketAddress(pojo.getAddress(), pojo.getPort());</span>
+<span class="fc" id="L626">    return new InetSocketAddress(pojo.getAddress(), pojo.getPort());</span>
   }
 
   /**
    * @return True if this Host ref is with SSL support
    */
-  public boolean isSsl() {
-<span class="fc" id="L592">    return pojo.isSSL();</span>
+  public final boolean isSsl() {
+<span class="fc" id="L633">    return pojo.isSSL();</span>
   }
 
   /**
    * @return the hostid
    */
-  public String getHostid() {
-<span class="fc" id="L599">    return pojo.getHostid();</span>
+  public final String getHostid() {
+<span class="fc" id="L640">    return pojo.getHostid();</span>
   }
 
   /**
    * @return the address
    */
-  public String getAddress() {
-<span class="fc" id="L606">    return pojo.getAddress();</span>
+  public final String getAddress() {
+<span class="fc" id="L647">    return pojo.getAddress();</span>
   }
 
   /**
    * @return the port
    */
-  public int getPort() {
-<span class="fc" id="L613">    return pojo.getPort();</span>
+  public final int getPort() {
+<span class="fc" id="L654">    return pojo.getPort();</span>
   }
 
   private static String getVersion(final String host) {
-<span class="fc" id="L617">    String remoteHost = host;</span>
-<span class="fc" id="L618">    String alias = &quot;&quot;;</span>
-<span class="pc bpc" id="L619" title="1 of 2 branches missed.">    if (Configuration.configuration.getAliases().containsKey(remoteHost)) {</span>
-<span class="nc" id="L620">      remoteHost = Configuration.configuration.getAliases().get(remoteHost);</span>
-<span class="nc" id="L621">      alias += &quot;(Alias: &quot; + remoteHost + &quot;) &quot;;</span>
+<span class="fc" id="L658">    String remoteHost = host;</span>
+<span class="fc" id="L659">    String alias = &quot;&quot;;</span>
+<span class="pc bpc" id="L660" title="1 of 2 branches missed.">    if (Configuration.configuration.getAliases().containsKey(remoteHost)) {</span>
+<span class="nc" id="L661">      remoteHost = Configuration.configuration.getAliases().get(remoteHost);</span>
+<span class="nc" id="L662">      alias += &quot;(Alias: &quot; + remoteHost + &quot;) &quot;;</span>
     }
-<span class="fc" id="L623">    if (Configuration.configuration.getReverseAliases()</span>
-<span class="pc bpc" id="L624" title="1 of 2 branches missed.">                                   .containsKey(remoteHost)) {</span>
-<span class="nc" id="L625">      final StringBuilder alias2 = new StringBuilder(&quot;(ReverseAlias: &quot;);</span>
-<span class="nc" id="L626">      final String[] list =</span>
-<span class="nc" id="L627">          Configuration.configuration.getReverseAliases().get(remoteHost);</span>
-<span class="nc" id="L628">      boolean found = false;</span>
-<span class="nc bnc" id="L629" title="All 2 branches missed.">      for (final String string : list) {</span>
-<span class="nc bnc" id="L630" title="All 2 branches missed.">        if (string.equals(host)) {</span>
-<span class="nc" id="L631">          continue;</span>
+<span class="fc" id="L664">    if (Configuration.configuration.getReverseAliases()</span>
+<span class="pc bpc" id="L665" title="1 of 2 branches missed.">                                   .containsKey(remoteHost)) {</span>
+<span class="nc" id="L666">      final StringBuilder alias2 = new StringBuilder(&quot;(ReverseAlias: &quot;);</span>
+<span class="nc" id="L667">      final String[] list =</span>
+<span class="nc" id="L668">          Configuration.configuration.getReverseAliases().get(remoteHost);</span>
+<span class="nc" id="L669">      boolean found = false;</span>
+<span class="nc bnc" id="L670" title="All 2 branches missed.">      for (final String string : list) {</span>
+<span class="nc bnc" id="L671" title="All 2 branches missed.">        if (string.equals(host)) {</span>
+<span class="nc" id="L672">          continue;</span>
         }
-<span class="nc" id="L633">        found = true;</span>
-<span class="nc" id="L634">        alias2.append(string).append(' ');</span>
+<span class="nc" id="L674">        found = true;</span>
+<span class="nc" id="L675">        alias2.append(string).append(' ');</span>
       }
-<span class="nc bnc" id="L636" title="All 2 branches missed.">      if (found) {</span>
-<span class="nc" id="L637">        alias += alias2 + &quot;) &quot;;</span>
+<span class="nc bnc" id="L677" title="All 2 branches missed.">      if (found) {</span>
+<span class="nc" id="L678">        alias += alias2 + &quot;) &quot;;</span>
       }
     }
-<span class="fc" id="L640">    if (Configuration.configuration.getBusinessWhiteSet()</span>
-<span class="pc bpc" id="L641" title="1 of 2 branches missed.">                                   .contains(remoteHost)) {</span>
-<span class="nc" id="L642">      alias += &quot;(Business: Allowed) &quot;;</span>
+<span class="fc" id="L681">    if (Configuration.configuration.getBusinessWhiteSet()</span>
+<span class="pc bpc" id="L682" title="1 of 2 branches missed.">                                   .contains(remoteHost)) {</span>
+<span class="nc" id="L683">      alias += &quot;(Business: Allowed) &quot;;</span>
     }
-<span class="pc bpc" id="L644" title="1 of 2 branches missed.">    if (Configuration.configuration.getRoles().containsKey(remoteHost)) {</span>
-<span class="nc" id="L645">      final RoleDefault item =</span>
-<span class="nc" id="L646">          Configuration.configuration.getRoles().get(remoteHost);</span>
-<span class="nc" id="L647">      alias += &quot;(Role: &quot; + item + &quot;) &quot;;</span>
+<span class="pc bpc" id="L685" title="1 of 2 branches missed.">    if (Configuration.configuration.getRoles().containsKey(remoteHost)) {</span>
+<span class="nc" id="L686">      final RoleDefault item =</span>
+<span class="nc" id="L687">          Configuration.configuration.getRoles().get(remoteHost);</span>
+<span class="nc" id="L688">      alias += &quot;(Role: &quot; + item + &quot;) &quot;;</span>
     }
-<span class="fc" id="L649">    return alias +</span>
-<span class="fc bfc" id="L650" title="All 2 branches covered.">           (Configuration.configuration.getVersions().containsKey(remoteHost)?</span>
-<span class="fc" id="L651">               Configuration.configuration.getVersions().get(remoteHost)</span>
-<span class="fc" id="L652">                                          .toString() : &quot;Version Unknown&quot;);</span>
+<span class="fc" id="L690">    return alias +</span>
+<span class="fc bfc" id="L691" title="All 2 branches covered.">           (Configuration.configuration.getVersions().containsKey(remoteHost)?</span>
+<span class="fc" id="L692">               Configuration.configuration.getVersions().get(remoteHost)</span>
+<span class="fc" id="L693">                                          .toString() : &quot;Version Unknown&quot;);</span>
   }
 
   @Override
-  public String toString() {
-<span class="fc" id="L657">    return &quot;HostAuth: &quot; + getHostid() + &quot; address: &quot; + getAddress() + ':' +</span>
-<span class="fc" id="L658">           getPort() + &quot; isSSL: &quot; + isSsl() + &quot; admin: &quot; + isAdminrole() +</span>
-<span class="fc" id="L659">           &quot; isClient: &quot; + isClient() + &quot; isActive: &quot; + isActive() +</span>
-<span class="fc" id="L660">           &quot; isProxified: &quot; + isProxified() + &quot; (&quot; +</span>
-<span class="pc bpc" id="L661" title="1 of 2 branches missed.">           (pojo.getHostkey() != null? pojo.getHostkey().length : 0) +</span>
-<span class="fc" id="L662">           &quot;) Version: &quot; + getVersion(getHostid());</span>
+  public final String toString() {
+<span class="fc" id="L698">    return &quot;HostAuth: &quot; + getHostid() + &quot; address: &quot; + getAddress() + ':' +</span>
+<span class="fc" id="L699">           getPort() + &quot; isSSL: &quot; + isSsl() + &quot; admin: &quot; + isAdminrole() +</span>
+<span class="fc" id="L700">           &quot; isClient: &quot; + isClient() + &quot; isActive: &quot; + isActive() +</span>
+<span class="fc" id="L701">           &quot; isProxified: &quot; + isProxified() + &quot; (&quot; +</span>
+<span class="pc bpc" id="L702" title="1 of 2 branches missed.">           (pojo.getHostkey() != null? pojo.getHostkey().length : 0) +</span>
+<span class="fc" id="L703">           &quot;) Version: &quot; + getVersion(getHostid());</span>
   }
 
   /**
@@ -675,55 +716,55 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
   public static String getJson(final DbPreparedStatement preparedStatement,
                                final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L678">    final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L719">    final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
     try {
-<span class="nc" id="L680">      preparedStatement.executeQuery();</span>
-<span class="nc" id="L681">      int nb = 0;</span>
-<span class="nc bnc" id="L682" title="All 2 branches missed.">      while (preparedStatement.getNext()) {</span>
-<span class="nc" id="L683">        final DbHostAuth host = getFromStatement(preparedStatement);</span>
-<span class="nc" id="L684">        final ObjectNode node = host.getInternalJson();</span>
-<span class="nc" id="L685">        arrayNode.add(node);</span>
-<span class="nc" id="L686">        nb++;</span>
-<span class="nc bnc" id="L687" title="All 2 branches missed.">        if (nb &gt;= limit) {</span>
-<span class="nc" id="L688">          break;</span>
+<span class="nc" id="L721">      preparedStatement.executeQuery();</span>
+<span class="nc" id="L722">      int nb = 0;</span>
+<span class="nc bnc" id="L723" title="All 2 branches missed.">      while (preparedStatement.getNext()) {</span>
+<span class="nc" id="L724">        final DbHostAuth host = getFromStatement(preparedStatement);</span>
+<span class="nc" id="L725">        final ObjectNode node = host.getInternalJson();</span>
+<span class="nc" id="L726">        arrayNode.add(node);</span>
+<span class="nc" id="L727">        nb++;</span>
+<span class="nc bnc" id="L728" title="All 2 branches missed.">        if (nb &gt;= limit) {</span>
+<span class="nc" id="L729">          break;</span>
         }
-<span class="nc" id="L690">      }</span>
+<span class="nc" id="L731">      }</span>
     } finally {
-<span class="nc" id="L692">      preparedStatement.realClose();</span>
+<span class="nc" id="L733">      preparedStatement.realClose();</span>
     }
-<span class="nc" id="L694">    return JsonHandler.writeAsString(arrayNode);</span>
+<span class="nc" id="L735">    return JsonHandler.writeAsString(arrayNode);</span>
   }
 
   private ObjectNode getInternalJson() {
-<span class="nc" id="L698">    final ObjectNode node = getJson();</span>
+<span class="nc" id="L739">    final ObjectNode node = getJson();</span>
     try {
-<span class="nc" id="L700">      node.put(Columns.HOSTKEY.name(),</span>
-<span class="nc" id="L701">               new String(getHostkey(), WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L702">    } catch (final Exception e1) {</span>
-<span class="nc" id="L703">      node.put(Columns.HOSTKEY.name(), &quot;&quot;);</span>
-<span class="nc" id="L704">    }</span>
+<span class="nc" id="L741">      node.put(Columns.HOSTKEY.name(),</span>
+<span class="nc" id="L742">               new String(getHostkey(), WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L743">    } catch (final Exception e1) {</span>
+<span class="nc" id="L744">      node.put(Columns.HOSTKEY.name(), &quot;&quot;);</span>
+<span class="nc" id="L745">    }</span>
     int nb;
     try {
-<span class="nc" id="L707">      nb = NetworkTransaction</span>
-<span class="nc" id="L708">          .nbAttachedConnection(getSocketAddress(), getHostid());</span>
-<span class="nc" id="L709">    } catch (final Exception e) {</span>
-<span class="nc" id="L710">      nb = -1;</span>
-<span class="nc" id="L711">    }</span>
-<span class="nc" id="L712">    node.put(&quot;Connection&quot;, nb);</span>
-<span class="nc" id="L713">    node.put(&quot;Version&quot;, COMMA.matcher(BACKSLASH.matcher(getVersion(getHostid()))</span>
-<span class="nc" id="L714">                                               .replaceAll(Matcher</span>
-<span class="nc" id="L715">                                                               .quoteReplacement(</span>
-                                                                   &quot;&quot;)))
-<span class="nc" id="L717">                             .replaceAll(Matcher.quoteReplacement(&quot;, &quot;)));</span>
-<span class="nc" id="L718">    return node;</span>
+<span class="nc" id="L748">      nb = NetworkTransaction.nbAttachedConnection(getSocketAddress(),</span>
+<span class="nc" id="L749">                                                   getHostid());</span>
+<span class="nc" id="L750">    } catch (final Exception e) {</span>
+<span class="nc" id="L751">      nb = -1;</span>
+<span class="nc" id="L752">    }</span>
+<span class="nc" id="L753">    node.put(&quot;Connection&quot;, nb);</span>
+<span class="nc" id="L754">    node.put(&quot;Version&quot;, COMMA.matcher(BACKSLASH.matcher(getVersion(getHostid()))</span>
+<span class="nc" id="L755">                                               .replaceAll(</span>
+<span class="nc" id="L756">                                                   Matcher.quoteReplacement(</span>
+                                                       &quot;&quot;)))
+<span class="nc" id="L758">                             .replaceAll(Matcher.quoteReplacement(&quot;, &quot;)));</span>
+<span class="nc" id="L759">    return node;</span>
   }
 
   /**
    * @return the Json string for this
    */
-  public String getJsonAsString() {
-<span class="nc" id="L725">    final ObjectNode node = getInternalJson();</span>
-<span class="nc" id="L726">    return JsonHandler.writeAsString(node);</span>
+  public final String getJsonAsString() {
+<span class="nc" id="L766">    final ObjectNode node = getInternalJson();</span>
+<span class="nc" id="L767">    return JsonHandler.writeAsString(node);</span>
   }
 
   /**
@@ -736,61 +777,62 @@ public class DbHostAuth extends AbstractDbDataDao&lt;Host&gt; {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(final R66Session session, final String body,
-                                  final boolean crypted) {
-<span class="fc" id="L741">    final StringBuilder builder = new StringBuilder(body);</span>
-<span class="fc" id="L742">    WaarpStringUtils.replace(builder, &quot;XXXHOSTXXX&quot;, getHostid());</span>
-<span class="fc" id="L743">    WaarpStringUtils.replace(builder, &quot;XXXADDRXXX&quot;, getAddress());</span>
-<span class="fc" id="L744">    WaarpStringUtils</span>
-<span class="fc" id="L745">        .replace(builder, &quot;XXXPORTXXX&quot;, Integer.toString(getPort()));</span>
-<span class="pc bpc" id="L746" title="1 of 2 branches missed.">    if (crypted) {</span>
-<span class="nc" id="L747">      WaarpStringUtils.replace(builder, &quot;XXXKEYXXX&quot;,</span>
-<span class="nc" id="L748">                               new String(getHostkey(), WaarpStringUtils.UTF8));</span>
+  public final String toSpecializedHtml(final R66Session session,
+                                        final String body,
+                                        final boolean crypted) {
+<span class="fc" id="L783">    final StringBuilder builder = new StringBuilder(body);</span>
+<span class="fc" id="L784">    WaarpStringUtils.replace(builder, &quot;XXXHOSTXXX&quot;, getHostid());</span>
+<span class="fc" id="L785">    WaarpStringUtils.replace(builder, &quot;XXXADDRXXX&quot;, getAddress());</span>
+<span class="fc" id="L786">    WaarpStringUtils.replace(builder, &quot;XXXPORTXXX&quot;,</span>
+<span class="fc" id="L787">                             Integer.toString(getPort()));</span>
+<span class="pc bpc" id="L788" title="1 of 2 branches missed.">    if (crypted) {</span>
+<span class="nc" id="L789">      WaarpStringUtils.replace(builder, &quot;XXXKEYXXX&quot;,</span>
+<span class="nc" id="L790">                               new String(getHostkey(), WaarpStringUtils.UTF8));</span>
     } else {
       try {
-<span class="fc" id="L751">        WaarpStringUtils.replace(builder, &quot;XXXKEYXXX&quot;, new String(getHostkey(),</span>
+<span class="fc" id="L793">        WaarpStringUtils.replace(builder, &quot;XXXKEYXXX&quot;, new String(getHostkey(),</span>
                                                                   WaarpStringUtils.UTF8));
-<span class="nc" id="L753">      } catch (final Exception e) {</span>
-<span class="nc" id="L754">        WaarpStringUtils.replace(builder, &quot;XXXKEYXXX&quot;, &quot;BAD DECRYPT&quot;);</span>
-<span class="fc" id="L755">      }</span>
+<span class="nc" id="L795">      } catch (final Exception e) {</span>
+<span class="nc" id="L796">        WaarpStringUtils.replace(builder, &quot;XXXKEYXXX&quot;, &quot;BAD DECRYPT&quot;);</span>
+<span class="fc" id="L797">      }</span>
     }
-<span class="pc bpc" id="L757" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXSSLXXX&quot;, isSsl()? CHECKED : &quot;&quot;);</span>
-<span class="fc bfc" id="L758" title="All 2 branches covered.">    WaarpStringUtils.replace(builder, &quot;XXXADMXXX&quot;, isAdminrole()? CHECKED : &quot;&quot;);</span>
-<span class="pc bpc" id="L759" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXISCXXX&quot;, isClient()? CHECKED : &quot;&quot;);</span>
-<span class="pc bpc" id="L760" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXISAXXX&quot;, isActive()? CHECKED : &quot;&quot;);</span>
-<span class="pc bpc" id="L761" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXISPXXX&quot;, isProxified()? CHECKED : &quot;&quot;);</span>
-<span class="fc" id="L762">    WaarpStringUtils.replace(builder, &quot;XXXVERSIONXXX&quot;,</span>
-<span class="fc" id="L763">                             COMMA.matcher(getVersion(getHostid()))</span>
-<span class="fc" id="L764">                                  .replaceAll(Matcher.quoteReplacement(&quot;, &quot;)));</span>
+<span class="pc bpc" id="L799" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXSSLXXX&quot;, isSsl()? CHECKED : &quot;&quot;);</span>
+<span class="fc bfc" id="L800" title="All 2 branches covered.">    WaarpStringUtils.replace(builder, &quot;XXXADMXXX&quot;, isAdminrole()? CHECKED : &quot;&quot;);</span>
+<span class="pc bpc" id="L801" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXISCXXX&quot;, isClient()? CHECKED : &quot;&quot;);</span>
+<span class="pc bpc" id="L802" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXISAXXX&quot;, isActive()? CHECKED : &quot;&quot;);</span>
+<span class="pc bpc" id="L803" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXISPXXX&quot;, isProxified()? CHECKED : &quot;&quot;);</span>
+<span class="fc" id="L804">    WaarpStringUtils.replace(builder, &quot;XXXVERSIONXXX&quot;,</span>
+<span class="fc" id="L805">                             COMMA.matcher(getVersion(getHostid()))</span>
+<span class="fc" id="L806">                                  .replaceAll(Matcher.quoteReplacement(&quot;, &quot;)));</span>
     int nb;
     try {
-<span class="fc" id="L767">      nb = NetworkTransaction</span>
-<span class="nc" id="L768">          .nbAttachedConnection(getSocketAddress(), getHostid());</span>
-<span class="fc" id="L769">    } catch (final Exception e) {</span>
-<span class="fc" id="L770">      nb = -1;</span>
-<span class="nc" id="L771">    }</span>
-<span class="pc bpc" id="L772" title="1 of 2 branches missed.">    WaarpStringUtils</span>
-<span class="fc" id="L773">        .replace(builder, &quot;XXXCONNXXX&quot;, nb &gt; 0? &quot;(&quot; + nb + &quot; Connected) &quot; : &quot;&quot;);</span>
-<span class="fc" id="L774">    return builder.toString();</span>
+<span class="nc" id="L809">      nb = NetworkTransaction.nbAttachedConnection(getSocketAddress(),</span>
+<span class="nc" id="L810">                                                   getHostid());</span>
+<span class="fc" id="L811">    } catch (final Exception e) {</span>
+<span class="fc" id="L812">      nb = -1;</span>
+<span class="nc" id="L813">    }</span>
+<span class="pc bpc" id="L814" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXCONNXXX&quot;,</span>
+                             nb &gt; 0? &quot;(&quot; + nb + &quot; Connected) &quot; : &quot;&quot;);
+<span class="fc" id="L816">    return builder.toString();</span>
   }
 
   /**
    * @return True if any of the server has the isProxified property
    */
   public static boolean hasProxifiedHosts() {
-<span class="fc" id="L781">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="fc" id="L782">    filters.add(new Filter(DBHostDAO.IS_PROXIFIED_FIELD, &quot;=&quot;, true));</span>
+<span class="fc" id="L823">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="fc" id="L824">    filters.add(new Filter(DBHostDAO.IS_PROXIFIED_FIELD, &quot;=&quot;, true));</span>
 
-<span class="fc" id="L784">    HostDAO hostAccess = null;</span>
+<span class="fc" id="L826">    HostDAO hostAccess = null;</span>
     try {
-<span class="fc" id="L786">      hostAccess = DAOFactory.getInstance().getHostDAO();</span>
-<span class="pc bpc" id="L787" title="1 of 2 branches missed.">      return !hostAccess.find(filters).isEmpty();</span>
-<span class="nc" id="L788">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L789">      logger.error(&quot;DAO Access error&quot;, e);</span>
-<span class="nc" id="L790">      return false;</span>
+<span class="fc" id="L828">      hostAccess = DAOFactory.getInstance().getHostDAO(false);</span>
+<span class="pc bpc" id="L829" title="1 of 2 branches missed.">      return hostAccess.count(filters) &gt; 0;</span>
+<span class="nc" id="L830">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L831">      logger.error(&quot;DAO Access error&quot;, e);</span>
+<span class="nc" id="L832">      return false;</span>
     } finally {
-<span class="fc" id="L792">      DAOFactory.closeDAO(hostAccess);</span>
+<span class="fc" id="L834">      DAOFactory.closeDAO(hostAccess);</span>
     }
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

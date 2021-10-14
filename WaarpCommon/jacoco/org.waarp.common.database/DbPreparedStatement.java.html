@@ -205,7 +205,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void createPrepareStatement(final String requestarg)
+  public final void createPrepareStatement(final String requestarg)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 <span class="nc bnc" id="L210" title="All 2 branches missed.">    if (requestarg == null) {</span>
 <span class="nc" id="L211">      logger.error(PREPARED_STATEMENT_NO_REQUEST);</span>
@@ -254,7 +254,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void recreatePreparedStatement()
+  public final void recreatePreparedStatement()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 <span class="nc" id="L259">    createPrepareStatement(request);</span>
 <span class="nc" id="L260">  }</span>
@@ -265,7 +265,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void executeQuery()
+  public final void executeQuery()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 <span class="nc bnc" id="L270" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
 <span class="nc" id="L271">      logger.error(&quot;executeQuery no request&quot;);</span>
@@ -302,7 +302,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public int executeUpdate()
+  public final int executeUpdate()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 <span class="nc bnc" id="L307" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
 <span class="nc" id="L308">      logger.error(&quot;executeUpdate no request&quot;);</span>
@@ -323,7 +323,7 @@ public class DbPreparedStatement {
 <span class="nc" id="L323">    } catch (final SQLException e) {</span>
 <span class="nc" id="L324">      logger.error(</span>
 <span class="nc" id="L325">          &quot;SQL Exception executeUpdate:&quot; + request + ' ' + e.getMessage());</span>
-<span class="nc" id="L326">      logger.info(&quot;SQL Exception full stack trace&quot;, e);</span>
+<span class="nc" id="L326">      logger.debug(&quot;SQL Exception full stack trace&quot;, e);</span>
 <span class="nc" id="L327">      DbSession.error(e);</span>
 <span class="nc" id="L328">      ls.checkConnectionNoException();</span>
 <span class="nc" id="L329">      throw new WaarpDatabaseSqlException(</span>
@@ -335,7 +335,7 @@ public class DbPreparedStatement {
   /**
    * Close the resultSet if any
    */
-  public void close() {
+  public final void close() {
 <span class="nc bnc" id="L339" title="All 2 branches missed.">    if (rs != null) {</span>
       try {
 <span class="nc" id="L341">        rs.close();</span>
@@ -349,7 +349,7 @@ public class DbPreparedStatement {
   /**
    * Really close the preparedStatement and the resultSet if any
    */
-  public void realClose() {
+  public final void realClose() {
 <span class="nc" id="L353">    close();</span>
 <span class="nc bnc" id="L354" title="All 2 branches missed.">    if (preparedStatement != null) {</span>
 <span class="nc bnc" id="L355" title="All 2 branches missed.">      if (ls.isDisActive()) {</span>
@@ -373,7 +373,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public boolean getNext()
+  public final boolean getNext()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 <span class="nc bnc" id="L378" title="All 2 branches missed.">    if (rs == null) {</span>
 <span class="nc" id="L379">      logger.error(&quot;SQL ResultSet is Null into getNext&quot;);</span>
@@ -403,12 +403,13 @@ public class DbPreparedStatement {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public ResultSet getResultSet() throws WaarpDatabaseNoConnectionException {
-<span class="nc bnc" id="L407" title="All 2 branches missed.">    if (rs == null) {</span>
-<span class="nc" id="L408">      throw new WaarpDatabaseNoConnectionException(</span>
+  public final ResultSet getResultSet()
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc bnc" id="L408" title="All 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L409">      throw new WaarpDatabaseNoConnectionException(</span>
           &quot;SQL ResultSet is Null into getResultSet&quot;);
     }
-<span class="nc" id="L411">    return rs;</span>
+<span class="nc" id="L412">    return rs;</span>
   }
 
   /**
@@ -417,35 +418,39 @@ public class DbPreparedStatement {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public PreparedStatement getPreparedStatement()
+  public final PreparedStatement getPreparedStatement()
       throws WaarpDatabaseNoConnectionException {
-<span class="nc bnc" id="L422" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
-<span class="nc" id="L423">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
+<span class="nc" id="L424">      throw new WaarpDatabaseNoConnectionException(</span>
           &quot;SQL PreparedStatement is Null into getPreparedStatement&quot;);
     }
-<span class="nc" id="L426">    return preparedStatement;</span>
+<span class="nc" id="L427">    return preparedStatement;</span>
   }
 
   /**
    * @return the dbSession
    */
-  public DbSession getDbSession() {
-<span class="nc" id="L433">    return ls;</span>
+  public final DbSession getDbSession() {
+<span class="nc" id="L434">    return ls;</span>
   }
 
   /**
    * @return the isReady
    */
-  public boolean isReady() {
-<span class="nc" id="L440">    return isReady;</span>
+  public final boolean isReady() {
+<span class="nc" id="L441">    return isReady;</span>
   }
 
   /**
    * @param isReady the isReady to set
    */
   private void setReady(final boolean isReady) {
-<span class="nc" id="L447">    this.isReady = isReady;</span>
-<span class="nc" id="L448">  }</span>
+<span class="nc" id="L448">    this.isReady = isReady;</span>
+<span class="nc" id="L449">  }</span>
 
+  @Override
+  public String toString() {
+<span class="nc" id="L453">    return request;</span>
+  }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

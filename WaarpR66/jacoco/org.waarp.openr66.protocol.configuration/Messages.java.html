@@ -21,6 +21,7 @@
 package org.waarp.openr66.protocol.configuration;
 
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SystemPropertyUtil;
 
 import java.text.MessageFormat;
@@ -32,50 +33,50 @@ public class Messages {
   private static final String BUNDLE_NAME = &quot;messages&quot;; //$NON-NLS-1$
 
   private static ResourceBundle resourceBundle;
-<span class="fc" id="L35">  private static String slocale = &quot;en&quot;;</span>
+<span class="fc" id="L36">  private static String slocale = &quot;en&quot;;</span>
 
   static {
     try {
-<span class="fc" id="L39">      setSlocale(</span>
-<span class="fc" id="L40">          SystemPropertyUtil.get(R66SystemProperties.OPENR66_LOCALE, &quot;en&quot;));</span>
-<span class="pc bpc" id="L41" title="2 of 4 branches missed.">      if (getSlocale() == null || getSlocale().isEmpty()) {</span>
-<span class="nc" id="L42">        setSlocale(&quot;en&quot;);</span>
+<span class="fc" id="L40">      setSlocale(</span>
+<span class="fc" id="L41">          SystemPropertyUtil.get(R66SystemProperties.OPENR66_LOCALE, &quot;en&quot;));</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">      if (ParametersChecker.isEmpty(getSlocale())) {</span>
+<span class="nc" id="L43">        setSlocale(&quot;en&quot;);</span>
       }
-<span class="fc" id="L44">      init(new Locale(getSlocale()));</span>
-<span class="nc" id="L45">    } catch (final Throwable ignored) {//NOSONAR</span>
-<span class="nc" id="L46">      SysErrLogger.FAKE_LOGGER //NOSONAR</span>
-<span class="nc" id="L47">                               .syserr(&quot;Error during static execution&quot;,//NOSONAR</span>
+<span class="fc" id="L45">      init(new Locale(getSlocale()));</span>
+<span class="nc" id="L46">    } catch (final Throwable ignored) {//NOSONAR</span>
+<span class="nc" id="L47">      SysErrLogger.FAKE_LOGGER //NOSONAR</span>
+<span class="nc" id="L48">                               .syserr(&quot;Error during static execution&quot;,//NOSONAR</span>
                                        ignored);//NOSONAR
-<span class="fc" id="L49">    }</span>
-<span class="fc" id="L50">  }</span>
+<span class="fc" id="L50">    }</span>
+<span class="fc" id="L51">  }</span>
 
   private Messages() {
   }
 
   public static void init(Locale locale) {
-<span class="pc bpc" id="L56" title="1 of 2 branches missed.">    if (locale == null) {</span>
-<span class="nc" id="L57">      setSlocale(&quot;en&quot;);</span>
-<span class="nc" id="L58">      locale = new Locale(getSlocale());</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (locale == null) {</span>
+<span class="nc" id="L58">      setSlocale(&quot;en&quot;);</span>
+<span class="nc" id="L59">      locale = new Locale(getSlocale());</span>
     } else {
-<span class="fc" id="L60">      setSlocale(locale.getLanguage());</span>
+<span class="fc" id="L61">      setSlocale(locale.getLanguage());</span>
     }
-<span class="fc" id="L62">    resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);</span>
-<span class="fc" id="L63">  }</span>
+<span class="fc" id="L63">    resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);</span>
+<span class="fc" id="L64">  }</span>
 
   public static String getString(final String key) {
     try {
-<span class="fc" id="L67">      return resourceBundle.getString(key);</span>
-<span class="fc" id="L68">    } catch (final MissingResourceException e) {</span>
-<span class="fc" id="L69">      return '!' + key + '!';</span>
+<span class="fc" id="L68">      return resourceBundle.getString(key);</span>
+<span class="nc" id="L69">    } catch (final MissingResourceException e) {</span>
+<span class="nc" id="L70">      return '!' + key + '!';</span>
     }
   }
 
   public static String getString(final String key, final Object... args) {
     try {
-<span class="fc" id="L75">      final String source = resourceBundle.getString(key);</span>
-<span class="fc" id="L76">      return MessageFormat.format(source, args);</span>
-<span class="nc" id="L77">    } catch (final MissingResourceException e) {</span>
-<span class="nc" id="L78">      return '!' + key + '!';</span>
+<span class="fc" id="L76">      final String source = resourceBundle.getString(key);</span>
+<span class="fc" id="L77">      return MessageFormat.format(source, args);</span>
+<span class="nc" id="L78">    } catch (final MissingResourceException e) {</span>
+<span class="nc" id="L79">      return '!' + key + '!';</span>
     }
   }
 
@@ -83,14 +84,14 @@ public class Messages {
    * @return the slocale
    */
   public static String getSlocale() {
-<span class="fc" id="L86">    return slocale;</span>
+<span class="fc" id="L87">    return slocale;</span>
   }
 
   /**
    * @param slocale the slocale to set
    */
   public static void setSlocale(final String slocale) {
-<span class="fc" id="L93">    Messages.slocale = slocale;</span>
-<span class="fc" id="L94">  }</span>
+<span class="fc" id="L94">    Messages.slocale = slocale;</span>
+<span class="fc" id="L95">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

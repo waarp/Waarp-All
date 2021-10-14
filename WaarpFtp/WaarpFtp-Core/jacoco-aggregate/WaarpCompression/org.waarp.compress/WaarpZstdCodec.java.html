@@ -52,21 +52,21 @@ import java.io.OutputStream;
  * &lt;/ul&gt;
  */
 public class WaarpZstdCodec {
-<span class="nc" id="L55">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L56">      WaarpLoggerFactory.getLogger(WaarpZstdCodec.class);</span>
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(WaarpZstdCodec.class);</span>
   private final CompressorCodec codec;
 
-<span class="nc" id="L59">  public WaarpZstdCodec() {</span>
+<span class="fc" id="L59">  public WaarpZstdCodec() {</span>
     boolean jniLoaded;
     try {
-<span class="nc" id="L62">      Native.load();</span>
-<span class="nc" id="L63">      jniLoaded = true;</span>
+<span class="fc" id="L62">      Native.load();</span>
+<span class="fc" id="L63">      jniLoaded = true;</span>
 <span class="nc" id="L64">    } catch (final Exception e) {</span>
 <span class="nc" id="L65">      jniLoaded = false;</span>
 <span class="nc" id="L66">      logger.warn(&quot;Cannot load JNI based ZSTD codec: {}&quot;, e.getMessage());</span>
-<span class="nc" id="L67">    }</span>
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (jniLoaded) {</span>
-<span class="nc" id="L69">      codec = new ZstdJniCodec();</span>
+<span class="fc" id="L67">    }</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (jniLoaded) {</span>
+<span class="fc" id="L69">      codec = new ZstdJniCodec();</span>
     } else {
 <span class="nc bnc" id="L71" title="All 2 branches missed.">      if (UnsafeUtil.isValid()) {</span>
 <span class="nc" id="L72">        codec = new ZstdUnsafeCodec();</span>
@@ -74,13 +74,13 @@ public class WaarpZstdCodec {
 <span class="nc" id="L74">        codec = new ZstdSafeCodec();</span>
       }
     }
-<span class="nc" id="L77">  }</span>
+<span class="fc" id="L77">  }</span>
 
   /**
    * @return the current Compressor Codec implementation
    */
   public final CompressorCodec getCompressorCodec() {
-<span class="nc" id="L83">    return codec;</span>
+<span class="fc" id="L83">    return codec;</span>
   }
 
   /**

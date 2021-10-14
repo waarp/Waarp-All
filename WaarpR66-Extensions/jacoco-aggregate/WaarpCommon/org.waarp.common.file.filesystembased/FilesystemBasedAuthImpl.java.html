@@ -38,7 +38,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   /**
    * DOUBLE SLASH pattern
    */
-<span class="nc" id="L41">  private static final Pattern DOUBLE_SLASH = Pattern.compile(&quot;//&quot;);</span>
+<span class="fc" id="L41">  private static final Pattern DOUBLE_SLASH = Pattern.compile(&quot;//&quot;);</span>
   /**
    * User name
    */
@@ -67,17 +67,17 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   /**
    * @param session
    */
-<span class="nc" id="L70">  protected FilesystemBasedAuthImpl(final SessionInterface session) {</span>
-<span class="nc" id="L71">    this.session = session;</span>
-<span class="nc" id="L72">    isIdentified = false;</span>
-<span class="nc" id="L73">  }</span>
+<span class="fc" id="L70">  protected FilesystemBasedAuthImpl(final SessionInterface session) {</span>
+<span class="fc" id="L71">    this.session = session;</span>
+<span class="fc" id="L72">    isIdentified = false;</span>
+<span class="fc" id="L73">  }</span>
 
   /**
    * @return the session
    */
   @Override
   public final SessionInterface getSession() {
-<span class="nc" id="L80">    return session;</span>
+<span class="fc" id="L80">    return session;</span>
   }
 
   /**
@@ -114,13 +114,13 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   @Override
   public final NextCommandReply setUser(final String user)
       throws Reply421Exception, Reply530Exception {
-<span class="nc" id="L117">    final NextCommandReply next = setBusinessUser(user);</span>
-<span class="nc" id="L118">    this.user = user;</span>
-<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
+<span class="fc" id="L117">    final NextCommandReply next = setBusinessUser(user);</span>
+<span class="fc" id="L118">    this.user = user;</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
 <span class="nc" id="L120">      setRootFromAuth();</span>
 <span class="nc" id="L121">      session.getDir().initAfterIdentification();</span>
     }
-<span class="nc" id="L123">    return next;</span>
+<span class="fc" id="L123">    return next;</span>
   }
 
   /**
@@ -128,7 +128,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    */
   @Override
   public final String getUser() {
-<span class="nc" id="L131">    return user;</span>
+<span class="fc" id="L131">    return user;</span>
   }
 
   /**
@@ -165,13 +165,13 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   @Override
   public final NextCommandReply setPassword(final String password)
       throws Reply421Exception, Reply530Exception {
-<span class="nc" id="L168">    final NextCommandReply next = setBusinessPassword(password);</span>
-<span class="nc" id="L169">    this.password = password;</span>
-<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
+<span class="fc" id="L168">    final NextCommandReply next = setBusinessPassword(password);</span>
+<span class="fc" id="L169">    this.password = password;</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
 <span class="nc" id="L171">      setRootFromAuth();</span>
 <span class="nc" id="L172">      session.getDir().initAfterIdentification();</span>
     }
-<span class="nc" id="L174">    return next;</span>
+<span class="fc" id="L174">    return next;</span>
   }
 
   /**
@@ -180,8 +180,8 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @param isIdentified
    */
   protected final void setIsIdentified(final boolean isIdentified) {
-<span class="nc" id="L183">    this.isIdentified = isIdentified;</span>
-<span class="nc" id="L184">  }</span>
+<span class="fc" id="L183">    this.isIdentified = isIdentified;</span>
+<span class="fc" id="L184">  }</span>
 
   /**
    * Is the current Authentication OK for full identification. It must be true
@@ -196,7 +196,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    */
   @Override
   public final boolean isIdentified() {
-<span class="nc" id="L199">    return isIdentified;</span>
+<span class="fc" id="L199">    return isIdentified;</span>
   }
 
   /**
@@ -226,7 +226,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
 
   @Override
   public final String getBusinessPath() {
-<span class="nc" id="L229">    return rootFromAuth;</span>
+<span class="fc" id="L229">    return rootFromAuth;</span>
   }
 
   /**
@@ -239,12 +239,12 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    */
   @Override
   public void clear() {
-<span class="nc" id="L242">    businessClean();</span>
-<span class="nc" id="L243">    user = null;</span>
-<span class="nc" id="L244">    password = null;</span>
-<span class="nc" id="L245">    rootFromAuth = null;</span>
-<span class="nc" id="L246">    isIdentified = false;</span>
-<span class="nc" id="L247">  }</span>
+<span class="fc" id="L242">    businessClean();</span>
+<span class="fc" id="L243">    user = null;</span>
+<span class="fc" id="L244">    password = null;</span>
+<span class="fc" id="L245">    rootFromAuth = null;</span>
+<span class="fc" id="L246">    isIdentified = false;</span>
+<span class="fc" id="L247">  }</span>
 
   /**
    * Return the full path as a String (with mount point).
@@ -255,11 +255,11 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return the full path as a String
    */
   public final String getAbsolutePath(final String path) {
-<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(path)) {</span>
-<span class="nc" id="L259">      return getBaseDirectory();</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(path)) {</span>
+<span class="fc" id="L259">      return getBaseDirectory();</span>
     }
-<span class="nc" id="L261">    return AbstractDir.normalizePath(</span>
-<span class="nc" id="L262">        getBaseDirectory() + DirInterface.SEPARATOR + path);</span>
+<span class="fc" id="L261">    return AbstractDir.normalizePath(</span>
+<span class="fc" id="L262">        getBaseDirectory() + DirInterface.SEPARATOR + path);</span>
   }
 
   /**
@@ -272,9 +272,9 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   @Override
   public final String getRelativePath(final String file) {
     // Work around Windows path '\'
-<span class="nc" id="L275">    return DOUBLE_SLASH.matcher(</span>
-<span class="nc" id="L276">                           file.replaceFirst(AbstractDir.normalizePath(getBaseDirectory()), &quot;&quot;))</span>
-<span class="nc" id="L277">                       .replaceAll(&quot;/&quot;);</span>
+<span class="fc" id="L275">    return DOUBLE_SLASH.matcher(</span>
+<span class="fc" id="L276">                           file.replaceFirst(AbstractDir.normalizePath(getBaseDirectory()), &quot;&quot;))</span>
+<span class="fc" id="L277">                       .replaceAll(&quot;/&quot;);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -31,24 +31,24 @@ import org.waarp.ftp.core.file.FtpFile;
 /**
  * RETR command
  */
-<span class="nc" id="L34">public class RETR extends AbstractCommand {</span>
-<span class="nc" id="L35">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L36">      WaarpLoggerFactory.getInstance(RETR.class);</span>
+<span class="fc" id="L34">public class RETR extends AbstractCommand {</span>
+<span class="fc" id="L35">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L36">      WaarpLoggerFactory.getInstance(RETR.class);</span>
 
   @Override
   public final void exec() throws CommandAbstractException {
-<span class="nc bnc" id="L40" title="All 2 branches missed.">    if (!hasArg()) {</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">    if (!hasArg()) {</span>
 <span class="nc" id="L41">      invalidCurrentCommand();</span>
 <span class="nc" id="L42">      throw new Reply501Exception(&quot;Need a pathname as argument&quot;);</span>
     }
-<span class="nc" id="L44">    final String filename = getArg();</span>
-<span class="nc" id="L45">    final FtpFile file = getSession().getDir().setFile(filename, false);</span>
-<span class="nc bnc" id="L46" title="All 2 branches missed.">    if (file != null) {</span>
-<span class="nc bnc" id="L47" title="All 2 branches missed.">      if (file.retrieve()) {</span>
-<span class="nc" id="L48">        getSession().openDataConnection();</span>
-<span class="nc" id="L49">        getSession().getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L50">                    .setNewFtpTransfer(getCode(), file);</span>
-<span class="nc" id="L51">        return;</span>
+<span class="fc" id="L44">    final String filename = getArg();</span>
+<span class="fc" id="L45">    final FtpFile file = getSession().getDir().setFile(filename, false);</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    if (file != null) {</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">      if (file.retrieve()) {</span>
+<span class="fc" id="L48">        getSession().openDataConnection();</span>
+<span class="fc" id="L49">        getSession().getDataConn().getFtpTransferControl()</span>
+<span class="fc" id="L50">                    .setNewFtpTransfer(getCode(), file);</span>
+<span class="fc" id="L51">        return;</span>
       }
 <span class="nc" id="L53">      logger.info(&quot;File not accessible: {}&quot;, file);</span>
       // FtpFile does not exist

@@ -57,118 +57,118 @@ class ZstdFrameCompressor {
   // visible for testing
   static int writeMagic(final byte[] outputBase, final int outputAddress,
                         final int outputLimit) {
-<span class="nc bnc" id="L60" title="All 2 branches missed.">    checkArgument(outputLimit - outputAddress &gt;= SIZE_OF_INT,</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">    checkArgument(outputLimit - outputAddress &gt;= SIZE_OF_INT,</span>
                   OUTPUT_BUFFER_TOO_SMALL);
 
-<span class="nc" id="L63">    putInt(outputBase, outputAddress, MAGIC_NUMBER);</span>
-<span class="nc" id="L64">    return SIZE_OF_INT;</span>
+<span class="fc" id="L63">    putInt(outputBase, outputAddress, MAGIC_NUMBER);</span>
+<span class="fc" id="L64">    return SIZE_OF_INT;</span>
   }
 
   // visible for testing
   static int writeFrameHeader(final byte[] outputBase, final int outputAddress,
                               final int outputLimit, final int inputSize,
                               final int windowSize) {
-<span class="nc bnc" id="L71" title="All 2 branches missed.">    checkArgument(outputLimit - outputAddress &gt;= MAX_FRAME_HEADER_SIZE,</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">    checkArgument(outputLimit - outputAddress &gt;= MAX_FRAME_HEADER_SIZE,</span>
                   OUTPUT_BUFFER_TOO_SMALL);
 
-<span class="nc" id="L74">    int output = outputAddress;</span>
+<span class="fc" id="L74">    int output = outputAddress;</span>
 
-<span class="nc bnc" id="L76" title="All 4 branches missed.">    final int contentSizeDescriptor =</span>
+<span class="fc bfc" id="L76" title="All 4 branches covered.">    final int contentSizeDescriptor =</span>
         (inputSize &gt;= 256? 1 : 0) + (inputSize &gt;= 65536 + 256? 1 : 0);
-<span class="nc" id="L78">    int frameHeaderDescriptor =</span>
+<span class="fc" id="L78">    int frameHeaderDescriptor =</span>
         (contentSizeDescriptor &lt;&lt; 6) | CHECKSUM_FLAG; // dictionary ID missing
 
-<span class="nc bnc" id="L81" title="All 2 branches missed.">    final boolean singleSegment = windowSize &gt;= inputSize;</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (singleSegment) {</span>
-<span class="nc" id="L83">      frameHeaderDescriptor |= SINGLE_SEGMENT_FLAG;</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">    final boolean singleSegment = windowSize &gt;= inputSize;</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">    if (singleSegment) {</span>
+<span class="fc" id="L83">      frameHeaderDescriptor |= SINGLE_SEGMENT_FLAG;</span>
     }
 
-<span class="nc" id="L86">    outputBase[output] = (byte) frameHeaderDescriptor;</span>
-<span class="nc" id="L87">    output++;</span>
+<span class="fc" id="L86">    outputBase[output] = (byte) frameHeaderDescriptor;</span>
+<span class="fc" id="L87">    output++;</span>
 
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (!singleSegment) {</span>
-<span class="nc" id="L90">      final int base = Integer.highestOneBit(windowSize);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">    if (!singleSegment) {</span>
+<span class="fc" id="L90">      final int base = Integer.highestOneBit(windowSize);</span>
 
-<span class="nc" id="L92">      final int exponent = 32 - Integer.numberOfLeadingZeros(base) - 1;</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (exponent &lt; MIN_WINDOW_LOG) {</span>
-<span class="nc" id="L94">        throw new IllegalArgumentException(</span>
+<span class="fc" id="L92">      final int exponent = 32 - Integer.numberOfLeadingZeros(base) - 1;</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">      if (exponent &lt; MIN_WINDOW_LOG) {</span>
+<span class="fc" id="L94">        throw new IllegalArgumentException(</span>
             &quot;Minimum window size is &quot; + (1 &lt;&lt; MIN_WINDOW_LOG));
       }
 
-<span class="nc" id="L98">      final int remainder = windowSize - base;</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">      if (remainder % (base / 8) != 0) {</span>
-<span class="nc" id="L100">        throw new IllegalArgumentException(</span>
+<span class="fc" id="L98">      final int remainder = windowSize - base;</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">      if (remainder % (base / 8) != 0) {</span>
+<span class="fc" id="L100">        throw new IllegalArgumentException(</span>
             &quot;Window size of magnitude 2^&quot; + exponent + &quot; must be multiple of &quot; +
             (base / 8));
       }
 
       // mantissa is guaranteed to be between 0-7
-<span class="nc" id="L106">      final int mantissa = remainder / (base / 8);</span>
-<span class="nc" id="L107">      final int encoded = ((exponent - MIN_WINDOW_LOG) &lt;&lt; 3) | mantissa;</span>
+<span class="fc" id="L106">      final int mantissa = remainder / (base / 8);</span>
+<span class="fc" id="L107">      final int encoded = ((exponent - MIN_WINDOW_LOG) &lt;&lt; 3) | mantissa;</span>
 
-<span class="nc" id="L109">      outputBase[output] = (byte) encoded;</span>
-<span class="nc" id="L110">      output++;</span>
+<span class="fc" id="L109">      outputBase[output] = (byte) encoded;</span>
+<span class="fc" id="L110">      output++;</span>
     }
 
-<span class="nc bnc" id="L113" title="All 4 branches missed.">    switch (contentSizeDescriptor) {</span>
+<span class="pc bpc" id="L113" title="1 of 4 branches missed.">    switch (contentSizeDescriptor) {</span>
       case 0:
-<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (singleSegment) {</span>
-<span class="nc" id="L116">          outputBase[output++] = (byte) inputSize;</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (singleSegment) {</span>
+<span class="fc" id="L116">          outputBase[output++] = (byte) inputSize;</span>
         }
         break;
       case 1:
-<span class="nc" id="L120">        putShort(outputBase, output, (short) (inputSize - 256));</span>
-<span class="nc" id="L121">        output += SIZE_OF_SHORT;</span>
-<span class="nc" id="L122">        break;</span>
+<span class="fc" id="L120">        putShort(outputBase, output, (short) (inputSize - 256));</span>
+<span class="fc" id="L121">        output += SIZE_OF_SHORT;</span>
+<span class="fc" id="L122">        break;</span>
       case 2:
-<span class="nc" id="L124">        putInt(outputBase, output, inputSize);</span>
-<span class="nc" id="L125">        output += SIZE_OF_INT;</span>
-<span class="nc" id="L126">        break;</span>
+<span class="fc" id="L124">        putInt(outputBase, output, inputSize);</span>
+<span class="fc" id="L125">        output += SIZE_OF_INT;</span>
+<span class="fc" id="L126">        break;</span>
       default:
 <span class="nc" id="L128">        throw new AssertionError();</span>
     }
 
-<span class="nc" id="L131">    return output - outputAddress;</span>
+<span class="fc" id="L131">    return output - outputAddress;</span>
   }
 
   // visible for testing
   static int writeChecksum(final byte[] outputBase, final int outputAddress,
                            final int outputLimit, final byte[] inputBase,
                            final int inputAddress, final int inputLimit) {
-<span class="nc bnc" id="L138" title="All 2 branches missed.">    checkArgument(outputLimit - outputAddress &gt;= SIZE_OF_INT,</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">    checkArgument(outputLimit - outputAddress &gt;= SIZE_OF_INT,</span>
                   OUTPUT_BUFFER_TOO_SMALL);
 
-<span class="nc" id="L141">    final int inputSize = inputLimit - inputAddress;</span>
+<span class="fc" id="L141">    final int inputSize = inputLimit - inputAddress;</span>
 
-<span class="nc" id="L143">    final long hash = XxHash64.hash(0, inputBase, inputAddress, inputSize);</span>
+<span class="fc" id="L143">    final long hash = XxHash64.hash(0, inputBase, inputAddress, inputSize);</span>
 
-<span class="nc" id="L145">    putInt(outputBase, outputAddress, (int) hash);</span>
+<span class="fc" id="L145">    putInt(outputBase, outputAddress, (int) hash);</span>
 
-<span class="nc" id="L147">    return SIZE_OF_INT;</span>
+<span class="fc" id="L147">    return SIZE_OF_INT;</span>
   }
 
   public static int compress(final byte[] inputBase, final int inputAddress,
                              final int inputLimit, final byte[] outputBase,
                              final int outputAddress, final int outputLimit,
                              final int compressionLevel) {
-<span class="nc" id="L154">    final int inputSize = inputLimit - inputAddress;</span>
+<span class="fc" id="L154">    final int inputSize = inputLimit - inputAddress;</span>
 
-<span class="nc" id="L156">    final CompressionParameters parameters =</span>
-<span class="nc" id="L157">        CompressionParameters.compute(compressionLevel, inputSize);</span>
+<span class="fc" id="L156">    final CompressionParameters parameters =</span>
+<span class="fc" id="L157">        CompressionParameters.compute(compressionLevel, inputSize);</span>
 
-<span class="nc" id="L159">    int output = outputAddress;</span>
+<span class="fc" id="L159">    int output = outputAddress;</span>
 
-<span class="nc" id="L161">    output += writeMagic(outputBase, output, outputLimit);</span>
-<span class="nc" id="L162">    output += writeFrameHeader(outputBase, output, outputLimit, inputSize,</span>
-<span class="nc" id="L163">                               1 &lt;&lt; parameters.getWindowLog());</span>
-<span class="nc" id="L164">    output +=</span>
-<span class="nc" id="L165">        compressFrame(inputBase, inputAddress, inputLimit, outputBase, output,</span>
+<span class="fc" id="L161">    output += writeMagic(outputBase, output, outputLimit);</span>
+<span class="fc" id="L162">    output += writeFrameHeader(outputBase, output, outputLimit, inputSize,</span>
+<span class="fc" id="L163">                               1 &lt;&lt; parameters.getWindowLog());</span>
+<span class="fc" id="L164">    output +=</span>
+<span class="fc" id="L165">        compressFrame(inputBase, inputAddress, inputLimit, outputBase, output,</span>
                       outputLimit, parameters);
-<span class="nc" id="L167">    output +=</span>
-<span class="nc" id="L168">        writeChecksum(outputBase, output, outputLimit, inputBase, inputAddress,</span>
+<span class="fc" id="L167">    output +=</span>
+<span class="fc" id="L168">        writeChecksum(outputBase, output, outputLimit, inputBase, inputAddress,</span>
                       inputLimit);
 
-<span class="nc" id="L171">    return output - outputAddress;</span>
+<span class="fc" id="L171">    return output - outputAddress;</span>
   }
 
   private static int compressFrame(final byte[] inputBase,
@@ -177,58 +177,58 @@ class ZstdFrameCompressor {
                                    final int outputAddress,
                                    final int outputLimit,
                                    final CompressionParameters parameters) {
-<span class="nc" id="L180">    final int windowSize = 1 &lt;&lt;</span>
-<span class="nc" id="L181">                           parameters.getWindowLog(); // TODO: store window size in parameters directly?</span>
-<span class="nc" id="L182">    int blockSize = Math.min(MAX_BLOCK_SIZE, windowSize);</span>
+<span class="fc" id="L180">    final int windowSize = 1 &lt;&lt;</span>
+<span class="fc" id="L181">                           parameters.getWindowLog(); // TODO: store window size in parameters directly?</span>
+<span class="fc" id="L182">    int blockSize = Math.min(MAX_BLOCK_SIZE, windowSize);</span>
 
-<span class="nc" id="L184">    int outputSize = outputLimit - outputAddress;</span>
-<span class="nc" id="L185">    int remaining = inputLimit - inputAddress;</span>
+<span class="fc" id="L184">    int outputSize = outputLimit - outputAddress;</span>
+<span class="fc" id="L185">    int remaining = inputLimit - inputAddress;</span>
 
-<span class="nc" id="L187">    int output = outputAddress;</span>
-<span class="nc" id="L188">    int input = inputAddress;</span>
+<span class="fc" id="L187">    int output = outputAddress;</span>
+<span class="fc" id="L188">    int input = inputAddress;</span>
 
-<span class="nc" id="L190">    final CompressionContext context =</span>
+<span class="fc" id="L190">    final CompressionContext context =</span>
         new CompressionContext(parameters, inputAddress, remaining);
 
     do {
-<span class="nc bnc" id="L194" title="All 2 branches missed.">      checkArgument(outputSize &gt;= SIZE_OF_BLOCK_HEADER + MIN_BLOCK_SIZE,</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">      checkArgument(outputSize &gt;= SIZE_OF_BLOCK_HEADER + MIN_BLOCK_SIZE,</span>
                     OUTPUT_BUFFER_TOO_SMALL);
 
-<span class="nc bnc" id="L197" title="All 2 branches missed.">      final int lastBlockFlag = blockSize &gt;= remaining? 1 : 0;</span>
-<span class="nc" id="L198">      blockSize = Math.min(blockSize, remaining);</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">      final int lastBlockFlag = blockSize &gt;= remaining? 1 : 0;</span>
+<span class="fc" id="L198">      blockSize = Math.min(blockSize, remaining);</span>
 
-<span class="nc" id="L200">      int compressedSize = 0;</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">      if (remaining &gt; 0) {</span>
-<span class="nc" id="L202">        compressedSize = compressBlock(inputBase, input, blockSize, outputBase,</span>
+<span class="fc" id="L200">      int compressedSize = 0;</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">      if (remaining &gt; 0) {</span>
+<span class="fc" id="L202">        compressedSize = compressBlock(inputBase, input, blockSize, outputBase,</span>
                                        output + SIZE_OF_BLOCK_HEADER,
                                        outputSize - SIZE_OF_BLOCK_HEADER,
                                        context, parameters);
       }
 
-<span class="nc bnc" id="L208" title="All 2 branches missed.">      if (compressedSize == 0) { // block is not compressible</span>
-<span class="nc bnc" id="L209" title="All 2 branches missed.">        checkArgument(blockSize + SIZE_OF_BLOCK_HEADER &lt;= outputSize,</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">      if (compressedSize == 0) { // block is not compressible</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">        checkArgument(blockSize + SIZE_OF_BLOCK_HEADER &lt;= outputSize,</span>
                       &quot;Output size too small&quot;);
 
-<span class="nc" id="L212">        final int blockHeader =</span>
+<span class="fc" id="L212">        final int blockHeader =</span>
             lastBlockFlag | (RAW_BLOCK &lt;&lt; 1) | (blockSize &lt;&lt; 3);
-<span class="nc" id="L214">        put24BitLittleEndian(outputBase, output, blockHeader);</span>
-<span class="nc" id="L215">        copyMemory(inputBase, input, outputBase, output + SIZE_OF_BLOCK_HEADER,</span>
+<span class="fc" id="L214">        put24BitLittleEndian(outputBase, output, blockHeader);</span>
+<span class="fc" id="L215">        copyMemory(inputBase, input, outputBase, output + SIZE_OF_BLOCK_HEADER,</span>
                    blockSize);
-<span class="nc" id="L217">        compressedSize = SIZE_OF_BLOCK_HEADER + blockSize;</span>
-<span class="nc" id="L218">      } else {</span>
-<span class="nc" id="L219">        final int blockHeader =</span>
+<span class="fc" id="L217">        compressedSize = SIZE_OF_BLOCK_HEADER + blockSize;</span>
+<span class="fc" id="L218">      } else {</span>
+<span class="fc" id="L219">        final int blockHeader =</span>
             lastBlockFlag | (COMPRESSED_BLOCK &lt;&lt; 1) | (compressedSize &lt;&lt; 3);
-<span class="nc" id="L221">        put24BitLittleEndian(outputBase, output, blockHeader);</span>
-<span class="nc" id="L222">        compressedSize += SIZE_OF_BLOCK_HEADER;</span>
+<span class="fc" id="L221">        put24BitLittleEndian(outputBase, output, blockHeader);</span>
+<span class="fc" id="L222">        compressedSize += SIZE_OF_BLOCK_HEADER;</span>
       }
 
-<span class="nc" id="L225">      input += blockSize;</span>
-<span class="nc" id="L226">      remaining -= blockSize;</span>
-<span class="nc" id="L227">      output += compressedSize;</span>
-<span class="nc" id="L228">      outputSize -= compressedSize;</span>
-<span class="nc bnc" id="L229" title="All 2 branches missed.">    } while (remaining &gt; 0);</span>
+<span class="fc" id="L225">      input += blockSize;</span>
+<span class="fc" id="L226">      remaining -= blockSize;</span>
+<span class="fc" id="L227">      output += compressedSize;</span>
+<span class="fc" id="L228">      outputSize -= compressedSize;</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">    } while (remaining &gt; 0);</span>
 
-<span class="nc" id="L231">    return output - outputAddress;</span>
+<span class="fc" id="L231">    return output - outputAddress;</span>
   }
 
   private static int compressBlock(final byte[] inputBase,
@@ -238,18 +238,18 @@ class ZstdFrameCompressor {
                                    final int outputSize,
                                    final CompressionContext context,
                                    final CompressionParameters parameters) {
-<span class="nc bnc" id="L241" title="All 2 branches missed.">    if (inputSize &lt; MIN_BLOCK_SIZE + SIZE_OF_BLOCK_HEADER + 1) {</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">    if (inputSize &lt; MIN_BLOCK_SIZE + SIZE_OF_BLOCK_HEADER + 1) {</span>
       //  don't even attempt compression below a certain input size
-<span class="nc" id="L243">      return 0;</span>
+<span class="fc" id="L243">      return 0;</span>
     }
 
-<span class="nc" id="L246">    context.blockCompressionState.enforceMaxDistance(inputAddress + inputSize,</span>
+<span class="fc" id="L246">    context.blockCompressionState.enforceMaxDistance(inputAddress + inputSize,</span>
                                                      1 &lt;&lt;
-<span class="nc" id="L248">                                                     parameters.getWindowLog());</span>
-<span class="nc" id="L249">    context.sequenceStore.reset();</span>
+<span class="fc" id="L248">                                                     parameters.getWindowLog());</span>
+<span class="fc" id="L249">    context.sequenceStore.reset();</span>
 
-<span class="nc" id="L251">    final int lastLiteralsSize = parameters.getStrategy().getCompressor()</span>
-<span class="nc" id="L252">                                           .compressBlock(inputBase,</span>
+<span class="fc" id="L251">    final int lastLiteralsSize = parameters.getStrategy().getCompressor()</span>
+<span class="fc" id="L252">                                           .compressBlock(inputBase,</span>
                                                           inputAddress,
                                                           inputSize,
                                                           context.sequenceStore,
@@ -257,49 +257,49 @@ class ZstdFrameCompressor {
                                                           context.offsets,
                                                           parameters);
 
-<span class="nc" id="L260">    final int lastLiteralsAddress = inputAddress + inputSize - lastLiteralsSize;</span>
+<span class="fc" id="L260">    final int lastLiteralsAddress = inputAddress + inputSize - lastLiteralsSize;</span>
 
     // append [lastLiteralsAddress .. lastLiteralsSize] to sequenceStore literals buffer
-<span class="nc" id="L263">    context.sequenceStore.appendLiterals(inputBase, lastLiteralsAddress,</span>
+<span class="fc" id="L263">    context.sequenceStore.appendLiterals(inputBase, lastLiteralsAddress,</span>
                                          lastLiteralsSize);
 
     // convert length/offsets into codes
-<span class="nc" id="L267">    context.sequenceStore.generateCodes();</span>
+<span class="fc" id="L267">    context.sequenceStore.generateCodes();</span>
 
-<span class="nc" id="L269">    final int outputLimit = outputAddress + outputSize;</span>
-<span class="nc" id="L270">    int output = outputAddress;</span>
+<span class="fc" id="L269">    final int outputLimit = outputAddress + outputSize;</span>
+<span class="fc" id="L270">    int output = outputAddress;</span>
 
-<span class="nc" id="L272">    final int compressedLiteralsSize =</span>
-<span class="nc" id="L273">        encodeLiterals(context.huffmanContext, parameters, outputBase, output,</span>
+<span class="fc" id="L272">    final int compressedLiteralsSize =</span>
+<span class="fc" id="L273">        encodeLiterals(context.huffmanContext, parameters, outputBase, output,</span>
                        outputLimit - output,
                        context.sequenceStore.literalsBuffer,
                        context.sequenceStore.literalsLength);
-<span class="nc" id="L277">    output += compressedLiteralsSize;</span>
+<span class="fc" id="L277">    output += compressedLiteralsSize;</span>
 
-<span class="nc" id="L279">    final int compressedSequencesSize =</span>
-<span class="nc" id="L280">        SequenceEncoder.compressSequences(outputBase, output,</span>
+<span class="fc" id="L279">    final int compressedSequencesSize =</span>
+<span class="fc" id="L280">        SequenceEncoder.compressSequences(outputBase, output,</span>
                                           outputLimit - output,
                                           context.sequenceStore,
-<span class="nc" id="L283">                                          parameters.getStrategy(),</span>
+<span class="fc" id="L283">                                          parameters.getStrategy(),</span>
                                           context.sequenceEncodingContext);
 
-<span class="nc" id="L286">    final int compressedSize = compressedLiteralsSize + compressedSequencesSize;</span>
-<span class="nc bnc" id="L287" title="All 2 branches missed.">    if (compressedSize == 0) {</span>
+<span class="fc" id="L286">    final int compressedSize = compressedLiteralsSize + compressedSequencesSize;</span>
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">    if (compressedSize == 0) {</span>
       // not compressible
 <span class="nc" id="L289">      return compressedSize;</span>
     }
 
     // Check compressibility
-<span class="nc" id="L293">    final int maxCompressedSize =</span>
-<span class="nc" id="L294">        inputSize - calculateMinimumGain(inputSize, parameters.getStrategy());</span>
-<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (compressedSize &gt; maxCompressedSize) {</span>
-<span class="nc" id="L296">      return 0; // not compressed</span>
+<span class="fc" id="L293">    final int maxCompressedSize =</span>
+<span class="fc" id="L294">        inputSize - calculateMinimumGain(inputSize, parameters.getStrategy());</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">    if (compressedSize &gt; maxCompressedSize) {</span>
+<span class="fc" id="L296">      return 0; // not compressed</span>
     }
 
     // confirm repeated offsets and entropy tables
-<span class="nc" id="L300">    context.commit();</span>
+<span class="fc" id="L300">    context.commit();</span>
 
-<span class="nc" id="L302">    return compressedSize;</span>
+<span class="fc" id="L302">    return compressedSize;</span>
   }
 
   private static int encodeLiterals(final HuffmanCompressionContext context,
@@ -309,80 +309,80 @@ class ZstdFrameCompressor {
                                     final int outputSize, final byte[] literals,
                                     final int literalsSize) {
     // TODO: move this to Strategy
-<span class="nc" id="L312">    final boolean bypassCompression =</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">        (parameters.getStrategy() == CompressionParameters.Strategy.FAST) &amp;&amp;</span>
-<span class="nc bnc" id="L314" title="All 2 branches missed.">        (parameters.getTargetLength() &gt; 0);</span>
-<span class="nc bnc" id="L315" title="All 4 branches missed.">    if (bypassCompression || literalsSize &lt;= MINIMUM_LITERALS_SIZE) {</span>
-<span class="nc" id="L316">      return rawLiterals(outputBase, outputAddress, outputSize, literals,</span>
+<span class="fc" id="L312">    final boolean bypassCompression =</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">        (parameters.getStrategy() == CompressionParameters.Strategy.FAST) &amp;&amp;</span>
+<span class="pc bnc" id="L314" title="All 2 branches missed.">        (parameters.getTargetLength() &gt; 0);</span>
+<span class="pc bpc" id="L315" title="1 of 4 branches missed.">    if (bypassCompression || literalsSize &lt;= MINIMUM_LITERALS_SIZE) {</span>
+<span class="fc" id="L316">      return rawLiterals(outputBase, outputAddress, outputSize, literals,</span>
                          literalsSize);
     }
 
-<span class="nc bnc" id="L320" title="All 4 branches missed.">    final int headerSize =</span>
+<span class="fc bfc" id="L320" title="All 4 branches covered.">    final int headerSize =</span>
         3 + (literalsSize &gt;= 1024? 1 : 0) + (literalsSize &gt;= 16384? 1 : 0);
 
-<span class="nc bnc" id="L323" title="All 2 branches missed.">    checkArgument(headerSize + 1 &lt;= outputSize, OUTPUT_BUFFER_TOO_SMALL);</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">    checkArgument(headerSize + 1 &lt;= outputSize, OUTPUT_BUFFER_TOO_SMALL);</span>
 
-<span class="nc" id="L325">    final int[] counts = new int[MAX_SYMBOL_COUNT]; // TODO: preallocate</span>
-<span class="nc" id="L326">    Histogram.count(literals, literalsSize, counts);</span>
-<span class="nc" id="L327">    final int maxSymbol = Histogram.findMaxSymbol(counts, MAX_SYMBOL);</span>
-<span class="nc" id="L328">    final int largestCount = Histogram.findLargestCount(counts, maxSymbol);</span>
+<span class="fc" id="L325">    final int[] counts = new int[MAX_SYMBOL_COUNT]; // TODO: preallocate</span>
+<span class="fc" id="L326">    Histogram.count(literals, literalsSize, counts);</span>
+<span class="fc" id="L327">    final int maxSymbol = Histogram.findMaxSymbol(counts, MAX_SYMBOL);</span>
+<span class="fc" id="L328">    final int largestCount = Histogram.findLargestCount(counts, maxSymbol);</span>
 
-<span class="nc" id="L330">    final int literalsAddress = 0;</span>
-<span class="nc bnc" id="L331" title="All 2 branches missed.">    if (largestCount == literalsSize) {</span>
+<span class="fc" id="L330">    final int literalsAddress = 0;</span>
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">    if (largestCount == literalsSize) {</span>
       // all bytes in input are equal
 <span class="nc" id="L333">      return rleLiterals(outputBase, outputAddress, literals, literalsSize);</span>
-<span class="nc bnc" id="L334" title="All 2 branches missed.">    } else if (largestCount &lt;= (literalsSize &gt;&gt;&gt; 7) + 4) {</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">    } else if (largestCount &lt;= (literalsSize &gt;&gt;&gt; 7) + 4) {</span>
       // heuristic: probably not compressible enough
-<span class="nc" id="L336">      return rawLiterals(outputBase, outputAddress, outputSize, literals,</span>
+<span class="fc" id="L336">      return rawLiterals(outputBase, outputAddress, outputSize, literals,</span>
                          literalsSize);
     }
 
-<span class="nc" id="L340">    final HuffmanCompressionTable previousTable = context.getPreviousTable();</span>
+<span class="fc" id="L340">    final HuffmanCompressionTable previousTable = context.getPreviousTable();</span>
     final HuffmanCompressionTable table;
     int serializedTableSize;
     final boolean reuseTable;
 
-<span class="nc" id="L345">    final boolean canReuse = previousTable.isValid(counts, maxSymbol);</span>
+<span class="fc" id="L345">    final boolean canReuse = previousTable.isValid(counts, maxSymbol);</span>
 
     // heuristic: use existing table for small inputs if valid
     // TODO: move to Strategy
-<span class="nc" id="L349">    final boolean preferReuse = parameters.getStrategy().ordinal() &lt;</span>
-<span class="nc bnc" id="L350" title="All 4 branches missed.">                                CompressionParameters.Strategy.LAZY.ordinal() &amp;&amp;</span>
+<span class="fc" id="L349">    final boolean preferReuse = parameters.getStrategy().ordinal() &lt;</span>
+<span class="pc bpc" id="L350" title="1 of 4 branches missed.">                                CompressionParameters.Strategy.LAZY.ordinal() &amp;&amp;</span>
                                 literalsSize &lt;= 1024;
-<span class="nc bnc" id="L352" title="All 4 branches missed.">    if (preferReuse &amp;&amp; canReuse) {</span>
-<span class="nc" id="L353">      table = previousTable;</span>
-<span class="nc" id="L354">      reuseTable = true;</span>
-<span class="nc" id="L355">      serializedTableSize = 0;</span>
+<span class="fc bfc" id="L352" title="All 4 branches covered.">    if (preferReuse &amp;&amp; canReuse) {</span>
+<span class="fc" id="L353">      table = previousTable;</span>
+<span class="fc" id="L354">      reuseTable = true;</span>
+<span class="fc" id="L355">      serializedTableSize = 0;</span>
     } else {
-<span class="nc" id="L357">      final HuffmanCompressionTable newTable = context.borrowTemporaryTable();</span>
+<span class="fc" id="L357">      final HuffmanCompressionTable newTable = context.borrowTemporaryTable();</span>
 
-<span class="nc" id="L359">      newTable.initialize(counts, maxSymbol,</span>
-<span class="nc" id="L360">                          HuffmanCompressionTable.optimalNumberOfBits(</span>
+<span class="fc" id="L359">      newTable.initialize(counts, maxSymbol,</span>
+<span class="fc" id="L360">                          HuffmanCompressionTable.optimalNumberOfBits(</span>
                               MAX_HUFFMAN_TABLE_LOG, literalsSize, maxSymbol),
-<span class="nc" id="L362">                          context.getCompressionTableWorkspace());</span>
+<span class="fc" id="L362">                          context.getCompressionTableWorkspace());</span>
 
-<span class="nc" id="L364">      serializedTableSize =</span>
-<span class="nc" id="L365">          newTable.write(outputBase, outputAddress + headerSize,</span>
+<span class="fc" id="L364">      serializedTableSize =</span>
+<span class="fc" id="L365">          newTable.write(outputBase, outputAddress + headerSize,</span>
                          outputSize - headerSize,
-<span class="nc" id="L367">                         context.getTableWriterWorkspace());</span>
+<span class="fc" id="L367">                         context.getTableWriterWorkspace());</span>
 
       // Check if using previous huffman table is beneficial
-<span class="nc bnc" id="L370" title="All 2 branches missed.">      if (canReuse &amp;&amp; previousTable.estimateCompressedSize(counts, maxSymbol) &lt;=</span>
+<span class="fc bfc" id="L370" title="All 2 branches covered.">      if (canReuse &amp;&amp; previousTable.estimateCompressedSize(counts, maxSymbol) &lt;=</span>
                       serializedTableSize +
-<span class="nc bnc" id="L372" title="All 2 branches missed.">                      newTable.estimateCompressedSize(counts, maxSymbol)) {</span>
-<span class="nc" id="L373">        table = previousTable;</span>
-<span class="nc" id="L374">        reuseTable = true;</span>
-<span class="nc" id="L375">        serializedTableSize = 0;</span>
-<span class="nc" id="L376">        context.discardTemporaryTable();</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">                      newTable.estimateCompressedSize(counts, maxSymbol)) {</span>
+<span class="fc" id="L373">        table = previousTable;</span>
+<span class="fc" id="L374">        reuseTable = true;</span>
+<span class="fc" id="L375">        serializedTableSize = 0;</span>
+<span class="fc" id="L376">        context.discardTemporaryTable();</span>
       } else {
-<span class="nc" id="L378">        table = newTable;</span>
-<span class="nc" id="L379">        reuseTable = false;</span>
+<span class="fc" id="L378">        table = newTable;</span>
+<span class="fc" id="L379">        reuseTable = false;</span>
       }
     }
 
     final int compressedSize;
-<span class="nc bnc" id="L384" title="All 2 branches missed.">    final boolean singleStream = literalsSize &lt; 256;</span>
-<span class="nc bnc" id="L385" title="All 2 branches missed.">    if (singleStream) {</span>
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">    final boolean singleStream = literalsSize &lt; 256;</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">    if (singleStream) {</span>
 <span class="nc" id="L386">      compressedSize = HuffmanCompressor.compressSingleStream(outputBase,</span>
                                                               outputAddress +
                                                               headerSize +
@@ -395,7 +395,7 @@ class ZstdFrameCompressor {
                                                               literalsSize,
                                                               table);
     } else {
-<span class="nc" id="L398">      compressedSize = HuffmanCompressor.compress4streams(outputBase,</span>
+<span class="fc" id="L398">      compressedSize = HuffmanCompressor.compress4streams(outputBase,</span>
                                                           outputAddress +
                                                           headerSize +
                                                           serializedTableSize,
@@ -407,50 +407,50 @@ class ZstdFrameCompressor {
                                                           literalsSize, table);
     }
 
-<span class="nc" id="L410">    final int totalSize = serializedTableSize + compressedSize;</span>
-<span class="nc" id="L411">    final int minimumGain =</span>
-<span class="nc" id="L412">        calculateMinimumGain(literalsSize, parameters.getStrategy());</span>
+<span class="fc" id="L410">    final int totalSize = serializedTableSize + compressedSize;</span>
+<span class="fc" id="L411">    final int minimumGain =</span>
+<span class="fc" id="L412">        calculateMinimumGain(literalsSize, parameters.getStrategy());</span>
 
-<span class="nc bnc" id="L414" title="All 2 branches missed.">    if (totalSize &gt;= literalsSize - minimumGain) {</span>
+<span class="pc bpc" id="L414" title="1 of 4 branches missed.">    if (compressedSize == 0 || totalSize &gt;= literalsSize - minimumGain) {</span>
       // incompressible or no savings
 
       // discard any temporary table we might have borrowed above
-<span class="nc" id="L418">      context.discardTemporaryTable();</span>
+<span class="fc" id="L418">      context.discardTemporaryTable();</span>
 
-<span class="nc" id="L420">      return rawLiterals(outputBase, outputAddress, outputSize, literals,</span>
+<span class="fc" id="L420">      return rawLiterals(outputBase, outputAddress, outputSize, literals,</span>
                          literalsSize);
     }
 
-<span class="nc bnc" id="L424" title="All 2 branches missed.">    final int encodingType =</span>
+<span class="fc bfc" id="L424" title="All 2 branches covered.">    final int encodingType =</span>
         reuseTable? TREELESS_LITERALS_BLOCK : COMPRESSED_LITERALS_BLOCK;
 
     // Build header
-<span class="nc bnc" id="L428" title="All 4 branches missed.">    switch (headerSize) {</span>
+<span class="pc bpc" id="L428" title="1 of 4 branches missed.">    switch (headerSize) {</span>
       case 3: { // 2 - 2 - 10 - 10
-<span class="nc bnc" id="L430" title="All 2 branches missed.">        final int header =</span>
+<span class="pc bpc" id="L430" title="1 of 2 branches missed.">        final int header =</span>
             encodingType | ((singleStream? 0 : 1) &lt;&lt; 2) | (literalsSize &lt;&lt; 4) |
             (totalSize &lt;&lt; 14);
-<span class="nc" id="L433">        put24BitLittleEndian(outputBase, outputAddress, header);</span>
-<span class="nc" id="L434">        break;</span>
+<span class="fc" id="L433">        put24BitLittleEndian(outputBase, outputAddress, header);</span>
+<span class="fc" id="L434">        break;</span>
       }
       case 4: { // 2 - 2 - 14 - 14
-<span class="nc" id="L437">        final int header =</span>
+<span class="fc" id="L437">        final int header =</span>
             encodingType | (2 &lt;&lt; 2) | (literalsSize &lt;&lt; 4) | (totalSize &lt;&lt; 18);
-<span class="nc" id="L439">        putInt(outputBase, outputAddress, header);</span>
-<span class="nc" id="L440">        break;</span>
+<span class="fc" id="L439">        putInt(outputBase, outputAddress, header);</span>
+<span class="fc" id="L440">        break;</span>
       }
       case 5: { // 2 - 2 - 18 - 18
-<span class="nc" id="L443">        final int header =</span>
+<span class="fc" id="L443">        final int header =</span>
             encodingType | (3 &lt;&lt; 2) | (literalsSize &lt;&lt; 4) | (totalSize &lt;&lt; 22);
-<span class="nc" id="L445">        putInt(outputBase, outputAddress, header);</span>
-<span class="nc" id="L446">        outputBase[outputAddress + SIZE_OF_INT] = (byte) (totalSize &gt;&gt;&gt; 10);</span>
-<span class="nc" id="L447">        break;</span>
+<span class="fc" id="L445">        putInt(outputBase, outputAddress, header);</span>
+<span class="fc" id="L446">        outputBase[outputAddress + SIZE_OF_INT] = (byte) (totalSize &gt;&gt;&gt; 10);</span>
+<span class="fc" id="L447">        break;</span>
       }
       default:  // not possible : headerSize is {3,4,5}
 <span class="nc" id="L450">        throw new IllegalStateException();</span>
     }
 
-<span class="nc" id="L453">    return headerSize + totalSize;</span>
+<span class="fc" id="L453">    return headerSize + totalSize;</span>
   }
 
   private static int rleLiterals(final byte[] outputBase,
@@ -484,48 +484,48 @@ class ZstdFrameCompressor {
   private static int calculateMinimumGain(final int inputSize,
                                           final CompressionParameters.Strategy strategy) {
     // TODO: move this to Strategy to avoid hardcoding a specific strategy here
-<span class="nc bnc" id="L487" title="All 2 branches missed.">    final int minLog =</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">    final int minLog =</span>
         strategy == CompressionParameters.Strategy.BTULTRA? 7 : 6;
-<span class="nc" id="L489">    return (inputSize &gt;&gt;&gt; minLog) + 2;</span>
+<span class="fc" id="L489">    return (inputSize &gt;&gt;&gt; minLog) + 2;</span>
   }
 
   private static int rawLiterals(final byte[] outputBase,
                                  final int outputAddress, final int outputSize,
                                  final byte[] inputBase, final int inputSize) {
-<span class="nc" id="L495">    int headerSize = 1;</span>
-<span class="nc bnc" id="L496" title="All 2 branches missed.">    if (inputSize &gt;= 32) {</span>
-<span class="nc" id="L497">      headerSize++;</span>
+<span class="fc" id="L495">    int headerSize = 1;</span>
+<span class="fc bfc" id="L496" title="All 2 branches covered.">    if (inputSize &gt;= 32) {</span>
+<span class="fc" id="L497">      headerSize++;</span>
     }
-<span class="nc bnc" id="L499" title="All 2 branches missed.">    if (inputSize &gt;= 4096) {</span>
-<span class="nc" id="L500">      headerSize++;</span>
+<span class="fc bfc" id="L499" title="All 2 branches covered.">    if (inputSize &gt;= 4096) {</span>
+<span class="fc" id="L500">      headerSize++;</span>
     }
 
-<span class="nc bnc" id="L503" title="All 2 branches missed.">    checkArgument(inputSize + headerSize &lt;= outputSize,</span>
+<span class="pc bpc" id="L503" title="1 of 2 branches missed.">    checkArgument(inputSize + headerSize &lt;= outputSize,</span>
                   OUTPUT_BUFFER_TOO_SMALL);
 
-<span class="nc bnc" id="L506" title="All 4 branches missed.">    switch (headerSize) {</span>
+<span class="pc bpc" id="L506" title="2 of 4 branches missed.">    switch (headerSize) {</span>
       case 1:
-<span class="nc" id="L508">        outputBase[outputAddress] =</span>
+<span class="fc" id="L508">        outputBase[outputAddress] =</span>
             (byte) (RAW_LITERALS_BLOCK | (inputSize &lt;&lt; 3));
-<span class="nc" id="L510">        break;</span>
+<span class="fc" id="L510">        break;</span>
       case 2:
 <span class="nc" id="L512">        putShort(outputBase, outputAddress,</span>
                  (short) (RAW_LITERALS_BLOCK | (1 &lt;&lt; 2) | (inputSize &lt;&lt; 4)));
 <span class="nc" id="L514">        break;</span>
       case 3:
-<span class="nc" id="L516">        put24BitLittleEndian(outputBase, outputAddress,</span>
+<span class="fc" id="L516">        put24BitLittleEndian(outputBase, outputAddress,</span>
                              RAW_LITERALS_BLOCK | (3 &lt;&lt; 2) | (inputSize &lt;&lt; 4));
-<span class="nc" id="L518">        break;</span>
+<span class="fc" id="L518">        break;</span>
       default:
 <span class="nc" id="L520">        throw new AssertionError();</span>
     }
 
     // TODO: ensure this test is correct
-<span class="nc bnc" id="L524" title="All 2 branches missed.">    checkArgument(inputSize + 1 &lt;= outputSize, OUTPUT_BUFFER_TOO_SMALL);</span>
+<span class="pc bpc" id="L524" title="1 of 2 branches missed.">    checkArgument(inputSize + 1 &lt;= outputSize, OUTPUT_BUFFER_TOO_SMALL);</span>
 
-<span class="nc" id="L526">    copyMemory(inputBase, 0, outputBase, outputAddress + headerSize, inputSize);</span>
+<span class="fc" id="L526">    copyMemory(inputBase, 0, outputBase, outputAddress + headerSize, inputSize);</span>
 
-<span class="nc" id="L528">    return headerSize + inputSize;</span>
+<span class="fc" id="L528">    return headerSize + inputSize;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

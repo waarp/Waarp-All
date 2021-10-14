@@ -55,16 +55,16 @@ public class DbHostConfigurationR66RestMethodHandler
       &quot;HostId as VARCHAR in URI as &quot;;
   public static final String BASEURI = &quot;hostconfigs&quot;;
 
-<span class="nc" id="L58">  public enum FILTER_ARGS {</span>
-<span class="nc" id="L59">    HOSTID(&quot;host name subtext&quot;), BUSINESS(&quot;BUSINESS information subtext&quot;),</span>
-<span class="nc" id="L60">    ROLES(&quot;ROLES information subtext&quot;), ALIASES(&quot;ALIASES information subtext&quot;),</span>
-<span class="nc" id="L61">    OTHERS(&quot;OTHERS information subtext&quot;);</span>
+<span class="fc" id="L58">  public enum FILTER_ARGS {</span>
+<span class="fc" id="L59">    HOSTID(&quot;host name subtext&quot;), BUSINESS(&quot;BUSINESS information subtext&quot;),</span>
+<span class="fc" id="L60">    ROLES(&quot;ROLES information subtext&quot;), ALIASES(&quot;ALIASES information subtext&quot;),</span>
+<span class="fc" id="L61">    OTHERS(&quot;OTHERS information subtext&quot;);</span>
 
     public final String type;
 
-<span class="nc" id="L65">    FILTER_ARGS(final String type) {</span>
-<span class="nc" id="L66">      this.type = type;</span>
-<span class="nc" id="L67">    }</span>
+<span class="fc" id="L65">    FILTER_ARGS(final String type) {</span>
+<span class="fc" id="L66">      this.type = type;</span>
+<span class="fc" id="L67">    }</span>
   }
 
   /**
@@ -73,8 +73,8 @@ public class DbHostConfigurationR66RestMethodHandler
    */
   public DbHostConfigurationR66RestMethodHandler(final RestConfiguration config,
                                                  final METHOD... method) {
-<span class="nc" id="L76">    super(BASEURI, config, method);</span>
-<span class="nc" id="L77">  }</span>
+<span class="fc" id="L76">    super(BASEURI, config, method);</span>
+<span class="fc" id="L77">  }</span>
 
   @Override
   protected final DbHostConfiguration getItem(final HttpRestHandler handler,
@@ -83,24 +83,24 @@ public class DbHostConfigurationR66RestMethodHandler
                                               final Object body)
       throws HttpNotFoundRequestException {
     try {
-<span class="nc" id="L86">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L86">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L87">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L88">      throw new HttpNotFoundRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L89">    }</span>
-<span class="nc" id="L90">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L91">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L89">    }</span>
+<span class="fc" id="L90">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L91">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="nc" id="L93">      final JsonNode node = RestArgument.getId(arg);</span>
+<span class="fc" id="L93">      final JsonNode node = RestArgument.getId(arg);</span>
       final String id;
-<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (node.isMissingNode()) {</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">      if (node.isMissingNode()) {</span>
         // shall not be but continue however
 <span class="nc" id="L97">        id = arg.path(DbHostConfiguration.Columns.HOSTID.name()).asText();</span>
       } else {
-<span class="nc" id="L99">        id = node.asText();</span>
+<span class="fc" id="L99">        id = node.asText();</span>
       }
-<span class="nc" id="L101">      return new DbHostConfiguration(id);</span>
-<span class="nc" id="L102">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L103">      throw new HttpNotFoundRequestException(</span>
+<span class="fc" id="L101">      return new DbHostConfiguration(id);</span>
+<span class="fc" id="L102">    } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L103">      throw new HttpNotFoundRequestException(</span>
           &quot;Issue while reading from database &quot; + arg, e);
     }
   }
@@ -112,14 +112,14 @@ public class DbHostConfigurationR66RestMethodHandler
                                                  final Object body)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc" id="L115">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L115">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L116">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L117">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L118">    }</span>
-<span class="nc" id="L119">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L120">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L118">    }</span>
+<span class="fc" id="L119">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L120">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="nc" id="L122">      return new DbHostConfiguration(arg);</span>
+<span class="fc" id="L122">      return new DbHostConfiguration(arg);</span>
 <span class="nc" id="L123">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L124">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while inserting into database&quot;, e);
@@ -132,34 +132,34 @@ public class DbHostConfigurationR66RestMethodHandler
       final RestArgument result, final Object body)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc" id="L135">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L135">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L136">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L137">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L138">    }</span>
-<span class="nc" id="L139">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L140">    arg.setAll(arguments.getBody());</span>
-<span class="nc" id="L141">    String hostid = arg.path(FILTER_ARGS.HOSTID.name()).asText();</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(hostid)) {</span>
-<span class="nc" id="L143">      hostid = null;</span>
+<span class="fc" id="L138">    }</span>
+<span class="fc" id="L139">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L140">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L141">    String hostid = arg.path(FILTER_ARGS.HOSTID.name()).asText();</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(hostid)) {</span>
+<span class="fc" id="L143">      hostid = null;</span>
     }
-<span class="nc" id="L145">    String business = arg.path(FILTER_ARGS.BUSINESS.name()).asText();</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(business)) {</span>
-<span class="nc" id="L147">      business = null;</span>
+<span class="fc" id="L145">    String business = arg.path(FILTER_ARGS.BUSINESS.name()).asText();</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(business)) {</span>
+<span class="fc" id="L147">      business = null;</span>
     }
-<span class="nc" id="L149">    String role = arg.path(FILTER_ARGS.ROLES.name()).asText();</span>
-<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(role)) {</span>
-<span class="nc" id="L151">      role = null;</span>
+<span class="fc" id="L149">    String role = arg.path(FILTER_ARGS.ROLES.name()).asText();</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(role)) {</span>
+<span class="fc" id="L151">      role = null;</span>
     }
-<span class="nc" id="L153">    String alias = arg.path(FILTER_ARGS.ALIASES.name()).asText();</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(alias)) {</span>
-<span class="nc" id="L155">      alias = null;</span>
+<span class="fc" id="L153">    String alias = arg.path(FILTER_ARGS.ALIASES.name()).asText();</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(alias)) {</span>
+<span class="fc" id="L155">      alias = null;</span>
     }
-<span class="nc" id="L157">    String other = arg.path(FILTER_ARGS.OTHERS.name()).asText();</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(other)) {</span>
-<span class="nc" id="L159">      other = null;</span>
+<span class="fc" id="L157">    String other = arg.path(FILTER_ARGS.OTHERS.name()).asText();</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(other)) {</span>
+<span class="fc" id="L159">      other = null;</span>
     }
     try {
-<span class="nc" id="L162">      return DbHostConfiguration.getFilterPrepareStament(handler.getDbSession(),</span>
+<span class="fc" id="L162">      return DbHostConfiguration.getFilterPrepareStament(handler.getDbSession(),</span>
                                                          hostid, business, role,
                                                          alias, other);
 <span class="nc" id="L165">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
@@ -176,7 +176,7 @@ public class DbHostConfigurationR66RestMethodHandler
       final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
-<span class="nc" id="L179">      return DbHostConfiguration.getFromStatement(statement);</span>
+<span class="fc" id="L179">      return DbHostConfiguration.getFromStatement(statement);</span>
 <span class="nc" id="L180">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L181">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while selecting from database&quot;, e);
@@ -188,83 +188,83 @@ public class DbHostConfigurationR66RestMethodHandler
 
   @Override
   protected final ArrayNode getDetailedAllow() {
-<span class="nc" id="L191">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L191">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="nc" id="L193">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L194">    node1.put(AbstractDbData.JSON_MODEL,</span>
-<span class="nc" id="L195">              DbHostConfiguration.class.getSimpleName());</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">    for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {</span>
-<span class="nc" id="L197">      node1.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L193">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L194">    node1.put(AbstractDbData.JSON_MODEL,</span>
+<span class="fc" id="L195">              DbHostConfiguration.class.getSimpleName());</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">    for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {</span>
+<span class="fc" id="L197">      node1.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);</span>
     }
 
     ObjectNode node2;
     ObjectNode node3;
-<span class="nc bnc" id="L202" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="nc" id="L203">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;,</span>
-<span class="nc" id="L204">                                             COMMAND_TYPE.GET.name(),</span>
-<span class="nc" id="L205">                                             JsonHandler.createObjectNode().put(</span>
-<span class="nc" id="L206">                                                 DbHostConfiguration.Columns.HOSTID.name(),</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L203">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;,</span>
+<span class="fc" id="L204">                                             COMMAND_TYPE.GET.name(),</span>
+<span class="fc" id="L205">                                             JsonHandler.createObjectNode().put(</span>
+<span class="fc" id="L206">                                                 DbHostConfiguration.Columns.HOSTID.name(),</span>
                                                  HOST_ID_AS_VARCHAR_IN_URI_AS +
                                                  path + &quot;/id&quot;), node1);
-<span class="nc" id="L209">      node.add(node2);</span>
+<span class="fc" id="L209">      node.add(node2);</span>
 
-<span class="nc" id="L211">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L212" title="All 2 branches missed.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
-<span class="nc" id="L213">        node3.put(arg.name(), arg.type);</span>
+<span class="fc" id="L211">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
+<span class="fc" id="L213">        node3.put(arg.name(), arg.type);</span>
       }
-<span class="nc" id="L215">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
-<span class="nc" id="L216">                                             COMMAND_TYPE.MULTIGET.name(),</span>
+<span class="fc" id="L215">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L216">                                             COMMAND_TYPE.MULTIGET.name(),</span>
                                              node3,
-<span class="nc" id="L218">                                             JsonHandler.createArrayNode()</span>
-<span class="nc" id="L219">                                                        .add(node1));</span>
-<span class="nc" id="L220">      node.add(node2);</span>
+<span class="fc" id="L218">                                             JsonHandler.createArrayNode()</span>
+<span class="fc" id="L219">                                                        .add(node1));</span>
+<span class="fc" id="L220">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="nc" id="L223">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L224">      node3.put(DbHostConfiguration.Columns.HOSTID.name(),</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="fc" id="L223">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L224">      node3.put(DbHostConfiguration.Columns.HOSTID.name(),</span>
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + &quot;/id&quot;);
-<span class="nc bnc" id="L226" title="All 2 branches missed.">      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {</span>
-<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (column.name().equalsIgnoreCase(</span>
-<span class="nc" id="L228">            DbHostConfiguration.Columns.HOSTID.name())) {</span>
-<span class="nc" id="L229">          continue;</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">        if (column.name().equalsIgnoreCase(</span>
+<span class="fc" id="L228">            DbHostConfiguration.Columns.HOSTID.name())) {</span>
+<span class="fc" id="L229">          continue;</span>
         }
-<span class="nc" id="L231">        node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L231">        node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L233">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
-<span class="nc" id="L234">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
+<span class="fc" id="L233">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
+<span class="fc" id="L234">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L236">      node.add(node2);</span>
+<span class="fc" id="L236">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L238" title="All 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
-<span class="nc" id="L239">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L240">      node3.put(DbHostConfiguration.Columns.HOSTID.name(),</span>
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
+<span class="fc" id="L239">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L240">      node3.put(DbHostConfiguration.Columns.HOSTID.name(),</span>
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + &quot;/id&quot;);
-<span class="nc" id="L242">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
-<span class="nc" id="L243">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
+<span class="fc" id="L242">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
+<span class="fc" id="L243">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L245">      node.add(node2);</span>
+<span class="fc" id="L245">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L247" title="All 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
-<span class="nc" id="L248">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L249" title="All 2 branches missed.">      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {</span>
-<span class="nc" id="L250">        node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);</span>
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="fc" id="L248">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {</span>
+<span class="fc" id="L250">        node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L252">      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,</span>
-<span class="nc" id="L253">                                             COMMAND_TYPE.CREATE.name(), node3,</span>
+<span class="fc" id="L252">      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,</span>
+<span class="fc" id="L253">                                             COMMAND_TYPE.CREATE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L255">      node.add(node2);</span>
+<span class="fc" id="L255">      node.add(node2);</span>
     }
-<span class="nc" id="L257">    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
-<span class="nc" id="L258">                                           COMMAND_TYPE.OPTIONS.name(), null,</span>
+<span class="fc" id="L257">    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="fc" id="L258">                                           COMMAND_TYPE.OPTIONS.name(), null,</span>
                                            null);
-<span class="nc" id="L260">    node.add(node2);</span>
+<span class="fc" id="L260">    node.add(node2);</span>
 
-<span class="nc" id="L262">    return node;</span>
+<span class="fc" id="L262">    return node;</span>
   }
 
   @Override
   public final String getPrimaryPropertyName() {
-<span class="nc" id="L267">    return Columns.HOSTID.name();</span>
+<span class="fc" id="L267">    return Columns.HOSTID.name();</span>
   }
 
   @Override
@@ -273,14 +273,14 @@ public class DbHostConfigurationR66RestMethodHandler
                            final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L276">    super.put(handler, arguments, result, body);</span>
+<span class="fc" id="L276">    super.put(handler, arguments, result, body);</span>
     // according to what is updated and if concerned
-<span class="nc" id="L278">    final DbHostConfiguration item = getItem(handler, arguments, result, body);</span>
-<span class="nc bnc" id="L279" title="All 2 branches missed.">    if (item.getHostid().equals(Configuration.configuration.getHostId())) {</span>
+<span class="fc" id="L278">    final DbHostConfiguration item = getItem(handler, arguments, result, body);</span>
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">    if (item.getHostid().equals(Configuration.configuration.getHostId())) {</span>
 <span class="nc" id="L280">      DbHostConfiguration.updateHostConfiguration(Configuration.configuration,</span>
                                                   item);
     }
-<span class="nc" id="L283">  }</span>
+<span class="fc" id="L283">  }</span>
 
   @Override
   protected final void checkAuthorization(final HttpRestHandler handler,
@@ -289,17 +289,17 @@ public class DbHostConfigurationR66RestMethodHandler
                                           final METHOD method)
       throws HttpForbiddenRequestException {
     try {
-<span class="nc" id="L292">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L292">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L293">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L294">      throw new HttpForbiddenRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L295">    }</span>
-<span class="nc" id="L296">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
-<span class="nc" id="L297">    final R66Session session = r66handler.getServerHandler().getSession();</span>
-<span class="nc bnc" id="L298" title="All 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {</span>
+<span class="fc" id="L295">    }</span>
+<span class="fc" id="L296">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
+<span class="fc" id="L297">    final R66Session session = r66handler.getServerHandler().getSession();</span>
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {</span>
 <span class="nc" id="L299">      throw new HttpForbiddenRequestException(</span>
           &quot;Partner must have ConfigAdmin role&quot;);
     }
-<span class="nc" id="L302">  }</span>
+<span class="fc" id="L302">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

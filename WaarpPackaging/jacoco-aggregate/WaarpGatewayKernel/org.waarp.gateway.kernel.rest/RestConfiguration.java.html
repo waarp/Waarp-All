@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestConfiguration.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.rest</a> &gt; <span class="el_source">RestConfiguration.java</span></div><h1>RestConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.rest;
+
+import org.waarp.common.crypto.HmacSha256;
+import org.waarp.common.exception.CryptoException;
+import org.waarp.common.utility.WaarpStringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+/**
+ * General RestConfiguration model
+ */
+<span class="fc" id="L34">public class RestConfiguration {</span>
+<span class="fc" id="L35">  public enum CRUD {</span>
+<span class="fc" id="L36">    CREATE(0x01), READ(0x02), UPDATE(0x04), DELETE(0x08), ALL(0x0F);</span>
+
+    public final byte mask;
+
+<span class="fc" id="L40">    CRUD(final int mask) {</span>
+<span class="fc" id="L41">      this.mask = (byte) mask;</span>
+<span class="fc" id="L42">    }</span>
+
+    public final boolean isValid(final byte tocheck) {
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">      return (tocheck &amp; mask) != 0;</span>
+    }
+  }
+
+  /**
+   * SERVER REST interface using explicit address (null means all available)
+   */
+  private String restAddress;
+  /**
+   * Http REST port (SSL or not SSL)
+   */
+<span class="fc" id="L56">  private int restPort = -1;</span>
+  /**
+   * SERVER REST interface using SSL
+   */
+  private boolean restSsl;
+  /**
+   * SERVER REST interface using time limit (default: no limit &lt;= 0)
+   */
+<span class="fc" id="L64">  private long restTimeLimit = -1;</span>
+  /**
+   * SERVER REST interface using authentication
+   */
+  private boolean restAuthenticated;
+  /**
+   * SERVER REST interface using signature
+   */
+<span class="fc" id="L72">  private boolean restSignature = true;</span>
+  /**
+   * Key for signature in SHA-256
+   */
+  private HmacSha256 hmacSha256;
+  /**
+   * SERVER REST interface allowing one Handler and associated CRUD (or
+   * equivalent POST, GET, PUT, DELETE)
+   * methods (2^0 for active, 2^1 as Create/POST, 2^2 as Read/GET, 2^3 as
+   * Update/PUT, 2^4 as Delete/DELETE)
+   */
+  private byte[] resthandlersCrud;
+
+  /**
+   * Associated RestMethod Handlers
+   */
+<span class="fc" id="L88">  public final HashMap&lt;String, RestMethodHandler&gt; restHashMap =</span>
+      new HashMap&lt;String, RestMethodHandler&gt;();
+
+  /**
+   * Set Key from String directly
+   *
+   * @param authentKey
+   */
+  public final void initializeKey(final String authentKey) {
+<span class="nc" id="L97">    setHmacSha256(new HmacSha256());</span>
+<span class="nc" id="L98">    getHmacSha256().setSecretKey(authentKey.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L99">  }</span>
+
+  /**
+   * Set Key from file
+   *
+   * @param authentKey
+   *
+   * @throws CryptoException
+   * @throws IOException
+   */
+  public final void initializeKey(final File authentKey)
+      throws CryptoException, IOException {
+<span class="fc" id="L111">    setHmacSha256(new HmacSha256());</span>
+<span class="fc" id="L112">    getHmacSha256().setSecretKey(authentKey);</span>
+<span class="fc" id="L113">  }</span>
+
+  @Override
+  public String toString() {
+<span class="fc" id="L117">    final StringBuilder result = new StringBuilder(</span>
+<span class="fc" id="L118">        &quot;{address: &quot; + getRestAddress() + &quot;, port: &quot; + getRestPort() +</span>
+<span class="fc" id="L119">        &quot;, ssl: &quot; + isRestSsl() + &quot;, time: &quot; + getRestTimeLimit() +</span>
+<span class="fc" id="L120">        &quot;, authent:&quot; + isRestAuthenticated() + &quot;, signature: &quot; +</span>
+<span class="fc" id="L121">        isRestSignature() + &quot;, handlers: [&quot;);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">    for (final Entry&lt;String, RestMethodHandler&gt; elt : restHashMap.entrySet()) {</span>
+<span class="nc" id="L123">      result.append(elt.getKey()).append('=').append(elt.getValue().methods)</span>
+<span class="nc" id="L124">            .append(&quot;, &quot;);</span>
+<span class="nc" id="L125">    }</span>
+<span class="fc" id="L126">    result.append(&quot;], crud: [&quot;);</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">    for (final byte crud : getResthandlersCrud()) {</span>
+<span class="fc" id="L128">      result.append(crud).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L130">    result.append(&quot;] }&quot;);</span>
+<span class="fc" id="L131">    return result.toString();</span>
+  }
+
+  /**
+   * @return the restAddress
+   */
+  public final String getRestAddress() {
+<span class="fc" id="L138">    return restAddress;</span>
+  }
+
+  /**
+   * @param restAddress the restAddress to set
+   */
+  public final void setRestAddress(final String restAddress) {
+<span class="fc" id="L145">    this.restAddress = restAddress;</span>
+<span class="fc" id="L146">  }</span>
+
+  /**
+   * @return the restPort
+   */
+  public final int getRestPort() {
+<span class="fc" id="L152">    return restPort;</span>
+  }
+
+  /**
+   * @param restPort the restPort to set
+   */
+  public final void setRestPort(final int restPort) {
+<span class="fc" id="L159">    this.restPort = restPort;</span>
+<span class="fc" id="L160">  }</span>
+
+  /**
+   * @return the restSsl
+   */
+  public final boolean isRestSsl() {
+<span class="fc" id="L166">    return restSsl;</span>
+  }
+
+  /**
+   * @param restSsl the restSsl to set
+   */
+  public final void setRestSsl(final boolean restSsl) {
+<span class="fc" id="L173">    this.restSsl = restSsl;</span>
+<span class="fc" id="L174">  }</span>
+
+  /**
+   * @return the restTimeLimit
+   */
+  public final long getRestTimeLimit() {
+<span class="fc" id="L180">    return restTimeLimit;</span>
+  }
+
+  /**
+   * @param restTimeLimit the restTimeLimit to set
+   */
+  public final void setRestTimeLimit(final long restTimeLimit) {
+<span class="fc" id="L187">    this.restTimeLimit = restTimeLimit;</span>
+<span class="fc" id="L188">  }</span>
+
+  /**
+   * @return the restAuthenticated
+   */
+  public final boolean isRestAuthenticated() {
+<span class="fc" id="L194">    return restAuthenticated;</span>
+  }
+
+  /**
+   * @param restAuthenticated the restAuthenticated to set
+   */
+  public final void setRestAuthenticated(final boolean restAuthenticated) {
+<span class="fc" id="L201">    this.restAuthenticated = restAuthenticated;</span>
+<span class="fc" id="L202">  }</span>
+
+  /**
+   * @return the restSignature
+   */
+  public final boolean isRestSignature() {
+<span class="fc" id="L208">    return restSignature;</span>
+  }
+
+  /**
+   * @param restSignature the restSignature to set
+   */
+  public final void setRestSignature(final boolean restSignature) {
+<span class="fc" id="L215">    this.restSignature = restSignature;</span>
+<span class="fc" id="L216">  }</span>
+
+  /**
+   * @return the hmacSha256
+   */
+  public final HmacSha256 getHmacSha256() {
+<span class="fc" id="L222">    return hmacSha256;</span>
+  }
+
+  /**
+   * @param hmacSha256 the hmacSha256 to set
+   */
+  public final void setHmacSha256(final HmacSha256 hmacSha256) {
+<span class="fc" id="L229">    this.hmacSha256 = hmacSha256;</span>
+<span class="fc" id="L230">  }</span>
+
+  /**
+   * @return the resthandlersCrud
+   */
+  public final byte[] getResthandlersCrud() {
+<span class="fc" id="L236">    return resthandlersCrud;</span>
+  }
+
+  /**
+   * @param resthandlersCrud the resthandlersCrud to set
+   */
+  public final void setResthandlersCrud(final byte[] resthandlersCrud) {
+<span class="fc" id="L243">    this.resthandlersCrud = resthandlersCrud;</span>
+<span class="fc" id="L244">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

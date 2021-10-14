@@ -29,6 +29,7 @@ import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
@@ -45,16 +46,16 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 /**
  * Handler for HTTP information support
  */
-<span class="fc" id="L48">public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {</span>
+<span class="fc" id="L49">public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {</span>
   /**
    * Internal Logger
    */
-<span class="fc" id="L52">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L53">      WaarpLoggerFactory.getLogger(HttpFormattedHandlerProxyR66.class);</span>
+<span class="fc" id="L53">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L54">      WaarpLoggerFactory.getLogger(HttpFormattedHandlerProxyR66.class);</span>
 
-<span class="fc" id="L55">  private enum REQUEST {</span>
-<span class="fc" id="L56">    index(&quot;index.html&quot;), error(&quot;monitoring_header.html&quot;, &quot;monitoring_end.html&quot;),</span>
-<span class="fc" id="L57">    statusxml(&quot;&quot;);</span>
+<span class="fc" id="L56">  private enum REQUEST {</span>
+<span class="fc" id="L57">    index(&quot;index.html&quot;), error(&quot;monitoring_header.html&quot;, &quot;monitoring_end.html&quot;),</span>
+<span class="fc" id="L58">    statusxml(&quot;&quot;);</span>
 
     private static final String MONITOR = &quot;monitor/&quot;;
     private final String header;
@@ -65,174 +66,177 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
      *
      * @param uniquefile
      */
-<span class="fc" id="L68">    REQUEST(final String uniquefile) {</span>
-<span class="fc" id="L69">      header = uniquefile;</span>
-<span class="fc" id="L70">      end = uniquefile;</span>
-<span class="fc" id="L71">    }</span>
+<span class="fc" id="L69">    REQUEST(final String uniquefile) {</span>
+<span class="fc" id="L70">      header = uniquefile;</span>
+<span class="fc" id="L71">      end = uniquefile;</span>
+<span class="fc" id="L72">    }</span>
 
     /**
      * @param header
      * @param end
      */
-<span class="fc" id="L77">    REQUEST(final String header, final String end) {</span>
-<span class="fc" id="L78">      this.header = header;</span>
-<span class="fc" id="L79">      this.end = end;</span>
-<span class="fc" id="L80">    }</span>
+<span class="fc" id="L78">    REQUEST(final String header, final String end) {</span>
+<span class="fc" id="L79">      this.header = header;</span>
+<span class="fc" id="L80">      this.end = end;</span>
+<span class="fc" id="L81">    }</span>
 
     /**
      * Reader for a unique file
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(final HttpFormattedHandlerProxyR66 handler) {
-<span class="fc" id="L88">      return handler.readFileHeaderInternal(</span>
-<span class="fc" id="L89">          configuration.getHttpBasePath() + MONITOR + header);</span>
+    public final String readFileUnique(
+        final HttpFormattedHandlerProxyR66 handler) {
+<span class="fc" id="L90">      return handler.readFileHeaderInternal(</span>
+<span class="fc" id="L91">          configuration.getHttpBasePath() + MONITOR + header);</span>
     }
 
-    public String readHeader(final HttpFormattedHandlerProxyR66 handler) {
-<span class="nc" id="L93">      return handler.readFileHeaderInternal(</span>
-<span class="nc" id="L94">          configuration.getHttpBasePath() + MONITOR + header);</span>
+    public final String readHeader(final HttpFormattedHandlerProxyR66 handler) {
+<span class="nc" id="L95">      return handler.readFileHeaderInternal(</span>
+<span class="nc" id="L96">          configuration.getHttpBasePath() + MONITOR + header);</span>
     }
 
-    public String readEnd() {
-<span class="nc" id="L98">      return WaarpStringUtils</span>
-<span class="nc" id="L99">          .readFile(configuration.getHttpBasePath() + MONITOR + end);</span>
+    public final String readEnd() {
+<span class="nc" id="L100">      return WaarpStringUtils.readFile(</span>
+<span class="nc" id="L101">          configuration.getHttpBasePath() + MONITOR + end);</span>
     }
   }
 
-<span class="fc" id="L103">  final R66Session authentHttp = new R66Session();</span>
+<span class="fc" id="L105">  final R66Session authentHttp = new R66Session(false);</span>
 
   private String readFileHeaderInternal(final String filename) {
     final String value;
     try {
-<span class="fc" id="L108">      value = WaarpStringUtils.readFileException(filename);</span>
-<span class="nc" id="L109">    } catch (final FileTransferException e) {</span>
-<span class="nc" id="L110">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
-<span class="nc" id="L111">      return &quot;&quot;;</span>
-<span class="fc" id="L112">    }</span>
-<span class="fc" id="L113">    final StringBuilder builder = new StringBuilder(value);</span>
+<span class="fc" id="L110">      value = WaarpStringUtils.readFileException(filename);</span>
+<span class="nc" id="L111">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L112">      logger.error(&quot;Error while trying to read: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L113">                   e.getMessage());</span>
+<span class="nc" id="L114">      return &quot;&quot;;</span>
+<span class="fc" id="L115">    }</span>
+<span class="fc" id="L116">    final StringBuilder builder = new StringBuilder(value);</span>
 
-<span class="fc" id="L115">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),</span>
-<span class="fc" id="L116">                             new Date().toString());</span>
-<span class="fc" id="L117">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),</span>
-<span class="fc" id="L118">                             Integer.toString(</span>
-<span class="fc" id="L119">                                 configuration.getLocalTransaction()</span>
-<span class="fc" id="L120">                                              .getNumberLocalChannel()));</span>
-<span class="fc" id="L121">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),</span>
-<span class="fc" id="L122">                             Integer.toString(</span>
-<span class="fc" id="L123">                                 configuration.getLocalTransaction()</span>
-<span class="fc" id="L124">                                              .getNumberLocalChannel()));</span>
-<span class="fc" id="L125">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),</span>
-<span class="fc" id="L126">                             configuration.getHostId());</span>
-<span class="fc" id="L127">    final TrafficCounter trafficCounter =</span>
-<span class="fc" id="L128">        configuration.getGlobalTrafficShapingHandler().trafficCounter();</span>
-<span class="fc" id="L129">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),</span>
+<span class="fc" id="L118">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),</span>
+<span class="fc" id="L119">                             new Date().toString());</span>
+<span class="fc" id="L120">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),</span>
+<span class="fc" id="L121">                             Integer.toString(</span>
+<span class="fc" id="L122">                                 configuration.getLocalTransaction()</span>
+<span class="fc" id="L123">                                              .getNumberLocalChannel()));</span>
+<span class="fc" id="L124">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),</span>
+<span class="fc" id="L125">                             Integer.toString(</span>
+<span class="fc" id="L126">                                 configuration.getLocalTransaction()</span>
+<span class="fc" id="L127">                                              .getNumberLocalChannel()));</span>
+<span class="fc" id="L128">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),</span>
+<span class="fc" id="L129">                             configuration.getHostId());</span>
+<span class="fc" id="L130">    final TrafficCounter trafficCounter =</span>
+<span class="fc" id="L131">        configuration.getGlobalTrafficShapingHandler().trafficCounter();</span>
+<span class="fc" id="L132">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),</span>
                              &quot;IN:&quot; +
-<span class="fc" id="L131">                             trafficCounter.lastReadThroughput() / 131072 +</span>
+<span class="fc" id="L134">                             trafficCounter.lastReadThroughput() / 131072 +</span>
                              &quot;Mbits&amp;nbsp;&amp;nbsp;OUT:&quot; +
-<span class="fc" id="L133">                             trafficCounter.lastWriteThroughput() / 131072 +</span>
+<span class="fc" id="L136">                             trafficCounter.lastWriteThroughput() / 131072 +</span>
                              &quot;Mbits&quot;);
-<span class="fc" id="L135">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);</span>
-<span class="fc" id="L136">    return builder.toString();</span>
+<span class="fc" id="L138">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);</span>
+<span class="fc" id="L139">    return builder.toString();</span>
   }
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
                               final FullHttpRequest msg) {
-<span class="fc" id="L142">    isCurrentRequestXml = false;</span>
-<span class="fc" id="L143">    isCurrentRequestJson = false;</span>
-<span class="fc" id="L144">    status = HttpResponseStatus.OK;</span>
-<span class="fc" id="L145">    final FullHttpRequest request = this.request = msg;</span>
-<span class="fc" id="L146">    final QueryStringDecoder queryStringDecoder =</span>
-<span class="fc" id="L147">        new QueryStringDecoder(request.uri());</span>
-<span class="fc" id="L148">    uriRequest = queryStringDecoder.path();</span>
-<span class="fc" id="L149">    logger.debug(&quot;Msg: {}&quot;, uriRequest);</span>
-<span class="pc bpc" id="L150" title="1 of 4 branches missed.">    if (uriRequest.contains(&quot;gre/&quot;) || uriRequest.contains(&quot;img/&quot;) ||</span>
-<span class="pc bpc" id="L151" title="1 of 4 branches missed.">        uriRequest.contains(&quot;res/&quot;) || uriRequest.contains(&quot;favicon.ico&quot;)) {</span>
-<span class="fc" id="L152">      HttpWriteCacheEnable</span>
-<span class="fc" id="L153">          .writeFile(request, ctx, configuration.getHttpBasePath() + uriRequest,</span>
-                     &quot;XYZR66NOSESSION&quot;);
-<span class="fc" id="L155">      return;</span>
+<span class="fc" id="L145">    isCurrentRequestXml = false;</span>
+<span class="fc" id="L146">    isCurrentRequestJson = false;</span>
+<span class="fc" id="L147">    status = HttpResponseStatus.OK;</span>
+<span class="fc" id="L148">    final FullHttpRequest request = this.request = msg;</span>
+<span class="fc" id="L149">    final QueryStringDecoder queryStringDecoder =</span>
+<span class="fc" id="L150">        new QueryStringDecoder(request.uri());</span>
+<span class="fc" id="L151">    uriRequest = queryStringDecoder.path();</span>
+<span class="fc" id="L152">    logger.debug(&quot;Msg: {}&quot;, uriRequest);</span>
+<span class="pc bpc" id="L153" title="1 of 4 branches missed.">    if (uriRequest.contains(&quot;gre/&quot;) || uriRequest.contains(&quot;img/&quot;) ||</span>
+<span class="pc bpc" id="L154" title="1 of 4 branches missed.">        uriRequest.contains(&quot;res/&quot;) || uriRequest.contains(&quot;favicon.ico&quot;)) {</span>
+<span class="fc" id="L155">      HttpWriteCacheEnable.writeFile(request, ctx,</span>
+<span class="fc" id="L156">                                     configuration.getHttpBasePath() +</span>
+                                     uriRequest, &quot;XYZR66NOSESSION&quot;);
+<span class="fc" id="L158">      return;</span>
     }
-<span class="fc" id="L157">    char cval = 'z';</span>
-<span class="fc" id="L158">    long nb = LIMITROW;</span>
+<span class="fc" id="L160">    char cval = 'z';</span>
+<span class="fc" id="L161">    long nb = LIMITROW;</span>
     // check the URI
-<span class="pc bpc" id="L160" title="1 of 2 branches missed.">    if (&quot;/statusxml&quot;.equalsIgnoreCase(uriRequest)) {</span>
-<span class="nc" id="L161">      cval = '5';</span>
-<span class="nc" id="L162">      nb = 0; // since it could be the default or setup by request</span>
-<span class="nc" id="L163">      isCurrentRequestXml = true;</span>
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">    } else if (&quot;/statusjson&quot;.equalsIgnoreCase(uriRequest)) {</span>
-<span class="nc" id="L165">      cval = '7';</span>
-<span class="nc" id="L166">      nb = 0; // since it could be the default or setup by request</span>
-<span class="nc" id="L167">      isCurrentRequestJson = true;</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (&quot;/statusxml&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L164">      cval = '5';</span>
+<span class="nc" id="L165">      nb = 0; // since it could be the default or setup by request</span>
+<span class="nc" id="L166">      isCurrentRequestXml = true;</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">    } else if (&quot;/statusjson&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L168">      cval = '7';</span>
+<span class="nc" id="L169">      nb = 0; // since it could be the default or setup by request</span>
+<span class="nc" id="L170">      isCurrentRequestJson = true;</span>
     }
-<span class="pc bpc" id="L169" title="1 of 2 branches missed.">    if (request.method() == HttpMethod.GET) {</span>
-<span class="fc" id="L170">      params = queryStringDecoder.parameters();</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">    if (request.method() == HttpMethod.GET) {</span>
+<span class="fc" id="L173">      params = queryStringDecoder.parameters();</span>
     }
-<span class="pc bpc" id="L172" title="1 of 2 branches missed.">    final boolean getMenu = cval == 'z';</span>
-<span class="fc" id="L173">    final boolean extraBoolean = false;</span>
-<span class="pc bpc" id="L174" title="1 of 2 branches missed.">    if (!params.isEmpty()) {</span>
-<span class="nc" id="L175">      final String langarg = getTrimValue(&quot;setLng&quot;);</span>
-<span class="nc bnc" id="L176" title="All 4 branches missed.">      if (langarg != null &amp;&amp; !langarg.isEmpty()) {</span>
-<span class="nc" id="L177">        lang = langarg;</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">    final boolean getMenu = cval == 'z';</span>
+<span class="fc" id="L176">    final boolean extraBoolean = false;</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">    if (!params.isEmpty()) {</span>
+<span class="nc" id="L178">      final String langarg = getTrimValue(&quot;setLng&quot;);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      if (ParametersChecker.isNotEmpty(langarg)) {</span>
+<span class="nc" id="L180">        lang = langarg;</span>
       }
     }
-<span class="pc bpc" id="L180" title="1 of 2 branches missed.">    if (getMenu) {</span>
-<span class="fc" id="L181">      responseContent.append(REQUEST.index.readFileUnique(this));</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">    if (getMenu) {</span>
+<span class="fc" id="L184">      responseContent.append(REQUEST.index.readFileUnique(this));</span>
     } else {
       // Use value 0=Active 1=Error 2=Done 3=All
-<span class="nc bnc" id="L184" title="All 3 branches missed.">      switch (cval) {</span>
+<span class="nc bnc" id="L187" title="All 3 branches missed.">      switch (cval) {</span>
         case '5':
-<span class="nc" id="L186">          statusxml(ctx, nb, extraBoolean);</span>
-<span class="nc" id="L187">          break;</span>
-        case '7':
-<span class="nc" id="L189">          statusjson(ctx, nb, extraBoolean);</span>
+<span class="nc" id="L189">          statusxml(ctx, nb, extraBoolean);</span>
 <span class="nc" id="L190">          break;</span>
+        case '7':
+<span class="nc" id="L192">          statusjson(ctx, nb, extraBoolean);</span>
+<span class="nc" id="L193">          break;</span>
         default:
-<span class="nc" id="L192">          responseContent.append(REQUEST.index.readFileUnique(this));</span>
+<span class="nc" id="L195">          responseContent.append(REQUEST.index.readFileUnique(this));</span>
       }
     }
-<span class="fc" id="L195">    writeResponse(ctx);</span>
-<span class="fc" id="L196">  }</span>
+<span class="fc" id="L198">    writeResponse(ctx);</span>
+<span class="fc" id="L199">  }</span>
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-<span class="nc" id="L201">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
-<span class="nc" id="L202">        .getExceptionFromTrappedException(ctx.channel(), cause);</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">    if (exception != null) {</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">      if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {</span>
-<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (cause instanceof IOException) {</span>
+<span class="nc" id="L204">    final OpenR66Exception exception =</span>
+<span class="nc" id="L205">        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(</span>
+<span class="nc" id="L206">            ctx.channel(), cause);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">      if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (cause instanceof IOException) {</span>
           // Nothing to do
-<span class="nc" id="L207">          return;</span>
+<span class="nc" id="L211">          return;</span>
         }
-<span class="nc" id="L209">        logger.warn(&quot;Exception in HttpHandler {}&quot;, exception.getMessage());</span>
+<span class="nc" id="L213">        logger.warn(&quot;Exception in HttpHandler {}&quot;, exception.getMessage());</span>
       }
-<span class="nc bnc" id="L211" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
-<span class="nc" id="L212">        sendError(ctx, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L216">        sendError(ctx, HttpResponseStatus.BAD_REQUEST);</span>
       }
     } else {
       // Nothing to do
     }
-<span class="nc" id="L217">  }</span>
+<span class="nc" id="L221">  }</span>
 
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="fc" id="L222">    super.channelInactive(ctx);</span>
-<span class="fc" id="L223">    logger.debug(&quot;Closed&quot;);</span>
-<span class="fc" id="L224">  }</span>
+<span class="fc" id="L226">    super.channelInactive(ctx);</span>
+<span class="fc" id="L227">    logger.debug(&quot;Closed&quot;);</span>
+<span class="fc" id="L228">  }</span>
 
   @Override
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L228">    logger.debug(&quot;Connected&quot;);</span>
-<span class="fc" id="L229">    authentHttp.getAuth()</span>
-<span class="fc" id="L230">               .specialNoSessionAuth(false, configuration.getHostId());</span>
-<span class="fc" id="L231">    super.channelActive(ctx);</span>
-<span class="fc" id="L232">    final ChannelGroup group = configuration.getHttpChannelGroup();</span>
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    if (group != null) {</span>
-<span class="fc" id="L234">      group.add(ctx.channel());</span>
+<span class="fc" id="L232">    logger.debug(&quot;Connected&quot;);</span>
+<span class="fc" id="L233">    authentHttp.getAuth()</span>
+<span class="fc" id="L234">               .specialNoSessionAuth(false, configuration.getHostId());</span>
+<span class="fc" id="L235">    super.channelActive(ctx);</span>
+<span class="fc" id="L236">    final ChannelGroup group = configuration.getHttpChannelGroup();</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (group != null) {</span>
+<span class="fc" id="L238">      group.add(ctx.channel());</span>
     }
-<span class="fc" id="L236">  }</span>
+<span class="fc" id="L240">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

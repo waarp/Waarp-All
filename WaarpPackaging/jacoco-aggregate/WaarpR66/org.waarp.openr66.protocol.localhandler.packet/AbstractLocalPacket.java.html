@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractLocalPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">AbstractLocalPacket.java</span></div><h1>AbstractLocalPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
+import io.netty.util.IllegalReferenceCountException;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
+
+import static org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket.*;
+
+/**
+ * This class represents Abstract Packet with its header, middle and end parts.
+ * A Packet is composed of one
+ * Header part, one Middle part (data), and one End part. Header: length field
+ * (4 bytes) = Middle length field
+ * (4 bytes), End length field (4 bytes), type field (1 byte), ...&lt;br&gt;
+ * Middle: (Middle length field bytes)&lt;br&gt;
+ * End: (End length field bytes) = code status field (4 bytes), ...&lt;br&gt;
+ */
+public abstract class AbstractLocalPacket {
+<span class="fc" id="L43">  protected static final byte[] EMPTY_ARRAY = {};</span>
+  protected static final int LOCAL_HEADER_SIZE = 4 * 3 + 1;
+
+  protected ByteBuf header;
+
+  protected ByteBuf middle;
+
+  protected ByteBuf end;
+
+<span class="fc" id="L52">  protected ByteBuf global = null;</span>
+
+<span class="fc" id="L54">  protected AbstractLocalPacket() {</span>
+<span class="fc" id="L55">    header = null;</span>
+<span class="fc" id="L56">    middle = null;</span>
+<span class="fc" id="L57">    end = null;</span>
+<span class="fc" id="L58">  }</span>
+
+  /**
+   * @return True if all buffers fit in one piece
+   */
+  public abstract boolean hasGlobalBuffer();
+
+  /**
+   * Prepare the 3 buffers Header, Middle and End
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public abstract void createAllBuffers(final LocalChannelReference lcr,
+                                        final int networkHeader)
+      throws OpenR66ProtocolPacketException;
+
+  /**
+   * Prepare the Header buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public void createHeader(final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L81">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
+
+  /**
+   * Prepare the Middle buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public void createMiddle(final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L91">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
+
+  /**
+   * Prepare the End buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public void createEnd(final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L101">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
+
+  /**
+   * @return the type of Packet
+   */
+  public abstract byte getType();
+
+  @Override
+  public abstract String toString();
+
+  /**
+   * @param lcr the LocalChannelReference in use
+   *
+   * @return the ByteBuf as LocalPacket
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public final ByteBuf getLocalPacket(final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L121">    return getLocalPacketForNetworkPacket(lcr, null);</span>
+  }
+
+  /**
+   * @param lcr the LocalChannelReference in use
+   *
+   * @return the ByteBuf as LocalPacket
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public final synchronized ByteBuf getLocalPacketForNetworkPacket(
+      final LocalChannelReference lcr, final NetworkPacket packet)
+      throws OpenR66ProtocolPacketException {
+    try {
+      final ByteBuf buf;
+      final int globalHeader;
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">      if (packet != null) {</span>
+<span class="fc" id="L138">        globalHeader = NETWORK_HEADER_SIZE;</span>
+      } else {
+<span class="nc" id="L140">        globalHeader = 0;</span>
+      }
+<span class="fc bfc" id="L142" title="All 2 branches covered.">      if (hasGlobalBuffer()) {</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if (global == null) {</span>
+<span class="fc" id="L144">          createAllBuffers(lcr, globalHeader);</span>
+        } else {
+<span class="nc" id="L146">          global.readerIndex(0);</span>
+<span class="nc" id="L147">          global.writerIndex(0);</span>
+        }
+<span class="fc" id="L149">        buf = global;</span>
+      } else {
+        // 3 header lengths+type
+<span class="fc" id="L152">        buf =</span>
+<span class="fc" id="L153">            ByteBufAllocator.DEFAULT.ioBuffer(globalHeader + LOCAL_HEADER_SIZE,</span>
+                                              globalHeader + LOCAL_HEADER_SIZE);
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (header == null) {</span>
+<span class="fc" id="L156">          createHeader(lcr);</span>
+        }
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        if (middle == null) {</span>
+<span class="fc" id="L159">          createMiddle(lcr);</span>
+        }
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        if (end == null) {</span>
+<span class="fc" id="L162">          createEnd(lcr);</span>
+        }
+      }
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">      if (packet != null) {</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        final int capacity =</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">            LOCAL_HEADER_SIZE + (header != null? header.capacity() : 0) +</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">            (middle != null? middle.capacity() : 0) +</span>
+<span class="pc" id="L169">            (end != null? end.capacity() : 0);</span>
+<span class="fc" id="L170">        packet.writeNetworkHeader(buf, capacity);</span>
+      }
+<span class="fc" id="L172">      return getByteBuf(buf);</span>
+<span class="nc" id="L173">    } catch (final IllegalReferenceCountException e) {</span>
+<span class="nc" id="L174">      throw new OpenR66ProtocolPacketException(e);</span>
+    }
+  }
+
+  private ByteBuf getByteBuf(final ByteBuf buf) {
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L180">    final int headerLength = LOCAL_HEADER_SIZE - 4 + newHeader.readableBytes();</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L182">    final int middleLength = newMiddle.readableBytes();</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">    final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L184">    final int endLength = newEnd.readableBytes();</span>
+<span class="fc" id="L185">    buf.writeInt(headerLength);</span>
+<span class="fc" id="L186">    buf.writeInt(middleLength);</span>
+<span class="fc" id="L187">    buf.writeInt(endLength);</span>
+<span class="fc" id="L188">    buf.writeByte(getType());</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">    if (hasGlobalBuffer()) {</span>
+<span class="fc" id="L190">      buf.writerIndex(buf.capacity());</span>
+<span class="fc" id="L191">      return buf;</span>
+    }
+<span class="fc" id="L193">    return ByteBufAllocator.DEFAULT.compositeDirectBuffer(4)</span>
+<span class="fc" id="L194">                                   .addComponents(buf, newHeader, newMiddle,</span>
+                                                  newEnd);
+  }
+
+  public synchronized void clear() {
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(global)) {</span>
+<span class="fc" id="L200">      global = null;</span>
+    }
+<span class="fc bfc" id="L202" title="All 2 branches covered.">    if (hasGlobalBuffer()) {</span>
+<span class="fc" id="L203">      return;</span>
+    }
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(header)) {</span>
+<span class="fc" id="L206">      header = null;</span>
+    }
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(middle)) {</span>
+<span class="fc" id="L209">      middle = null;</span>
+    }
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(end)) {</span>
+<span class="fc" id="L212">      end = null;</span>
+    }
+<span class="fc" id="L214">  }</span>
+
+  public final synchronized void retain() {
+<span class="fc" id="L217">    WaarpNettyUtil.retain(global);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">    if (hasGlobalBuffer()) {</span>
+<span class="fc" id="L219">      return;</span>
+    }
+<span class="nc" id="L221">    WaarpNettyUtil.retain(header);</span>
+<span class="nc" id="L222">    WaarpNettyUtil.retain(middle);</span>
+<span class="nc" id="L223">    WaarpNettyUtil.retain(end);</span>
+<span class="nc" id="L224">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

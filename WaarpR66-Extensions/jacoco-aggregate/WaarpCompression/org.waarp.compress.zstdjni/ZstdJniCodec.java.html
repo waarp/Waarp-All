@@ -37,21 +37,21 @@ import java.util.Arrays;
 /**
  * ZSTD JNI Codec implementation
  */
-<span class="nc" id="L40">public class ZstdJniCodec implements CompressorCodec {</span>
+<span class="fc" id="L40">public class ZstdJniCodec implements CompressorCodec {</span>
 
   @Override
   public final int maxCompressedLength(final int uncompressedSize) {
-<span class="nc" id="L44">    return (int) Zstd.compressBound(uncompressedSize);</span>
+<span class="fc" id="L44">    return (int) Zstd.compressBound(uncompressedSize);</span>
   }
 
   @Override
   public final byte[] compress(final byte[] input, final int length)
       throws MalformedInputException {
     try {
-<span class="nc" id="L51">      final int maxDstSize = maxCompressedLength(length);</span>
-<span class="nc" id="L52">      final byte[] target = new byte[maxDstSize];</span>
-<span class="nc" id="L53">      final int realSize = compress(input, length, target, maxDstSize);</span>
-<span class="nc" id="L54">      return Arrays.copyOfRange(target, 0, realSize);</span>
+<span class="fc" id="L51">      final int maxDstSize = maxCompressedLength(length);</span>
+<span class="fc" id="L52">      final byte[] target = new byte[maxDstSize];</span>
+<span class="fc" id="L53">      final int realSize = compress(input, length, target, maxDstSize);</span>
+<span class="fc" id="L54">      return Arrays.copyOfRange(target, 0, realSize);</span>
 <span class="nc" id="L55">    } catch (final Exception e) {</span>
 <span class="nc" id="L56">      throw new MalformedInputException(e);</span>
     }
@@ -61,7 +61,7 @@ import java.util.Arrays;
   public final int compress(final byte[] input, final int inputLength,
                             final byte[] output, final int maxOutputLength) {
     try {
-<span class="nc" id="L64">      return (int) Zstd.compressByteArray(output, 0, maxOutputLength, input, 0,</span>
+<span class="fc" id="L64">      return (int) Zstd.compressByteArray(output, 0, maxOutputLength, input, 0,</span>
                                           inputLength, 3);
 <span class="nc" id="L66">    } catch (final Exception e) {</span>
 <span class="nc" id="L67">      throw new MalformedInputException(e);</span>
@@ -71,29 +71,29 @@ import java.util.Arrays;
   @Override
   public final long compress(final File input, final File output)
       throws MalformedInputException {
-<span class="nc" id="L74">    InputStream inputStream = null;</span>
-<span class="nc" id="L75">    OutputStream outputStream = null;</span>
+<span class="fc" id="L74">    InputStream inputStream = null;</span>
+<span class="fc" id="L75">    OutputStream outputStream = null;</span>
     try {
       final byte[] buffer;
-<span class="nc" id="L78">      inputStream = new FileInputStream(input);</span>
-<span class="nc" id="L79">      buffer = ByteStreams.toByteArray(inputStream);</span>
-<span class="nc" id="L80">      outputStream = new FileOutputStream(output);</span>
-<span class="nc" id="L81">      final byte[] bufferCompression =</span>
-<span class="nc" id="L82">          new byte[maxCompressedLength(buffer.length)];</span>
-<span class="nc" id="L83">      final int length = (int) Zstd.compressByteArray(bufferCompression, 0,</span>
+<span class="fc" id="L78">      inputStream = new FileInputStream(input);</span>
+<span class="fc" id="L79">      buffer = ByteStreams.toByteArray(inputStream);</span>
+<span class="fc" id="L80">      outputStream = new FileOutputStream(output);</span>
+<span class="fc" id="L81">      final byte[] bufferCompression =</span>
+<span class="fc" id="L82">          new byte[maxCompressedLength(buffer.length)];</span>
+<span class="fc" id="L83">      final int length = (int) Zstd.compressByteArray(bufferCompression, 0,</span>
                                                       bufferCompression.length,
                                                       buffer, 0, buffer.length,
                                                       3);
-<span class="nc" id="L87">      outputStream.write(bufferCompression, 0, length);</span>
-<span class="nc" id="L88">      outputStream.flush();</span>
-<span class="nc" id="L89">      FileUtils.close(outputStream);</span>
-<span class="nc" id="L90">      outputStream = null;</span>
-<span class="nc" id="L91">      return output.length();</span>
+<span class="fc" id="L87">      outputStream.write(bufferCompression, 0, length);</span>
+<span class="fc" id="L88">      outputStream.flush();</span>
+<span class="fc" id="L89">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L90">      outputStream = null;</span>
+<span class="fc" id="L91">      return output.length();</span>
 <span class="nc" id="L92">    } catch (final Exception e) {</span>
 <span class="nc" id="L93">      throw new MalformedInputException(e);</span>
     } finally {
-<span class="nc" id="L95">      FileUtils.close(inputStream);</span>
-<span class="nc" id="L96">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L95">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L96">      FileUtils.close(outputStream);</span>
     }
   }
 
@@ -101,15 +101,15 @@ import java.util.Arrays;
   public final byte[] decompress(final byte[] compressed, final int length)
       throws MalformedInputException {
     try {
-<span class="nc" id="L104">      final int len = getDecompressedSize(compressed, length);</span>
-<span class="nc" id="L105">      final byte[] target = new byte[len];</span>
-<span class="nc" id="L106">      final int finalLen = decompress(compressed, length, target, len);</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">      if (finalLen != len) {</span>
+<span class="fc" id="L104">      final int len = getDecompressedSize(compressed, length);</span>
+<span class="fc" id="L105">      final byte[] target = new byte[len];</span>
+<span class="fc" id="L106">      final int finalLen = decompress(compressed, length, target, len);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">      if (finalLen != len) {</span>
 <span class="nc" id="L108">        throw new IllegalStateException(</span>
             &quot;Issue on suggested decompressed size &quot; + len + &quot; while is &quot; +
             finalLen);
       }
-<span class="nc" id="L112">      return target;</span>
+<span class="fc" id="L112">      return target;</span>
 <span class="nc" id="L113">    } catch (final Exception e) {</span>
 <span class="nc" id="L114">      throw new MalformedInputException(e);</span>
     }
@@ -119,7 +119,7 @@ import java.util.Arrays;
   public final int decompress(final byte[] input, final int inputLength,
                               final byte[] output, final int maxOutputLength) {
     try {
-<span class="nc" id="L122">      return (int) Zstd.decompressByteArray(output, 0, maxOutputLength, input,</span>
+<span class="fc" id="L122">      return (int) Zstd.decompressByteArray(output, 0, maxOutputLength, input,</span>
                                             0, inputLength);
 <span class="nc" id="L124">    } catch (final Exception e) {</span>
 <span class="nc" id="L125">      throw new MalformedInputException(e);</span>
@@ -129,27 +129,27 @@ import java.util.Arrays;
   @Override
   public final long decompress(final File input, final File output)
       throws MalformedInputException {
-<span class="nc" id="L132">    InputStream inputStream = null;</span>
-<span class="nc" id="L133">    OutputStream outputStream = null;</span>
+<span class="fc" id="L132">    InputStream inputStream = null;</span>
+<span class="fc" id="L133">    OutputStream outputStream = null;</span>
     try {
       final byte[] buffer;
-<span class="nc" id="L136">      inputStream = new ZstdInputStream(new FileInputStream(input));</span>
-<span class="nc" id="L137">      outputStream = new FileOutputStream(output);</span>
-<span class="nc" id="L138">      FileUtils.copy(Zstd.blockSizeMax(), inputStream, outputStream);</span>
-<span class="nc" id="L139">      outputStream = null;</span>
-<span class="nc" id="L140">      return output.length();</span>
+<span class="fc" id="L136">      inputStream = new ZstdInputStream(new FileInputStream(input));</span>
+<span class="fc" id="L137">      outputStream = new FileOutputStream(output);</span>
+<span class="fc" id="L138">      FileUtils.copy(Zstd.blockSizeMax(), inputStream, outputStream);</span>
+<span class="fc" id="L139">      outputStream = null;</span>
+<span class="fc" id="L140">      return output.length();</span>
 <span class="nc" id="L141">    } catch (final Exception e) {</span>
 <span class="nc" id="L142">      throw new MalformedInputException(e);</span>
     } finally {
-<span class="nc" id="L144">      FileUtils.close(inputStream);</span>
-<span class="nc" id="L145">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L144">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L145">      FileUtils.close(outputStream);</span>
     }
   }
 
   @Override
   public final int getDecompressedSize(final byte[] compressed,
                                        final int length) {
-<span class="nc" id="L152">    return (int) Zstd.decompressedSize(compressed, 0, length);</span>
+<span class="fc" id="L152">    return (int) Zstd.decompressedSize(compressed, 0, length);</span>
   }
 
 }

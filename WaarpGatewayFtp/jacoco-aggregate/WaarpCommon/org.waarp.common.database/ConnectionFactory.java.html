@@ -20,7 +20,6 @@
 
 package org.waarp.common.database;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.waarp.common.database.properties.DbProperties;
 import org.waarp.common.database.properties.H2Properties;
@@ -31,6 +30,7 @@ import org.waarp.common.database.properties.PostgreSQLProperties;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.Version;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -43,8 +43,8 @@ public class ConnectionFactory {
   /**
    * Internal Logger
    */
-<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(ConnectionFactory.class);</span>
+<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(ConnectionFactory.class);</span>
 
   /**
    * The singleton instance
@@ -81,13 +81,13 @@ public class ConnectionFactory {
   private static final int MAX_CONNECTIONS_DEFAULT = 10;
   private static final int MAX_IDLE_DEFAULT = 2;
 
-<span class="nc" id="L84">  private int maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
-<span class="nc" id="L85">  private int maxIdle = MAX_IDLE_DEFAULT;</span>
+<span class="fc" id="L84">  private int maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
+<span class="fc" id="L85">  private int maxIdle = MAX_IDLE_DEFAULT;</span>
 
   /**
    * The datasource for connection pooling
    */
-  private final BasicDataSource ds;
+  private final WaarpBasicDataSource ds;
 
   /**
    * @param server the connection url of the database
@@ -99,16 +99,16 @@ public class ConnectionFactory {
    */
   protected static DbProperties propertiesFor(final String server)
       throws UnsupportedOperationException {
-<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (server.contains(H2Properties.getProtocolID())) {</span>
-<span class="nc" id="L103">      return new H2Properties();</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">    } else if (server.contains(MariaDBProperties.getProtocolID())) {</span>
-<span class="nc" id="L105">      return new MariaDBProperties();</span>
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    } else if (server.contains(MySQLProperties.getProtocolID())) {</span>
-<span class="nc" id="L107">      return new MySQLProperties();</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">    } else if (server.contains(OracleProperties.getProtocolID())) {</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">    if (server.contains(H2Properties.getProtocolID())) {</span>
+<span class="fc" id="L103">      return new H2Properties();</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">    } else if (server.contains(MariaDBProperties.getProtocolID())) {</span>
+<span class="fc" id="L105">      return new MariaDBProperties();</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    } else if (server.contains(MySQLProperties.getProtocolID())) {</span>
+<span class="fc" id="L107">      return new MySQLProperties();</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">    } else if (server.contains(OracleProperties.getProtocolID())) {</span>
 <span class="nc" id="L109">      return new OracleProperties();</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">    } else if (server.contains(PostgreSQLProperties.getProtocolID())) {</span>
-<span class="nc" id="L111">      return new PostgreSQLProperties();</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    } else if (server.contains(PostgreSQLProperties.getProtocolID())) {</span>
+<span class="fc" id="L111">      return new PostgreSQLProperties();</span>
     } else {
 <span class="nc" id="L113">      throw new UnsupportedOperationException(</span>
           &quot;The requested database is not supported&quot;);
@@ -126,18 +126,18 @@ public class ConnectionFactory {
   public static void initialize(final String server, final String user,
                                 final String password)
       throws SQLException, UnsupportedOperationException {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (instance == null) {</span>
-<span class="nc" id="L130">      instance =</span>
-<span class="nc" id="L131">          new ConnectionFactory(propertiesFor(server), server, user, password);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">    if (instance == null) {</span>
+<span class="fc" id="L130">      instance =</span>
+<span class="fc" id="L131">          new ConnectionFactory(propertiesFor(server), server, user, password);</span>
     }
-<span class="nc" id="L133">  }</span>
+<span class="fc" id="L133">  }</span>
 
   /**
    * @return the initialized ConnectionFactory or null if the
    *     ConnectionFactory is not initialized
    */
   public static ConnectionFactory getInstance() {
-<span class="nc" id="L140">    return instance;</span>
+<span class="fc" id="L140">    return instance;</span>
   }
 
   /**
@@ -148,13 +148,13 @@ public class ConnectionFactory {
    *     database
    */
   public Connection getConnection() throws SQLException {
-<span class="nc bnc" id="L151" title="All 2 branches missed.">    if (ds == null) {</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    if (ds == null) {</span>
 <span class="nc" id="L152">      throw new SQLException(&quot;ConnectionFactory is not inialized.&quot;);</span>
     }
     try {
-<span class="nc" id="L155">      return ds.getConnection();</span>
-<span class="nc" id="L156">    } catch (final SQLException e) {</span>
-<span class="nc" id="L157">      throw new SQLException(&quot;Cannot access database&quot;, e);</span>
+<span class="fc" id="L155">      return ds.getConnection();</span>
+<span class="fc" id="L156">    } catch (final SQLException e) {</span>
+<span class="fc" id="L157">      throw new SQLException(&quot;Cannot access database&quot;, e);</span>
     }
   }
 
@@ -166,47 +166,51 @@ public class ConnectionFactory {
    */
   private ConnectionFactory(final DbProperties properties, final String server,
                             final String user, final String password)
-<span class="nc" id="L169">      throws SQLException {</span>
-<span class="nc" id="L170">    this.server = server;</span>
-<span class="nc" id="L171">    this.user = user;</span>
-<span class="nc" id="L172">    this.password = password;</span>
-<span class="nc" id="L173">    this.properties = properties;</span>
+<span class="fc" id="L169">      throws SQLException {</span>
+<span class="fc" id="L170">    this.server = server;</span>
+<span class="fc" id="L171">    this.user = user;</span>
+<span class="fc" id="L172">    this.password = password;</span>
+<span class="fc" id="L173">    this.properties = properties;</span>
 
-<span class="nc" id="L175">    ds = new BasicDataSource();</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">    if (Version.version().contains(&quot;-jre&quot;)) {</span>
+<span class="fc" id="L176">      ds = new WaarpBasicDataSourceJava8();</span>
+    } else {
+<span class="nc" id="L178">      ds = new WaarpBasicDataSourceJava6();</span>
+    }
 
     // Initialize DataSource
-<span class="nc" id="L178">    ds.setDriverClassName(this.properties.getDriverName());</span>
-<span class="nc" id="L179">    ds.setUrl(this.server);</span>
-<span class="nc" id="L180">    ds.setUsername(this.user);</span>
-<span class="nc" id="L181">    ds.setPassword(this.password);</span>
-<span class="nc" id="L182">    ds.setDefaultAutoCommit(AUTOCOMMIT);</span>
-<span class="nc" id="L183">    ds.setDefaultReadOnly(READONLY);</span>
-<span class="nc" id="L184">    ds.setValidationQuery(this.properties.getValidationQuery());</span>
+<span class="fc" id="L182">    ds.setDriverClassName(this.properties.getDriverName());</span>
+<span class="fc" id="L183">    ds.setUrl(this.server);</span>
+<span class="fc" id="L184">    ds.setUsername(this.user);</span>
+<span class="fc" id="L185">    ds.setPassword(this.password);</span>
+<span class="fc" id="L186">    ds.setDefaultAutoCommit(AUTOCOMMIT);</span>
+<span class="fc" id="L187">    ds.setDefaultReadOnly(READONLY);</span>
+<span class="fc" id="L188">    ds.setValidationQuery(this.properties.getValidationQuery());</span>
 
     // Get maximum connections
-<span class="nc" id="L187">    Connection con = null;</span>
+<span class="fc" id="L191">    Connection con = null;</span>
     // default
-<span class="nc" id="L189">    maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
+<span class="fc" id="L193">    maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
     try {
-<span class="nc" id="L191">      con = getConnection();</span>
+<span class="fc" id="L195">      con = getConnection();</span>
       // Max of user value (if not set, default 10) and current maximum
       // connections
-<span class="nc" id="L194">      maxConnections = Math.min(properties.getMaximumConnections(con),</span>
-<span class="nc" id="L195">                                SystemPropertyUtil.get(</span>
+<span class="fc" id="L198">      maxConnections = Math.min(properties.getMaximumConnections(con),</span>
+<span class="fc" id="L199">                                SystemPropertyUtil.get(</span>
                                     SystemPropertyUtil.WAARP_DATABASE_CONNECTION_MAX,
                                     MAX_CONNECTIONS_DEFAULT));
-<span class="nc" id="L198">    } catch (final SQLException e) {</span>
-<span class="nc" id="L199">      logger.warn(</span>
+<span class="nc" id="L202">    } catch (final SQLException e) {</span>
+<span class="nc" id="L203">      logger.warn(</span>
           &quot;Cannot fetch maximum connection allowed from database&quot; + &quot; : {}&quot;,
-<span class="nc" id="L201">          e.getMessage());</span>
+<span class="nc" id="L205">          e.getMessage());</span>
     } finally {
-<span class="nc bnc" id="L203" title="All 2 branches missed.">      if (con != null) {</span>
-<span class="nc" id="L204">        con.close();</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">      if (con != null) {</span>
+<span class="fc" id="L208">        con.close();</span>
       }
     }
-<span class="nc" id="L207">    setMaxConnections(maxConnections);</span>
-<span class="nc" id="L208">    logger.info(&quot;{}&quot;, this);</span>
-<span class="nc" id="L209">  }</span>
+<span class="fc" id="L211">    setMaxConnections(maxConnections);</span>
+<span class="fc" id="L212">    logger.info(&quot;{}&quot;, this);</span>
+<span class="fc" id="L213">  }</span>
 
   /**
    * Mainly for Junit
@@ -215,26 +219,22 @@ public class ConnectionFactory {
    */
   public void setMaxConnections(final int max) {
     // Minimal value should be 2
-<span class="nc" id="L218">    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);</span>
-<span class="nc" id="L219">    ds.setMaxActive(maxConnections);</span>
-<span class="nc" id="L220">    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT * 2),</span>
+<span class="fc" id="L222">    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);</span>
+<span class="fc" id="L223">    ds.setMaxActive(maxConnections);</span>
+<span class="fc" id="L224">    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT * 2),</span>
                        maxConnections);
-<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (maxIdle &lt; GenericObjectPool.DEFAULT_MAX_IDLE) {</span>
-<span class="nc" id="L223">      ds.setMaxIdle(maxIdle);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">    if (maxIdle &lt; GenericObjectPool.DEFAULT_MAX_IDLE) {</span>
+<span class="fc" id="L227">      ds.setMaxIdle(maxIdle);</span>
     }
-<span class="nc" id="L225">    ds.setInitialSize(MAX_IDLE_DEFAULT);</span>
-<span class="nc" id="L226">  }</span>
+<span class="fc" id="L229">    ds.setInitialSize(MAX_IDLE_DEFAULT);</span>
+<span class="fc" id="L230">  }</span>
 
   /**
    * Closes and releases all registered connections and connection pool
    */
   public void close() {
-<span class="nc" id="L232">    logger.info(&quot;Closing ConnectionFactory&quot;);</span>
-    try {
-<span class="nc" id="L234">      ds.close();</span>
-<span class="nc" id="L235">    } catch (final SQLException e) {</span>
-<span class="nc" id="L236">      logger.debug(&quot;Cannot close properly the connection pool&quot;, e);</span>
-<span class="nc" id="L237">    }</span>
+<span class="nc" id="L236">    logger.info(&quot;Closing ConnectionFactory&quot;);</span>
+<span class="nc" id="L237">    ds.close();</span>
 <span class="nc" id="L238">  }</span>
 
   /**
@@ -269,7 +269,7 @@ public class ConnectionFactory {
    * @return the associated DbProperties
    */
   public DbProperties getProperties() {
-<span class="nc" id="L272">    return properties;</span>
+<span class="fc" id="L272">    return properties;</span>
   }
 
   @Override

@@ -53,14 +53,14 @@ public class DbRuleR66RestMethodHandler
       &quot;RuleId in URI as VARCHAR as &quot;;
   public static final String BASEURI = &quot;rules&quot;;
 
-<span class="nc" id="L56">  public enum FILTER_ARGS {</span>
-<span class="nc" id="L57">    IDRULE(&quot;rule name&quot;), MODETRANS(&quot;MODETRANS value&quot;);</span>
+<span class="fc" id="L56">  public enum FILTER_ARGS {</span>
+<span class="fc" id="L57">    IDRULE(&quot;rule name&quot;), MODETRANS(&quot;MODETRANS value&quot;);</span>
 
     public final String type;
 
-<span class="nc" id="L61">    FILTER_ARGS(final String type) {</span>
-<span class="nc" id="L62">      this.type = type;</span>
-<span class="nc" id="L63">    }</span>
+<span class="fc" id="L61">    FILTER_ARGS(final String type) {</span>
+<span class="fc" id="L62">      this.type = type;</span>
+<span class="fc" id="L63">    }</span>
   }
 
   /**
@@ -69,8 +69,8 @@ public class DbRuleR66RestMethodHandler
    */
   public DbRuleR66RestMethodHandler(final RestConfiguration config,
                                     final METHOD... method) {
-<span class="nc" id="L72">    super(BASEURI, config, method);</span>
-<span class="nc" id="L73">  }</span>
+<span class="fc" id="L72">    super(BASEURI, config, method);</span>
+<span class="fc" id="L73">  }</span>
 
   @Override
   protected final DbRule getItem(final HttpRestHandler handler,
@@ -78,24 +78,24 @@ public class DbRuleR66RestMethodHandler
                                  final RestArgument result, final Object body)
       throws HttpNotFoundRequestException {
     try {
-<span class="nc" id="L81">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L81">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L82">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L83">      throw new HttpNotFoundRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L84">    }</span>
-<span class="nc" id="L85">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L86">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L84">    }</span>
+<span class="fc" id="L85">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L86">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="nc" id="L88">      final JsonNode node = RestArgument.getId(arg);</span>
+<span class="fc" id="L88">      final JsonNode node = RestArgument.getId(arg);</span>
       final String id;
-<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (node.isMissingNode()) {</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">      if (node.isMissingNode()) {</span>
         // shall not be but continue however
 <span class="nc" id="L92">        id = arg.path(DbRule.Columns.IDRULE.name()).asText();</span>
       } else {
-<span class="nc" id="L94">        id = node.asText();</span>
+<span class="fc" id="L94">        id = node.asText();</span>
       }
-<span class="nc" id="L96">      return new DbRule(id);</span>
-<span class="nc" id="L97">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L98">      throw new HttpNotFoundRequestException(</span>
+<span class="fc" id="L96">      return new DbRule(id);</span>
+<span class="fc" id="L97">    } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L98">      throw new HttpNotFoundRequestException(</span>
           &quot;Issue while reading from database &quot; + arg, e);
     }
   }
@@ -107,14 +107,14 @@ public class DbRuleR66RestMethodHandler
                                     final Object body)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc" id="L110">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L110">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L111">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L112">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L113">    }</span>
-<span class="nc" id="L114">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L115">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L113">    }</span>
+<span class="fc" id="L114">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L115">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="nc" id="L117">      return new DbRule(arg);</span>
+<span class="fc" id="L117">      return new DbRule(arg);</span>
 <span class="nc" id="L118">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L119">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while inserting into database&quot;, e);
@@ -127,19 +127,19 @@ public class DbRuleR66RestMethodHandler
       final RestArgument result, final Object body)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc" id="L130">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L130">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L131">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L132">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L133">    }</span>
-<span class="nc" id="L134">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L135">    arg.setAll(arguments.getBody());</span>
-<span class="nc" id="L136">    String rule = arg.path(FILTER_ARGS.IDRULE.name()).asText();</span>
-<span class="nc bnc" id="L137" title="All 2 branches missed.">    if (ParametersChecker.isEmpty(rule)) {</span>
-<span class="nc" id="L138">      rule = null;</span>
+<span class="fc" id="L133">    }</span>
+<span class="fc" id="L134">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L135">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L136">    String rule = arg.path(FILTER_ARGS.IDRULE.name()).asText();</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(rule)) {</span>
+<span class="fc" id="L138">      rule = null;</span>
     }
-<span class="nc" id="L140">    final int mode = arg.path(FILTER_ARGS.MODETRANS.name()).asInt();</span>
+<span class="fc" id="L140">    final int mode = arg.path(FILTER_ARGS.MODETRANS.name()).asInt();</span>
     try {
-<span class="nc" id="L142">      return DbRule.getFilterPrepareStament(handler.getDbSession(), rule, mode);</span>
+<span class="fc" id="L142">      return DbRule.getFilterPrepareStament(handler.getDbSession(), rule, mode);</span>
 <span class="nc" id="L143">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L144">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while reading from database&quot;, e);
@@ -154,7 +154,7 @@ public class DbRuleR66RestMethodHandler
       final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
-<span class="nc" id="L157">      return DbRule.getFromStatement(statement);</span>
+<span class="fc" id="L157">      return DbRule.getFromStatement(statement);</span>
 <span class="nc" id="L158">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L159">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while selecting from database&quot;, e);
@@ -166,81 +166,81 @@ public class DbRuleR66RestMethodHandler
 
   @Override
   protected final ArrayNode getDetailedAllow() {
-<span class="nc" id="L169">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L169">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="nc" id="L171">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L172">    node1.put(AbstractDbData.JSON_MODEL, DbRule.class.getSimpleName());</span>
-<span class="nc bnc" id="L173" title="All 2 branches missed.">    for (final DbRule.Columns column : DbRule.Columns.values()) {</span>
-<span class="nc" id="L174">      node1.put(column.name(), DbRule.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L171">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L172">    node1.put(AbstractDbData.JSON_MODEL, DbRule.class.getSimpleName());</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">    for (final DbRule.Columns column : DbRule.Columns.values()) {</span>
+<span class="fc" id="L174">      node1.put(column.name(), DbRule.dbTypes[column.ordinal()]);</span>
     }
 
     ObjectNode node2;
     ObjectNode node3;
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="nc" id="L180">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;,</span>
-<span class="nc" id="L181">                                             COMMAND_TYPE.GET.name(),</span>
-<span class="nc" id="L182">                                             JsonHandler.createObjectNode().put(</span>
-<span class="nc" id="L183">                                                 DbRule.Columns.IDRULE.name(),</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L180">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;,</span>
+<span class="fc" id="L181">                                             COMMAND_TYPE.GET.name(),</span>
+<span class="fc" id="L182">                                             JsonHandler.createObjectNode().put(</span>
+<span class="fc" id="L183">                                                 DbRule.Columns.IDRULE.name(),</span>
                                                  RULE_ID_IN_URI_AS_VARCHAR_AS +
                                                  path + &quot;/id&quot;), node1);
-<span class="nc" id="L186">      node.add(node2);</span>
+<span class="fc" id="L186">      node.add(node2);</span>
 
-<span class="nc" id="L188">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L189" title="All 2 branches missed.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
-<span class="nc" id="L190">        node3.put(arg.name(), arg.type);</span>
+<span class="fc" id="L188">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
+<span class="fc" id="L190">        node3.put(arg.name(), arg.type);</span>
       }
-<span class="nc" id="L192">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
-<span class="nc" id="L193">                                             COMMAND_TYPE.MULTIGET.name(),</span>
+<span class="fc" id="L192">      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L193">                                             COMMAND_TYPE.MULTIGET.name(),</span>
                                              node3,
-<span class="nc" id="L195">                                             JsonHandler.createArrayNode()</span>
-<span class="nc" id="L196">                                                        .add(node1));</span>
-<span class="nc" id="L197">      node.add(node2);</span>
+<span class="fc" id="L195">                                             JsonHandler.createArrayNode()</span>
+<span class="fc" id="L196">                                                        .add(node1));</span>
+<span class="fc" id="L197">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L199" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="nc" id="L200">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L201">      node3.put(DbRule.Columns.IDRULE.name(),</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="fc" id="L200">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L201">      node3.put(DbRule.Columns.IDRULE.name(),</span>
                 RULE_ID_IN_URI_AS_VARCHAR_AS + path + &quot;/id&quot;);
-<span class="nc bnc" id="L203" title="All 2 branches missed.">      for (final DbRule.Columns column : DbRule.Columns.values()) {</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (column.name().equalsIgnoreCase(DbRule.Columns.IDRULE.name())) {</span>
-<span class="nc" id="L205">          continue;</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">      for (final DbRule.Columns column : DbRule.Columns.values()) {</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        if (column.name().equalsIgnoreCase(DbRule.Columns.IDRULE.name())) {</span>
+<span class="fc" id="L205">          continue;</span>
         }
-<span class="nc" id="L207">        node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L207">        node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L209">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
-<span class="nc" id="L210">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
+<span class="fc" id="L209">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
+<span class="fc" id="L210">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L212">      node.add(node2);</span>
+<span class="fc" id="L212">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
-<span class="nc" id="L215">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L216">      node3.put(DbRule.Columns.IDRULE.name(),</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
+<span class="fc" id="L215">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L216">      node3.put(DbRule.Columns.IDRULE.name(),</span>
                 RULE_ID_IN_URI_AS_VARCHAR_AS + path + &quot;/id&quot;);
-<span class="nc" id="L218">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
-<span class="nc" id="L219">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
+<span class="fc" id="L218">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
+<span class="fc" id="L219">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L221">      node.add(node2);</span>
+<span class="fc" id="L221">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L223" title="All 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
-<span class="nc" id="L224">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">      for (final DbRule.Columns column : DbRule.Columns.values()) {</span>
-<span class="nc" id="L226">        node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);</span>
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="fc" id="L224">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">      for (final DbRule.Columns column : DbRule.Columns.values()) {</span>
+<span class="fc" id="L226">        node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L228">      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,</span>
-<span class="nc" id="L229">                                             COMMAND_TYPE.CREATE.name(), node3,</span>
+<span class="fc" id="L228">      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,</span>
+<span class="fc" id="L229">                                             COMMAND_TYPE.CREATE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L231">      node.add(node2);</span>
+<span class="fc" id="L231">      node.add(node2);</span>
     }
-<span class="nc" id="L233">    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
-<span class="nc" id="L234">                                           COMMAND_TYPE.OPTIONS.name(), null,</span>
+<span class="fc" id="L233">    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="fc" id="L234">                                           COMMAND_TYPE.OPTIONS.name(), null,</span>
                                            null);
-<span class="nc" id="L236">    node.add(node2);</span>
+<span class="fc" id="L236">    node.add(node2);</span>
 
-<span class="nc" id="L238">    return node;</span>
+<span class="fc" id="L238">    return node;</span>
   }
 
   @Override
   public final String getPrimaryPropertyName() {
-<span class="nc" id="L243">    return Columns.IDRULE.name();</span>
+<span class="fc" id="L243">    return Columns.IDRULE.name();</span>
   }
 
   @Override
@@ -250,17 +250,17 @@ public class DbRuleR66RestMethodHandler
                                           final METHOD method)
       throws HttpForbiddenRequestException {
     try {
-<span class="nc" id="L253">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="fc" id="L253">      HttpRestV1Utils.checkSanity(arguments);</span>
 <span class="nc" id="L254">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L255">      throw new HttpForbiddenRequestException(&quot;Issue on values&quot;, e);</span>
-<span class="nc" id="L256">    }</span>
-<span class="nc" id="L257">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
-<span class="nc" id="L258">    final R66Session session = r66handler.getServerHandler().getSession();</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.RULE)) {</span>
+<span class="fc" id="L256">    }</span>
+<span class="fc" id="L257">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
+<span class="fc" id="L258">    final R66Session session = r66handler.getServerHandler().getSession();</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.RULE)) {</span>
 <span class="nc" id="L260">      throw new HttpForbiddenRequestException(</span>
           &quot;Partner must have ConfigAdmin role&quot;);
     }
-<span class="nc" id="L263">  }</span>
+<span class="fc" id="L263">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -32,11 +32,29 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.database.h2.H2TransferDAO;
 import org.waarp.openr66.dao.database.mariadb.MariaDBTransferDAO;
+import org.waarp.openr66.dao.database.mysql.MySqlDBTransferDAO;
 import org.waarp.openr66.dao.database.oracle.OracleTransferDAO;
 import org.waarp.openr66.dao.database.postgres.PostgreSQLTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.NClob;
+import java.sql.PreparedStatement;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Savepoint;
+import java.sql.Statement;
+import java.sql.Struct;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executor;
 
 /**
  * DAOFactory for standard SQL databases
@@ -45,89 +63,111 @@ public class DBDAOFactory extends DAOFactory {
 
   private static final String DATA_ACCESS_ERROR = &quot;data access error&quot;;
 
-<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(DBDAOFactory.class);</span>
+<span class="fc" id="L66">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L67">      WaarpLoggerFactory.getLogger(DBDAOFactory.class);</span>
 
   private final ConnectionFactory connectionFactory;
 
-<span class="fc" id="L53">  public DBDAOFactory(final ConnectionFactory factory) {</span>
-<span class="fc" id="L54">    connectionFactory = factory;</span>
-<span class="fc" id="L55">  }</span>
+  private final FakeConnection fakeConnection;
+
+<span class="fc" id="L73">  public DBDAOFactory(final ConnectionFactory factory) {</span>
+<span class="fc" id="L74">    connectionFactory = factory;</span>
+<span class="fc" id="L75">    fakeConnection = new FakeConnection(connectionFactory);</span>
+<span class="fc" id="L76">  }</span>
 
   public ConnectionFactory getConnectionFactory() {
-<span class="nc" id="L58">    return connectionFactory;</span>
+<span class="nc" id="L79">    return connectionFactory;</span>
   }
 
   @Override
   public int getMaxConnections() {
-<span class="nc" id="L63">    return connectionFactory.getMaxConnections();</span>
+<span class="nc" id="L84">    return connectionFactory.getMaxConnections();</span>
   }
 
   @Override
-  public DBBusinessDAO getBusinessDAO() throws DAOConnectionException {
-    try {
-<span class="fc" id="L69">      return new DBBusinessDAO(connectionFactory.getConnection());</span>
-<span class="nc" id="L70">    } catch (final SQLException e) {</span>
-<span class="nc" id="L71">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
-    }
-  }
-
-  @Override
-  public DBHostDAO getHostDAO() throws DAOConnectionException {
-    try {
-<span class="fc" id="L78">      return new DBHostDAO(connectionFactory.getConnection());</span>
-<span class="nc" id="L79">    } catch (final SQLException e) {</span>
-<span class="nc" id="L80">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
-    }
-  }
-
-  @Override
-  public DBLimitDAO getLimitDAO() throws DAOConnectionException {
-    try {
-<span class="fc" id="L87">      return new DBLimitDAO(connectionFactory.getConnection());</span>
-<span class="nc" id="L88">    } catch (final SQLException e) {</span>
-<span class="nc" id="L89">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
-    }
-  }
-
-  @Override
-  public DBMultipleMonitorDAO getMultipleMonitorDAO()
+  public DBBusinessDAO getBusinessDAO(final boolean isCacheable)
       throws DAOConnectionException {
     try {
-<span class="fc" id="L97">      return new DBMultipleMonitorDAO(connectionFactory.getConnection());</span>
-<span class="nc" id="L98">    } catch (final SQLException e) {</span>
-<span class="nc" id="L99">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">      if (isCacheable) {</span>
+<span class="fc" id="L92">        return new DBBusinessDAO(fakeConnection);</span>
+      }
+<span class="fc" id="L94">      return new DBBusinessDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L95">    } catch (final SQLException e) {</span>
+<span class="nc" id="L96">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
   }
 
   @Override
-  public DBRuleDAO getRuleDAO() throws DAOConnectionException {
+  public DBHostDAO getHostDAO(final boolean isCacheable)
+      throws DAOConnectionException {
     try {
-<span class="fc" id="L106">      return new DBRuleDAO(connectionFactory.getConnection());</span>
-<span class="nc" id="L107">    } catch (final SQLException e) {</span>
-<span class="nc" id="L108">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">      if (isCacheable) {</span>
+<span class="fc" id="L105">        return new DBHostDAO(fakeConnection);</span>
+      }
+<span class="fc" id="L107">      return new DBHostDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L108">    } catch (final SQLException e) {</span>
+<span class="nc" id="L109">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
+    }
+  }
+
+  @Override
+  public DBLimitDAO getLimitDAO(final boolean isCacheable)
+      throws DAOConnectionException {
+    try {
+<span class="fc bfc" id="L117" title="All 2 branches covered.">      if (isCacheable) {</span>
+<span class="fc" id="L118">        return new DBLimitDAO(fakeConnection);</span>
+      }
+<span class="fc" id="L120">      return new DBLimitDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L121">    } catch (final SQLException e) {</span>
+<span class="nc" id="L122">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
+    }
+  }
+
+  @Override
+  public DBMultipleMonitorDAO getMultipleMonitorDAO(final boolean isCacheable)
+      throws DAOConnectionException {
+    try {
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      if (isCacheable) {</span>
+<span class="fc" id="L131">        return new DBMultipleMonitorDAO(fakeConnection);</span>
+      }
+<span class="nc" id="L133">      return new DBMultipleMonitorDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L134">    } catch (final SQLException e) {</span>
+<span class="nc" id="L135">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
+    }
+  }
+
+  @Override
+  public DBRuleDAO getRuleDAO(final boolean isCacheable)
+      throws DAOConnectionException {
+    try {
+<span class="fc bfc" id="L143" title="All 2 branches covered.">      if (isCacheable) {</span>
+<span class="fc" id="L144">        return new DBRuleDAO(fakeConnection);</span>
+      }
+<span class="fc" id="L146">      return new DBRuleDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L147">    } catch (final SQLException e) {</span>
+<span class="nc" id="L148">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
   }
 
   @Override
   public DBTransferDAO getTransferDAO() throws DAOConnectionException {
     try {
-<span class="fc" id="L115">      final DbProperties prop = connectionFactory.getProperties();</span>
-<span class="fc bfc" id="L116" title="All 2 branches covered.">      if (prop instanceof H2Properties) {</span>
-<span class="fc" id="L117">        return new H2TransferDAO(connectionFactory.getConnection());</span>
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">      } else if (prop instanceof MariaDBProperties) {</span>
-<span class="nc" id="L119">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">      } else if (prop instanceof MySQLProperties) {</span>
-<span class="nc" id="L121">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">      } else if (prop instanceof OracleProperties) {</span>
-<span class="nc" id="L123">        return new OracleTransferDAO(connectionFactory.getConnection());</span>
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      } else if (prop instanceof PostgreSQLProperties) {</span>
-<span class="fc" id="L125">        return new PostgreSQLTransferDAO(connectionFactory.getConnection());</span>
+<span class="fc" id="L155">      final DbProperties prop = connectionFactory.getProperties();</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">      if (prop instanceof H2Properties) {</span>
+<span class="fc" id="L157">        return new H2TransferDAO(connectionFactory.getConnection());</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">      } else if (prop instanceof MariaDBProperties) {</span>
+<span class="nc" id="L159">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">      } else if (prop instanceof MySQLProperties) {</span>
+<span class="nc" id="L161">        return new MySqlDBTransferDAO(connectionFactory.getConnection());</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">      } else if (prop instanceof OracleProperties) {</span>
+<span class="nc" id="L163">        return new OracleTransferDAO(connectionFactory.getConnection());</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">      } else if (prop instanceof PostgreSQLProperties) {</span>
+<span class="fc" id="L165">        return new PostgreSQLTransferDAO(connectionFactory.getConnection());</span>
       } else {
-<span class="nc" id="L127">        throw new DAOConnectionException(&quot;Unsupported database&quot;);</span>
+<span class="nc" id="L167">        throw new DAOConnectionException(&quot;Unsupported database&quot;);</span>
       }
-<span class="nc" id="L129">    } catch (final SQLException e) {</span>
-<span class="nc" id="L130">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
+<span class="fc" id="L169">    } catch (final SQLException e) {</span>
+<span class="fc" id="L170">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
   }
 
@@ -136,9 +176,321 @@ public class DBDAOFactory extends DAOFactory {
    * to close the Connection yourself!
    */
   public void close() {
-<span class="nc" id="L139">    logger.debug(&quot;Closing DAOFactory.&quot;);</span>
-<span class="nc" id="L140">    logger.debug(&quot;Closing factory ConnectionFactory.&quot;);</span>
-<span class="nc" id="L141">    connectionFactory.close();</span>
-<span class="nc" id="L142">  }</span>
+<span class="nc" id="L179">    logger.debug(&quot;Closing DAOFactory.&quot;);</span>
+<span class="nc" id="L180">    logger.debug(&quot;Closing factory ConnectionFactory.&quot;);</span>
+<span class="nc" id="L181">    connectionFactory.close();</span>
+<span class="nc" id="L182">  }</span>
+
+  /**
+   * Fake Connection to allow to setup a real connection for cached capability
+   * but not using cache due to lack of data in it
+   */
+  static class FakeConnection implements Connection {
+    private final ConnectionFactory connectionFactory;
+
+<span class="fc" id="L191">    public FakeConnection(final ConnectionFactory connectionFactory) {</span>
+<span class="fc" id="L192">      this.connectionFactory = connectionFactory;</span>
+<span class="fc" id="L193">    }</span>
+
+    /**
+     * @return a newly created real connection
+     *
+     * @throws SQLException
+     */
+    public Connection getRealConnection() throws SQLException {
+<span class="fc" id="L201">      return connectionFactory.getConnection();</span>
+    }
+
+    @Override
+    public Statement createStatement() throws SQLException {
+<span class="nc" id="L206">      return null;</span>
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(final String s)
+        throws SQLException {
+<span class="nc" id="L212">      return null;</span>
+    }
+
+    @Override
+    public CallableStatement prepareCall(final String s) throws SQLException {
+<span class="nc" id="L217">      return null;</span>
+    }
+
+    @Override
+    public String nativeSQL(final String s) throws SQLException {
+<span class="nc" id="L222">      return null;</span>
+    }
+
+    @Override
+    public void setAutoCommit(final boolean b) throws SQLException {
+      // Emoty
+<span class="nc" id="L228">    }</span>
+
+    @Override
+    public boolean getAutoCommit() throws SQLException {
+<span class="nc" id="L232">      return false;</span>
+    }
+
+    @Override
+    public void commit() throws SQLException {
+      // Emoty
+<span class="nc" id="L238">    }</span>
+
+    @Override
+    public void rollback() throws SQLException {
+      // Emoty
+<span class="nc" id="L243">    }</span>
+
+    @Override
+    public void close() throws SQLException {
+      // Emoty
+<span class="fc" id="L248">    }</span>
+
+    @Override
+    public boolean isClosed() throws SQLException {
+<span class="nc" id="L252">      return false;</span>
+    }
+
+    @Override
+    public DatabaseMetaData getMetaData() throws SQLException {
+<span class="nc" id="L257">      return null;</span>
+    }
+
+    @Override
+    public void setReadOnly(final boolean b) throws SQLException {
+      // Emoty
+<span class="nc" id="L263">    }</span>
+
+    @Override
+    public boolean isReadOnly() throws SQLException {
+<span class="nc" id="L267">      return false;</span>
+    }
+
+    @Override
+    public void setCatalog(final String s) throws SQLException {
+      // Emoty
+<span class="nc" id="L273">    }</span>
+
+    @Override
+    public String getCatalog() throws SQLException {
+<span class="nc" id="L277">      return null;</span>
+    }
+
+    @Override
+    public void setTransactionIsolation(final int i) throws SQLException {
+      // Emoty
+<span class="nc" id="L283">    }</span>
+
+    @Override
+    public int getTransactionIsolation() throws SQLException {
+<span class="nc" id="L287">      return 0;</span>
+    }
+
+    @Override
+    public SQLWarning getWarnings() throws SQLException {
+<span class="nc" id="L292">      return null;</span>
+    }
+
+    @Override
+    public void clearWarnings() throws SQLException {
+      // Emoty
+<span class="nc" id="L298">    }</span>
+
+    @Override
+    public Statement createStatement(final int i, final int i1)
+        throws SQLException {
+<span class="nc" id="L303">      return null;</span>
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(final String s, final int i,
+                                              final int i1)
+        throws SQLException {
+<span class="nc" id="L310">      return null;</span>
+    }
+
+    @Override
+    public CallableStatement prepareCall(final String s, final int i,
+                                         final int i1) throws SQLException {
+<span class="nc" id="L316">      return null;</span>
+    }
+
+    @Override
+    public Map&lt;String, Class&lt;?&gt;&gt; getTypeMap() throws SQLException {
+<span class="nc" id="L321">      return null;</span>
+    }
+
+    @Override
+    public void setTypeMap(final Map&lt;String, Class&lt;?&gt;&gt; map)
+        throws SQLException {
+      // Emoty
+<span class="nc" id="L328">    }</span>
+
+    @Override
+    public void setHoldability(final int i) throws SQLException {
+      // Emoty
+<span class="nc" id="L333">    }</span>
+
+    @Override
+    public int getHoldability() throws SQLException {
+<span class="nc" id="L337">      return 0;</span>
+    }
+
+    @Override
+    public Savepoint setSavepoint() throws SQLException {
+<span class="nc" id="L342">      return null;</span>
+    }
+
+    @Override
+    public Savepoint setSavepoint(final String s) throws SQLException {
+<span class="nc" id="L347">      return null;</span>
+    }
+
+    @Override
+    public void rollback(final Savepoint savepoint) throws SQLException {
+      // Emoty
+<span class="nc" id="L353">    }</span>
+
+    @Override
+    public void releaseSavepoint(final Savepoint savepoint)
+        throws SQLException {
+      // Emoty
+<span class="nc" id="L359">    }</span>
+
+    @Override
+    public Statement createStatement(final int i, final int i1, final int i2)
+        throws SQLException {
+<span class="nc" id="L364">      return null;</span>
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(final String s, final int i,
+                                              final int i1, final int i2)
+        throws SQLException {
+<span class="nc" id="L371">      return null;</span>
+    }
+
+    @Override
+    public CallableStatement prepareCall(final String s, final int i,
+                                         final int i1, final int i2)
+        throws SQLException {
+<span class="nc" id="L378">      return null;</span>
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(final String s, final int i)
+        throws SQLException {
+<span class="nc" id="L384">      return null;</span>
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(final String s, final int[] ints)
+        throws SQLException {
+<span class="nc" id="L390">      return null;</span>
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(final String s,
+                                              final String[] strings)
+        throws SQLException {
+<span class="nc" id="L397">      return null;</span>
+    }
+
+    @Override
+    public Clob createClob() throws SQLException {
+<span class="nc" id="L402">      return null;</span>
+    }
+
+    @Override
+    public Blob createBlob() throws SQLException {
+<span class="nc" id="L407">      return null;</span>
+    }
+
+    @Override
+    public NClob createNClob() throws SQLException {
+<span class="nc" id="L412">      return null;</span>
+    }
+
+    @Override
+    public SQLXML createSQLXML() throws SQLException {
+<span class="nc" id="L417">      return null;</span>
+    }
+
+    @Override
+    public boolean isValid(final int i) throws SQLException {
+<span class="nc" id="L422">      return false;</span>
+    }
+
+    @Override
+    public void setClientInfo(final String s, final String s1)
+        throws SQLClientInfoException {
+      // Emoty
+<span class="nc" id="L429">    }</span>
+
+    @Override
+    public void setClientInfo(final Properties properties)
+        throws SQLClientInfoException {
+      // Emoty
+<span class="nc" id="L435">    }</span>
+
+    @Override
+    public String getClientInfo(final String s) throws SQLException {
+<span class="nc" id="L439">      return null;</span>
+    }
+
+    @Override
+    public Properties getClientInfo() throws SQLException {
+<span class="nc" id="L444">      return null;</span>
+    }
+
+    @Override
+    public Array createArrayOf(final String s, final Object[] objects)
+        throws SQLException {
+<span class="nc" id="L450">      return null;</span>
+    }
+
+    @Override
+    public Struct createStruct(final String s, final Object[] objects)
+        throws SQLException {
+<span class="nc" id="L456">      return null;</span>
+    }
+
+    @Override
+    public void setSchema(final String s) throws SQLException {
+      // Emoty
+<span class="nc" id="L462">    }</span>
+
+    @Override
+    public String getSchema() throws SQLException {
+<span class="nc" id="L466">      return null;</span>
+    }
+
+    @Override
+    public void abort(final Executor executor) throws SQLException {
+      // Emoty
+<span class="nc" id="L472">    }</span>
+
+    @Override
+    public void setNetworkTimeout(final Executor executor, final int i)
+        throws SQLException {
+      // Emoty
+<span class="nc" id="L478">    }</span>
+
+    @Override
+    public int getNetworkTimeout() throws SQLException {
+<span class="nc" id="L482">      return 0;</span>
+    }
+
+    @Override
+    public &lt;T&gt; T unwrap(final Class&lt;T&gt; aClass) throws SQLException {
+<span class="nc" id="L487">      return null;</span>
+    }
+
+    @Override
+    public boolean isWrapperFor(final Class&lt;?&gt; aClass) throws SQLException {
+<span class="nc" id="L492">      return false;</span>
+    }
+  }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

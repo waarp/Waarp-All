@@ -23,7 +23,9 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -41,55 +43,56 @@ public class R66Server {
    * @param args as first argument the configuration file
    */
   public static void main(final String[] args) {
-<span class="fc" id="L44">    WaarpLoggerFactory</span>
-<span class="fc" id="L45">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="fc" id="L46">    logger = WaarpLoggerFactory.getLogger(R66Server.class);</span>
-<span class="pc bpc" id="L47" title="1 of 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L48">      logger</span>
-<span class="nc" id="L49">          .error(Messages.getString(&quot;Configuration.NeedConfig&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L50">      return;</span>
+<span class="fc" id="L46">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="fc" id="L48">    logger = WaarpLoggerFactory.getLogger(R66Server.class);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L50">      logger.error(</span>
+<span class="nc" id="L51">          Messages.getString(&quot;Configuration.NeedConfig&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L52">      return;</span>
     }
     try {
-<span class="fc" id="L53">      WaarpShutdownHook.registerMain(R66Server.class, args);</span>
-<span class="pc bpc" id="L54" title="1 of 2 branches missed.">      if (initialize(args[0])) {</span>
-<span class="fc" id="L55">        logger.warn(Messages.getString(&quot;R66Server.ServerStart&quot;) +</span>
-<span class="fc" id="L56">                    Configuration.configuration.getHostId() + &quot; : &quot;</span>
+<span class="fc" id="L55">      WaarpShutdownHook.registerMain(R66Server.class, args);</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">      if (initialize(args[0])) {</span>
+<span class="fc" id="L57">        logger.warn(Messages.getString(&quot;R66Server.ServerStart&quot;) +</span>
+<span class="fc" id="L58">                    Configuration.configuration.getHostId() + &quot; : &quot;</span>
                     //$NON-NLS-1$
-                    + Configuration.configuration);
-<span class="fc" id="L59">        SysErrLogger.FAKE_LOGGER.sysout(</span>
-<span class="fc" id="L60">            Messages.getString(&quot;R66Server.ServerStart&quot;) +</span>
-<span class="fc" id="L61">            Configuration.configuration.getHostId()); //$NON-NLS-1$</span>
+                    + Configuration.configuration + &quot; Version: &quot; +
+<span class="fc" id="L61">                    Version.fullIdentifier());</span>
+<span class="fc" id="L62">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="fc" id="L63">            Messages.getString(&quot;R66Server.ServerStart&quot;) +</span>
+<span class="fc" id="L64">            Configuration.configuration.getHostId()); //$NON-NLS-1$</span>
       } else {
-<span class="nc" id="L63">        logger.error(Messages.getString(&quot;R66Server.CannotStart&quot;) +</span>
-<span class="nc" id="L64">                     Configuration.configuration.getHostId()); //$NON-NLS-1$</span>
-<span class="nc" id="L65">        SysErrLogger.FAKE_LOGGER.syserr(</span>
-<span class="nc" id="L66">            Messages.getString(&quot;R66Server.CannotStart&quot;) +</span>
-<span class="nc" id="L67">            Configuration.configuration.getHostId()); //$NON-NLS-1$</span>
-<span class="nc" id="L68">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L66">        logger.error(Messages.getString(&quot;R66Server.CannotStart&quot;) +</span>
+<span class="nc" id="L67">                     Configuration.configuration.getHostId()); //$NON-NLS-1$</span>
+<span class="nc" id="L68">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L69">            Messages.getString(&quot;R66Server.CannotStart&quot;) +</span>
+<span class="nc" id="L70">            Configuration.configuration.getHostId()); //$NON-NLS-1$</span>
+<span class="nc" id="L71">        WaarpSystemUtil.systemExit(1);</span>
       }
-<span class="nc" id="L70">    } catch (final Throwable e) {</span>
-<span class="nc" id="L71">      logger.error(Messages.getString(&quot;R66Server.StartError&quot;), e); //$NON-NLS-1$</span>
-<span class="fc" id="L72">    }</span>
-<span class="fc" id="L73">  }</span>
+<span class="nc" id="L73">    } catch (final Throwable e) {</span>
+<span class="nc" id="L74">      logger.error(Messages.getString(&quot;R66Server.StartError&quot;), e); //$NON-NLS-1$</span>
+<span class="fc" id="L75">    }</span>
+<span class="fc" id="L76">  }</span>
 
   public static boolean initialize(final String config) {
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L77">      logger = WaarpLoggerFactory.getLogger(R66Server.class);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L80">      logger = WaarpLoggerFactory.getLogger(R66Server.class);</span>
     }
-<span class="fc" id="L79">    if (!FileBasedConfiguration</span>
-<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        .setConfigurationServerFromXml(Configuration.configuration, config)) {</span>
-<span class="nc" id="L81">      logger.error(</span>
-<span class="nc" id="L82">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L83">      return false;</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">    if (!FileBasedConfiguration.setConfigurationServerFromXml(</span>
+        Configuration.configuration, config, true)) {
+<span class="nc" id="L84">      logger.error(</span>
+<span class="nc" id="L85">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L86">      return false;</span>
     }
     try {
-<span class="fc" id="L86">      Configuration.configuration.serverStartup();</span>
-<span class="nc" id="L87">    } catch (final Throwable e) {</span>
-<span class="nc" id="L88">      logger.error(Messages.getString(&quot;R66Server.StartError&quot;), e); //$NON-NLS-1$</span>
-<span class="nc" id="L89">      WaarpShutdownHook.terminate(false);</span>
-<span class="nc" id="L90">      return false;</span>
-<span class="fc" id="L91">    }</span>
-<span class="fc" id="L92">    return true;</span>
+<span class="fc" id="L89">      Configuration.configuration.serverStartup();</span>
+<span class="nc" id="L90">    } catch (final Throwable e) {</span>
+<span class="nc" id="L91">      logger.error(Messages.getString(&quot;R66Server.StartError&quot;), e); //$NON-NLS-1$</span>
+<span class="nc" id="L92">      WaarpShutdownHook.terminate(false);</span>
+<span class="nc" id="L93">      return false;</span>
+<span class="fc" id="L94">    }</span>
+<span class="fc" id="L95">    return true;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

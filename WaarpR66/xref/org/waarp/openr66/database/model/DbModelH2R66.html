@@ -80,10 +80,10 @@
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>      StringBuilder action;
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>      <em class="jxr_comment">// cptrunner</em>
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>      action = <strong class="jxr_keyword">new</strong> StringBuilder(
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>          <span class="jxr_string">"CREATE SEQUENCE IF NOT EXISTS "</span> + DbTaskRunner.fieldseq +
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>          <span class="jxr_string">" START WITH "</span> + (ILLEGALVALUE + 1) + <span class="jxr_string">" MINVALUE "</span> +
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>          (ILLEGALVALUE + 1));
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>      <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> minimalValue = System.currentTimeMillis() + 1;
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>      action = <strong class="jxr_keyword">new</strong> StringBuilder(
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>          <span class="jxr_string">"CREATE SEQUENCE IF NOT EXISTS "</span> + DbTaskRunner.fieldseq +
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>          <span class="jxr_string">" START WITH "</span> + (ILLEGALVALUE + 1) + <span class="jxr_string">" MINVALUE "</span> + minimalValue);
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>      SysErrLogger.FAKE_LOGGER.sysout(action);
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        request.query(action.toString());
@@ -94,7 +94,7 @@
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>        <em class="jxr_comment">// version &lt;= 1.2.173</em>
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>        action = <strong class="jxr_keyword">new</strong> StringBuilder(
 <a class="jxr_linenumber" name="L88" href="#L88">88</a>            <span class="jxr_string">"CREATE SEQUENCE IF NOT EXISTS "</span> + DbTaskRunner.fieldseq +
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>            <span class="jxr_string">" START WITH "</span> + (ILLEGALVALUE + 1));
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>            <span class="jxr_string">" START WITH "</span> + minimalValue);
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>        SysErrLogger.FAKE_LOGGER.sysout(action);
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>        <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>          request.query(action.toString());

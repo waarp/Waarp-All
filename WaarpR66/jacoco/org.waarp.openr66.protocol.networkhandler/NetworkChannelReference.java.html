@@ -61,7 +61,7 @@ public class NetworkChannelReference {
   /**
    * Does this Network Channel is in shutdown
    */
-  protected volatile boolean isShuttingDown;
+  protected boolean isShuttingDown;
   /**
    * Associated LocalChannelReference
    */
@@ -120,11 +120,11 @@ public class NetworkChannelReference {
 <span class="nc" id="L120">    this.isSSL = isSSL;</span>
 <span class="nc" id="L121">  }</span>
 
-  public boolean isSSL() {
+  public final boolean isSSL() {
 <span class="fc" id="L124">    return isSSL;</span>
   }
 
-  public void add(final LocalChannelReference localChannel)
+  public final void add(final LocalChannelReference localChannel)
       throws OpenR66ProtocolRemoteShutdownException {
     // lock is of no use since caller is itself in locked situation for the very same lock
 <span class="pc bpc" id="L130" title="1 of 2 branches missed.">    if (isShuttingDown) {</span>
@@ -138,7 +138,7 @@ public class NetworkChannelReference {
   /**
    * To set the last time used
    */
-  public void use() {
+  public final void use() {
 <span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (!isShuttingDown) {</span>
 <span class="fc" id="L143">      lastTimeUsed = System.currentTimeMillis();</span>
     }
@@ -149,7 +149,7 @@ public class NetworkChannelReference {
    *
    * @return True if last time used is set
    */
-  public boolean useIfUsed() {
+  public final boolean useIfUsed() {
 <span class="pc bpc" id="L153" title="1 of 4 branches missed.">    if (!isShuttingDown &amp;&amp; !localChannelReferences.isEmpty()) {</span>
 <span class="fc" id="L154">      lastTimeUsed = System.currentTimeMillis();</span>
 <span class="fc" id="L155">      return true;</span>
@@ -162,7 +162,7 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void closeAndRemove(final LocalChannelReference localChannel) {
+  public final void closeAndRemove(final LocalChannelReference localChannel) {
 <span class="fc bfc" id="L166" title="All 2 branches covered.">    if (!localChannel.getFutureRequest().isDone()) {</span>
 <span class="fc" id="L167">      localChannel.close();</span>
     }
@@ -174,7 +174,7 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void remove(final LocalChannelReference localChannel) {
+  public final void remove(final LocalChannelReference localChannel) {
 <span class="fc" id="L178">    localChannelReferences.remove(localChannel);</span>
     // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis()
 <span class="fc" id="L180">  }</span>
@@ -182,7 +182,7 @@ public class NetworkChannelReference {
   /**
    * Shutdown All Local Channels associated with this NCR
    */
-  public void shutdownAllLocalChannels() {
+  public final void shutdownAllLocalChannels() {
 <span class="fc" id="L186">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
     try {
 <span class="fc" id="L188">      logger.info(&quot;Will shutdown all local channels&quot;);</span>
@@ -240,19 +240,19 @@ public class NetworkChannelReference {
    *
    * @return True if the localChannelReference is the only one still active or there is no more LCR
    */
-  public boolean isLastLocalChannelActive(
-      LocalChannelReference localChannelReference) {
-<span class="nc" id="L245">    boolean someActive = isSomeLocalChannelsActive();</span>
+  public final boolean isLastLocalChannelActive(
+      final LocalChannelReference localChannelReference) {
+<span class="nc" id="L245">    final boolean someActive = isSomeLocalChannelsActive();</span>
 <span class="nc bnc" id="L246" title="All 2 branches missed.">    return</span>
 <span class="nc bnc" id="L247" title="All 2 branches missed.">        (someActive &amp;&amp; localChannelReferences.contains(localChannelReference) &amp;&amp;</span>
 <span class="nc bnc" id="L248" title="All 2 branches missed.">         localChannelReferences.size() == 1) ||</span>
-<span class="nc bnc" id="L249" title="All 2 branches missed.">        (localChannelReferences.size() == 0);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        localChannelReferences.isEmpty();</span>
   }
 
   /**
    * @return -1 if not allowed, 0 if allowed, else time in ms before ready to recheck
    */
-  public long shutdownAllowed() {
+  public final long shutdownAllowed() {
 <span class="fc" id="L256">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
     try {
 <span class="fc" id="L258">      logger.debug(&quot;NC count: {}&quot;, this);</span>
@@ -261,7 +261,7 @@ public class NetworkChannelReference {
 <span class="fc bfc" id="L261" title="All 2 branches covered.">        for (int i = 0; i &lt; RETRYNB; i++) {</span>
           try {
 <span class="fc" id="L263">            Thread.sleep(RETRYINMS);</span>
-<span class="nc" id="L264">          } catch (InterruptedException e) { // Ignore</span>
+<span class="nc" id="L264">          } catch (final InterruptedException e) { // NOSONAR</span>
 <span class="nc" id="L265">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="fc" id="L266">          }</span>
 <span class="pc bpc" id="L267" title="1 of 2 branches missed.">          if (nbLocalChannels() != 0) {</span>
@@ -293,22 +293,22 @@ public class NetworkChannelReference {
     }
   }
 
-  public void lockNetwork() {
+  public final void lockNetwork() {
 <span class="nc" id="L297">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
 <span class="nc" id="L298">  }</span>
 
-  public void unlockNetwork() {
+  public final void unlockNetwork() {
 <span class="nc" id="L301">    lock.unlock();</span>
 <span class="nc" id="L302">  }</span>
 
-  public int nbLocalChannels() {
+  public final int nbLocalChannels() {
 <span class="fc" id="L305">    return localChannelReferences.size();</span>
   }
 
   /**
    * @return True if at least one LocalChannel is not yet finished (OK or Error)
    */
-  public boolean isSomeLocalChannelsActive() {
+  public final boolean isSomeLocalChannelsActive() {
 <span class="nc" id="L312">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
     try {
 <span class="nc bnc" id="L314" title="All 2 branches missed.">      for (final LocalChannelReference localChannelReference : localChannelReferences) {</span>
@@ -328,13 +328,13 @@ public class NetworkChannelReference {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
 <span class="pc bpc" id="L332" title="2 of 4 branches missed.">    return &quot;NC: &quot; + hostId + ':' + (channel != null &amp;&amp; channel.isActive()) +</span>
 <span class="fc" id="L333">           ' ' + networkAddress + &quot; Count: &quot; + localChannelReferences.size();</span>
   }
 
   @Override
-  public boolean equals(final Object obj) {
+  public final boolean equals(final Object obj) {
 <span class="nc bnc" id="L338" title="All 2 branches missed.">    if (obj instanceof NetworkChannelReference) {</span>
 <span class="nc" id="L339">      final NetworkChannelReference obj2 = (NetworkChannelReference) obj;</span>
 <span class="nc bnc" id="L340" title="All 4 branches missed.">      if (obj2.channel == null || channel == null) {</span>
@@ -346,7 +346,7 @@ public class NetworkChannelReference {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
 <span class="pc bpc" id="L350" title="1 of 2 branches missed.">    if (channel == null) {</span>
 <span class="nc" id="L351">      return Integer.MIN_VALUE;</span>
     }
@@ -356,7 +356,7 @@ public class NetworkChannelReference {
   /**
    * @return the hashcode for the global remote networkaddress
    */
-  public int getSocketHashCode() {
+  public final int getSocketHashCode() {
 <span class="fc" id="L360">    return networkAddress.hashCode();</span>
   }
 
@@ -365,7 +365,7 @@ public class NetworkChannelReference {
    *
    * @return the hashcode for the address
    */
-  public int getAddressHashCode() {
+  public final int getAddressHashCode() {
 <span class="nc" id="L369">    return hostAddress.hashCode();</span>
   }
 
@@ -379,44 +379,44 @@ public class NetworkChannelReference {
    * @return &lt;= 0 if OK, else &gt; 0 (should send a KeepAlive or wait that time
    *     in ms)
    */
-  public long checkLastTime(final long delay) {
+  public final long checkLastTime(final long delay) {
 <span class="fc" id="L383">    return lastTimeUsed + delay - System.currentTimeMillis();</span>
   }
 
   /**
    * @return the isShuttingDown
    */
-  public boolean isShuttingDown() {
+  public final boolean isShuttingDown() {
 <span class="nc" id="L390">    return isShuttingDown;</span>
   }
 
   /**
    * @return the channel
    */
-  public Channel channel() {
+  public final Channel channel() {
 <span class="fc" id="L397">    return channel;</span>
   }
 
   /**
    * @return the hostId
    */
-  public String getHostId() {
+  public final String getHostId() {
 <span class="nc" id="L404">    return hostId;</span>
   }
 
   /**
    * @param hostId the hostId to set
    */
-  public void setHostId(final String hostId) {
+  public final void setHostId(final String hostId) {
 <span class="fc" id="L411">    this.hostId = hostId;</span>
 <span class="fc" id="L412">  }</span>
 
   /**
    * @return the lastTimeUsed
    */
-  public long getLastTimeUsed() {
+  public final long getLastTimeUsed() {
 <span class="nc" id="L418">    return lastTimeUsed;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

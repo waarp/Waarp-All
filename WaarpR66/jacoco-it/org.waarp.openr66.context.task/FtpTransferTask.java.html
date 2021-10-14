@@ -107,7 +107,7 @@ public class FtpTransferTask extends AbstractTask {
    **/
 
   @Override
-  public void run() {
+  public final void run() {
 <span class="nc" id="L111">    logger.info(&quot;FtpTransfer with {}:{} and {}&quot;, argRule, argTransfer, session);</span>
 <span class="nc bnc" id="L112" title="All 2 branches missed.">    if (argRule == null) {</span>
 <span class="nc" id="L113">      logger.error(</span>
@@ -124,8 +124,8 @@ public class FtpTransferTask extends AbstractTask {
 <span class="nc" id="L124">        finalname = String.format(finalname, (Object[]) argFormat);</span>
 <span class="nc" id="L125">      } catch (final Exception e) {</span>
         // ignored error since bad argument in static rule info
-<span class="nc" id="L127">        logger</span>
-<span class="nc" id="L128">            .error(&quot;Bad format in Rule: {&quot; + finalname + &quot;} &quot; + e.getMessage());</span>
+<span class="nc" id="L127">        logger.error(</span>
+<span class="nc" id="L128">            &quot;Bad format in Rule: {&quot; + finalname + &quot;} &quot; + e.getMessage());</span>
 <span class="nc" id="L129">      }</span>
     }
 <span class="nc" id="L131">    final String[] args = BLANK.split(finalname);</span>
@@ -174,88 +174,94 @@ public class FtpTransferTask extends AbstractTask {
     try {
 <span class="nc bnc" id="L175" title="All 4 branches missed.">      if (ftpArgs.getCwd() != null &amp;&amp; !ftpClient.changeDir(ftpArgs.getCwd())) {</span>
 <span class="nc" id="L176">        ftpClient.makeDir(ftpArgs.getCwd());</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (!ftpClient.changeDir(ftpArgs.getCwd())) {</span>
-<span class="nc" id="L178">          logger.warn(&quot;Cannot change od directory: &quot; + ftpArgs.getCwd());</span>
+        try {
+<span class="nc" id="L178">          Thread.sleep(Configuration.RETRYINMS);</span>
+<span class="nc" id="L179">        } catch (final InterruptedException e) {// NOSONAR</span>
+          // Ignore
+<span class="nc" id="L181">        }</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (!ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L183">          logger.warn(&quot;Cannot change od directory: &quot; + ftpArgs.getCwd());</span>
         }
       }
-<span class="nc bnc" id="L181" title="All 2 branches missed.">      if (ftpArgs.getPreArgs() != null) {</span>
-<span class="nc" id="L182">        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());</span>
-<span class="nc bnc" id="L183" title="All 2 branches missed.">        for (final String string : result) {</span>
-<span class="nc" id="L184">          logger.debug(&quot;PRE: {}&quot;, string);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (ftpArgs.getPreArgs() != null) {</span>
+<span class="nc" id="L187">        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L189">          logger.debug(&quot;PRE: {}&quot;, string);</span>
         }
       }
-<span class="nc bnc" id="L187" title="All 2 branches missed.">      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),</span>
-<span class="nc" id="L188">                                  ftpArgs.getCodeCommand())) {</span>
-<span class="nc" id="L189">        final OpenR66RunnerErrorException exception =</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),</span>
+<span class="nc" id="L193">                                  ftpArgs.getCodeCommand())) {</span>
+<span class="nc" id="L194">        final OpenR66RunnerErrorException exception =</span>
             new OpenR66RunnerErrorException(
                 &quot;Cannot transfert file from/to remote FTP host&quot;);
-<span class="nc" id="L192">        final R66Result result =</span>
+<span class="nc" id="L197">        final R66Result result =</span>
             new R66Result(exception, session, false, ErrorCode.TransferError,
-<span class="nc" id="L194">                          session.getRunner());</span>
-<span class="nc" id="L195">        futureCompletion.setResult(result);</span>
-<span class="nc" id="L196">        futureCompletion.setFailure(exception);</span>
-<span class="nc" id="L197">        logger.error(ftpClient.getResult());</span>
-<span class="nc" id="L198">        return;</span>
+<span class="nc" id="L199">                          session.getRunner());</span>
+<span class="nc" id="L200">        futureCompletion.setResult(result);</span>
+<span class="nc" id="L201">        futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L202">        logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L203">        return;</span>
       }
-<span class="nc bnc" id="L200" title="All 2 branches missed.">      if (ftpArgs.getDigest() != null) {</span>
-<span class="nc" id="L201">        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());</span>
-<span class="nc" id="L202">        String hashresult = null;</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (values != null) {</span>
-<span class="nc" id="L204">          values = BLANK.split(values[0]);</span>
-<span class="nc bnc" id="L205" title="All 2 branches missed.">          hashresult = values.length &gt; 3? values[1] : values[0];</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">      if (ftpArgs.getDigest() != null) {</span>
+<span class="nc" id="L206">        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());</span>
+<span class="nc" id="L207">        String hashresult = null;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (values != null) {</span>
+<span class="nc" id="L209">          values = BLANK.split(values[0]);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">          hashresult = values.length &gt; 3? values[1] : values[0];</span>
         }
-<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (hashresult == null) {</span>
-<span class="nc" id="L208">          final OpenR66RunnerErrorException exception =</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (hashresult == null) {</span>
+<span class="nc" id="L213">          final OpenR66RunnerErrorException exception =</span>
               new OpenR66RunnerErrorException(
                   &quot;Hash cannot be computed while FTP transfer is done&quot;);
-<span class="nc" id="L211">          final R66Result result =</span>
+<span class="nc" id="L216">          final R66Result result =</span>
               new R66Result(exception, session, false, ErrorCode.TransferError,
-<span class="nc" id="L213">                            session.getRunner());</span>
-<span class="nc" id="L214">          futureCompletion.setResult(result);</span>
-<span class="nc" id="L215">          futureCompletion.setFailure(exception);</span>
-<span class="nc" id="L216">          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());</span>
-<span class="nc" id="L217">          return;</span>
+<span class="nc" id="L218">                            session.getRunner());</span>
+<span class="nc" id="L219">          futureCompletion.setResult(result);</span>
+<span class="nc" id="L220">          futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L221">          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L222">          return;</span>
         }
         // now check locally
         String hash;
         try {
-<span class="nc" id="L222">          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(</span>
-<span class="nc" id="L223">              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));</span>
-<span class="nc" id="L224">        } catch (final IOException e) {</span>
-<span class="nc" id="L225">          hash = null;</span>
-<span class="nc" id="L226">        }</span>
-<span class="nc bnc" id="L227" title="All 4 branches missed.">        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {</span>
-<span class="nc" id="L228">          final OpenR66RunnerErrorException exception =</span>
+<span class="nc" id="L227">          hash = FilesystemBasedDigest.getHex(</span>
+<span class="nc" id="L228">              FilesystemBasedDigest.getHash(new File(ftpArgs.getFilepath()),</span>
+<span class="nc" id="L229">                                            false, ftpArgs.getDigest()));</span>
+<span class="nc" id="L230">        } catch (final IOException e) {</span>
+<span class="nc" id="L231">          hash = null;</span>
+<span class="nc" id="L232">        }</span>
+<span class="nc bnc" id="L233" title="All 4 branches missed.">        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {</span>
+<span class="nc" id="L234">          final OpenR66RunnerErrorException exception =</span>
               new OpenR66RunnerErrorException(
                   &quot;Hash not equal while FTP transfer is done&quot;);
-<span class="nc" id="L231">          final R66Result result =</span>
+<span class="nc" id="L237">          final R66Result result =</span>
               new R66Result(exception, session, false, ErrorCode.TransferError,
-<span class="nc" id="L233">                            session.getRunner());</span>
-<span class="nc" id="L234">          futureCompletion.setResult(result);</span>
-<span class="nc" id="L235">          futureCompletion.setFailure(exception);</span>
-<span class="nc" id="L236">          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());</span>
-<span class="nc" id="L237">          return;</span>
+<span class="nc" id="L239">                            session.getRunner());</span>
+<span class="nc" id="L240">          futureCompletion.setResult(result);</span>
+<span class="nc" id="L241">          futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L242">          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L243">          return;</span>
         }
       }
-<span class="nc bnc" id="L240" title="All 2 branches missed.">      if (ftpArgs.getPostArgs() != null) {</span>
-<span class="nc" id="L241">        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());</span>
-<span class="nc bnc" id="L242" title="All 2 branches missed.">        for (final String string : result) {</span>
-<span class="nc" id="L243">          logger.debug(&quot;POST: {}&quot;, string);</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">      if (ftpArgs.getPostArgs() != null) {</span>
+<span class="nc" id="L247">        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L249">          logger.debug(&quot;POST: {}&quot;, string);</span>
         }
       }
     } finally {
-<span class="nc" id="L247">      ftpClient.logout();</span>
+<span class="nc" id="L253">      ftpClient.logout();</span>
     }
-<span class="nc" id="L249">    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,</span>
-<span class="nc" id="L250">                                           session.getRunner());</span>
-<span class="nc" id="L251">    futureCompletion.setResult(result);</span>
-<span class="nc bnc" id="L252" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
-<span class="nc" id="L253">      logger.info(&quot;FTP transfer in     SUCCESS     &quot; +</span>
-<span class="nc" id="L254">                  session.getRunner().toShortString() + &quot;     &lt;REMOTE&gt;&quot; +</span>
-<span class="nc" id="L255">                  ftpArgs.getRequested() + &quot;&lt;/REMOTE&gt;&quot;);</span>
+<span class="nc" id="L255">    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,</span>
+<span class="nc" id="L256">                                           session.getRunner());</span>
+<span class="nc" id="L257">    futureCompletion.setResult(result);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L259">      logger.info(&quot;FTP transfer in     SUCCESS     &quot; +</span>
+<span class="nc" id="L260">                  session.getRunner().toShortString() + &quot;     &lt;REMOTE&gt;&quot; +</span>
+<span class="nc" id="L261">                  ftpArgs.getRequested() + &quot;&lt;/REMOTE&gt;&quot;);</span>
     }
-<span class="nc" id="L257">    futureCompletion.setSuccess();</span>
-<span class="nc" id="L258">  }</span>
+<span class="nc" id="L263">    futureCompletion.setSuccess();</span>
+<span class="nc" id="L264">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

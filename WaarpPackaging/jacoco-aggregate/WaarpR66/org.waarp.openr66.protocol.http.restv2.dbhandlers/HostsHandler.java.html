@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HostsHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.dbhandlers</a> &gt; <span class="el_source">HostsHandler.java</span></div><h1>HostsHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.dbhandlers;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.cdap.http.HttpResponder;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.protocol.http.restv2.converters.HostConverter;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+import static javax.ws.rs.core.MediaType.*;
+import static org.waarp.openr66.dao.database.DBHostDAO.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetHostsParams.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
+
+/**
+ * This is the {@link AbstractRestDbHandler} handling all requests made on the
+ * host collection REST entry
+ * point.
+ */
+@Path(HOSTS_HANDLER_URI)
+public class HostsHandler extends AbstractRestDbHandler {
+
+  /**
+   * The content of the 'Allow' header sent when an 'OPTIONS' request is made
+   * on the handler.
+   */
+  private static final HttpHeaders OPTIONS_HEADERS;
+
+  static {
+<span class="fc" id="L79">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L80">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L81">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L82">    allow.add(HttpMethod.POST);</span>
+<span class="fc" id="L83">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L84">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L85">  }</span>
+
+  /**
+   * Initializes the handler with the given CRUD mask.
+   *
+   * @param crud the CRUD mask for this handler
+   */
+  public HostsHandler(final byte crud) {
+<span class="fc" id="L93">    super(crud);</span>
+<span class="fc" id="L94">  }</span>
+
+  /**
+   * Method called to get a list of host entries from the server's database,
+   * with optional filters applied.
+   *
+   * @param request The {@link HttpRequest} made on the resource.
+   * @param responder The {@link HttpResponder} which sends the reply
+   *     to the request.
+   * @param limit_str HTTP query parameter, maximum number of entries
+   *     allowed in the response.
+   * @param offset_str HTTP query parameter, index of the first
+   *     accepted entry in the list of all valid
+   *     answers.
+   * @param order_str HTTP query parameter, the criteria used to sort
+   *     the entries and the way of ordering.
+   * @param address HTTP query parameter, filter only hosts with this
+   *     address.
+   * @param isSSL_str HTTP query parameter, filter only hosts that use
+   *     SSL, or those that don't. Leave empty
+   *     to get both.
+   * @param isActive_str HTTP query parameter, filter hosts that are
+   *     active, or those that aren't. Leave empty
+   *     to get both.
+   * @param countOrder if true is specified, it turns out to be a &quot;count&quot;
+   *     request only
+   */
+  @GET
+  @Consumes(APPLICATION_FORM_URLENCODED)
+  @RequiredRole(ROLE.READONLY)
+  public final void filterHosts(final HttpRequest request,
+                                final HttpResponder responder,
+                                @QueryParam(LIMIT) @DefaultValue(&quot;20&quot;)
+                                final String limit_str,
+                                @QueryParam(OFFSET) @DefaultValue(&quot;0&quot;)
+                                final String offset_str,
+                                @QueryParam(ORDER) @DefaultValue(&quot;ascId&quot;)
+                                final String order_str,
+                                @QueryParam(ADDRESS) final String address,
+                                @QueryParam(IS_SSL) final String isSSL_str,
+                                @QueryParam(IS_ACTIVE)
+                                final String isActive_str,
+                                @QueryParam(COUNT_ORDER) @DefaultValue(&quot;&quot;)
+                                final String countOrder) {
+<span class="fc" id="L138">    checkSanity(limit_str, offset_str, order_str, address, isActive_str,</span>
+                isActive_str, countOrder);
+<span class="fc" id="L140">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+
+<span class="fc" id="L142">    boolean count = false;</span>
+    try {
+<span class="fc bfc" id="L144" title="All 2 branches covered.">      if (ParametersChecker.isNotEmpty(countOrder) &amp;&amp;</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">          RestUtils.stringToBoolean(countOrder)) {</span>
+<span class="fc" id="L146">        count = true;</span>
+      }
+<span class="nc" id="L148">    } catch (final Exception ignore) {</span>
+      // Ignore
+<span class="fc" id="L150">    }</span>
+<span class="fc" id="L151">    int limit = 20;</span>
+<span class="fc" id="L152">    int offset = 0;</span>
+<span class="fc" id="L153">    HostConverter.Order order = HostConverter.Order.ascId;</span>
+    try {
+<span class="fc" id="L155">      limit = Integer.parseInt(limit_str);</span>
+<span class="nc" id="L156">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L157">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));</span>
+<span class="fc" id="L158">    }</span>
+    try {
+<span class="fc" id="L160">      order = HostConverter.Order.valueOf(order_str);</span>
+<span class="nc" id="L161">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L162">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, order_str));</span>
+<span class="fc" id="L163">    }</span>
+    try {
+<span class="fc" id="L165">      offset = Integer.parseInt(offset_str);</span>
+<span class="nc" id="L166">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L167">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));</span>
+<span class="fc" id="L168">    }</span>
+
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (limit &lt; 0) {</span>
+<span class="nc" id="L171">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">    } else if (offset &lt; 0) {</span>
+<span class="nc" id="L173">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));</span>
+    }
+
+<span class="fc" id="L176">    boolean isSSL = false;</span>
+<span class="fc" id="L177">    boolean isActive = false;</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(isSSL_str)) {</span>
+      try {
+<span class="nc" id="L180">        isSSL = RestUtils.stringToBoolean(isSSL_str);</span>
+<span class="nc" id="L181">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L182">        errors.add(ILLEGAL_PARAMETER_VALUE(IS_SSL, isSSL_str));</span>
+<span class="nc" id="L183">      }</span>
+    }
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(isActive_str)) {</span>
+      try {
+<span class="nc" id="L187">        isActive = RestUtils.stringToBoolean(isActive_str);</span>
+<span class="nc" id="L188">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L189">        errors.add(ILLEGAL_PARAMETER_VALUE(IS_ACTIVE, isActive_str));</span>
+<span class="nc" id="L190">      }</span>
+    }
+
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L194">      throw new RestErrorException(errors);</span>
+    }
+
+<span class="fc" id="L197">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(address)) {</span>
+<span class="nc" id="L199">      filters.add(new Filter(ADDRESS_FIELD, &quot;=&quot;, address));</span>
+    }
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(isSSL_str)) {</span>
+<span class="nc" id="L202">      filters.add(new Filter(IS_SSL_FIELD, &quot;=&quot;, isSSL));</span>
+    }
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(isActive_str)) {</span>
+<span class="nc" id="L205">      filters.add(new Filter(IS_ACTIVE_FIELD, &quot;=&quot;, isActive));</span>
+    }
+<span class="fc" id="L207">    HostDAO hostDAO = null;</span>
+<span class="fc" id="L208">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">    if (count) {</span>
+<span class="fc" id="L210">      long nbCount = -1;</span>
+      try {
+<span class="fc" id="L212">        hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="fc" id="L213">        nbCount = hostDAO.count(filters);</span>
+<span class="nc" id="L214">      } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L215">        throw new InternalServerErrorException(e);</span>
+      } finally {
+<span class="fc" id="L217">        DAOFactory.closeDAO(hostDAO);</span>
+      }
+<span class="fc" id="L219">      responseObject.put(&quot;totalResults&quot;, nbCount);</span>
+<span class="fc" id="L220">    } else {</span>
+      List&lt;Host&gt; hosts;
+      try {
+<span class="fc" id="L223">        hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+<span class="fc" id="L224">        hosts = hostDAO.find(filters);</span>
+<span class="nc" id="L225">      } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L226">        throw new InternalServerErrorException(e);</span>
+      } finally {
+<span class="fc" id="L228">        DAOFactory.closeDAO(hostDAO);</span>
+      }
+
+<span class="fc" id="L231">      final int totalResults = hosts.size();</span>
+<span class="fc" id="L232">      Collections.sort(hosts, order.comparator);</span>
+
+<span class="fc" id="L234">      final ArrayNode results = JsonHandler.createArrayNode();</span>
+<span class="pc bpc" id="L235" title="1 of 4 branches missed.">      for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; hosts.size(); i++) {</span>
+<span class="fc" id="L236">        results.add(HostConverter.hostToNode(hosts.get(i)));</span>
+      }
+
+<span class="fc" id="L239">      responseObject.put(&quot;totalResults&quot;, totalResults);</span>
+<span class="fc" id="L240">      responseObject.set(&quot;results&quot;, results);</span>
+    }
+<span class="fc" id="L242">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="fc" id="L243">    responder.sendJson(OK, responseText);</span>
+<span class="fc" id="L244">  }</span>
+
+  /**
+   * Method called to add a new host authentication entry to the server
+   * database.
+   *
+   * @param request The {@link HttpRequest} made on the resource.
+   * @param responder The {@link HttpResponder} which sends the reply
+   *     to the request.
+   */
+  @POST
+  @Consumes(APPLICATION_JSON)
+  @RequiredRole(ROLE.HOST)
+  public final void addHost(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L259">    final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L260">    checkSanity(requestObject);</span>
+<span class="nc" id="L261">    final Host host = HostConverter.nodeToNewHost(requestObject);</span>
+
+<span class="nc" id="L263">    HostDAO hostDAO = null;</span>
+    try {
+<span class="nc" id="L265">      hostDAO = DAO_FACTORY.getHostDAO(false);</span>
+
+<span class="nc bnc" id="L267" title="All 2 branches missed.">      if (!hostDAO.exist(host.getHostid())) {</span>
+<span class="nc" id="L268">        throw new RestErrorException(ALREADY_EXISTING(host.getHostid()));</span>
+      }
+
+<span class="nc" id="L271">      hostDAO.insert(host);</span>
+<span class="nc" id="L272">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L273">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L275">      DAOFactory.closeDAO(hostDAO);</span>
+    }
+
+<span class="nc" id="L278">    final ObjectNode responseObject = HostConverter.hostToNode(host);</span>
+<span class="nc" id="L279">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+
+<span class="nc" id="L281">    final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L282">    headers.add(CONTENT_TYPE, APPLICATION_JSON);</span>
+<span class="nc" id="L283">    headers.add(&quot;host-uri&quot;, HOSTS_HANDLER_URI + host.getHostid());</span>
+
+<span class="nc" id="L285">    responder.sendString(CREATED, responseText, headers);</span>
+<span class="nc" id="L286">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on this entry
+   * point. The HTTP methods are sent as
+   * an array in the reply's headers.
+   *
+   * @param request The {@link HttpRequest} made on the resource.
+   * @param responder The {@link HttpResponder} which sends the reply
+   *     to the request.
+   */
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(ROLE.NOACCESS)
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
+<span class="nc" id="L302">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L303">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

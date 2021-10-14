@@ -32,10 +32,10 @@ import java.util.Arrays;
 /**
  * ZSTD efficient compression mode (JNI, Unsafe or Safe mode)
  */
-<span class="nc" id="L35">public class ZstdCompressionCodecDataPacket {</span>
-<span class="nc" id="L36">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L37">      WaarpLoggerFactory.getLogger(ZstdCompressionCodecDataPacket.class);</span>
-<span class="nc" id="L38">  private final WaarpZstdCodec waarpZstdCodec = new WaarpZstdCodec();</span>
+<span class="fc" id="L35">public class ZstdCompressionCodecDataPacket {</span>
+<span class="fc" id="L36">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L37">      WaarpLoggerFactory.getLogger(ZstdCompressionCodecDataPacket.class);</span>
+<span class="fc" id="L38">  private final WaarpZstdCodec waarpZstdCodec = new WaarpZstdCodec();</span>
 
   /**
    * @param dataPacket the DataPacket to compress in place
@@ -43,33 +43,33 @@ import java.util.Arrays;
   public final void compress(final DataPacket dataPacket,
                              final R66Session session)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L46">    final byte[] data = dataPacket.getData();</span>
-<span class="nc" id="L47">    final int originalSize = dataPacket.getLengthPacket();</span>
-<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (originalSize == 0) {</span>
+<span class="fc" id="L46">    final byte[] data = dataPacket.getData();</span>
+<span class="fc" id="L47">    final int originalSize = dataPacket.getLengthPacket();</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    if (originalSize == 0) {</span>
 <span class="nc" id="L49">      return;</span>
     }
-<span class="nc" id="L51">    byte[] toCompress =</span>
-<span class="nc" id="L52">        session.getSessionReusableCompressionBuffer(originalSize);</span>
+<span class="fc" id="L51">    byte[] toCompress =</span>
+<span class="fc" id="L52">        session.getSessionReusableCompressionBuffer(originalSize);</span>
     try {
       // Try using default half max buffer
-<span class="nc" id="L55">      final int length = waarpZstdCodec.getCompressorCodec()</span>
-<span class="nc" id="L56">                                       .compress(data, originalSize, toCompress,</span>
+<span class="fc" id="L55">      final int length = waarpZstdCodec.getCompressorCodec()</span>
+<span class="fc" id="L56">                                       .compress(data, originalSize, toCompress,</span>
                                                  toCompress.length);
-<span class="nc bnc" id="L58" title="All 2 branches missed.">      if (length &lt; toCompress.length) {</span>
-<span class="nc" id="L59">        final byte[] bytes = Arrays.copyOfRange(toCompress, 0, length);</span>
-<span class="nc" id="L60">        toCompress = bytes;</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">      if (length &lt; toCompress.length) {</span>
+<span class="fc" id="L59">        final byte[] bytes = Arrays.copyOfRange(toCompress, 0, length);</span>
+<span class="fc" id="L60">        toCompress = bytes;</span>
       }
-<span class="nc" id="L62">      logger.debug(&quot;DataPacket Compression is {} on {} for BlockSize {}&quot;,</span>
-<span class="nc" id="L63">                   toCompress.length, originalSize, data.length);</span>
-<span class="nc" id="L64">      dataPacket.updateFromCompressionCodec(toCompress, length);</span>
+<span class="fc" id="L62">      logger.debug(&quot;DataPacket Compression is {} on {} for BlockSize {}&quot;,</span>
+<span class="fc" id="L63">                   toCompress.length, originalSize, data.length);</span>
+<span class="fc" id="L64">      dataPacket.updateFromCompressionCodec(toCompress, length);</span>
 <span class="nc" id="L65">    } catch (final Exception e) {</span>
       // Might be because toCompress is not enough wide
 <span class="nc" id="L67">      logger.error(&quot;DataPacket Compression to {} on {} for BlockSize {}&quot;,</span>
 <span class="nc" id="L68">                   toCompress.length, dataPacket.getLengthPacket(),</span>
 <span class="nc" id="L69">                   dataPacket.getData().length, e);</span>
 <span class="nc" id="L70">      throw new OpenR66ProtocolPacketException(e);</span>
-<span class="nc" id="L71">    }</span>
-<span class="nc" id="L72">  }</span>
+<span class="fc" id="L71">    }</span>
+<span class="fc" id="L72">  }</span>
 
   /**
    * @param dataPacket the DataPacket to uncompress in place
@@ -77,30 +77,30 @@ import java.util.Arrays;
   public final void uncompress(final DataPacket dataPacket,
                                final R66Session session)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L80">    final byte[] data = dataPacket.getData();</span>
-<span class="nc" id="L81">    final int originalSize = dataPacket.getLengthPacket();</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (originalSize == 0) {</span>
+<span class="fc" id="L80">    final byte[] data = dataPacket.getData();</span>
+<span class="fc" id="L81">    final int originalSize = dataPacket.getLengthPacket();</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">    if (originalSize == 0) {</span>
 <span class="nc" id="L83">      return;</span>
     }
     try {
-<span class="nc" id="L86">      byte[] toDeCompress = session.getReusableBuffer(</span>
-<span class="nc" id="L87">          waarpZstdCodec.getCompressorCodec()</span>
-<span class="nc" id="L88">                        .getDecompressedSize(data, originalSize));</span>
-<span class="nc" id="L89">      final int length = waarpZstdCodec.getCompressorCodec()</span>
-<span class="nc" id="L90">                                       .decompress(data, originalSize,</span>
+<span class="fc" id="L86">      byte[] toDeCompress = session.getReusableBuffer(</span>
+<span class="fc" id="L87">          waarpZstdCodec.getCompressorCodec()</span>
+<span class="fc" id="L88">                        .getDecompressedSize(data, originalSize));</span>
+<span class="fc" id="L89">      final int length = waarpZstdCodec.getCompressorCodec()</span>
+<span class="fc" id="L90">                                       .decompress(data, originalSize,</span>
                                                    toDeCompress,
                                                    toDeCompress.length);
-<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (length != toDeCompress.length) {</span>
-<span class="nc" id="L94">        toDeCompress = Arrays.copyOf(toDeCompress, length);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">      if (length != toDeCompress.length) {</span>
+<span class="fc" id="L94">        toDeCompress = Arrays.copyOf(toDeCompress, length);</span>
       }
-<span class="nc" id="L96">      logger.debug(&quot;DataPacket Decompression is {} on {} for BlockSize {}&quot;,</span>
-<span class="nc" id="L97">                   originalSize, length, data.length);</span>
-<span class="nc" id="L98">      dataPacket.updateFromCompressionCodec(toDeCompress, length);</span>
+<span class="fc" id="L96">      logger.debug(&quot;DataPacket Decompression is {} on {} for BlockSize {}&quot;,</span>
+<span class="fc" id="L97">                   originalSize, length, data.length);</span>
+<span class="fc" id="L98">      dataPacket.updateFromCompressionCodec(toDeCompress, length);</span>
 <span class="nc" id="L99">    } catch (final Exception e) {</span>
 <span class="nc" id="L100">      logger.error(&quot;DataPacket Decompression was {} on {} for BlockSize {}&quot;,</span>
 <span class="nc" id="L101">                   originalSize, data.length, session.getBlockSize(), e);</span>
 <span class="nc" id="L102">      throw new OpenR66ProtocolPacketException(e);</span>
-<span class="nc" id="L103">    }</span>
-<span class="nc" id="L104">  }</span>
+<span class="fc" id="L103">    }</span>
+<span class="fc" id="L104">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

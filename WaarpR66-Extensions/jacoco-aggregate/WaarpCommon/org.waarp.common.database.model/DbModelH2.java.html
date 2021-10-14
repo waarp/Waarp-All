@@ -45,17 +45,17 @@ public abstract class DbModelH2 extends DbModelAbstract {
   /**
    * Internal Logger
    */
-<span class="nc" id="L48">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L49">      WaarpLoggerFactory.getLogger(DbModelH2.class);</span>
+<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(DbModelH2.class);</span>
 
-<span class="nc" id="L51">  private static final DbType type = DbType.H2;</span>
+<span class="fc" id="L51">  private static final DbType type = DbType.H2;</span>
 
-<span class="nc" id="L53">  protected static class DbTypeResolverH2</span>
+<span class="fc" id="L53">  protected static class DbTypeResolverH2</span>
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
     public final String getType(final int sqlType) {
-<span class="nc" id="L58">      return DBType.getType(sqlType);</span>
+<span class="fc" id="L58">      return DBType.getType(sqlType);</span>
     }
 
     @Override
@@ -70,19 +70,19 @@ public abstract class DbModelH2 extends DbModelAbstract {
 
     @Override
     public final DbType getDbType() {
-<span class="nc" id="L73">      return type;</span>
+<span class="fc" id="L73">      return type;</span>
     }
   }
 
   static {
-<span class="nc" id="L78">    dbTypeResolver = new DbTypeResolverH2();</span>
-<span class="nc" id="L79">  }</span>
+<span class="fc" id="L78">    dbTypeResolver = new DbTypeResolverH2();</span>
+<span class="fc" id="L79">  }</span>
 
   protected JdbcConnectionPool pool;
 
   @Override
   public final DbType getDbType() {
-<span class="nc" id="L85">    return type;</span>
+<span class="fc" id="L85">    return type;</span>
   }
 
   /**
@@ -97,26 +97,26 @@ public abstract class DbModelH2 extends DbModelAbstract {
   protected DbModelH2(final String dbserver, final String dbuser,
                       final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L100">    this();</span>
-<span class="nc" id="L101">    pool = JdbcConnectionPool.create(dbserver, dbuser, dbpasswd);</span>
-<span class="nc" id="L102">    pool.setMaxConnections(DbConstant.MAXCONNECTION);</span>
-<span class="nc" id="L103">    pool.setLoginTimeout(DbConstant.DELAYMAXCONNECTION);</span>
-<span class="nc" id="L104">    logger.info(&quot;Some info: MaxConn: {} LogTimeout: {}&quot;,</span>
-<span class="nc" id="L105">                pool.getMaxConnections(), pool.getLoginTimeout());</span>
-<span class="nc" id="L106">  }</span>
+<span class="fc" id="L100">    this();</span>
+<span class="fc" id="L101">    pool = JdbcConnectionPool.create(dbserver, dbuser, dbpasswd);</span>
+<span class="fc" id="L102">    pool.setMaxConnections(DbConstant.MAXCONNECTION);</span>
+<span class="fc" id="L103">    pool.setLoginTimeout(DbConstant.DELAYMAXCONNECTION);</span>
+<span class="fc" id="L104">    logger.info(&quot;Some info: MaxConn: {} LogTimeout: {}&quot;,</span>
+<span class="fc" id="L105">                pool.getMaxConnections(), pool.getLoginTimeout());</span>
+<span class="fc" id="L106">  }</span>
 
   /**
    * Create the object and initialize if necessary the driver
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-<span class="nc" id="L113">  protected DbModelH2() throws WaarpDatabaseNoConnectionException {</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
-<span class="nc" id="L115">      return;</span>
+<span class="fc" id="L113">  protected DbModelH2() throws WaarpDatabaseNoConnectionException {</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="fc" id="L115">      return;</span>
     }
     try {
-<span class="nc" id="L118">      DriverManager.registerDriver(new Driver());</span>
-<span class="nc" id="L119">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="fc" id="L118">      DriverManager.registerDriver(new Driver());</span>
+<span class="fc" id="L119">      DbModelFactory.classLoaded.add(type.name());</span>
 <span class="nc" id="L120">    } catch (final SQLException e) {</span>
       // SQLException
 <span class="nc" id="L122">      logger.error(</span>
@@ -124,23 +124,23 @@ public abstract class DbModelH2 extends DbModelAbstract {
 <span class="nc" id="L124">      DbSession.error(e);</span>
 <span class="nc" id="L125">      throw new WaarpDatabaseNoConnectionException(</span>
 <span class="nc" id="L126">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
-<span class="nc" id="L127">    }</span>
-<span class="nc" id="L128">  }</span>
+<span class="fc" id="L127">    }</span>
+<span class="fc" id="L128">  }</span>
 
   @Override
   public final void releaseResources() {
-<span class="nc bnc" id="L132" title="All 2 branches missed.">    if (pool != null) {</span>
-<span class="nc" id="L133">      pool.dispose();</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">    if (pool != null) {</span>
+<span class="fc" id="L133">      pool.dispose();</span>
     }
-<span class="nc" id="L135">    pool = null;</span>
-<span class="nc" id="L136">  }</span>
+<span class="fc" id="L135">    pool = null;</span>
+<span class="fc" id="L136">  }</span>
 
   @Override
   public synchronized int currentNumberOfPooledConnections() {
-<span class="nc bnc" id="L140" title="All 2 branches missed.">    if (pool != null) {</span>
-<span class="nc" id="L141">      return pool.getActiveConnections();</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">    if (pool != null) {</span>
+<span class="fc" id="L141">      return pool.getActiveConnections();</span>
     }
-<span class="nc" id="L143">    return DbAdmin.getNbConnection();</span>
+<span class="fc" id="L143">    return DbAdmin.getNbConnection();</span>
   }
 
   @Override
@@ -148,10 +148,10 @@ public abstract class DbModelH2 extends DbModelAbstract {
                                           final String user,
                                           final String passwd)
       throws SQLException {
-<span class="nc" id="L151">    synchronized (this) {</span>
-<span class="nc bnc" id="L152" title="All 2 branches missed.">      if (pool != null) {</span>
+<span class="fc" id="L151">    synchronized (this) {</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">      if (pool != null) {</span>
         try {
-<span class="nc" id="L154">          return pool.getConnection();</span>
+<span class="fc" id="L154">          return pool.getConnection();</span>
 <span class="nc" id="L155">        } catch (final SQLException e) {</span>
           // try to renew the pool
 <span class="nc" id="L157">          pool.dispose();</span>
@@ -167,58 +167,58 @@ public abstract class DbModelH2 extends DbModelAbstract {
 <span class="nc" id="L167">    return super.getDbConnection(server, user, passwd);</span>
   }
 
-<span class="nc" id="L170">  protected enum DBType {</span>
-<span class="nc" id="L171">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;),</span>
-<span class="nc" id="L172">    VARCHAR(Types.VARCHAR, &quot; VARCHAR(&quot; + MAX_VARCHAR + &quot;) &quot;),</span>
-<span class="nc" id="L173">    NVARCHAR(Types.NVARCHAR, &quot; VARCHAR(&quot; + MAX_KEY_VARCHAR + &quot;) &quot;),</span>
-<span class="nc" id="L174">    LONGVARCHAR(Types.LONGVARCHAR, &quot; VARCHAR(&quot; + MAX_LONGVARCHAR + &quot;) &quot;),</span>
-<span class="nc" id="L175">    BIT(Types.BIT, &quot; BOOLEAN &quot;), TINYINT(Types.TINYINT, &quot; TINYINT &quot;),</span>
-<span class="nc" id="L176">    SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;), INTEGER(Types.INTEGER, &quot; INTEGER &quot;),</span>
-<span class="nc" id="L177">    BIGINT(Types.BIGINT, &quot; BIGINT &quot;), REAL(Types.REAL, &quot; REAL &quot;),</span>
-<span class="nc" id="L178">    DOUBLE(Types.DOUBLE, &quot; DOUBLE &quot;),</span>
-<span class="nc" id="L179">    VARBINARY(Types.VARBINARY, &quot; VARBINARY(&quot; + (MAX_BINARY * 2) + &quot;) &quot;),</span>
-<span class="nc" id="L180">    DATE(Types.DATE, &quot; DATE &quot;), TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP(3) &quot;),</span>
-<span class="nc" id="L181">    CLOB(Types.CLOB, &quot; CLOB &quot;), BLOB(Types.BLOB, &quot; BLOB &quot;);</span>
+<span class="fc" id="L170">  protected enum DBType {</span>
+<span class="fc" id="L171">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;),</span>
+<span class="fc" id="L172">    VARCHAR(Types.VARCHAR, &quot; VARCHAR(&quot; + MAX_VARCHAR + &quot;) &quot;),</span>
+<span class="fc" id="L173">    NVARCHAR(Types.NVARCHAR, &quot; VARCHAR(&quot; + MAX_KEY_VARCHAR + &quot;) &quot;),</span>
+<span class="fc" id="L174">    LONGVARCHAR(Types.LONGVARCHAR, &quot; VARCHAR(&quot; + MAX_LONGVARCHAR + &quot;) &quot;),</span>
+<span class="fc" id="L175">    BIT(Types.BIT, &quot; BOOLEAN &quot;), TINYINT(Types.TINYINT, &quot; TINYINT &quot;),</span>
+<span class="fc" id="L176">    SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;), INTEGER(Types.INTEGER, &quot; INTEGER &quot;),</span>
+<span class="fc" id="L177">    BIGINT(Types.BIGINT, &quot; BIGINT &quot;), REAL(Types.REAL, &quot; REAL &quot;),</span>
+<span class="fc" id="L178">    DOUBLE(Types.DOUBLE, &quot; DOUBLE &quot;),</span>
+<span class="fc" id="L179">    VARBINARY(Types.VARBINARY, &quot; VARBINARY(&quot; + (MAX_BINARY * 2) + &quot;) &quot;),</span>
+<span class="fc" id="L180">    DATE(Types.DATE, &quot; DATE &quot;), TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP(3) &quot;),</span>
+<span class="fc" id="L181">    CLOB(Types.CLOB, &quot; CLOB &quot;), BLOB(Types.BLOB, &quot; BLOB &quot;);</span>
 
     public final int type;
 
     public final String constructor;
 
-<span class="nc" id="L187">    DBType(final int type, final String constructor) {</span>
-<span class="nc" id="L188">      this.type = type;</span>
-<span class="nc" id="L189">      this.constructor = constructor;</span>
-<span class="nc" id="L190">    }</span>
+<span class="fc" id="L187">    DBType(final int type, final String constructor) {</span>
+<span class="fc" id="L188">      this.type = type;</span>
+<span class="fc" id="L189">      this.constructor = constructor;</span>
+<span class="fc" id="L190">    }</span>
 
     public static String getType(final int sqltype) {
-<span class="nc bnc" id="L193" title="All 17 branches missed.">      switch (sqltype) {</span>
+<span class="pc bpc" id="L193" title="8 of 17 branches missed.">      switch (sqltype) {</span>
         case Types.CHAR:
-<span class="nc" id="L195">          return CHAR.constructor;</span>
+<span class="fc" id="L195">          return CHAR.constructor;</span>
         case Types.VARCHAR:
-<span class="nc" id="L197">          return VARCHAR.constructor;</span>
+<span class="fc" id="L197">          return VARCHAR.constructor;</span>
         case Types.NVARCHAR:
-<span class="nc" id="L199">          return NVARCHAR.constructor;</span>
+<span class="fc" id="L199">          return NVARCHAR.constructor;</span>
         case Types.LONGVARCHAR:
-<span class="nc" id="L201">          return LONGVARCHAR.constructor;</span>
+<span class="fc" id="L201">          return LONGVARCHAR.constructor;</span>
         case Types.BIT:
-<span class="nc" id="L203">          return BIT.constructor;</span>
+<span class="fc" id="L203">          return BIT.constructor;</span>
         case Types.TINYINT:
 <span class="nc" id="L205">          return TINYINT.constructor;</span>
         case Types.SMALLINT:
 <span class="nc" id="L207">          return SMALLINT.constructor;</span>
         case Types.INTEGER:
-<span class="nc" id="L209">          return INTEGER.constructor;</span>
+<span class="fc" id="L209">          return INTEGER.constructor;</span>
         case Types.BIGINT:
-<span class="nc" id="L211">          return BIGINT.constructor;</span>
+<span class="fc" id="L211">          return BIGINT.constructor;</span>
         case Types.REAL:
 <span class="nc" id="L213">          return REAL.constructor;</span>
         case Types.DOUBLE:
 <span class="nc" id="L215">          return DOUBLE.constructor;</span>
         case Types.VARBINARY:
-<span class="nc" id="L217">          return VARBINARY.constructor;</span>
+<span class="fc" id="L217">          return VARBINARY.constructor;</span>
         case Types.DATE:
 <span class="nc" id="L219">          return DATE.constructor;</span>
         case Types.TIMESTAMP:
-<span class="nc" id="L221">          return TIMESTAMP.constructor;</span>
+<span class="fc" id="L221">          return TIMESTAMP.constructor;</span>
         case Types.CLOB:
 <span class="nc" id="L223">          return CLOB.constructor;</span>
         case Types.BLOB:
@@ -251,7 +251,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
   public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L254">    long result = DbConstant.ILLEGALVALUE;</span>
+    long result;
 <span class="nc" id="L255">    final String action = &quot;SELECT NEXTVAL('&quot; + DbDataModel.fieldseq + &quot;')&quot;;</span>
 <span class="nc" id="L256">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
@@ -283,10 +283,10 @@ public abstract class DbModelH2 extends DbModelAbstract {
   @Override
   public final String limitRequest(final String allfields, final String request,
                                    final int nb) {
-<span class="nc bnc" id="L286" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="pc bpc" id="L286" title="1 of 2 branches missed.">    if (nb == 0) {</span>
 <span class="nc" id="L287">      return request;</span>
     }
-<span class="nc" id="L289">    return request + &quot; LIMIT &quot; + nb;</span>
+<span class="fc" id="L289">    return request + &quot; LIMIT &quot; + nb;</span>
   }
 
 }

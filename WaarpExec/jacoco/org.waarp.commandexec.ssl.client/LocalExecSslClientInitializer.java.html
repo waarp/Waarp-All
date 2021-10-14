@@ -48,21 +48,20 @@ public class LocalExecSslClientInitializer extends LocalExecClientInitializer {
 <span class="fc" id="L48">    final ChannelPipeline pipeline = ch.pipeline();</span>
 
     // Add SSL as first element in the pipeline
-<span class="fc" id="L51">    final SslHandler sslhandler = waarpSslContextFactory.initInitializer(false,</span>
-                                                                         waarpSslContextFactory
-<span class="fc" id="L53">                                                                             .needClientAuthentication());</span>
-<span class="fc" id="L54">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
+<span class="fc" id="L51">    final SslHandler sslhandler =</span>
+<span class="fc" id="L52">        waarpSslContextFactory.createHandlerClient(ch);</span>
+<span class="fc" id="L53">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
     // Add the text line codec combination first,
-<span class="fc" id="L56">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, Delimiters</span>
-<span class="fc" id="L57">        .lineDelimiter()));</span>
-<span class="fc" id="L58">    pipeline.addLast(&quot;decoder&quot;, new StringDecoder(WaarpStringUtils.UTF8));</span>
-<span class="fc" id="L59">    pipeline.addLast(&quot;encoder&quot;, new StringEncoder(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L55">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192,</span>
+<span class="fc" id="L56">                                                              Delimiters.lineDelimiter()));</span>
+<span class="fc" id="L57">    pipeline.addLast(&quot;decoder&quot;, new StringDecoder(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L58">    pipeline.addLast(&quot;encoder&quot;, new StringEncoder(WaarpStringUtils.UTF8));</span>
 
     // and then business logic.
-<span class="fc" id="L62">    final LocalExecSslClientHandler localExecClientHandler =</span>
+<span class="fc" id="L61">    final LocalExecSslClientHandler localExecClientHandler =</span>
         new LocalExecSslClientHandler(this);
-<span class="fc" id="L64">    pipeline.addLast(&quot;handler&quot;, localExecClientHandler);</span>
-<span class="fc" id="L65">  }</span>
+<span class="fc" id="L63">    pipeline.addLast(&quot;handler&quot;, localExecClientHandler);</span>
+<span class="fc" id="L64">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

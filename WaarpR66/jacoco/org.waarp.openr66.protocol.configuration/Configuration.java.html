@@ -46,14 +46,15 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.role.RoleDefault;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpShutdownHook.ShutdownConfiguration;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.commander.Commander;
 import org.waarp.openr66.commander.InternalRunner;
@@ -76,13 +77,14 @@ import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
 import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
+import org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClientBuilder;
+import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.protocol.snmp.R66PrivateMib;
 import org.waarp.openr66.protocol.snmp.R66VariableFactory;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.protocol.utils.Version;
 import org.waarp.openr66.thrift.R66ThriftServerService;
@@ -120,14 +122,14 @@ public class Configuration {
   /**
    * Internal Logger
    */
-<span class="fc" id="L123">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L124">      WaarpLoggerFactory.getLogger(Configuration.class);</span>
+<span class="fc" id="L125">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L126">      WaarpLoggerFactory.getLogger(Configuration.class);</span>
 
   // Static values
   /**
    * General Configuration object
    */
-<span class="fc" id="L130">  public static Configuration configuration = new Configuration();</span>
+<span class="fc" id="L132">  public static Configuration configuration = new Configuration();</span>
 
   public static final String SnmpName = &quot;Waarp OpenR66 SNMP&quot;;
   public static final int SnmpPrivateId = 66666;
@@ -136,6 +138,7 @@ public class Configuration {
   public static final String SnmpVersion = &quot;Waarp OpenR66 &quot; + Version.ID;
   public static final String SnmpDefaultLocalization = &quot;Paris, France&quot;;
   public static final int SnmpService = 72;
+
   /**
    * Time elapse for retry in ms
    */
@@ -169,7 +172,7 @@ public class Configuration {
   /**
    * Rank to redo when a restart occurs
    */
-<span class="fc" id="L172">  private static int rankRestart = 30;</span>
+<span class="fc" id="L175">  private static int rankRestart = 30;</span>
   /**
    * Number of DbSession for internal needs
    */
@@ -177,46 +180,46 @@ public class Configuration {
   /**
    * FileParameter
    */
-<span class="fc" id="L180">  private static final FilesystemBasedFileParameterImpl fileParameter =</span>
+<span class="fc" id="L183">  private static final FilesystemBasedFileParameterImpl fileParameter =</span>
       new FilesystemBasedFileParameterImpl();
 
-<span class="fc" id="L183">  private R66BusinessFactoryInterface r66BusinessFactory =</span>
+<span class="fc" id="L186">  private R66BusinessFactoryInterface r66BusinessFactory =</span>
       new R66DefaultBusinessFactory();
   // Global Dynamic values
   /**
    * Version validation
    */
-<span class="fc" id="L189">  private boolean extendedProtocol = true;</span>
+<span class="fc" id="L192">  private boolean extendedProtocol = true;</span>
   /**
    * Global digest
    */
-<span class="fc" id="L193">  private boolean globalDigest = true;</span>
+<span class="fc" id="L196">  private boolean globalDigest = true;</span>
   /**
    * Local digest
    */
-<span class="fc" id="L197">  private boolean localDigest = true;</span>
+<span class="fc" id="L200">  private boolean localDigest = true;</span>
   /**
    * White List of allowed Partners to use Business Requests
    */
-<span class="fc" id="L201">  private final HashSet&lt;String&gt; businessWhiteSet = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L204">  private final HashSet&lt;String&gt; businessWhiteSet = new HashSet&lt;String&gt;();</span>
   /**
    * Roles list for identified partners
    */
-<span class="fc" id="L205">  private final HashMap&lt;String, RoleDefault&gt; roles =</span>
+<span class="fc" id="L208">  private final HashMap&lt;String, RoleDefault&gt; roles =</span>
       new HashMap&lt;String, RoleDefault&gt;();
   /**
    * Aliases list for identified partners
    */
-<span class="fc" id="L210">  private final HashMap&lt;String, String&gt; aliases = new HashMap&lt;String, String&gt;();</span>
+<span class="fc" id="L213">  private final HashMap&lt;String, String&gt; aliases = new HashMap&lt;String, String&gt;();</span>
   /**
    * reverse Aliases list for identified partners
    */
-<span class="fc" id="L214">  private final HashMap&lt;String, String[]&gt; reverseAliases =</span>
+<span class="fc" id="L217">  private final HashMap&lt;String, String[]&gt; reverseAliases =</span>
       new HashMap&lt;String, String[]&gt;();
   /**
    * Versions for each HostID
    */
-<span class="fc" id="L219">  private final ConcurrentHashMap&lt;String, PartnerConfiguration&gt; versions =</span>
+<span class="fc" id="L222">  private final ConcurrentHashMap&lt;String, PartnerConfiguration&gt; versions =</span>
       new ConcurrentHashMap&lt;String, PartnerConfiguration&gt;();
   /**
    * Actual Host ID
@@ -266,7 +269,7 @@ public class Configuration {
    * but a limit on truly packet
    * concurrent actions.
    */
-<span class="fc" id="L269">  private int clientThread = 10;</span>
+<span class="fc" id="L272">  private int clientThread = 10;</span>
 
   /**
    * Default session limit 1 Gbit, so up to 100 full simultaneous clients
@@ -281,65 +284,65 @@ public class Configuration {
   /**
    * Default server port
    */
-<span class="fc" id="L284">  private int serverPort = 6666;</span>
+<span class="fc" id="L287">  private int serverPort = 6666;</span>
 
   /**
    * Default SSL server port
    */
-<span class="fc" id="L289">  private int serverSslPort = 6667;</span>
+<span class="fc" id="L292">  private int serverSslPort = 6667;</span>
 
   /**
    * Default HTTP server port
    */
-<span class="fc" id="L294">  private int serverHttpport = 8066;</span>
+<span class="fc" id="L297">  private int serverHttpport = 8066;</span>
 
   /**
    * Default HTTP server port
    */
-<span class="fc" id="L299">  private int serverHttpsPort = 8067;</span>
+<span class="fc" id="L302">  private int serverHttpsPort = 8067;</span>
 
   /**
    * Default server IPs
    */
-<span class="fc" id="L304">  private String[] serverAddresses = null;</span>
+<span class="fc" id="L307">  private String[] serverAddresses = null;</span>
 
   /**
    * Default SSL server IPs
    */
-<span class="fc" id="L309">  private String[] serverSslAddresses = null;</span>
+<span class="fc" id="L312">  private String[] serverSslAddresses = null;</span>
 
   /**
    * Default HTTP server IPs
    */
-<span class="fc" id="L314">  private String[] serverHttpAddresses = null;</span>
+<span class="fc" id="L317">  private String[] serverHttpAddresses = null;</span>
 
   /**
    * Default HTTP server IPs
    */
-<span class="fc" id="L319">  private String[] serverHttpsAddresses = null;</span>
+<span class="fc" id="L322">  private String[] serverHttpsAddresses = null;</span>
 
   /**
    * Nb of milliseconds after connection is in timeout
    */
-<span class="fc" id="L324">  private long timeoutCon = 30000;</span>
+<span class="fc" id="L327">  private long timeoutCon = 30000;</span>
 
   /**
    * Size by default of block size for receive/sending files. Should be a
    * multiple of 8192 (maximum = 2^30K due
    * to block limitation to 4 bytes)
    */
-<span class="fc" id="L331">  private int blockSize = 0x10000; // 64K</span>
+<span class="fc" id="L334">  private int blockSize = 0x10000; // 64K</span>
 
   /**
    * Max global memory limit: default is 1GB
    * (used in Web and REST API)
    */
-<span class="fc" id="L337">  private int maxGlobalMemory = 1073741824;</span>
+<span class="fc" id="L340">  private int maxGlobalMemory = 1073741824;</span>
 
   /**
    * Rest configuration list
    */
-<span class="fc" id="L342">  private final List&lt;RestConfiguration&gt; restConfigurations =</span>
+<span class="fc" id="L345">  private final List&lt;RestConfiguration&gt; restConfigurations =</span>
       new ArrayList&lt;RestConfiguration&gt;();
 
   /**
@@ -375,43 +378,43 @@ public class Configuration {
   /**
    * Http Admin base
    */
-<span class="fc" id="L378">  private String httpBasePath = &quot;src/main/admin/&quot;;</span>
+<span class="fc" id="L381">  private String httpBasePath = &quot;src/main/admin/&quot;;</span>
 
   /**
    * Model for Http Admin: 0 = standard (i18n only), 1 = responsive (i18n +
    * bootstrap + dynamic table + refresh)
    */
-<span class="fc" id="L384">  private int httpModel = 1;</span>
+<span class="fc" id="L387">  private int httpModel = 1;</span>
 
   /**
    * True if the service is going to shutdown
    */
-  private volatile boolean isShutdown;
+  private boolean isShutdown;
 
   /**
    * Limit in Write byte/s to apply globally to the FTP Server
    */
-<span class="fc" id="L394">  private long serverGlobalWriteLimit = getDEFAULT_GLOBAL_LIMIT();</span>
+<span class="fc" id="L397">  private long serverGlobalWriteLimit = getDEFAULT_GLOBAL_LIMIT();</span>
 
   /**
    * Limit in Read byte/s to apply globally to the FTP Server
    */
-<span class="fc" id="L399">  private long serverGlobalReadLimit = getDEFAULT_GLOBAL_LIMIT();</span>
+<span class="fc" id="L402">  private long serverGlobalReadLimit = getDEFAULT_GLOBAL_LIMIT();</span>
 
   /**
    * Limit in Write byte/s to apply by session to the FTP Server
    */
-<span class="fc" id="L404">  private long serverChannelWriteLimit = getDEFAULT_SESSION_LIMIT();</span>
+<span class="fc" id="L407">  private long serverChannelWriteLimit = getDEFAULT_SESSION_LIMIT();</span>
 
   /**
    * Limit in Read byte/s to apply by session to the FTP Server
    */
-<span class="fc" id="L409">  private long serverChannelReadLimit = getDEFAULT_SESSION_LIMIT();</span>
+<span class="fc" id="L412">  private long serverChannelReadLimit = getDEFAULT_SESSION_LIMIT();</span>
 
   /**
    * Delay in ms between two checks
    */
-<span class="fc" id="L414">  private long delayLimit =</span>
+<span class="fc" id="L417">  private long delayLimit =</span>
       AbstractTrafficShapingHandler.DEFAULT_CHECK_INTERVAL;
 
   /**
@@ -421,11 +424,11 @@ public class Configuration {
   /**
    * Does this OpenR66 server will use and accept non SSL connections
    */
-<span class="fc" id="L424">  private boolean useNOSSL = true;</span>
+<span class="fc" id="L427">  private boolean useNOSSL = true;</span>
   /**
    * Algorithm to use for Digest: fastest, replacement could be SHA512
    */
-<span class="fc" id="L428">  private FilesystemBasedDigest.DigestAlgo digest = DigestAlgo.MD5;</span>
+<span class="fc" id="L431">  private FilesystemBasedDigest.DigestAlgo digest = DigestAlgo.MD5;</span>
 
   /**
    * Does this OpenR66 server will try to compress HTTP connections
@@ -475,9 +478,10 @@ public class Configuration {
   /**
    * ExecutorService Other Worker
    */
-<span class="fc" id="L478">  protected final ExecutorService execOtherWorker =</span>
-<span class="fc" id="L479">      Executors.newCachedThreadPool(new WaarpThreadFactory(&quot;OtherWorker&quot;));</span>
+<span class="fc" id="L481">  protected final ExecutorService execOtherWorker =</span>
+<span class="fc" id="L482">      Executors.newCachedThreadPool(new WaarpThreadFactory(&quot;OtherWorker&quot;));</span>
 
+  protected EventLoopGroup serverGroup;
   protected EventLoopGroup workerGroup;
   protected EventLoopGroup handlerGroup;
   protected EventLoopGroup subTaskGroup;
@@ -524,10 +528,10 @@ public class Configuration {
   /**
    * Timer for CloseOpertations
    */
-<span class="fc" id="L527">  private final Timer timerCloseOperations =</span>
+<span class="fc" id="L531">  private final Timer timerCloseOperations =</span>
       new HashedWheelTimer(new WaarpThreadFactory(&quot;TimerClose&quot;), 50,
                            TimeUnit.MILLISECONDS, 1024);
-<span class="fc" id="L530">  private final AtomicBoolean timerCloseClosed = new AtomicBoolean(false);</span>
+<span class="fc" id="L534">  private final AtomicBoolean timerCloseClosed = new AtomicBoolean(false);</span>
   /**
    * Global TrafficCounter (set from global configuration)
    */
@@ -544,19 +548,19 @@ public class Configuration {
   /**
    * Maximum number of concurrent active transfer by submission.
    */
-<span class="fc" id="L547">  private int runnerThread = Commander.LIMIT_SUBMIT;</span>
+<span class="fc" id="L551">  private int runnerThread = Commander.LIMIT_SUBMIT;</span>
   /**
    * Delay in ms between two steps of Commander
    */
-<span class="fc" id="L551">  private long delayCommander = 5000;</span>
+<span class="fc" id="L555">  private long delayCommander = 5000;</span>
   /**
    * Delay in ms between two retries
    */
-<span class="fc" id="L555">  private long delayRetry = 30000;</span>
+<span class="fc" id="L559">  private long delayRetry = 30000;</span>
   /**
    * Constraint Limit Handler on CPU usage and Connection limitation
    */
-<span class="fc" id="L559">  private R66ConstraintLimitHandler constraintLimitHandler =</span>
+<span class="fc" id="L563">  private R66ConstraintLimitHandler constraintLimitHandler =</span>
       new R66ConstraintLimitHandler();
   /**
    * Do we check Remote Address from DbHost
@@ -574,7 +578,7 @@ public class Configuration {
    * In case of Multiple OpenR66 monitor servers behing a load balancer (HA
    * solution)
    */
-<span class="fc" id="L577">  private int multipleMonitors = 1;</span>
+<span class="fc" id="L581">  private int multipleMonitors = 1;</span>
   /**
    * Monitoring object
    */
@@ -582,11 +586,11 @@ public class Configuration {
   /**
    * Monitoring: how long in ms to get back in monitoring
    */
-<span class="fc" id="L585">  private long pastLimit = 86400000; // 24H</span>
+<span class="fc" id="L589">  private long pastLimit = 86400000; // 24H</span>
   /**
    * Monitoring: minimal interval in ms before redo real monitoring
    */
-<span class="fc" id="L589">  private long minimalDelay = 5000; // 5 seconds</span>
+<span class="fc" id="L593">  private long minimalDelay = 5000; // 5 seconds</span>
   /**
    * Monitoring: snmp configuration file (empty means no snmp support)
    */
@@ -600,7 +604,7 @@ public class Configuration {
    */
   private R66PrivateMib r66Mib;
 
-  protected volatile boolean configured;
+  protected boolean configured;
 
   private static WaarpSecureKeyStore waarpSecureKeyStore;
 
@@ -609,237 +613,269 @@ public class Configuration {
    * Thrift support
    */
   private R66ThriftServerService thriftService;
-<span class="fc" id="L612">  private int thriftport = -1;</span>
+<span class="fc" id="L616">  private int thriftport = -1;</span>
 
-<span class="fc" id="L614">  private boolean isExecuteErrorBeforeTransferAllowed = true;</span>
+<span class="fc" id="L618">  private boolean isExecuteErrorBeforeTransferAllowed = true;</span>
 
-<span class="fc" id="L616">  private final ShutdownConfiguration shutdownConfiguration =</span>
+<span class="fc" id="L620">  private final ShutdownConfiguration shutdownConfiguration =</span>
       new ShutdownConfiguration();
 
   private boolean isHostProxyfied;
 
-<span class="fc" id="L621">  private boolean warnOnStartup = true;</span>
+  private boolean authentNoReuse;
 
-<span class="fc" id="L623">  private boolean chrootChecked = true;</span>
+<span class="fc" id="L627">  private boolean transferGuid = false;</span>
+
+<span class="fc" id="L629">  private boolean warnOnStartup = true;</span>
+
+<span class="fc" id="L631">  private boolean chrootChecked = true;</span>
 
   private boolean blacklistBadAuthent;
 
-<span class="fc" id="L627">  private int maxfilenamelength = 255;</span>
+<span class="fc" id="L635">  private int maxfilenamelength = 255;</span>
+
+<span class="fc" id="L637">  private MonitorExporterTransfers monitorExporterTransfers = null;</span>
+
+  private boolean isMonitorExporterApiRest;
+<span class="fc" id="L640">  private String monitorExporterUrl = null;</span>
+<span class="fc" id="L641">  private String monitorExporterEndPoint = null;</span>
+<span class="fc" id="L642">  private int monitorExporterDelay = 1000;</span>
+<span class="fc" id="L643">  private boolean monitorExporterKeepConnection = false;</span>
+<span class="fc" id="L644">  private boolean monitorIntervalIncluded = true;</span>
+<span class="fc" id="L645">  private boolean monitorTransformLongAsString = false;</span>
+<span class="fc" id="L646">  private String monitorBasicAuthent = null;</span>
+<span class="fc" id="L647">  private String monitorUsername = null;</span>
+<span class="fc" id="L648">  private String monitorPwd = null;</span>
+<span class="fc" id="L649">  private String monitorToken = null;</span>
+<span class="fc" id="L650">  private String monitorApiKey = null;</span>
+<span class="fc" id="L651">  private String monitorPrefix = null;</span>
+<span class="fc" id="L652">  private String monitorIndex = null;</span>
+<span class="fc" id="L653">  private boolean monitorCompression = true;</span>
+
+<span class="fc" id="L655">  private boolean compressionAvailable = false;</span>
 
   private int timeStat;
 
-<span class="fc" id="L631">  private int limitCache = 5000;</span>
+<span class="fc" id="L659">  private int limitCache = 5000;</span>
 
-<span class="fc" id="L633">  private long timeLimitCache = 180000;</span>
+<span class="fc" id="L661">  private long timeLimitCache = 180000;</span>
 
-<span class="fc" id="L635">  private final java.util.Timer timerCleanLruCache =</span>
+<span class="fc" id="L663">  private final java.util.Timer timerCleanLruCache =</span>
       new java.util.Timer(&quot;CleanLruCache&quot;, true);
 
-<span class="fc" id="L638">  private final java.util.Timer timerStatistic =</span>
+<span class="fc" id="L666">  private final java.util.Timer timerStatistic =</span>
       new java.util.Timer(&quot;R66Statistic&quot;, true);
 
-<span class="fc" id="L641">  public Configuration() {</span>
+<span class="fc" id="L669">  public Configuration() {</span>
     // Init signal handler
-<span class="fc" id="L643">    getShutdownConfiguration().timeout = getTimeoutCon();</span>
-<span class="pc bpc" id="L644" title="1 of 2 branches missed.">    if (WaarpShutdownHook.shutdownHook == null) {</span>
-<span class="fc" id="L645">      new R66ShutdownHook(getShutdownConfiguration());</span>
+<span class="fc" id="L671">    getShutdownConfiguration().timeout = getTimeoutCon();</span>
+<span class="pc bpc" id="L672" title="1 of 2 branches missed.">    if (WaarpShutdownHook.shutdownHook == null) {</span>
+<span class="fc" id="L673">      new R66ShutdownHook(getShutdownConfiguration());</span>
     }
-<span class="fc" id="L647">    computeNbThreads();</span>
-<span class="fc" id="L648">    scheduledExecutorService = Executors.newScheduledThreadPool(2,</span>
+<span class="fc" id="L675">    computeNbThreads();</span>
+<span class="fc" id="L676">    scheduledExecutorService = Executors.newScheduledThreadPool(4,</span>
                                                                 new WaarpThreadFactory(
                                                                     &quot;ScheduledRestartTask&quot;));
     // Init FiniteStates
-<span class="fc" id="L652">    R66FiniteDualStates.initR66FiniteStates();</span>
-<span class="pc bpc" id="L653" title="1 of 2 branches missed.">    if (!SystemPropertyUtil.isFileEncodingCorrect()) {</span>
-<span class="nc" id="L654">      logger.error(</span>
+<span class="fc" id="L680">    R66FiniteDualStates.initR66FiniteStates();</span>
+<span class="pc bpc" id="L681" title="1 of 2 branches missed.">    if (!SystemPropertyUtil.isFileEncodingCorrect()) {</span>
+<span class="nc" id="L682">      logger.error(</span>
           &quot;Issue while trying to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument&quot;);
-<span class="nc" id="L656">      logger.warn(&quot;Currently file.encoding is: &quot; +</span>
-<span class="nc" id="L657">                  SystemPropertyUtil.get(SystemPropertyUtil.FILE_ENCODING));</span>
+<span class="nc" id="L684">      logger.warn(&quot;Currently file.encoding is: &quot; +</span>
+<span class="nc" id="L685">                  SystemPropertyUtil.get(SystemPropertyUtil.FILE_ENCODING));</span>
     }
-<span class="fc" id="L659">    setExecuteErrorBeforeTransferAllowed(SystemPropertyUtil.getBoolean(</span>
+<span class="fc" id="L687">    setExecuteErrorBeforeTransferAllowed(SystemPropertyUtil.getBoolean(</span>
         R66SystemProperties.OPENR66_EXECUTEBEFORETRANSFERRED, true));
-<span class="fc" id="L661">    final boolean useSpaceSeparator = SystemPropertyUtil</span>
-<span class="fc" id="L662">        .getBoolean(R66SystemProperties.OPENR66_USESPACESEPARATOR, false);</span>
-<span class="pc bpc" id="L663" title="1 of 2 branches missed.">    if (useSpaceSeparator) {</span>
-<span class="nc" id="L664">      PartnerConfiguration</span>
-<span class="nc" id="L665">          .setSEPARATOR_FIELD(PartnerConfiguration.BLANK_SEPARATOR_FIELD);</span>
+<span class="fc" id="L689">    final boolean useSpaceSeparator = SystemPropertyUtil.getBoolean(</span>
+        R66SystemProperties.OPENR66_USESPACESEPARATOR, false);
+<span class="pc bpc" id="L691" title="1 of 2 branches missed.">    if (useSpaceSeparator) {</span>
+<span class="nc" id="L692">      PartnerConfiguration.setSEPARATOR_FIELD(</span>
+          PartnerConfiguration.BLANK_SEPARATOR_FIELD);
     }
-<span class="fc" id="L667">    setHostProxyfied(SystemPropertyUtil.getBoolean(</span>
+<span class="fc" id="L695">    setHostProxyfied(SystemPropertyUtil.getBoolean(</span>
         R66SystemProperties.OPENR66_ISHOSTPROXYFIED, false));
-<span class="fc" id="L669">    setWarnOnStartup(SystemPropertyUtil.getBoolean(</span>
+<span class="fc" id="L697">    setWarnOnStartup(SystemPropertyUtil.getBoolean(</span>
         R66SystemProperties.OPENR66_STARTUP_WARNING, true));
-
-<span class="fc" id="L672">    if (!SystemPropertyUtil</span>
-<span class="fc" id="L673">        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, &quot;&quot;)</span>
-<span class="pc bpc" id="L674" title="1 of 2 branches missed.">        .isEmpty()) {</span>
-<span class="nc" id="L675">      logger.warn(&quot;{} is deprecated in system properties use {} instead&quot;,</span>
+<span class="fc" id="L699">    setAuthentNoReuse(SystemPropertyUtil.getBoolean(</span>
+        R66SystemProperties.OPENR66_AUTHENT_NO_REUSE, false));
+<span class="fc" id="L701">    setTransferGuid(</span>
+<span class="fc" id="L702">        SystemPropertyUtil.getBoolean(R66SystemProperties.OPENR66_TRANSFER_GUID,</span>
+                                      false));
+<span class="fc" id="L704">    if (!SystemPropertyUtil.get(</span>
+<span class="pc bpc" id="L705" title="1 of 2 branches missed.">        R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, &quot;&quot;).isEmpty()) {</span>
+<span class="nc" id="L706">      logger.warn(&quot;{} is deprecated in system properties use {} instead&quot;,</span>
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
-<span class="nc" id="L678">      FileBasedConfiguration.autoupgrade = SystemPropertyUtil</span>
-<span class="nc" id="L679">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,</span>
-                      false);
+<span class="nc" id="L709">      FileBasedConfiguration.autoupgrade = SystemPropertyUtil.getBoolean(</span>
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, false);
     } else {
-<span class="fc" id="L682">      FileBasedConfiguration.autoupgrade = SystemPropertyUtil</span>
-<span class="fc" id="L683">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,</span>
-                      false);
+<span class="fc" id="L712">      FileBasedConfiguration.autoupgrade = SystemPropertyUtil.getBoolean(</span>
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE, false);
     }
 
-<span class="fc" id="L687">    setChrootChecked(SystemPropertyUtil</span>
-<span class="fc" id="L688">                         .getBoolean(R66SystemProperties.OPENR66_CHROOT_CHECKED,</span>
-                                     true));
-<span class="fc" id="L690">    setBlacklistBadAuthent(SystemPropertyUtil.getBoolean(</span>
-        R66SystemProperties.OPENR66_BLACKLIST_BADAUTHENT, true));
-<span class="fc" id="L692">    setMaxfilenamelength(SystemPropertyUtil.getInt(</span>
+<span class="fc" id="L716">    setChrootChecked(SystemPropertyUtil.getBoolean(</span>
+        R66SystemProperties.OPENR66_CHROOT_CHECKED, true));
+<span class="fc" id="L718">    setBlacklistBadAuthent(SystemPropertyUtil.getBoolean(</span>
+<span class="pc bpc" id="L719" title="1 of 2 branches missed.">        R66SystemProperties.OPENR66_BLACKLIST_BADAUTHENT, !isHostProxyfied()));</span>
+<span class="fc" id="L720">    setMaxfilenamelength(SystemPropertyUtil.getInt(</span>
         R66SystemProperties.OPENR66_FILENAME_MAXLENGTH, 255));
-<span class="fc" id="L694">    setTimeStat(</span>
-<span class="fc" id="L695">        SystemPropertyUtil.getInt(R66SystemProperties.OPENR66_TRACE_STATS, 0));</span>
-<span class="fc" id="L696">    setLimitCache(SystemPropertyUtil</span>
-<span class="fc" id="L697">                      .getInt(R66SystemProperties.OPENR66_CACHE_LIMIT, 20000));</span>
-<span class="pc bpc" id="L698" title="1 of 2 branches missed.">    if (getLimitCache() &lt;= 100) {</span>
-<span class="nc" id="L699">      setLimitCache(100);</span>
+<span class="fc" id="L722">    setTimeStat(</span>
+<span class="fc" id="L723">        SystemPropertyUtil.getInt(R66SystemProperties.OPENR66_TRACE_STATS, 0));</span>
+<span class="fc" id="L724">    setLimitCache(</span>
+<span class="fc" id="L725">        SystemPropertyUtil.getInt(R66SystemProperties.OPENR66_CACHE_LIMIT,</span>
+                                  20000));
+<span class="pc bpc" id="L727" title="1 of 2 branches missed.">    if (getLimitCache() &lt;= 100) {</span>
+<span class="nc" id="L728">      setLimitCache(100);</span>
     }
-<span class="fc" id="L701">    setTimeLimitCache(SystemPropertyUtil</span>
-<span class="fc" id="L702">                          .getLong(R66SystemProperties.OPENR66_CACHE_TIMELIMIT,</span>
+<span class="fc" id="L730">    setTimeLimitCache(</span>
+<span class="fc" id="L731">        SystemPropertyUtil.getLong(R66SystemProperties.OPENR66_CACHE_TIMELIMIT,</span>
                                    180000));
-<span class="pc bpc" id="L704" title="1 of 2 branches missed.">    if (getTimeLimitCache() &lt; 1000) {</span>
-<span class="nc" id="L705">      setTimeLimitCache(1000);</span>
+<span class="pc bpc" id="L733" title="1 of 2 branches missed.">    if (getTimeLimitCache() &lt; 1000) {</span>
+<span class="nc" id="L734">      setTimeLimitCache(1000);</span>
     }
-<span class="fc" id="L707">    DbTaskRunner.createLruCache(getLimitCache(), getTimeLimitCache());</span>
-<span class="pc bpc" id="L708" title="2 of 4 branches missed.">    if (getLimitCache() &gt; 0 &amp;&amp; getTimeLimitCache() &gt; 1000) {</span>
-<span class="fc" id="L709">      timerCleanLruCache.schedule(new CleanLruCache(), getTimeLimitCache());</span>
+<span class="fc" id="L736">    DbTaskRunner.createLruCache(getLimitCache(), getTimeLimitCache());</span>
+<span class="pc bpc" id="L737" title="2 of 4 branches missed.">    if (getLimitCache() &gt; 0 &amp;&amp; getTimeLimitCache() &gt; 1000) {</span>
+<span class="fc" id="L738">      timerCleanLruCache.schedule(new CleanLruCache(), getTimeLimitCache());</span>
     }
-<span class="pc bpc" id="L711" title="1 of 2 branches missed.">    if (isHostProxyfied()) {</span>
-<span class="nc" id="L712">      setBlacklistBadAuthent(false);</span>
+<span class="pc bpc" id="L740" title="1 of 2 branches missed.">    if (isHostProxyfied()) {</span>
+<span class="nc" id="L741">      setBlacklistBadAuthent(false);</span>
     }
-<span class="fc" id="L714">  }</span>
+<span class="fc" id="L743">  }</span>
 
   private String arrayToString(final String[] array) {
     final StringBuilder ip;
-<span class="pc bpc" id="L718" title="1 of 4 branches missed.">    if (array != null &amp;&amp; array.length &gt; 0) {</span>
-<span class="fc" id="L719">      ip = new StringBuilder(&quot;[&quot; + array[0]);</span>
-<span class="fc bfc" id="L720" title="All 2 branches covered.">      for (int i = 1; i &lt; array.length; i++) {</span>
-<span class="fc" id="L721">        ip.append(&quot;,&quot;).append(array[i]);</span>
+<span class="pc bpc" id="L747" title="1 of 4 branches missed.">    if (array != null &amp;&amp; array.length &gt; 0) {</span>
+<span class="fc" id="L748">      ip = new StringBuilder(&quot;[&quot; + array[0]);</span>
+<span class="fc bfc" id="L749" title="All 2 branches covered.">      for (int i = 1; i &lt; array.length; i++) {</span>
+<span class="fc" id="L750">        ip.append(&quot;,&quot;).append(array[i]);</span>
       }
-<span class="fc" id="L723">      ip.append(&quot;]&quot;);</span>
+<span class="fc" id="L752">      ip.append(&quot;]&quot;);</span>
     } else {
-<span class="fc" id="L725">      ip = new StringBuilder(&quot;[All Interfaces]&quot;);</span>
+<span class="fc" id="L754">      ip = new StringBuilder(&quot;[All Interfaces]&quot;);</span>
     }
-<span class="fc" id="L727">    return ip.toString();</span>
+<span class="fc" id="L756">    return ip.toString();</span>
   }
 
   @Override
-  public String toString() {
-<span class="fc" id="L732">    StringBuilder rest = null;</span>
-<span class="fc bfc" id="L733" title="All 2 branches covered.">    for (final RestConfiguration config : getRestConfigurations()) {</span>
-<span class="pc bpc" id="L734" title="1 of 2 branches missed.">      if (rest == null) {</span>
-<span class="pc bpc" id="L735" title="1 of 2 branches missed.">        rest = new StringBuilder((config.getRestAddress() != null?</span>
-<span class="pc" id="L736">            '\'' + config.getRestAddress() + ':' : &quot;'All:&quot;) +</span>
-<span class="fc" id="L737">                                 config.getRestPort() + '\'');</span>
+  public final String toString() {
+<span class="fc" id="L761">    StringBuilder rest = null;</span>
+<span class="fc bfc" id="L762" title="All 2 branches covered.">    for (final RestConfiguration config : getRestConfigurations()) {</span>
+<span class="pc bpc" id="L763" title="1 of 2 branches missed.">      if (rest == null) {</span>
+<span class="pc bpc" id="L764" title="1 of 2 branches missed.">        rest = new StringBuilder((config.getRestAddress() != null?</span>
+<span class="pc" id="L765">            '\'' + config.getRestAddress() + ':' : &quot;'All:&quot;) +</span>
+<span class="fc" id="L766">                                 config.getRestPort() + '\'');</span>
       } else {
-<span class="nc bnc" id="L739" title="All 2 branches missed.">        rest.append(&quot;, &quot;).append(config.getRestAddress() != null?</span>
-<span class="nc" id="L740">                                     '\'' + config.getRestAddress() + ':' :</span>
-<span class="nc" id="L741">                                     &quot;'All:&quot;).append(config.getRestPort())</span>
-<span class="nc" id="L742">            .append('\'');</span>
+<span class="nc bnc" id="L768" title="All 2 branches missed.">        rest.append(&quot;, &quot;).append(config.getRestAddress() != null?</span>
+<span class="nc" id="L769">                                     '\'' + config.getRestAddress() + ':' :</span>
+<span class="nc" id="L770">                                     &quot;'All:&quot;).append(config.getRestPort())</span>
+<span class="nc" id="L771">            .append('\'');</span>
       }
-<span class="fc" id="L744">    }</span>
-<span class="fc" id="L745">    final String serverIp = arrayToString(getServerIpsAddresses());</span>
-<span class="fc" id="L746">    final String serverSslIp = arrayToString(getServerSslAddresses());</span>
-<span class="fc" id="L747">    final String serverHttpIp = arrayToString(getServerHttpAddresses());</span>
-<span class="fc" id="L748">    final String serverHttpsIp = arrayToString(getServerHttpsAddresses());</span>
-<span class="fc" id="L749">    return &quot;Config: { ServerIp: &quot; + serverIp + &quot;, ServerPort: &quot; +</span>
-<span class="fc" id="L750">           getServerPort() + &quot;, ServerSslIp: &quot; + serverSslIp +</span>
-<span class="fc" id="L751">           &quot;, ServerSslPort: &quot; + getServerSslPort() + &quot;, ServerViewIp: &quot; +</span>
-<span class="fc" id="L752">           serverHttpIp + &quot;, ServerView: &quot; + getServerHttpport() +</span>
+<span class="fc" id="L773">    }</span>
+<span class="fc" id="L774">    final String serverIp = arrayToString(getServerIpsAddresses());</span>
+<span class="fc" id="L775">    final String serverSslIp = arrayToString(getServerSslAddresses());</span>
+<span class="fc" id="L776">    final String serverHttpIp = arrayToString(getServerHttpAddresses());</span>
+<span class="fc" id="L777">    final String serverHttpsIp = arrayToString(getServerHttpsAddresses());</span>
+<span class="fc" id="L778">    return &quot;Config: { ServerIp: &quot; + serverIp + &quot;, ServerPort: &quot; +</span>
+<span class="fc" id="L779">           getServerPort() + &quot;, ServerSslIp: &quot; + serverSslIp +</span>
+<span class="fc" id="L780">           &quot;, ServerSslPort: &quot; + getServerSslPort() + &quot;, ServerViewIp: &quot; +</span>
+<span class="fc" id="L781">           serverHttpIp + &quot;, ServerView: &quot; + getServerHttpport() +</span>
            &quot;, ServerAdminIp: &quot; + serverHttpsIp + &quot;, ServerAdmin: &quot; +
-<span class="fc" id="L754">           getServerHttpsPort() + &quot;, ThriftPort: &quot; +</span>
-<span class="fc bfc" id="L755" title="All 4 branches covered.">           (getThriftport() &gt; 0? getThriftport() : &quot;'NoThriftSupport'&quot;) +</span>
+<span class="fc" id="L783">           getServerHttpsPort() + &quot;, ThriftPort: &quot; +</span>
+<span class="fc bfc" id="L784" title="All 4 branches covered.">           (getThriftport() &gt; 0? getThriftport() : &quot;'NoThriftSupport'&quot;) +</span>
            &quot;, RestAddress: [&quot; +
-<span class="fc" id="L757">           (rest != null? rest.toString() : &quot;'NoRestSupport'&quot;) + ']' +</span>
-<span class="fc" id="L758">           &quot;, TimeOut: &quot; + getTimeoutCon() + &quot;, BaseDir: '&quot; +</span>
-<span class="fc" id="L759">           getBaseDirectory() + &quot;', DigestAlgo: '&quot; + getDigest().algoName +</span>
-<span class="fc" id="L760">           &quot;', checkRemote: &quot; + isCheckRemoteAddress() + &quot;, checkClient: &quot; +</span>
-<span class="fc" id="L761">           isCheckClientAddress() + &quot;, snmpActive: &quot; +</span>
-<span class="pc bpc" id="L762" title="1 of 2 branches missed.">           (getAgentSnmp() != null) + &quot;, chrootChecked: &quot; + isChrootChecked() +</span>
-<span class="fc" id="L763">           &quot;, blacklist: &quot; + isBlacklistBadAuthent() + &quot;, isHostProxified: &quot; +</span>
-<span class="fc" id="L764">           isHostProxyfied() + '}';</span>
+<span class="fc" id="L786">           (rest != null? rest.toString() : &quot;'NoRestSupport'&quot;) + ']' +</span>
+<span class="fc" id="L787">           &quot;, TimeOut: &quot; + getTimeoutCon() + &quot;, BaseDir: '&quot; +</span>
+<span class="fc" id="L788">           getBaseDirectory() + &quot;', DigestAlgo: '&quot; + getDigest().algoName +</span>
+<span class="fc" id="L789">           &quot;', checkRemote: &quot; + isCheckRemoteAddress() + &quot;, checkClient: &quot; +</span>
+<span class="fc" id="L790">           isCheckClientAddress() + &quot;, snmpActive: &quot; +</span>
+<span class="pc bpc" id="L791" title="1 of 2 branches missed.">           (getAgentSnmp() != null) + &quot;, chrootChecked: &quot; + isChrootChecked() +</span>
+<span class="fc" id="L792">           &quot;, blacklist: &quot; + isBlacklistBadAuthent() + &quot;, isHostProxified: &quot; +</span>
+<span class="fc" id="L793">           isHostProxyfied() + &quot;, isCompressionEnabled: &quot; +</span>
+<span class="fc" id="L794">           isCompressionAvailable() + '}';</span>
   }
 
   /**
    * Configure the pipeline for client (to be called only once)
    */
-  public void pipelineInit() {
-<span class="fc bfc" id="L771" title="All 2 branches covered.">    if (isConfigured()) {</span>
-<span class="fc" id="L772">      return;</span>
+  public final void pipelineInit() {
+<span class="fc bfc" id="L801" title="All 2 branches covered.">    if (isConfigured()) {</span>
+<span class="fc" id="L802">      return;</span>
     }
     // To verify against limit of database
-<span class="fc" id="L775">    setRunnerThread(getRunnerThread());</span>
-<span class="fc" id="L776">    workerGroup = new NioEventLoopGroup(getClientThread(),</span>
+<span class="fc" id="L805">    setRunnerThread(getRunnerThread());</span>
+<span class="fc" id="L806">    serverGroup = new NioEventLoopGroup(getServerThread(),</span>
+                                        new WaarpThreadFactory(&quot;Service&quot;));
+<span class="fc" id="L808">    workerGroup = new NioEventLoopGroup(getClientThread(),</span>
                                         new WaarpThreadFactory(&quot;Worker&quot;));
-<span class="fc" id="L778">    handlerGroup = new NioEventLoopGroup(getClientThread(),</span>
+<span class="fc" id="L810">    handlerGroup = new NioEventLoopGroup(getClientThread(),</span>
                                          new WaarpThreadFactory(&quot;Handler&quot;));
-<span class="fc" id="L780">    subTaskGroup = new NioEventLoopGroup(getServerThread(),</span>
+<span class="fc" id="L812">    subTaskGroup = new NioEventLoopGroup(getClientThread(),</span>
                                          new WaarpThreadFactory(&quot;SubTask&quot;));
-<span class="fc" id="L782">    final RejectedExecutionHandler rejectedExecutionHandler =</span>
-<span class="fc" id="L783">        new RejectedExecutionHandler() {</span>
+<span class="fc" id="L814">    final RejectedExecutionHandler rejectedExecutionHandler =</span>
+<span class="fc" id="L815">        new RejectedExecutionHandler() {</span>
 
           @Override
-          public void rejectedExecution(final Runnable r,
-                                        final ThreadPoolExecutor executor) {
-<span class="nc bnc" id="L788" title="All 2 branches missed.">            if (r instanceof RetrieveRunner) {</span>
-<span class="nc" id="L789">              final RetrieveRunner retrieveRunner = (RetrieveRunner) r;</span>
-<span class="nc" id="L790">              logger.info(&quot;Try to reschedule RetrieveRunner: {}&quot;,</span>
-<span class="nc" id="L791">                          retrieveRunner.getLocalId());</span>
+          public final void rejectedExecution(final Runnable r,
+                                              final ThreadPoolExecutor executor) {
+<span class="nc bnc" id="L820" title="All 2 branches missed.">            if (r instanceof RetrieveRunner) {</span>
+<span class="nc" id="L821">              final RetrieveRunner retrieveRunner = (RetrieveRunner) r;</span>
+<span class="nc" id="L822">              logger.info(&quot;Try to reschedule RetrieveRunner: {}&quot;,</span>
+<span class="nc" id="L823">                          retrieveRunner.getLocalId());</span>
               try {
-<span class="nc" id="L793">                Thread.sleep(WAITFORNETOP * 2);</span>
-<span class="nc" id="L794">              } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L795">                SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L796">                retrieveRunner.notStartRunner();</span>
-<span class="nc" id="L797">                return;</span>
-<span class="nc" id="L798">              }</span>
-<span class="nc" id="L799">              getRetrieveRunnerGroup().execute(retrieveRunner);</span>
-<span class="nc" id="L800">            } else {</span>
-<span class="nc" id="L801">              logger.warn(&quot;Not RetrieveRunner: {}&quot;, r.getClass().getName());</span>
+<span class="nc" id="L825">                Thread.sleep(WAITFORNETOP * 2);</span>
+<span class="nc" id="L826">              } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L827">                SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L828">                retrieveRunner.notStartRunner();</span>
+<span class="nc" id="L829">                return;</span>
+<span class="nc" id="L830">              }</span>
+<span class="nc" id="L831">              getRetrieveRunnerGroup().execute(retrieveRunner);</span>
+<span class="nc" id="L832">            } else {</span>
+<span class="nc" id="L833">              logger.warn(&quot;Not RetrieveRunner: {}&quot;, r.getClass().getName());</span>
             }
-<span class="nc" id="L803">          }</span>
+<span class="nc" id="L835">          }</span>
         };
 
-<span class="fc" id="L806">    retrieveRunnerGroup =</span>
-<span class="fc" id="L807">        new ThreadPoolRunnerExecutor(getRunnerThread(), getRunnerThread() * 3,</span>
-                                     1, TimeUnit.SECONDS,
+<span class="fc" id="L838">    int nbRunnerThread = getRunnerThread();</span>
+<span class="pc bpc" id="L839" title="1 of 2 branches missed.">    if (nbRunnerThread == 1) {</span>
+<span class="nc" id="L840">      nbRunnerThread = 2;</span>
+    }
+<span class="fc" id="L842">    retrieveRunnerGroup =</span>
+        new ThreadPoolRunnerExecutor(nbRunnerThread / 2, nbRunnerThread * 3, 1,
+                                     TimeUnit.SECONDS,
                                      new SynchronousQueue&lt;Runnable&gt;(),
                                      new WaarpThreadFactory(&quot;RetrieveRunner&quot;),
                                      rejectedExecutionHandler);
-<span class="fc" id="L812">    localTransaction = new LocalTransaction();</span>
-<span class="fc" id="L813">    WaarpLoggerFactory</span>
-<span class="fc" id="L814">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="pc bpc" id="L815" title="1 of 2 branches missed.">    if (isWarnOnStartup()) {</span>
-<span class="fc" id="L816">      logger.warn(&quot;Server Thread: &quot; + getServerThread() + &quot; Client Thread: &quot; +</span>
-<span class="fc" id="L817">                  getClientThread() + &quot; Runner Thread: &quot; + getRunnerThread());</span>
+<span class="fc" id="L848">    localTransaction = new LocalTransaction();</span>
+<span class="fc" id="L849">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="pc bpc" id="L851" title="1 of 2 branches missed.">    if (isWarnOnStartup()) {</span>
+<span class="fc" id="L852">      logger.warn(&quot;Server Thread: &quot; + getServerThread() + &quot; Client Thread: &quot; +</span>
+<span class="fc" id="L853">                  getClientThread() + &quot; Runner Thread: &quot; + getRunnerThread());</span>
     } else {
-<span class="nc" id="L819">      logger.info(&quot;Server Thread: &quot; + getServerThread() + &quot; Client Thread: &quot; +</span>
-<span class="nc" id="L820">                  getClientThread() + &quot; Runner Thread: &quot; + getRunnerThread());</span>
+<span class="nc" id="L855">      logger.info(&quot;Server Thread: &quot; + getServerThread() + &quot; Client Thread: &quot; +</span>
+<span class="nc" id="L856">                  getClientThread() + &quot; Runner Thread: &quot; + getRunnerThread());</span>
     }
-<span class="fc" id="L822">    logger.info(&quot;Current launched threads: &quot; +</span>
-<span class="fc" id="L823">                ManagementFactory.getThreadMXBean().getThreadCount());</span>
-<span class="pc bpc" id="L824" title="1 of 2 branches missed.">    if (isUseLocalExec()) {</span>
-<span class="nc" id="L825">      LocalExecClient.initialize();</span>
+<span class="fc" id="L858">    logger.info(&quot;Current launched threads: &quot; +</span>
+<span class="fc" id="L859">                ManagementFactory.getThreadMXBean().getThreadCount());</span>
+<span class="pc bpc" id="L860" title="1 of 2 branches missed.">    if (isUseLocalExec()) {</span>
+<span class="nc" id="L861">      LocalExecClient.initialize();</span>
     }
-<span class="fc" id="L827">    setConfigured(true);</span>
-<span class="fc" id="L828">  }</span>
+<span class="fc" id="L863">    setConfigured(true);</span>
+<span class="fc" id="L864">  }</span>
 
-  public void setConfigured(final boolean configured) {
-<span class="fc" id="L831">    this.configured = configured;</span>
-<span class="fc" id="L832">  }</span>
+  public final void setConfigured(final boolean configured) {
+<span class="fc" id="L867">    this.configured = configured;</span>
+<span class="fc" id="L868">  }</span>
 
-  public boolean isConfigured() {
-<span class="fc" id="L835">    return configured;</span>
+  public final boolean isConfigured() {
+<span class="fc" id="L871">    return configured;</span>
   }
 
-  public void serverPipelineInit() {
-<span class="fc" id="L839">    httpWorkerGroup = new NioEventLoopGroup(getClientThread(),</span>
+  public final void serverPipelineInit() {
+<span class="fc" id="L875">    httpWorkerGroup = new NioEventLoopGroup(getServerThread() * 10,</span>
                                             new WaarpThreadFactory(
                                                 &quot;HttpWorker&quot;));
-<span class="fc" id="L842">  }</span>
+<span class="fc" id="L878">  }</span>
 
   /**
    * Startup the server
@@ -850,226 +886,229 @@ public class Configuration {
   public void serverStartup()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              ServerException {
-<span class="fc" id="L853">    setServer(true);</span>
-<span class="pc bpc" id="L854" title="1 of 2 branches missed.">    if (isBlacklistBadAuthent()) {</span>
-<span class="fc bfc" id="L855" title="All 2 branches covered.">      setBlacklistBadAuthent(!DbHostAuth.hasProxifiedHosts());</span>
+<span class="fc" id="L889">    setServer(true);</span>
+<span class="pc bpc" id="L890" title="1 of 2 branches missed.">    if (isBlacklistBadAuthent()) {</span>
+<span class="fc bfc" id="L891" title="All 2 branches covered.">      setBlacklistBadAuthent(!DbHostAuth.hasProxifiedHosts());</span>
     }
-<span class="fc" id="L857">    getShutdownConfiguration().timeout = getTimeoutCon();</span>
-<span class="pc bpc" id="L858" title="1 of 2 branches missed.">    if (getTimeLimitCache() &lt; getTimeoutCon() * 10) {</span>
-<span class="nc" id="L859">      setTimeLimitCache(getTimeoutCon() * 10);</span>
-<span class="nc" id="L860">      DbTaskRunner.updateLruCacheTimeout(getTimeLimitCache());</span>
+<span class="fc" id="L893">    getShutdownConfiguration().timeout = getTimeoutCon();</span>
+<span class="pc bpc" id="L894" title="1 of 2 branches missed.">    if (getTimeLimitCache() &lt; getTimeoutCon() * 10) {</span>
+<span class="nc" id="L895">      setTimeLimitCache(getTimeoutCon() * 10);</span>
+<span class="nc" id="L896">      DbTaskRunner.updateLruCacheTimeout(getTimeLimitCache());</span>
     }
-<span class="fc" id="L862">    WaarpShutdownHook.addShutdownHook();</span>
-<span class="fc" id="L863">    logger.debug(&quot;Use NoSSL: {} Use SSL: {}&quot;, isUseNOSSL(), isUseSSL());</span>
-<span class="pc bpc" id="L864" title="3 of 4 branches missed.">    if (!isUseNOSSL() &amp;&amp; !isUseSSL()) {</span>
-<span class="nc" id="L865">      logger.error(Messages.getString(&quot;Configuration.NoSSL&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L866" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L867">        return;</span>
-      }
-<span class="nc" id="L869">      System.exit(-1);//NOSONAR</span>
+<span class="fc" id="L898">    WaarpShutdownHook.addShutdownHook();</span>
+<span class="fc" id="L899">    logger.debug(&quot;Use NoSSL: {} Use SSL: {}&quot;, isUseNOSSL(), isUseSSL());</span>
+<span class="pc bpc" id="L900" title="3 of 4 branches missed.">    if (!isUseNOSSL() &amp;&amp; !isUseSSL()) {</span>
+<span class="nc" id="L901">      logger.error(Messages.getString(&quot;Configuration.NoSSL&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L902">      WaarpSystemUtil.systemExit(-1);</span>
+<span class="nc" id="L903">      return;</span>
     }
-<span class="fc" id="L871">    pipelineInit();</span>
-<span class="fc" id="L872">    serverPipelineInit();</span>
-<span class="fc" id="L873">    r66Startup();</span>
-<span class="fc" id="L874">    startHttpSupport();</span>
-<span class="fc" id="L875">    startMonitoring();</span>
-<span class="fc" id="L876">    launchStatistics();</span>
-<span class="fc" id="L877">    startRestSupport();</span>
-
-<span class="fc" id="L879">    logger.info(&quot;Current launched threads: &quot; +</span>
-<span class="fc" id="L880">                ManagementFactory.getThreadMXBean().getThreadCount());</span>
-<span class="fc" id="L881">  }</span>
+<span class="pc bpc" id="L905" title="1 of 2 branches missed.">    if (SystemPropertyUtil.getBoolean(</span>
+        R66SystemProperties.OPENR66_JUNIT_RECV_THROUGH, false)) {
+<span class="nc" id="L907">      logger.warn(&quot;DEBUG PERF MODE using RECV THROUGH&quot;);</span>
+<span class="nc" id="L908">      ClientRunner.setRecvHandlerJunit(new NoOpRecvThroughHandler());</span>
+    }
+<span class="fc" id="L910">    pipelineInit();</span>
+<span class="fc" id="L911">    serverPipelineInit();</span>
+<span class="fc" id="L912">    r66Startup();</span>
+<span class="fc" id="L913">    startHttpSupport();</span>
+<span class="fc" id="L914">    startMonitoring();</span>
+<span class="fc" id="L915">    launchStatistics();</span>
+<span class="fc" id="L916">    startRestSupport();</span>
+<span class="fc" id="L917">    startMonitorExporterTransfers();</span>
+<span class="fc" id="L918">    logger.info(&quot;Current launched threads: &quot; +</span>
+<span class="fc" id="L919">                ManagementFactory.getThreadMXBean().getThreadCount());</span>
+<span class="fc" id="L920">  }</span>
 
   /**
    * Used to log statistics information regularly
    */
-  public void launchStatistics() {
-<span class="pc bpc" id="L887" title="1 of 2 branches missed.">    if (getTimeStat() &gt; 0) {</span>
-<span class="nc" id="L888">      timerStatistic.scheduleAtFixedRate(new UsageStatistic(), 1000,</span>
-<span class="nc" id="L889">                                         getTimeStat() * 1000L);</span>
+  public final void launchStatistics() {
+<span class="pc bpc" id="L926" title="1 of 2 branches missed.">    if (getTimeStat() &gt; 0) {</span>
+<span class="nc" id="L927">      timerStatistic.scheduleAtFixedRate(new UsageStatistic(), 1000,</span>
+<span class="nc" id="L928">                                         getTimeStat() * 1000L);</span>
     }
-<span class="fc" id="L891">  }</span>
+<span class="fc" id="L930">  }</span>
 
   private Channel bindTo(final String ip, final int port,
                          final ServerBootstrap serverBootstrapToBind,
                          final String messageError) throws ServerException {
-<span class="fc bfc" id="L896" title="All 2 branches covered.">    final InetSocketAddress inetSocketAddress =</span>
+<span class="fc bfc" id="L935" title="All 2 branches covered.">    final InetSocketAddress inetSocketAddress =</span>
         ip == null? new InetSocketAddress(port) :
             new InetSocketAddress(ip, port);
-<span class="fc" id="L899">    final ChannelFuture future =</span>
-<span class="fc" id="L900">        serverBootstrapToBind.bind(inetSocketAddress).awaitUninterruptibly();</span>
-<span class="pc bpc" id="L901" title="1 of 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="fc" id="L902">      final Channel channel = future.channel();</span>
-<span class="fc" id="L903">      serverChannelGroup.add(channel);</span>
-<span class="fc" id="L904">      return channel;</span>
+<span class="fc" id="L938">    final ChannelFuture future =</span>
+<span class="fc" id="L939">        serverBootstrapToBind.bind(inetSocketAddress).awaitUninterruptibly();</span>
+<span class="pc bpc" id="L940" title="1 of 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="fc" id="L941">      final Channel channel = future.channel();</span>
+<span class="fc" id="L942">      serverChannelGroup.add(channel);</span>
+<span class="fc" id="L943">      return channel;</span>
     } else {
-<span class="nc" id="L906">      throw new ServerException(messageError + &quot; [&quot; + ip + &quot;:&quot; + port + &quot;]&quot;,</span>
-<span class="nc" id="L907">                                future.cause());</span>
+<span class="nc" id="L945">      throw new ServerException(messageError + &quot; [&quot; + ip + &quot;:&quot; + port + &quot;]&quot;,</span>
+<span class="nc" id="L946">                                future.cause());</span>
     }
   }
 
   private Channel bindTo(final String[] ips, final int port,
                          final ServerBootstrap serverBootstrapToBind,
                          final String messageError) throws ServerException {
-<span class="pc bpc" id="L914" title="1 of 4 branches missed.">    if (ips == null || ips.length == 0) {</span>
-<span class="fc" id="L915">      return bindTo((String) null, port, serverBootstrapToBind, messageError);</span>
+<span class="pc bpc" id="L953" title="1 of 4 branches missed.">    if (ips == null || ips.length == 0) {</span>
+<span class="fc" id="L954">      return bindTo((String) null, port, serverBootstrapToBind, messageError);</span>
     } else {
-<span class="fc" id="L917">      Channel channel = null;</span>
-<span class="fc bfc" id="L918" title="All 2 branches covered.">      for (final String ip : ips) {</span>
-<span class="fc" id="L919">        channel = bindTo(ip, port, serverBootstrapToBind, messageError);</span>
+<span class="fc" id="L956">      Channel channel = null;</span>
+<span class="fc bfc" id="L957" title="All 2 branches covered.">      for (final String ip : ips) {</span>
+<span class="fc" id="L958">        channel = bindTo(ip, port, serverBootstrapToBind, messageError);</span>
       }
-<span class="fc" id="L921">      return channel;</span>
+<span class="fc" id="L960">      return channel;</span>
     }
   }
 
   public void r66Startup()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              ServerException {
-<span class="fc" id="L928">    logger.info(Messages.getString(&quot;Configuration.Start&quot;) +</span>
-<span class="fc" id="L929">                arrayToString(getServerIpsAddresses()) + ':' + getServerPort() +</span>
-<span class="fc" id="L930">                ':' + isUseNOSSL() + ':' + getHostId() + //$NON-NLS-1$</span>
-<span class="fc" id="L931">                ' ' + arrayToString(getServerSslAddresses()) + ':' +</span>
-<span class="fc" id="L932">                getServerSslPort() + ':' + isUseSSL() + ':' + getHostSslId());</span>
+<span class="fc" id="L967">    logger.info(Messages.getString(&quot;Configuration.Start&quot;) +</span>
+<span class="fc" id="L968">                arrayToString(getServerIpsAddresses()) + ':' + getServerPort() +</span>
+<span class="fc" id="L969">                ':' + isUseNOSSL() + ':' + getHostId() + //$NON-NLS-1$</span>
+<span class="fc" id="L970">                ' ' + arrayToString(getServerSslAddresses()) + ':' +</span>
+<span class="fc" id="L971">                getServerSslPort() + ':' + isUseSSL() + ':' + getHostSslId());</span>
     // add into configuration
-<span class="fc" id="L934">    getConstraintLimitHandler().setServer(true);</span>
+<span class="fc" id="L973">    getConstraintLimitHandler().setServer(true);</span>
     // Global Server
-<span class="fc" id="L936">    serverChannelGroup =</span>
-<span class="fc" id="L937">        new DefaultChannelGroup(&quot;OpenR66&quot;, subTaskGroup.next());</span>
-<span class="fc" id="L938">    serverConnectedChannelGroup =</span>
-<span class="fc" id="L939">        new DefaultChannelGroup(&quot;OpenR66Connected&quot;, subTaskGroup.next());</span>
-<span class="pc bpc" id="L940" title="1 of 2 branches missed.">    if (isUseNOSSL()) {</span>
-<span class="fc" id="L941">      serverBootstrap = new ServerBootstrap();</span>
-<span class="fc" id="L942">      WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,</span>
-<span class="fc" id="L943">                                        (int) getTimeoutCon(),</span>
-<span class="fc" id="L944">                                        getBlockSize() + 64, false);</span>
-<span class="fc" id="L945">      networkServerInitializer = new NetworkServerInitializer(true);</span>
-<span class="fc" id="L946">      serverBootstrap.childHandler(networkServerInitializer);</span>
-<span class="fc" id="L947">      final String[] serverIps = getServerIpsAddresses();</span>
-<span class="fc" id="L948">      bindNoSSL = bindTo(serverIps, getServerPort(), serverBootstrap,</span>
-<span class="fc" id="L949">                         Messages.getString(&quot;Configuration.R66NotBound&quot;));</span>
-<span class="fc" id="L950">    } else {</span>
-<span class="nc" id="L951">      networkServerInitializer = null;</span>
-<span class="nc" id="L952">      logger.warn(</span>
-<span class="nc" id="L953">          Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;)); //$NON-NLS-1$</span>
+<span class="fc" id="L975">    serverChannelGroup =</span>
+<span class="fc" id="L976">        new DefaultChannelGroup(&quot;OpenR66&quot;, subTaskGroup.next());</span>
+<span class="fc" id="L977">    serverConnectedChannelGroup =</span>
+<span class="fc" id="L978">        new DefaultChannelGroup(&quot;OpenR66Connected&quot;, subTaskGroup.next());</span>
+<span class="pc bpc" id="L979" title="1 of 2 branches missed.">    if (isUseNOSSL()) {</span>
+<span class="fc" id="L980">      serverBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L981">      WaarpNettyUtil.setServerBootstrap(serverBootstrap, serverGroup,</span>
+<span class="fc" id="L982">                                        workerGroup, (int) getTimeoutCon(),</span>
+<span class="fc" id="L983">                                        getBlockSize() + 64, false);</span>
+<span class="fc" id="L984">      networkServerInitializer = new NetworkServerInitializer(true);</span>
+<span class="fc" id="L985">      serverBootstrap.childHandler(networkServerInitializer);</span>
+<span class="fc" id="L986">      final String[] serverIps = getServerIpsAddresses();</span>
+<span class="fc" id="L987">      bindNoSSL = bindTo(serverIps, getServerPort(), serverBootstrap,</span>
+<span class="fc" id="L988">                         Messages.getString(&quot;Configuration.R66NotBound&quot;));</span>
+<span class="fc" id="L989">    } else {</span>
+<span class="nc" id="L990">      networkServerInitializer = null;</span>
+<span class="nc" id="L991">      logger.warn(</span>
+<span class="nc" id="L992">          Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;)); //$NON-NLS-1$</span>
     }
 
-<span class="pc bpc" id="L956" title="2 of 4 branches missed.">    if (isUseSSL() &amp;&amp; getHostSslId() != null) {</span>
-<span class="fc" id="L957">      serverSslBootstrap = new ServerBootstrap();</span>
-<span class="fc" id="L958">      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,</span>
-<span class="fc" id="L959">                                        (int) getTimeoutCon(),</span>
-<span class="fc" id="L960">                                        getBlockSize() + 64, false);</span>
-<span class="fc" id="L961">      networkSslServerInitializer = new NetworkSslServerInitializer(false);</span>
-<span class="fc" id="L962">      serverSslBootstrap.childHandler(networkSslServerInitializer);</span>
-<span class="fc" id="L963">      final String[] serverIps = getServerSslAddresses();</span>
-<span class="fc" id="L964">      bindSSL = bindTo(serverIps, getServerSslPort(), serverSslBootstrap,</span>
-<span class="fc" id="L965">                       Messages.getString(&quot;Configuration.R66SSLNotBound&quot;));</span>
-<span class="fc" id="L966">    } else {</span>
-<span class="nc" id="L967">      networkSslServerInitializer = null;</span>
-<span class="nc" id="L968">      logger.warn(</span>
-<span class="nc" id="L969">          Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;)); //$NON-NLS-1$</span>
+<span class="pc bpc" id="L995" title="2 of 4 branches missed.">    if (isUseSSL() &amp;&amp; getHostSslId() != null) {</span>
+<span class="fc" id="L996">      serverSslBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L997">      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, serverGroup,</span>
+<span class="fc" id="L998">                                        workerGroup, (int) getTimeoutCon(),</span>
+<span class="fc" id="L999">                                        getBlockSize() + 64, false);</span>
+<span class="fc" id="L1000">      networkSslServerInitializer = new NetworkSslServerInitializer(false);</span>
+<span class="fc" id="L1001">      serverSslBootstrap.childHandler(networkSslServerInitializer);</span>
+<span class="fc" id="L1002">      final String[] serverIps = getServerSslAddresses();</span>
+<span class="fc" id="L1003">      bindSSL = bindTo(serverIps, getServerSslPort(), serverSslBootstrap,</span>
+<span class="fc" id="L1004">                       Messages.getString(&quot;Configuration.R66SSLNotBound&quot;));</span>
+<span class="fc" id="L1005">    } else {</span>
+<span class="nc" id="L1006">      networkSslServerInitializer = null;</span>
+<span class="nc" id="L1007">      logger.warn(</span>
+<span class="nc" id="L1008">          Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;)); //$NON-NLS-1$</span>
     }
 
     // Factory for TrafficShapingHandler
-<span class="fc" id="L973">    setupLimitHandler();</span>
+<span class="fc" id="L1012">    setupLimitHandler();</span>
 
     // Now start the InternalRunner
-<span class="fc" id="L976">    internalRunner = new InternalRunner();</span>
+<span class="fc" id="L1015">    internalRunner = new InternalRunner();</span>
 
-<span class="fc bfc" id="L978" title="All 2 branches covered.">    if (getThriftport() &gt; 0) {</span>
-<span class="fc" id="L979">      setThriftService(</span>
-<span class="fc" id="L980">          new R66ThriftServerService(new WaarpFuture(true), getThriftport()));</span>
-<span class="fc" id="L981">      execOtherWorker.execute(getThriftService());</span>
-<span class="fc" id="L982">      getThriftService().awaitInitialization();</span>
+<span class="fc bfc" id="L1017" title="All 2 branches covered.">    if (getThriftport() &gt; 0) {</span>
+<span class="fc" id="L1018">      setThriftService(</span>
+<span class="fc" id="L1019">          new R66ThriftServerService(new WaarpFuture(true), getThriftport()));</span>
+<span class="fc" id="L1020">      execOtherWorker.execute(getThriftService());</span>
+<span class="fc" id="L1021">      getThriftService().awaitInitialization();</span>
     } else {
-<span class="fc" id="L984">      setThriftService(null);</span>
+<span class="fc" id="L1023">      setThriftService(null);</span>
     }
-<span class="fc" id="L986">  }</span>
+<span class="fc" id="L1025">  }</span>
 
   public void startHttpSupport() throws ServerException {
     // Now start the HTTP support
-<span class="fc" id="L990">    logger.info(</span>
-<span class="fc" id="L991">        Messages.getString(&quot;Configuration.HTTPStart&quot;) + getServerHttpport() +</span>
+<span class="fc" id="L1029">    logger.info(</span>
+<span class="fc" id="L1030">        Messages.getString(&quot;Configuration.HTTPStart&quot;) + getServerHttpport() +</span>
         //$NON-NLS-1$
-<span class="fc" id="L993">        &quot; HTTPS: &quot; + getServerHttpsPort());</span>
-<span class="fc" id="L994">    httpChannelGroup =</span>
-<span class="fc" id="L995">        new DefaultChannelGroup(&quot;HttpOpenR66&quot;, subTaskGroup.next());</span>
-    // Configure the server.
-<span class="fc" id="L997">    httpBootstrap = new ServerBootstrap();</span>
-<span class="fc" id="L998">    WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,</span>
-<span class="fc" id="L999">                                      (int) getTimeoutCon());</span>
-    // Set up the event pipeline factory.
-<span class="fc" id="L1001">    httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));</span>
-    // Bind and start to accept incoming connections.
-<span class="pc bpc" id="L1003" title="1 of 2 branches missed.">    if (getServerHttpport() &gt; 0) {</span>
-<span class="fc" id="L1004">      final String[] serverIps = getServerHttpAddresses();</span>
-<span class="fc" id="L1005">      bindTo(serverIps, getServerHttpport(), httpBootstrap,</span>
+<span class="fc" id="L1032">        &quot; HTTPS: &quot; + getServerHttpsPort());</span>
+<span class="fc" id="L1033">    httpChannelGroup =</span>
+<span class="fc" id="L1034">        new DefaultChannelGroup(&quot;HttpOpenR66&quot;, subTaskGroup.next());</span>
+<span class="pc bpc" id="L1035" title="1 of 2 branches missed.">    if (getServerHttpport() &gt; 0) {</span>
+      // Configure the server.
+<span class="fc" id="L1037">      httpBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L1038">      WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,</span>
+<span class="fc" id="L1039">                                        httpWorkerGroup, (int) getTimeoutCon());</span>
+      // Set up the event pipeline factory.
+<span class="fc" id="L1041">      httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));</span>
+      // Bind and start to accept incoming connections.
+<span class="fc" id="L1043">      final String[] serverIps = getServerHttpAddresses();</span>
+<span class="fc" id="L1044">      bindTo(serverIps, getServerHttpport(), httpBootstrap,</span>
              &quot;Can't start HTTP service&quot;);
     }
     // Now start the HTTPS support
-    // Configure the server.
-<span class="fc" id="L1010">    httpsBootstrap = new ServerBootstrap();</span>
-    // Set up the event pipeline factory.
-<span class="fc" id="L1012">    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,</span>
-<span class="fc" id="L1013">                                      (int) getTimeoutCon());</span>
-<span class="fc bfc" id="L1014" title="All 2 branches covered.">    if (getHttpModel() == 0) {</span>
-<span class="fc" id="L1015">      httpsBootstrap</span>
-<span class="fc" id="L1016">          .childHandler(new HttpSslInitializer(isUseHttpCompression()));</span>
-    } else {
-      // Default
-<span class="fc" id="L1019">      httpsBootstrap.childHandler(</span>
-<span class="fc" id="L1020">          new HttpReponsiveSslInitializer(isUseHttpCompression()));</span>
-    }
     // Bind and start to accept incoming connections.
-<span class="pc bpc" id="L1023" title="1 of 2 branches missed.">    if (getServerHttpsPort() &gt; 0) {</span>
-<span class="fc" id="L1024">      final String[] serverIps = getServerHttpsAddresses();</span>
-<span class="fc" id="L1025">      bindTo(serverIps, getServerHttpsPort(), httpsBootstrap,</span>
+<span class="pc bpc" id="L1049" title="1 of 2 branches missed.">    if (getServerHttpsPort() &gt; 0) {</span>
+      // Configure the server.
+<span class="fc" id="L1051">      httpsBootstrap = new ServerBootstrap();</span>
+      // Set up the event pipeline factory.
+<span class="fc" id="L1053">      WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,</span>
+<span class="fc" id="L1054">                                        httpWorkerGroup, (int) getTimeoutCon());</span>
+<span class="fc bfc" id="L1055" title="All 2 branches covered.">      if (getHttpModel() == 0) {</span>
+<span class="fc" id="L1056">        httpsBootstrap.childHandler(</span>
+<span class="fc" id="L1057">            new HttpSslInitializer(isUseHttpCompression()));</span>
+      } else {
+        // Default
+<span class="fc" id="L1060">        httpsBootstrap.childHandler(</span>
+<span class="fc" id="L1061">            new HttpReponsiveSslInitializer(isUseHttpCompression()));</span>
+      }
+<span class="fc" id="L1063">      final String[] serverIps = getServerHttpsAddresses();</span>
+<span class="fc" id="L1064">      bindTo(serverIps, getServerHttpsPort(), httpsBootstrap,</span>
              &quot;Can't start HTTPS service&quot;);
     }
-<span class="fc" id="L1028">  }</span>
+<span class="fc" id="L1067">  }</span>
 
-  public void startRestSupport() {
-<span class="fc" id="L1031">    HttpRestHandler</span>
-<span class="fc" id="L1032">        .initialize(getBaseDirectory() + '/' + getWorkingPath() + &quot;/httptemp&quot;);</span>
-<span class="fc bfc" id="L1033" title="All 2 branches covered.">    for (final RestConfiguration config : getRestConfigurations()) {</span>
-<span class="fc" id="L1034">      RestServiceInitializer.initRestService(config);</span>
+  public final void startRestSupport() {
+<span class="fc" id="L1070">    HttpRestHandler.initialize(</span>
+<span class="fc" id="L1071">        getBaseDirectory() + '/' + getWorkingPath() + &quot;/httptemp&quot;);</span>
+<span class="fc bfc" id="L1072" title="All 2 branches covered.">    for (final RestConfiguration config : getRestConfigurations()) {</span>
+<span class="fc" id="L1073">      RestServiceInitializer.initRestService(config);</span>
       // REST V1 is included within V2
       // so no HttpRestR66Handler.initializeService(config)
-<span class="fc" id="L1037">      logger.info(</span>
-<span class="fc" id="L1038">          Messages.getString(&quot;Configuration.HTTPStart&quot;) + &quot; (REST Support) &quot; +</span>
+<span class="fc" id="L1076">      logger.info(</span>
+<span class="fc" id="L1077">          Messages.getString(&quot;Configuration.HTTPStart&quot;) + &quot; (REST Support) &quot; +</span>
           config);
-<span class="fc" id="L1040">    }</span>
-<span class="fc" id="L1041">  }</span>
+<span class="fc" id="L1079">    }</span>
+<span class="fc" id="L1080">  }</span>
 
-  public void startMonitoring() throws WaarpDatabaseSqlException {
-<span class="fc" id="L1044">    setMonitoring(new Monitoring(getPastLimit(), getMinimalDelay(), null));</span>
-<span class="fc" id="L1045">    setNbDbSession(getNbDbSession() + 1);</span>
-<span class="pc bpc" id="L1046" title="1 of 2 branches missed.">    if (getSnmpConfig() != null) {</span>
-<span class="nc" id="L1047">      final int snmpPortShow =</span>
-<span class="nc bnc" id="L1048" title="All 2 branches missed.">          isUseNOSSL()? getServerPort() : getServerSslPort();</span>
-<span class="nc" id="L1049">      final R66PrivateMib r66MibTemp =</span>
+  public final void startMonitoring() throws WaarpDatabaseSqlException {
+<span class="fc" id="L1083">    setMonitoring(new Monitoring(getPastLimit(), getMinimalDelay(), null));</span>
+<span class="fc" id="L1084">    setNbDbSession(getNbDbSession() + 1);</span>
+<span class="pc bpc" id="L1085" title="1 of 2 branches missed.">    if (getSnmpConfig() != null) {</span>
+<span class="nc" id="L1086">      final int snmpPortShow =</span>
+<span class="nc bnc" id="L1087" title="All 2 branches missed.">          isUseNOSSL()? getServerPort() : getServerSslPort();</span>
+<span class="nc" id="L1088">      final R66PrivateMib r66MibTemp =</span>
           new R66PrivateMib(SnmpName, snmpPortShow, SnmpPrivateId, SnmpR66Id,
                             SnmpDefaultAuthor, SnmpVersion,
                             SnmpDefaultLocalization, SnmpService);
-<span class="nc" id="L1053">      WaarpMOFactory.setFactory(new R66VariableFactory());</span>
-<span class="nc" id="L1054">      setAgentSnmp(</span>
-<span class="nc" id="L1055">          new WaarpSnmpAgent(new File(getSnmpConfig()), getMonitoring(),</span>
+<span class="nc" id="L1092">      WaarpMOFactory.setFactory(new R66VariableFactory());</span>
+<span class="nc" id="L1093">      setAgentSnmp(</span>
+<span class="nc" id="L1094">          new WaarpSnmpAgent(new File(getSnmpConfig()), getMonitoring(),</span>
                              r66MibTemp));
       try {
-<span class="nc" id="L1058">        getAgentSnmp().start();</span>
-<span class="nc" id="L1059">      } catch (final IOException e) {</span>
-<span class="nc" id="L1060">        throw new WaarpDatabaseSqlException(</span>
-<span class="nc" id="L1061">            Messages.getString(&quot;Configuration.SNMPError&quot;), e); //$NON-NLS-1$</span>
-<span class="nc" id="L1062">      }</span>
-<span class="nc" id="L1063">      setR66Mib(r66MibTemp);</span>
+<span class="nc" id="L1097">        getAgentSnmp().start();</span>
+<span class="nc" id="L1098">      } catch (final IOException e) {</span>
+<span class="nc" id="L1099">        throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L1100">            Messages.getString(&quot;Configuration.SNMPError&quot;), e); //$NON-NLS-1$</span>
+<span class="nc" id="L1101">      }</span>
+<span class="nc" id="L1102">      setR66Mib(r66MibTemp);</span>
     }
-<span class="fc" id="L1065">  }</span>
+<span class="fc" id="L1104">  }</span>
 
-  public void startJunitRestSupport(final RestConfiguration config) {
-<span class="fc" id="L1068">    HttpRestR66Handler.initializeService(config);</span>
-<span class="fc" id="L1069">  }</span>
+  public final void startJunitRestSupport(final RestConfiguration config) {
+<span class="fc" id="L1107">    HttpRestR66Handler.initializeService(config);</span>
+<span class="fc" id="L1108">  }</span>
 
-  public InternalRunner getInternalRunner() {
-<span class="fc" id="L1072">    return internalRunner;</span>
+  public final InternalRunner getInternalRunner() {
+<span class="fc" id="L1111">    return internalRunner;</span>
   }
 
   /**
@@ -1077,75 +1116,81 @@ public class Configuration {
    * &lt;p&gt;
    * To be called early before other stuff will be closed
    */
-  public void prepareServerStop() {
-<span class="fc bfc" id="L1081" title="All 2 branches covered.">    if (getThriftService() != null) {</span>
-<span class="fc" id="L1082">      getThriftService().releaseResources();</span>
+  public final void prepareServerStop() {
+<span class="fc bfc" id="L1120" title="All 2 branches covered.">    if (getThriftService() != null) {</span>
+<span class="fc" id="L1121">      getThriftService().releaseResources();</span>
     }
-<span class="pc bpc" id="L1084" title="1 of 2 branches missed.">    if (internalRunner != null) {</span>
-<span class="fc" id="L1085">      internalRunner.prepareStopInternalRunner();</span>
+<span class="fc bfc" id="L1123" title="All 2 branches covered.">    if (internalRunner != null) {</span>
+<span class="fc" id="L1124">      internalRunner.prepareStopInternalRunner();</span>
     }
-<span class="fc" id="L1087">  }</span>
+<span class="fc" id="L1126">  }</span>
 
   /**
    * Unbind network connectors
    */
-  public void unbindServer() {
-<span class="fc bfc" id="L1093" title="All 2 branches covered.">    if (bindNoSSL != null) {</span>
-<span class="fc" id="L1094">      bindNoSSL.close();</span>
-<span class="fc" id="L1095">      bindNoSSL = null;</span>
+  public final void unbindServer() {
+<span class="fc bfc" id="L1132" title="All 2 branches covered.">    if (bindNoSSL != null) {</span>
+<span class="fc" id="L1133">      bindNoSSL.close();</span>
+<span class="fc" id="L1134">      bindNoSSL = null;</span>
     }
-<span class="fc bfc" id="L1097" title="All 2 branches covered.">    if (bindSSL != null) {</span>
-<span class="fc" id="L1098">      bindSSL.close();</span>
-<span class="fc" id="L1099">      bindSSL = null;</span>
+<span class="fc bfc" id="L1136" title="All 2 branches covered.">    if (bindSSL != null) {</span>
+<span class="fc" id="L1137">      bindSSL.close();</span>
+<span class="fc" id="L1138">      bindSSL = null;</span>
     }
-<span class="fc" id="L1101">  }</span>
+<span class="fc" id="L1140">  }</span>
 
-  public void shutdownGracefully() {
-<span class="pc bpc" id="L1104" title="1 of 4 branches missed.">    if (workerGroup != null &amp;&amp; !workerGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1105">      workerGroup.shutdownGracefully();</span>
+  public final void shutdownGracefully() {
+<span class="pc bpc" id="L1143" title="1 of 4 branches missed.">    if (workerGroup != null &amp;&amp; !workerGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1144">      workerGroup.shutdownGracefully();</span>
     }
-<span class="pc bpc" id="L1107" title="1 of 4 branches missed.">    if (handlerGroup != null &amp;&amp; !handlerGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1108">      handlerGroup.shutdownGracefully();</span>
+<span class="pc bpc" id="L1146" title="1 of 4 branches missed.">    if (handlerGroup != null &amp;&amp; !handlerGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1147">      handlerGroup.shutdownGracefully();</span>
     }
-<span class="pc bpc" id="L1110" title="1 of 4 branches missed.">    if (httpWorkerGroup != null &amp;&amp; !httpWorkerGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1111">      httpWorkerGroup.shutdownGracefully();</span>
+<span class="fc bfc" id="L1149" title="All 4 branches covered.">    if (httpWorkerGroup != null &amp;&amp; !httpWorkerGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1150">      httpWorkerGroup.shutdownGracefully();</span>
     }
-<span class="pc bpc" id="L1113" title="1 of 4 branches missed.">    if (subTaskGroup != null &amp;&amp; !subTaskGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1114">      subTaskGroup.shutdownGracefully();</span>
+<span class="pc bpc" id="L1152" title="1 of 4 branches missed.">    if (subTaskGroup != null &amp;&amp; !subTaskGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1153">      subTaskGroup.shutdownGracefully();</span>
     }
-<span class="pc bpc" id="L1116" title="1 of 4 branches missed.">    if (retrieveRunnerGroup != null &amp;&amp; !retrieveRunnerGroup.isShutdown()) {</span>
+<span class="pc bpc" id="L1155" title="1 of 4 branches missed.">    if (serverGroup != null &amp;&amp; !serverGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1156">      serverGroup.shutdownGracefully();</span>
+    }
+<span class="pc bpc" id="L1158" title="1 of 4 branches missed.">    if (retrieveRunnerGroup != null &amp;&amp; !retrieveRunnerGroup.isShutdown()) {</span>
 
-<span class="fc" id="L1118">      retrieveRunnerGroup.shutdown();</span>
+<span class="fc" id="L1160">      retrieveRunnerGroup.shutdown();</span>
       try {
-<span class="fc" id="L1120">        if (!retrieveRunnerGroup</span>
-<span class="pc bpc" id="L1121" title="1 of 2 branches missed.">            .awaitTermination(getTimeoutCon() / 2, TimeUnit.MILLISECONDS)) {</span>
-<span class="nc" id="L1122">          retrieveRunnerGroup.shutdownNow();</span>
+<span class="pc bpc" id="L1162" title="1 of 2 branches missed.">        if (!retrieveRunnerGroup.awaitTermination(getTimeoutCon() / 2,</span>
+                                                  TimeUnit.MILLISECONDS)) {
+<span class="nc" id="L1164">          retrieveRunnerGroup.shutdownNow();</span>
         }
-<span class="nc" id="L1124">      } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L1125">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L1126">        retrieveRunnerGroup.shutdownNow();</span>
-<span class="nc" id="L1127">        Thread.currentThread().interrupt();</span>
-<span class="fc" id="L1128">      }</span>
+<span class="nc" id="L1166">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L1167">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L1168">        retrieveRunnerGroup.shutdownNow();</span>
+<span class="nc" id="L1169">        Thread.currentThread().interrupt();</span>
+<span class="fc" id="L1170">      }</span>
     }
-<span class="fc" id="L1130">  }</span>
+<span class="fc" id="L1172">  }</span>
 
-  public void shutdownQuickly() {
-<span class="pc bpc" id="L1133" title="1 of 4 branches missed.">    if (workerGroup != null &amp;&amp; !workerGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1134">      workerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
+  public final void shutdownQuickly() {
+<span class="pc bpc" id="L1175" title="1 of 4 branches missed.">    if (workerGroup != null &amp;&amp; !workerGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1176">      workerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
     }
-<span class="pc bpc" id="L1136" title="2 of 4 branches missed.">    if (httpWorkerGroup != null &amp;&amp; !httpWorkerGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1137">      httpWorkerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
+<span class="pc bpc" id="L1178" title="1 of 4 branches missed.">    if (httpWorkerGroup != null &amp;&amp; !httpWorkerGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1179">      httpWorkerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
     }
-<span class="pc bpc" id="L1139" title="1 of 4 branches missed.">    if (handlerGroup != null &amp;&amp; !handlerGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1140">      handlerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
+<span class="pc bpc" id="L1181" title="2 of 4 branches missed.">    if (handlerGroup != null &amp;&amp; !handlerGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1182">      handlerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
     }
-<span class="pc bpc" id="L1142" title="1 of 4 branches missed.">    if (subTaskGroup != null &amp;&amp; !subTaskGroup.isShuttingDown()) {</span>
-<span class="fc" id="L1143">      subTaskGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
+<span class="pc bpc" id="L1184" title="2 of 4 branches missed.">    if (subTaskGroup != null &amp;&amp; !subTaskGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1185">      subTaskGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
     }
-<span class="pc bpc" id="L1145" title="1 of 4 branches missed.">    if (retrieveRunnerGroup != null &amp;&amp; !retrieveRunnerGroup.isShutdown()) {</span>
-<span class="fc" id="L1146">      retrieveRunnerGroup.shutdownNow();</span>
+<span class="pc bpc" id="L1187" title="2 of 4 branches missed.">    if (serverGroup != null &amp;&amp; !serverGroup.isShuttingDown()) {</span>
+<span class="fc" id="L1188">      serverGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);</span>
     }
-<span class="fc" id="L1148">  }</span>
+<span class="pc bpc" id="L1190" title="1 of 4 branches missed.">    if (retrieveRunnerGroup != null &amp;&amp; !retrieveRunnerGroup.isShutdown()) {</span>
+<span class="fc" id="L1191">      retrieveRunnerGroup.shutdownNow();</span>
+    }
+<span class="fc" id="L1193">  }</span>
 
   /**
    * Stops the server
@@ -1153,40 +1198,48 @@ public class Configuration {
    * To be called after all other stuff are closed (channels, connections)
    */
   public void serverStop() {
-<span class="fc" id="L1156">    WaarpSslUtility.forceCloseAllSslChannels();</span>
-<span class="pc bpc" id="L1157" title="1 of 2 branches missed.">    if (internalRunner != null) {</span>
-<span class="fc" id="L1158">      internalRunner.stopInternalRunner();</span>
+<span class="fc" id="L1201">    WaarpSslUtility.forceCloseAllSslChannels();</span>
+<span class="fc bfc" id="L1202" title="All 2 branches covered.">    if (internalRunner != null) {</span>
+<span class="fc" id="L1203">      internalRunner.stopInternalRunner();</span>
     }
-<span class="pc bpc" id="L1160" title="1 of 2 branches missed.">    if (scheduledExecutorService != null) {</span>
-<span class="fc" id="L1161">      scheduledExecutorService.shutdown();</span>
+<span class="pc bpc" id="L1205" title="1 of 2 branches missed.">    if (scheduledExecutorService != null) {</span>
+<span class="fc" id="L1206">      scheduledExecutorService.shutdown();</span>
     }
-<span class="fc" id="L1163">    timerCleanLruCache.cancel();</span>
-<span class="fc" id="L1164">    timerStatistic.cancel();</span>
-<span class="pc bpc" id="L1165" title="1 of 2 branches missed.">    if (getAgentSnmp() != null) {</span>
-<span class="nc" id="L1166">      getAgentSnmp().stop();</span>
-<span class="nc" id="L1167">      setAgentSnmp(null);</span>
-<span class="fc bfc" id="L1168" title="All 2 branches covered.">    } else if (getMonitoring() != null) {</span>
-<span class="fc" id="L1169">      getMonitoring().releaseResources();</span>
-<span class="fc" id="L1170">      setMonitoring(null);</span>
+<span class="fc" id="L1208">    timerCleanLruCache.cancel();</span>
+<span class="fc" id="L1209">    timerStatistic.cancel();</span>
+<span class="fc bfc" id="L1210" title="All 2 branches covered.">    if (monitorExporterTransfers != null) {</span>
+      try {
+<span class="fc" id="L1212">        monitorExporterTransfers.close();</span>
+<span class="nc" id="L1213">      } catch (final IOException e) {</span>
+<span class="nc" id="L1214">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L1215">      }</span>
+<span class="fc" id="L1216">      monitorExporterTransfers = null;</span>
     }
-<span class="fc" id="L1172">    shutdownGracefully();</span>
-<span class="pc bpc" id="L1173" title="1 of 2 branches missed.">    if (execOtherWorker != null) {</span>
-<span class="pc bpc" id="L1174" title="1 of 2 branches missed.">      if (!DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L1175">        execOtherWorker.shutdownNow();</span>
+<span class="pc bpc" id="L1218" title="1 of 2 branches missed.">    if (getAgentSnmp() != null) {</span>
+<span class="nc" id="L1219">      getAgentSnmp().stop();</span>
+<span class="nc" id="L1220">      setAgentSnmp(null);</span>
+<span class="fc bfc" id="L1221" title="All 2 branches covered.">    } else if (getMonitoring() != null) {</span>
+<span class="fc" id="L1222">      getMonitoring().releaseResources();</span>
+<span class="fc" id="L1223">      setMonitoring(null);</span>
+    }
+<span class="fc" id="L1225">    shutdownGracefully();</span>
+<span class="pc bpc" id="L1226" title="1 of 2 branches missed.">    if (execOtherWorker != null) {</span>
+<span class="pc bpc" id="L1227" title="1 of 2 branches missed.">      if (!WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L1228">        execOtherWorker.shutdownNow();</span>
       }
     }
-<span class="pc bpc" id="L1178" title="1 of 2 branches missed.">    if (timerCloseOperations != null) {</span>
-<span class="fc" id="L1179">      timerCloseClosed.set(true);</span>
-<span class="fc" id="L1180">      timerCloseOperations.stop();</span>
+<span class="pc bpc" id="L1231" title="1 of 2 branches missed.">    if (timerCloseOperations != null) {</span>
+<span class="fc" id="L1232">      timerCloseClosed.set(true);</span>
+<span class="fc" id="L1233">      timerCloseOperations.stop();</span>
     }
-<span class="fc" id="L1182">  }</span>
+<span class="fc" id="L1235">  }</span>
 
   /**
    * To be called after all other stuff are closed for Client
    */
-  public void clientStop() {
-<span class="nc" id="L1188">    clientStop(true);</span>
-<span class="nc" id="L1189">  }</span>
+  public final void clientStop() {
+<span class="nc" id="L1241">    clientStop(true);</span>
+<span class="nc" id="L1242">  }</span>
 
   /**
    * To be called after all other stuff are closed for Client
@@ -1195,52 +1248,52 @@ public class Configuration {
    *     the
    *     end of the process
    */
-  public void clientStop(final boolean shutdownQuickly) {
-<span class="fc" id="L1199">    WaarpSslUtility.forceCloseAllSslChannels();</span>
-<span class="pc bpc" id="L1200" title="1 of 2 branches missed.">    if (!configuration.isServer()) {</span>
-<span class="nc" id="L1201">      ChannelUtils.stopLogger();</span>
+  public final void clientStop(final boolean shutdownQuickly) {
+<span class="fc" id="L1252">    WaarpSslUtility.forceCloseAllSslChannels();</span>
+<span class="fc bfc" id="L1253" title="All 2 branches covered.">    if (!configuration.isServer()) {</span>
+<span class="fc" id="L1254">      WaarpSystemUtil.stopLogger(false);</span>
     }
-<span class="pc bpc" id="L1203" title="1 of 2 branches missed.">    if (scheduledExecutorService != null) {</span>
-<span class="fc" id="L1204">      scheduledExecutorService.shutdown();</span>
+<span class="pc bpc" id="L1256" title="1 of 2 branches missed.">    if (scheduledExecutorService != null) {</span>
+<span class="fc" id="L1257">      scheduledExecutorService.shutdown();</span>
     }
-<span class="fc" id="L1206">    timerCleanLruCache.cancel();</span>
-<span class="fc" id="L1207">    timerStatistic.cancel();</span>
-<span class="fc bfc" id="L1208" title="All 2 branches covered.">    if (localTransaction != null) {</span>
-<span class="fc" id="L1209">      localTransaction.closeAll();</span>
-<span class="fc" id="L1210">      localTransaction = null;</span>
+<span class="fc" id="L1259">    timerCleanLruCache.cancel();</span>
+<span class="fc" id="L1260">    timerStatistic.cancel();</span>
+<span class="fc bfc" id="L1261" title="All 2 branches covered.">    if (localTransaction != null) {</span>
+<span class="fc" id="L1262">      localTransaction.closeAll();</span>
+<span class="fc" id="L1263">      localTransaction = null;</span>
     }
-<span class="fc bfc" id="L1212" title="All 2 branches covered.">    if (shutdownQuickly) {</span>
-<span class="fc" id="L1213">      shutdownQuickly();</span>
+<span class="fc bfc" id="L1265" title="All 2 branches covered.">    if (shutdownQuickly) {</span>
+<span class="fc" id="L1266">      shutdownQuickly();</span>
     } else {
-<span class="fc" id="L1215">      shutdownGracefully();</span>
+<span class="fc" id="L1268">      shutdownGracefully();</span>
     }
-<span class="pc bpc" id="L1217" title="1 of 2 branches missed.">    if (isUseLocalExec()) {</span>
-<span class="nc" id="L1218">      LocalExecClient.releaseResources();</span>
+<span class="pc bpc" id="L1270" title="1 of 2 branches missed.">    if (isUseLocalExec()) {</span>
+<span class="nc" id="L1271">      LocalExecClient.releaseResources();</span>
     }
-<span class="fc" id="L1220">    getR66BusinessFactory().releaseResources();</span>
-<span class="pc bpc" id="L1221" title="1 of 4 branches missed.">    if (timerCloseOperations != null &amp;&amp; !timerCloseClosed.get()) {</span>
-<span class="fc" id="L1222">      timerCloseClosed.set(true);</span>
-<span class="fc" id="L1223">      timerCloseOperations.stop();</span>
+<span class="fc" id="L1273">    getR66BusinessFactory().releaseResources();</span>
+<span class="pc bpc" id="L1274" title="1 of 4 branches missed.">    if (timerCloseOperations != null &amp;&amp; !timerCloseClosed.get()) {</span>
+<span class="fc" id="L1275">      timerCloseClosed.set(true);</span>
+<span class="fc" id="L1276">      timerCloseOperations.stop();</span>
     }
-<span class="fc" id="L1225">  }</span>
+<span class="fc" id="L1278">  }</span>
 
   /**
    * Try to reload the Commander
    *
    * @return True if reloaded, else in error
    */
-  public boolean reloadCommanderDelay() {
-<span class="pc bpc" id="L1233" title="1 of 2 branches missed.">    if (internalRunner != null) {</span>
+  public final boolean reloadCommanderDelay() {
+<span class="pc bpc" id="L1286" title="1 of 2 branches missed.">    if (internalRunner != null) {</span>
       try {
-<span class="fc" id="L1235">        internalRunner.reloadInternalRunner();</span>
-<span class="fc" id="L1236">        return true;</span>
-<span class="nc" id="L1237">      } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="fc" id="L1288">        internalRunner.reloadInternalRunner();</span>
+<span class="fc" id="L1289">        return true;</span>
+<span class="nc" id="L1290">      } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
         // nothing
-<span class="nc" id="L1239">      } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L1292">      } catch (final WaarpDatabaseSqlException ignored) {</span>
         // nothing
-<span class="nc" id="L1241">      }</span>
+<span class="nc" id="L1294">      }</span>
     }
-<span class="nc" id="L1243">    return false;</span>
+<span class="nc" id="L1296">    return false;</span>
   }
 
   /**
@@ -1250,21 +1303,34 @@ public class Configuration {
    * @param delay
    * @param unit
    */
-  public void launchInFixedDelay(final Thread thread, final long delay,
-                                 final TimeUnit unit) {
-<span class="nc" id="L1255">    scheduledExecutorService.schedule(thread, delay, unit);</span>
-<span class="nc" id="L1256">  }</span>
+  public final void launchInFixedDelay(final Thread thread, final long delay,
+                                       final TimeUnit unit) {
+<span class="nc" id="L1308">    scheduledExecutorService.schedule(thread, delay, unit);</span>
+<span class="nc" id="L1309">  }</span>
 
-  public void setupLimitHandler() {
-<span class="fc bfc" id="L1259" title="All 2 branches covered.">    if (globalTrafficShapingHandler != null) {</span>
-<span class="fc" id="L1260">      return;</span>
+  /**
+   * submit a task in a repeated delay
+   *
+   * @param thread
+   * @param delay
+   * @param unit
+   */
+  public final void scheduleWithFixedDelay(final Thread thread,
+                                           final long delay,
+                                           final TimeUnit unit) {
+<span class="fc" id="L1321">    scheduledExecutorService.scheduleWithFixedDelay(thread, delay, delay, unit);</span>
+<span class="fc" id="L1322">  }</span>
+
+  public final void setupLimitHandler() {
+<span class="fc bfc" id="L1325" title="All 2 branches covered.">    if (globalTrafficShapingHandler != null) {</span>
+<span class="fc" id="L1326">      return;</span>
     }
-<span class="fc" id="L1262">    globalTrafficShapingHandler = new GlobalTrafficShapingHandler(subTaskGroup,</span>
-<span class="fc" id="L1263">                                                                  getServerGlobalWriteLimit(),</span>
-<span class="fc" id="L1264">                                                                  getServerGlobalReadLimit(),</span>
-<span class="fc" id="L1265">                                                                  getDelayLimit());</span>
-<span class="fc" id="L1266">    getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);</span>
-<span class="fc" id="L1267">  }</span>
+<span class="fc" id="L1328">    globalTrafficShapingHandler = new GlobalTrafficShapingHandler(subTaskGroup,</span>
+<span class="fc" id="L1329">                                                                  getServerGlobalWriteLimit(),</span>
+<span class="fc" id="L1330">                                                                  getServerGlobalReadLimit(),</span>
+<span class="fc" id="L1331">                                                                  getDelayLimit());</span>
+<span class="fc" id="L1332">    getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);</span>
+<span class="fc" id="L1333">  }</span>
 
   /**
    * Reset the global monitor for bandwidth limitation and change future
@@ -1277,46 +1343,47 @@ public class Configuration {
    * @param readSessionLimit
    * @param delayLimit
    */
-  public void changeNetworkLimit(long writeGlobalLimit, long readGlobalLimit,
-                                 long writeSessionLimit, long readSessionLimit,
-                                 final long delayLimit) {
-<span class="fc bfc" id="L1283" title="All 2 branches covered.">    if (writeGlobalLimit &lt;= 0) {</span>
-<span class="fc" id="L1284">      writeGlobalLimit = 0;</span>
+  public final void changeNetworkLimit(long writeGlobalLimit,
+                                       long readGlobalLimit,
+                                       long writeSessionLimit,
+                                       long readSessionLimit,
+                                       final long delayLimit) {
+<span class="fc bfc" id="L1351" title="All 2 branches covered.">    if (writeGlobalLimit &lt;= 0) {</span>
+<span class="fc" id="L1352">      writeGlobalLimit = 0;</span>
     }
-<span class="fc bfc" id="L1286" title="All 2 branches covered.">    if (readGlobalLimit &lt;= 0) {</span>
-<span class="fc" id="L1287">      readGlobalLimit = 0;</span>
+<span class="fc bfc" id="L1354" title="All 2 branches covered.">    if (readGlobalLimit &lt;= 0) {</span>
+<span class="fc" id="L1355">      readGlobalLimit = 0;</span>
     }
-<span class="fc bfc" id="L1289" title="All 2 branches covered.">    if (writeSessionLimit &lt;= 0) {</span>
-<span class="fc" id="L1290">      writeSessionLimit = 0;</span>
+<span class="fc bfc" id="L1357" title="All 2 branches covered.">    if (writeSessionLimit &lt;= 0) {</span>
+<span class="fc" id="L1358">      writeSessionLimit = 0;</span>
     }
-<span class="fc bfc" id="L1292" title="All 2 branches covered.">    if (readSessionLimit &lt;= 0) {</span>
-<span class="fc" id="L1293">      readSessionLimit = 0;</span>
+<span class="fc bfc" id="L1360" title="All 2 branches covered.">    if (readSessionLimit &lt;= 0) {</span>
+<span class="fc" id="L1361">      readSessionLimit = 0;</span>
     }
-<span class="pc bpc" id="L1295" title="1 of 2 branches missed.">    if (writeGlobalLimit &lt; writeSessionLimit) {</span>
-<span class="nc" id="L1296">      writeSessionLimit = writeGlobalLimit;</span>
-<span class="nc" id="L1297">      logger.warn(&quot;Wanted global write limit is inferior &quot; +</span>
+<span class="pc bpc" id="L1363" title="1 of 2 branches missed.">    if (writeGlobalLimit &lt; writeSessionLimit) {</span>
+<span class="nc" id="L1364">      writeSessionLimit = writeGlobalLimit;</span>
+<span class="nc" id="L1365">      logger.warn(&quot;Wanted global write limit is inferior &quot; +</span>
                   &quot;to session limit. Will force session limit to {} &quot;,
-<span class="nc" id="L1299">                  writeGlobalLimit);</span>
+<span class="nc" id="L1367">                  writeGlobalLimit);</span>
     }
-<span class="pc bpc" id="L1301" title="1 of 2 branches missed.">    if (readGlobalLimit &lt; readSessionLimit) {</span>
-<span class="nc" id="L1302">      readSessionLimit = readGlobalLimit;</span>
-<span class="nc" id="L1303">      logger.warn(&quot;Wanted global read limit is inferior &quot; +</span>
+<span class="pc bpc" id="L1369" title="1 of 2 branches missed.">    if (readGlobalLimit &lt; readSessionLimit) {</span>
+<span class="nc" id="L1370">      readSessionLimit = readGlobalLimit;</span>
+<span class="nc" id="L1371">      logger.warn(&quot;Wanted global read limit is inferior &quot; +</span>
                   &quot;to session limit. Will force session limit to {} &quot;,
-<span class="nc" id="L1305">                  readGlobalLimit);</span>
+<span class="nc" id="L1373">                  readGlobalLimit);</span>
     }
-<span class="fc" id="L1307">    setServerGlobalReadLimit(readGlobalLimit);</span>
-<span class="fc" id="L1308">    setServerGlobalReadLimit(readGlobalLimit);</span>
-<span class="fc" id="L1309">    setServerGlobalWriteLimit(writeGlobalLimit);</span>
-<span class="fc" id="L1310">    setServerChannelReadLimit(readSessionLimit);</span>
-<span class="fc" id="L1311">    setServerChannelWriteLimit(writeSessionLimit);</span>
-<span class="fc" id="L1312">    setDelayLimit(delayLimit);</span>
-<span class="fc bfc" id="L1313" title="All 2 branches covered.">    if (globalTrafficShapingHandler != null) {</span>
-<span class="fc" id="L1314">      globalTrafficShapingHandler</span>
-<span class="fc" id="L1315">          .configure(writeGlobalLimit, readGlobalLimit, delayLimit);</span>
-<span class="fc" id="L1316">      logger.info(Messages.getString(&quot;Configuration.BandwidthChange&quot;),</span>
+<span class="fc" id="L1375">    setServerGlobalReadLimit(readGlobalLimit);</span>
+<span class="fc" id="L1376">    setServerGlobalWriteLimit(writeGlobalLimit);</span>
+<span class="fc" id="L1377">    setServerChannelReadLimit(readSessionLimit);</span>
+<span class="fc" id="L1378">    setServerChannelWriteLimit(writeSessionLimit);</span>
+<span class="fc" id="L1379">    setDelayLimit(delayLimit);</span>
+<span class="fc bfc" id="L1380" title="All 2 branches covered.">    if (globalTrafficShapingHandler != null) {</span>
+<span class="fc" id="L1381">      globalTrafficShapingHandler.configure(writeGlobalLimit, readGlobalLimit,</span>
+                                            delayLimit);
+<span class="fc" id="L1383">      logger.info(Messages.getString(&quot;Configuration.BandwidthChange&quot;),</span>
                   globalTrafficShapingHandler);
     }
-<span class="fc" id="L1319">  }</span>
+<span class="fc" id="L1386">  }</span>
 
   /**
    * Compute number of threads for both client and server from the real number
@@ -1324,119 +1391,119 @@ public class Configuration {
    * 1) if the value is less than 32 threads else (available +1).
    */
   public void computeNbThreads() {
-<span class="fc" id="L1327">    int nb = Runtime.getRuntime().availableProcessors() * 2 + 1;</span>
-<span class="pc bpc" id="L1328" title="1 of 2 branches missed.">    if (nb &gt; 32) {</span>
-<span class="nc" id="L1329">      nb = Runtime.getRuntime().availableProcessors() + 1;</span>
+<span class="fc" id="L1394">    int nb = Runtime.getRuntime().availableProcessors() * 2 + 1;</span>
+<span class="pc bpc" id="L1395" title="1 of 2 branches missed.">    if (nb &gt; 32) {</span>
+<span class="nc" id="L1396">      nb = Runtime.getRuntime().availableProcessors() + 1;</span>
     }
-<span class="pc bpc" id="L1331" title="3 of 4 branches missed.">    if (getServerThread() &lt;= 0 || getServerThread() &gt; nb) {</span>
-<span class="fc" id="L1332">      logger.info(Messages.getString(&quot;Configuration.ThreadNumberChange&quot;) +</span>
+<span class="pc bpc" id="L1398" title="3 of 4 branches missed.">    if (getServerThread() &lt;= 0 || getServerThread() &gt; nb) {</span>
+<span class="fc" id="L1399">      logger.info(Messages.getString(&quot;Configuration.ThreadNumberChange&quot;) +</span>
                   nb); //$NON-NLS-1$
-<span class="fc" id="L1334">      setServerThread(nb);</span>
-<span class="pc bpc" id="L1335" title="1 of 2 branches missed.">      if (getClientThread() &lt; getServerThread() * 10) {</span>
-<span class="fc" id="L1336">        setClientThread(getServerThread() * 10);</span>
+<span class="fc" id="L1401">      setServerThread(nb);</span>
+<span class="pc bpc" id="L1402" title="1 of 2 branches missed.">      if (getClientThread() &lt; getServerThread() * 10) {</span>
+<span class="fc" id="L1403">        setClientThread(getServerThread() * 10);</span>
       }
-<span class="nc bnc" id="L1338" title="All 2 branches missed.">    } else if (getClientThread() &lt; nb) {</span>
-<span class="nc" id="L1339">      setClientThread(nb);</span>
+<span class="nc bnc" id="L1405" title="All 2 branches missed.">    } else if (getClientThread() &lt; nb) {</span>
+<span class="nc" id="L1406">      setClientThread(nb);</span>
     }
-<span class="fc" id="L1341">  }</span>
+<span class="fc" id="L1408">  }</span>
 
   /**
    * @return an executorService to be used for any thread
    */
-  public ExecutorService getExecutorService() {
-<span class="fc" id="L1347">    return execOtherWorker;</span>
+  public final ExecutorService getExecutorService() {
+<span class="fc" id="L1414">    return execOtherWorker;</span>
   }
 
-  public Timer getTimerClose() {
-<span class="fc" id="L1351">    return timerCloseOperations;</span>
+  public final Timer getTimerClose() {
+<span class="fc" id="L1418">    return timerCloseOperations;</span>
   }
 
-  public boolean isTimerCloseReady() {
-<span class="pc bpc" id="L1355" title="1 of 2 branches missed.">    return !timerCloseClosed.get();</span>
+  public final boolean isTimerCloseReady() {
+<span class="pc bpc" id="L1422" title="1 of 2 branches missed.">    return !timerCloseClosed.get();</span>
   }
 
   /**
    * @return the globalTrafficShapingHandler
    */
-  public GlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
-<span class="fc" id="L1362">    return globalTrafficShapingHandler;</span>
+  public final GlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
+<span class="fc" id="L1429">    return globalTrafficShapingHandler;</span>
   }
 
   /**
    * @return the serverChannelGroup
    */
-  public ChannelGroup getServerChannelGroup() {
-<span class="fc" id="L1369">    return serverChannelGroup;</span>
+  public final ChannelGroup getServerChannelGroup() {
+<span class="fc" id="L1436">    return serverChannelGroup;</span>
   }
 
   /**
    * @return the server connected channels group
    */
-  public ChannelGroup getServerConnectedChannelGroup() {
-<span class="fc" id="L1376">    return serverConnectedChannelGroup;</span>
+  public final ChannelGroup getServerConnectedChannelGroup() {
+<span class="fc" id="L1443">    return serverConnectedChannelGroup;</span>
   }
 
   /**
    * @return the httpChannelGroup
    */
-  public ChannelGroup getHttpChannelGroup() {
-<span class="fc" id="L1383">    return httpChannelGroup;</span>
+  public final ChannelGroup getHttpChannelGroup() {
+<span class="fc" id="L1450">    return httpChannelGroup;</span>
   }
 
   /**
    * @return the serverPipelineExecutor
    */
-  public EventLoopGroup getNetworkWorkerGroup() {
-<span class="fc" id="L1390">    return workerGroup;</span>
+  public final EventLoopGroup getNetworkWorkerGroup() {
+<span class="fc" id="L1457">    return workerGroup;</span>
   }
 
   /**
    * @return the retrieveRunnerGroup
    */
-  public ThreadPoolRunnerExecutor getRetrieveRunnerGroup() {
-<span class="fc" id="L1397">    return retrieveRunnerGroup;</span>
+  public final ThreadPoolRunnerExecutor getRetrieveRunnerGroup() {
+<span class="fc" id="L1464">    return retrieveRunnerGroup;</span>
   }
 
   /**
    * @return the serverPipelineExecutor
    */
-  public EventLoopGroup getHandlerGroup() {
-<span class="fc" id="L1404">    return handlerGroup;</span>
+  public final EventLoopGroup getHandlerGroup() {
+<span class="fc" id="L1471">    return handlerGroup;</span>
   }
 
   /**
    * @return the subTaskGroup
    */
-  public EventLoopGroup getSubTaskGroup() {
-<span class="nc" id="L1411">    return subTaskGroup;</span>
+  public final EventLoopGroup getSubTaskGroup() {
+<span class="fc" id="L1478">    return subTaskGroup;</span>
   }
 
   /**
    * @return the httpWorkerGroup
    */
-  public EventLoopGroup getHttpWorkerGroup() {
-<span class="fc" id="L1418">    return httpWorkerGroup;</span>
+  public final EventLoopGroup getHttpWorkerGroup() {
+<span class="fc" id="L1485">    return httpWorkerGroup;</span>
   }
 
   /**
    * @return the localTransaction
    */
-  public LocalTransaction getLocalTransaction() {
-<span class="fc" id="L1425">    return localTransaction;</span>
+  public final LocalTransaction getLocalTransaction() {
+<span class="fc" id="L1492">    return localTransaction;</span>
   }
 
   /**
    * @return the FilesystemBasedFileParameterImpl
    */
   public static FilesystemBasedFileParameterImpl getFileParameter() {
-<span class="fc" id="L1432">    return fileParameter;</span>
+<span class="fc" id="L1499">    return fileParameter;</span>
   }
 
   /**
    * @return the SERVERADMINKEY
    */
-  public byte[] getServerAdminKey() {
-<span class="fc" id="L1439">    return serverAdminKey;</span>
+  public final byte[] getServerAdminKey() {
+<span class="fc" id="L1506">    return serverAdminKey;</span>
   }
 
   /**
@@ -1446,19 +1513,19 @@ public class Configuration {
    *
    * @return True if the key is valid (or any key is valid)
    */
-  public boolean isKeyValid(final byte[] newkey) {
-<span class="pc bpc" id="L1450" title="1 of 2 branches missed.">    if (newkey == null) {</span>
-<span class="nc" id="L1451">      return false;</span>
+  public final boolean isKeyValid(final byte[] newkey) {
+<span class="pc bpc" id="L1517" title="1 of 2 branches missed.">    if (newkey == null) {</span>
+<span class="nc" id="L1518">      return false;</span>
     }
-<span class="fc" id="L1453">    return FilesystemBasedDigest.equalPasswd(serverAdminKey, newkey);</span>
+<span class="fc" id="L1520">    return FilesystemBasedDigest.equalPasswd(serverAdminKey, newkey);</span>
   }
 
   /**
    * @param serverkey the SERVERADMINKEY to set
    */
-  public void setSERVERKEY(final byte[] serverkey) {
-<span class="fc" id="L1460">    serverAdminKey = serverkey;</span>
-<span class="fc" id="L1461">  }</span>
+  public final void setSERVERKEY(final byte[] serverkey) {
+<span class="fc" id="L1527">    serverAdminKey = serverkey;</span>
+<span class="fc" id="L1528">  }</span>
 
   /**
    * @param isSSL
@@ -1467,16 +1534,16 @@ public class Configuration {
    *
    * @throws OpenR66ProtocolNoSslException
    */
-  public String getHostId(final boolean isSSL)
+  public final String getHostId(final boolean isSSL)
       throws OpenR66ProtocolNoSslException {
-<span class="fc bfc" id="L1472" title="All 2 branches covered.">    if (isSSL) {</span>
-<span class="pc bpc" id="L1473" title="1 of 2 branches missed.">      if (getHostSslId() == null) {</span>
-<span class="nc" id="L1474">        throw new OpenR66ProtocolNoSslException(</span>
-<span class="nc" id="L1475">            Messages.getString(&quot;Configuration.ExcNoSSL&quot;)); //$NON-NLS-1$</span>
+<span class="fc bfc" id="L1539" title="All 2 branches covered.">    if (isSSL) {</span>
+<span class="pc bpc" id="L1540" title="1 of 2 branches missed.">      if (getHostSslId() == null) {</span>
+<span class="nc" id="L1541">        throw new OpenR66ProtocolNoSslException(</span>
+<span class="nc" id="L1542">            Messages.getString(&quot;Configuration.ExcNoSSL&quot;)); //$NON-NLS-1$</span>
       }
-<span class="fc" id="L1477">      return getHostSslId();</span>
+<span class="fc" id="L1544">      return getHostSslId();</span>
     } else {
-<span class="fc" id="L1479">      return getHostId();</span>
+<span class="fc" id="L1546">      return getHostId();</span>
     }
   }
 
@@ -1487,13 +1554,13 @@ public class Configuration {
    *
    * @throws WaarpDatabaseException
    */
-  public String getHostId(final String remoteHost)
+  public final String getHostId(final String remoteHost)
       throws WaarpDatabaseException {
-<span class="fc" id="L1492">    final DbHostAuth dbHostAuth = new DbHostAuth(remoteHost);</span>
+<span class="fc" id="L1559">    final DbHostAuth dbHostAuth = new DbHostAuth(remoteHost);</span>
     try {
-<span class="fc" id="L1494">      return configuration.getHostId(dbHostAuth.isSsl());</span>
-<span class="nc" id="L1495">    } catch (final OpenR66ProtocolNoSslException e) {</span>
-<span class="nc" id="L1496">      throw new WaarpDatabaseException(e);</span>
+<span class="fc" id="L1561">      return configuration.getHostId(dbHostAuth.isSsl());</span>
+<span class="nc" id="L1562">    } catch (final OpenR66ProtocolNoSslException e) {</span>
+<span class="nc" id="L1563">      throw new WaarpDatabaseException(e);</span>
     }
   }
 
@@ -1501,979 +1568,988 @@ public class Configuration {
 
     @Override
     public void run() {
-<span class="nc" id="L1504">      logger.warn(hashStatus());</span>
-<span class="nc" id="L1505">    }</span>
+<span class="nc" id="L1571">      logger.warn(hashStatus());</span>
+<span class="nc" id="L1572">    }</span>
 
   }
 
   public static String hashStatus() {
-<span class="nc" id="L1510">    String result = &quot;\n&quot;;</span>
+<span class="nc" id="L1577">    String result = &quot;\n&quot;;</span>
     try {
-<span class="nc" id="L1512">      result += configuration.localTransaction.hashStatus() + '\n';</span>
-<span class="nc" id="L1513">    } catch (final Exception e) {</span>
-<span class="nc" id="L1514">      logger.warn(ISSUE_WHILE_DEBUGGING, e);</span>
-<span class="nc" id="L1515">    }</span>
+<span class="nc" id="L1579">      result += configuration.localTransaction.hashStatus() + '\n';</span>
+<span class="nc" id="L1580">    } catch (final Exception e) {</span>
+<span class="nc" id="L1581">      logger.warn(ISSUE_WHILE_DEBUGGING + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1582">    }</span>
     try {
-<span class="nc" id="L1517">      result += ClientRunner.hashStatus() + '\n';</span>
-<span class="nc" id="L1518">    } catch (final Exception e) {</span>
-<span class="nc" id="L1519">      logger.warn(ISSUE_WHILE_DEBUGGING, e);</span>
-<span class="nc" id="L1520">    }</span>
+<span class="nc" id="L1584">      result += ClientRunner.hashStatus() + '\n';</span>
+<span class="nc" id="L1585">    } catch (final Exception e) {</span>
+<span class="nc" id="L1586">      logger.warn(ISSUE_WHILE_DEBUGGING + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1587">    }</span>
     try {
-<span class="nc" id="L1522">      result += DbTaskRunner.hashStatus() + '\n';</span>
-<span class="nc" id="L1523">    } catch (final Exception e) {</span>
-<span class="nc" id="L1524">      logger.warn(ISSUE_WHILE_DEBUGGING, e);</span>
-<span class="nc" id="L1525">    }</span>
+<span class="nc" id="L1589">      result += DbTaskRunner.hashStatus() + '\n';</span>
+<span class="nc" id="L1590">    } catch (final Exception e) {</span>
+<span class="nc" id="L1591">      logger.warn(ISSUE_WHILE_DEBUGGING + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1592">    }</span>
     try {
-<span class="nc" id="L1527">      result += HttpSslHandler.hashStatus() + '\n';</span>
-<span class="nc" id="L1528">    } catch (final Exception e) {</span>
-<span class="nc" id="L1529">      logger.warn(ISSUE_WHILE_DEBUGGING, e);</span>
-<span class="nc" id="L1530">    }</span>
+<span class="nc" id="L1594">      result += HttpSslHandler.hashStatus() + '\n';</span>
+<span class="nc" id="L1595">    } catch (final Exception e) {</span>
+<span class="nc" id="L1596">      logger.warn(ISSUE_WHILE_DEBUGGING + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1597">    }</span>
     try {
-<span class="nc" id="L1532">      result += NetworkTransaction.hashStatus();</span>
-<span class="nc" id="L1533">    } catch (final Exception e) {</span>
-<span class="nc" id="L1534">      logger.warn(ISSUE_WHILE_DEBUGGING, e);</span>
-<span class="nc" id="L1535">    }</span>
-<span class="nc" id="L1536">    return result;</span>
+<span class="nc" id="L1599">      result += NetworkTransaction.hashStatus();</span>
+<span class="nc" id="L1600">    } catch (final Exception e) {</span>
+<span class="nc" id="L1601">      logger.warn(ISSUE_WHILE_DEBUGGING + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1602">    }</span>
+<span class="nc" id="L1603">    return result;</span>
   }
 
   /**
    * @return the nBDBSESSION
    */
   public static int getNbDbSession() {
-<span class="fc" id="L1543">    return nbDbSession;</span>
+<span class="fc" id="L1610">    return nbDbSession;</span>
   }
 
   /**
    * @param nBDBSESSION the nBDBSESSION to set
    */
   public static void setNbDbSession(final int nBDBSESSION) {
-<span class="fc" id="L1550">    nbDbSession = nBDBSESSION;</span>
-<span class="fc" id="L1551">  }</span>
+<span class="fc" id="L1617">    nbDbSession = nBDBSESSION;</span>
+<span class="fc" id="L1618">  }</span>
 
   /**
    * @return the rANKRESTART
    */
   public static int getRankRestart() {
-<span class="fc" id="L1557">    return rankRestart;</span>
+<span class="fc" id="L1624">    return rankRestart;</span>
   }
 
   /**
    * @param rANKRESTART the rANKRESTART to set
    */
   public static void setRankRestart(final int rANKRESTART) {
-<span class="fc" id="L1564">    rankRestart = rANKRESTART;</span>
-<span class="fc" id="L1565">  }</span>
+<span class="fc" id="L1631">    rankRestart = rANKRESTART;</span>
+<span class="fc" id="L1632">  }</span>
 
   /**
    * @return the iSUNIX
    */
   public static boolean isIsUnix() {
-<span class="nc" id="L1571">    return isUnix;</span>
+<span class="nc" id="L1638">    return isUnix;</span>
   }
 
   /**
    * @param iSUNIX the iSUNIX to set
    */
   public static void setIsUnix(final boolean iSUNIX) {
-<span class="nc" id="L1578">    isUnix = iSUNIX;</span>
-<span class="nc" id="L1579">  }</span>
+<span class="nc" id="L1645">    isUnix = iSUNIX;</span>
+<span class="nc" id="L1646">  }</span>
 
   /**
    * @return the r66BusinessFactory
    */
-  public R66BusinessFactoryInterface getR66BusinessFactory() {
-<span class="fc" id="L1585">    return r66BusinessFactory;</span>
+  public final R66BusinessFactoryInterface getR66BusinessFactory() {
+<span class="fc" id="L1652">    return r66BusinessFactory;</span>
   }
 
   /**
    * @return the extendedProtocol
    */
-  public boolean isExtendedProtocol() {
-<span class="fc" id="L1592">    return extendedProtocol;</span>
+  public final boolean isExtendedProtocol() {
+<span class="fc" id="L1659">    return extendedProtocol;</span>
   }
 
   /**
    * @param extendedProtocol the extendedProtocol to set
    */
-  public void setExtendedProtocol(final boolean extendedProtocol) {
-<span class="fc" id="L1599">    this.extendedProtocol = extendedProtocol;</span>
-<span class="fc" id="L1600">  }</span>
+  public final void setExtendedProtocol(final boolean extendedProtocol) {
+<span class="fc" id="L1666">    this.extendedProtocol = extendedProtocol;</span>
+<span class="fc" id="L1667">  }</span>
 
   /**
    * @return the globalDigest
    */
-  public boolean isGlobalDigest() {
-<span class="fc" id="L1606">    return globalDigest;</span>
+  public final boolean isGlobalDigest() {
+<span class="fc" id="L1673">    return globalDigest;</span>
   }
 
   /**
    * @param globalDigest the globalDigest to set
    */
-  public void setGlobalDigest(final boolean globalDigest) {
-<span class="nc" id="L1613">    this.globalDigest = globalDigest;</span>
-<span class="nc" id="L1614">  }</span>
+  public final void setGlobalDigest(final boolean globalDigest) {
+<span class="nc" id="L1680">    this.globalDigest = globalDigest;</span>
+<span class="nc" id="L1681">  }</span>
 
   /**
    * @return the localDigest
    */
-  public boolean isLocalDigest() {
-<span class="fc" id="L1620">    return localDigest;</span>
+  public final boolean isLocalDigest() {
+<span class="fc" id="L1687">    return localDigest;</span>
   }
 
   /**
    * @param localDigest the localDigest to set
    */
-  public void setLocalDigest(final boolean localDigest) {
-<span class="nc" id="L1627">    this.localDigest = localDigest;</span>
-<span class="nc" id="L1628">  }</span>
+  public final void setLocalDigest(final boolean localDigest) {
+<span class="nc" id="L1694">    this.localDigest = localDigest;</span>
+<span class="nc" id="L1695">  }</span>
 
   /**
    * @return the businessWhiteSet
    */
-  public Set&lt;String&gt; getBusinessWhiteSet() {
-<span class="fc" id="L1634">    return businessWhiteSet;</span>
+  public final Set&lt;String&gt; getBusinessWhiteSet() {
+<span class="fc" id="L1701">    return businessWhiteSet;</span>
   }
 
   /**
    * @return the roles
    */
-  public Map&lt;String, RoleDefault&gt; getRoles() {
-<span class="fc" id="L1641">    return roles;</span>
+  public final Map&lt;String, RoleDefault&gt; getRoles() {
+<span class="fc" id="L1708">    return roles;</span>
   }
 
   /**
    * @return the aliases
    */
-  public Map&lt;String, String&gt; getAliases() {
-<span class="fc" id="L1648">    return aliases;</span>
+  public final Map&lt;String, String&gt; getAliases() {
+<span class="fc" id="L1715">    return aliases;</span>
   }
 
   /**
    * @return the reverseAliases
    */
-  public Map&lt;String, String[]&gt; getReverseAliases() {
-<span class="fc" id="L1655">    return reverseAliases;</span>
+  public final Map&lt;String, String[]&gt; getReverseAliases() {
+<span class="fc" id="L1722">    return reverseAliases;</span>
   }
 
   /**
    * @return the versions
    */
-  public ConcurrentMap&lt;String, PartnerConfiguration&gt; getVersions() {
-<span class="fc" id="L1662">    return versions;</span>
+  public final ConcurrentMap&lt;String, PartnerConfiguration&gt; getVersions() {
+<span class="fc" id="L1729">    return versions;</span>
   }
 
   /**
    * @return the hOST_ID
    */
-  public String getHostId() {
-<span class="fc" id="L1669">    return hostId;</span>
+  public final String getHostId() {
+<span class="fc" id="L1736">    return hostId;</span>
   }
 
   /**
    * @param hostID the hOST_ID to set
    */
-  public void setHostId(final String hostID) {
-<span class="fc" id="L1676">    hostId = hostID;</span>
-<span class="fc" id="L1677">    WaarpLoggerFactory.setLocalName(hostId);</span>
-<span class="fc" id="L1678">  }</span>
+  public final void setHostId(final String hostID) {
+<span class="fc" id="L1743">    hostId = hostID;</span>
+<span class="fc" id="L1744">    WaarpLoggerFactory.setLocalName(hostId);</span>
+<span class="fc" id="L1745">  }</span>
 
   /**
    * @return the hOST_SSLID
    */
-  public String getHostSslId() {
-<span class="fc" id="L1684">    return hostSslId;</span>
+  public final String getHostSslId() {
+<span class="fc" id="L1751">    return hostSslId;</span>
   }
 
   /**
    * @param hostSSLID the hOST_SSLID to set
    */
-  public void setHostSslId(final String hostSSLID) {
-<span class="fc" id="L1691">    hostSslId = hostSSLID;</span>
-<span class="fc" id="L1692">  }</span>
+  public final void setHostSslId(final String hostSSLID) {
+<span class="fc" id="L1758">    hostSslId = hostSSLID;</span>
+<span class="fc" id="L1759">  }</span>
 
   /**
    * @return the aDMINNAME
    */
-  public String getAdminName() {
-<span class="fc" id="L1698">    return adminName;</span>
+  public final String getAdminName() {
+<span class="fc" id="L1765">    return adminName;</span>
   }
 
   /**
    * @param aDMINNAME the aDMINNAME to set
    */
-  public void setAdminName(final String aDMINNAME) {
-<span class="fc" id="L1705">    adminName = aDMINNAME;</span>
-<span class="fc" id="L1706">  }</span>
+  public final void setAdminName(final String aDMINNAME) {
+<span class="fc" id="L1772">    adminName = aDMINNAME;</span>
+<span class="fc" id="L1773">  }</span>
 
   /**
    * @return the serverKeyFile
    */
-  public String getServerKeyFile() {
-<span class="nc" id="L1712">    return serverKeyFile;</span>
+  public final String getServerKeyFile() {
+<span class="nc" id="L1779">    return serverKeyFile;</span>
   }
 
   /**
    * @param serverKeyFile the serverKeyFile to set
    */
-  public void setServerKeyFile(final String serverKeyFile) {
-<span class="nc" id="L1719">    this.serverKeyFile = serverKeyFile;</span>
-<span class="nc" id="L1720">  }</span>
+  public final void setServerKeyFile(final String serverKeyFile) {
+<span class="nc" id="L1786">    this.serverKeyFile = serverKeyFile;</span>
+<span class="nc" id="L1787">  }</span>
 
   /**
    * @return the hOST_AUTH
    */
-  public DbHostAuth getHostAuth() {
-<span class="fc" id="L1726">    return hostAuth;</span>
+  public final DbHostAuth getHostAuth() {
+<span class="fc" id="L1793">    return hostAuth;</span>
   }
 
   /**
    * @param hostAUTH the hOST_AUTH to set
    */
-  public void setHostAuth(final DbHostAuth hostAUTH) {
-<span class="fc" id="L1733">    hostAuth = hostAUTH;</span>
-<span class="fc" id="L1734">  }</span>
+  public final void setHostAuth(final DbHostAuth hostAUTH) {
+<span class="fc" id="L1800">    hostAuth = hostAUTH;</span>
+<span class="fc" id="L1801">  }</span>
 
   /**
    * @return the hOST_SSLAUTH
    */
-  public DbHostAuth getHostSslAuth() {
-<span class="fc" id="L1740">    return hostSslAuth;</span>
+  public final DbHostAuth getHostSslAuth() {
+<span class="fc" id="L1807">    return hostSslAuth;</span>
   }
 
   /**
    * @param hostSSLAUTH the hOST_SSLAUTH to set
    */
-  public void setHostSslAuth(final DbHostAuth hostSSLAUTH) {
-<span class="fc" id="L1747">    hostSslAuth = hostSSLAUTH;</span>
-<span class="fc" id="L1748">  }</span>
+  public final void setHostSslAuth(final DbHostAuth hostSSLAUTH) {
+<span class="fc" id="L1814">    hostSslAuth = hostSSLAUTH;</span>
+<span class="fc" id="L1815">  }</span>
 
-  public String getAuthFile() {
-<span class="nc" id="L1751">    return authFile;</span>
+  public final String getAuthFile() {
+<span class="fc" id="L1818">    return authFile;</span>
   }
 
-  public void setAuthFile(final String file) {
-<span class="fc" id="L1755">    authFile = file;</span>
-<span class="fc" id="L1756">  }</span>
+  public final void setAuthFile(final String file) {
+<span class="fc" id="L1822">    authFile = file;</span>
+<span class="fc" id="L1823">  }</span>
 
   /**
    * @return the sERVER_THREAD
    */
-  public int getServerThread() {
-<span class="fc" id="L1762">    return serverThread;</span>
+  public final int getServerThread() {
+<span class="fc" id="L1829">    return serverThread;</span>
   }
 
   /**
    * @param serverTHREAD the sERVER_THREAD to set
    */
-  public void setServerThread(final int serverTHREAD) {
-<span class="fc" id="L1769">    serverThread = serverTHREAD;</span>
-<span class="fc" id="L1770">  }</span>
+  public final void setServerThread(final int serverTHREAD) {
+<span class="fc" id="L1836">    serverThread = serverTHREAD;</span>
+<span class="fc" id="L1837">  }</span>
 
   /**
    * @return the cLIENT_THREAD
    */
-  public int getClientThread() {
-<span class="fc" id="L1776">    return clientThread;</span>
+  public final int getClientThread() {
+<span class="fc" id="L1843">    return clientThread;</span>
   }
 
   /**
    * @param clientTHREAD the cLIENT_THREAD to set
    */
-  public void setClientThread(final int clientTHREAD) {
-<span class="fc" id="L1783">    clientThread = clientTHREAD;</span>
-<span class="fc" id="L1784">  }</span>
+  public final void setClientThread(final int clientTHREAD) {
+<span class="pc bpc" id="L1850" title="1 of 2 branches missed.">    if (clientTHREAD &gt; Commander.LIMIT_MAX_SUBMIT) {</span>
+<span class="nc" id="L1851">      clientThread = Commander.LIMIT_MAX_SUBMIT;</span>
+    } else {
+<span class="fc" id="L1853">      clientThread = clientTHREAD;</span>
+    }
+<span class="fc" id="L1855">  }</span>
 
   /**
    * @return the dEFAULT_SESSION_LIMIT
    */
-  public long getDEFAULT_SESSION_LIMIT() {
-<span class="fc" id="L1790">    return DEFAULT_SESSION_LIMIT;</span>
+  public final long getDEFAULT_SESSION_LIMIT() {
+<span class="fc" id="L1861">    return DEFAULT_SESSION_LIMIT;</span>
   }
 
   /**
    * @return the dEFAULT_GLOBAL_LIMIT
    */
-  public long getDEFAULT_GLOBAL_LIMIT() {
-<span class="fc" id="L1797">    return DEFAULT_GLOBAL_LIMIT;</span>
+  public final long getDEFAULT_GLOBAL_LIMIT() {
+<span class="fc" id="L1868">    return DEFAULT_GLOBAL_LIMIT;</span>
   }
 
   /**
    * @return the sERVER_PORT
    */
-  public int getServerPort() {
-<span class="fc" id="L1804">    return serverPort;</span>
+  public final int getServerPort() {
+<span class="fc" id="L1875">    return serverPort;</span>
   }
 
   /**
    * @param serverPORT the sERVER_PORT to set
    */
-  public void setServerPort(final int serverPORT) {
-<span class="fc" id="L1811">    serverPort = serverPORT;</span>
-<span class="fc" id="L1812">  }</span>
+  public final void setServerPort(final int serverPORT) {
+<span class="fc" id="L1882">    serverPort = serverPORT;</span>
+<span class="fc" id="L1883">  }</span>
 
   /**
    * @return the sERVER_SSLPORT
    */
-  public int getServerSslPort() {
-<span class="fc" id="L1818">    return serverSslPort;</span>
+  public final int getServerSslPort() {
+<span class="fc" id="L1889">    return serverSslPort;</span>
   }
 
   /**
    * @param serverSSLPORT the sERVER_SSLPORT to set
    */
-  public void setServerSslPort(final int serverSSLPORT) {
-<span class="fc" id="L1825">    serverSslPort = serverSSLPORT;</span>
-<span class="fc" id="L1826">  }</span>
+  public final void setServerSslPort(final int serverSSLPORT) {
+<span class="fc" id="L1896">    serverSslPort = serverSSLPORT;</span>
+<span class="fc" id="L1897">  }</span>
 
   /**
    * @return the sERVER_HTTPPORT
    */
-  public int getServerHttpport() {
-<span class="fc" id="L1832">    return serverHttpport;</span>
+  public final int getServerHttpport() {
+<span class="fc" id="L1903">    return serverHttpport;</span>
   }
 
   /**
    * @param serverHTTPPORT the sERVER_HTTPPORT to set
    */
-  public void setServerHttpport(final int serverHTTPPORT) {
-<span class="fc" id="L1839">    serverHttpport = serverHTTPPORT;</span>
-<span class="fc" id="L1840">  }</span>
+  public final void setServerHttpport(final int serverHTTPPORT) {
+<span class="fc" id="L1910">    serverHttpport = serverHTTPPORT;</span>
+<span class="fc" id="L1911">  }</span>
 
   /**
    * @return the sERVER_HTTPSPORT
    */
-  public int getServerHttpsPort() {
-<span class="fc" id="L1846">    return serverHttpsPort;</span>
+  public final int getServerHttpsPort() {
+<span class="fc" id="L1917">    return serverHttpsPort;</span>
   }
 
   /**
    * @param serverHTTPSPORT the sERVER_HTTPSPORT to set
    */
-  public void setServerHttpsPort(final int serverHTTPSPORT) {
-<span class="fc" id="L1853">    serverHttpsPort = serverHTTPSPORT;</span>
-<span class="fc" id="L1854">  }</span>
+  public final void setServerHttpsPort(final int serverHTTPSPORT) {
+<span class="fc" id="L1924">    serverHttpsPort = serverHTTPSPORT;</span>
+<span class="fc" id="L1925">  }</span>
 
   /**
    * @return the sERVER_Addresses
    */
-  public String[] getServerIpsAddresses() {
-<span class="fc" id="L1860">    return serverAddresses;</span>
+  public final String[] getServerIpsAddresses() {
+<span class="fc" id="L1931">    return serverAddresses;</span>
   }
 
   /**
    * @param serverAddresses the sERVER_Addresses to set
    */
-  public void setServerAddresses(final String[] serverAddresses) {
-<span class="fc" id="L1867">    this.serverAddresses = serverAddresses;</span>
-<span class="fc" id="L1868">  }</span>
+  public final void setServerAddresses(final String[] serverAddresses) {
+<span class="fc" id="L1938">    this.serverAddresses = serverAddresses;</span>
+<span class="fc" id="L1939">  }</span>
 
   /**
    * @return the sERVER_SSLAddresses
    */
-  public String[] getServerSslAddresses() {
-<span class="fc" id="L1874">    return serverSslAddresses;</span>
+  public final String[] getServerSslAddresses() {
+<span class="fc" id="L1945">    return serverSslAddresses;</span>
   }
 
   /**
    * @param serverSSLAddresses the sERVER_SSLIAddresses to set
    */
-  public void setServerSslAddresses(final String[] serverSSLAddresses) {
-<span class="fc" id="L1881">    serverSslAddresses = serverSSLAddresses;</span>
-<span class="fc" id="L1882">  }</span>
+  public final void setServerSslAddresses(final String[] serverSSLAddresses) {
+<span class="fc" id="L1952">    serverSslAddresses = serverSSLAddresses;</span>
+<span class="fc" id="L1953">  }</span>
 
   /**
    * @return the sERVER_HTTPAddresses
    */
-  public String[] getServerHttpAddresses() {
-<span class="fc" id="L1888">    return serverHttpAddresses;</span>
+  public final String[] getServerHttpAddresses() {
+<span class="fc" id="L1959">    return serverHttpAddresses;</span>
   }
 
   /**
    * @param serverHTTPAddresses the sERVER_HTTPAddresses to set
    */
-  public void setServerHttpAddresses(final String[] serverHTTPAddresses) {
-<span class="fc" id="L1895">    serverHttpAddresses = serverHTTPAddresses;</span>
-<span class="fc" id="L1896">  }</span>
+  public final void setServerHttpAddresses(final String[] serverHTTPAddresses) {
+<span class="fc" id="L1966">    serverHttpAddresses = serverHTTPAddresses;</span>
+<span class="fc" id="L1967">  }</span>
 
   /**
    * @return the sERVER_HTTPSAddresses
    */
-  public String[] getServerHttpsAddresses() {
-<span class="fc" id="L1902">    return serverHttpsAddresses;</span>
+  public final String[] getServerHttpsAddresses() {
+<span class="fc" id="L1973">    return serverHttpsAddresses;</span>
   }
 
   /**
    * @param serverHTTPSAddresses the sERVER_HTTPSAddresses to set
    */
-  public void setServerHttpsAddresses(final String[] serverHTTPSAddresses) {
-<span class="fc" id="L1909">    serverHttpsAddresses = serverHTTPSAddresses;</span>
-<span class="fc" id="L1910">  }</span>
+  public final void setServerHttpsAddresses(
+      final String[] serverHTTPSAddresses) {
+<span class="fc" id="L1981">    serverHttpsAddresses = serverHTTPSAddresses;</span>
+<span class="fc" id="L1982">  }</span>
 
   /**
    * @return the tIMEOUTCON
    */
-  public long getTimeoutCon() {
-<span class="fc" id="L1916">    return timeoutCon;</span>
+  public final long getTimeoutCon() {
+<span class="fc" id="L1988">    return timeoutCon;</span>
   }
 
   /**
    * @param timeoutCON the timeoutCON to set
    */
-  public void setTimeoutCon(final long timeoutCON) {
-<span class="fc" id="L1923">    timeoutCon = timeoutCON;</span>
-<span class="fc" id="L1924">  }</span>
+  public final void setTimeoutCon(final long timeoutCON) {
+<span class="fc" id="L1995">    timeoutCon = timeoutCON;</span>
+<span class="fc" id="L1996">  }</span>
 
   /**
    * @return the bLOCKSIZE
    */
-  public int getBlockSize() {
-<span class="fc" id="L1930">    return blockSize;</span>
+  public final int getBlockSize() {
+<span class="fc" id="L2002">    return blockSize;</span>
   }
 
   /**
    * @param blockSIZE the bLOCKSIZE to set
    */
-  public void setBlockSize(final int blockSIZE) {
-<span class="fc" id="L1937">    blockSize = blockSIZE;</span>
-<span class="fc" id="L1938">  }</span>
+  public final void setBlockSize(final int blockSIZE) {
+<span class="fc" id="L2009">    blockSize = blockSIZE;</span>
+<span class="fc" id="L2010">  }</span>
 
   /**
    * @return the maxGlobalMemory
    */
-  public int getMaxGlobalMemory() {
-<span class="fc" id="L1944">    return maxGlobalMemory;</span>
+  public final int getMaxGlobalMemory() {
+<span class="fc" id="L2016">    return maxGlobalMemory;</span>
   }
 
   /**
    * @param maxGlobalMemory the maxGlobalMemory to set
    */
-  public void setMaxGlobalMemory(final int maxGlobalMemory) {
-<span class="fc" id="L1951">    this.maxGlobalMemory = maxGlobalMemory;</span>
-<span class="fc" id="L1952">  }</span>
+  public final void setMaxGlobalMemory(final int maxGlobalMemory) {
+<span class="fc" id="L2023">    this.maxGlobalMemory = maxGlobalMemory;</span>
+<span class="fc" id="L2024">  }</span>
 
   /**
    * @return the restConfigurations
    */
-  public List&lt;RestConfiguration&gt; getRestConfigurations() {
-<span class="fc" id="L1958">    return restConfigurations;</span>
+  public final List&lt;RestConfiguration&gt; getRestConfigurations() {
+<span class="fc" id="L2030">    return restConfigurations;</span>
   }
 
   /**
    * @return the baseDirectory
    */
-  public String getBaseDirectory() {
-<span class="fc" id="L1965">    return baseDirectory;</span>
+  public final String getBaseDirectory() {
+<span class="fc" id="L2037">    return baseDirectory;</span>
   }
 
   /**
    * @param baseDirectory the baseDirectory to set
    */
-  public void setBaseDirectory(final String baseDirectory) {
-<span class="fc" id="L1972">    this.baseDirectory = baseDirectory;</span>
-<span class="fc" id="L1973">  }</span>
+  public final void setBaseDirectory(final String baseDirectory) {
+<span class="fc" id="L2044">    this.baseDirectory = baseDirectory;</span>
+<span class="fc" id="L2045">  }</span>
 
   /**
    * @return the inPath
    */
-  public String getInPath() {
-<span class="fc" id="L1979">    return inPath;</span>
+  public final String getInPath() {
+<span class="fc" id="L2051">    return inPath;</span>
   }
 
   /**
    * @param inPath the inPath to set
    */
-  public void setInPath(final String inPath) {
-<span class="fc" id="L1986">    this.inPath = inPath;</span>
-<span class="fc" id="L1987">  }</span>
+  public final void setInPath(final String inPath) {
+<span class="fc" id="L2058">    this.inPath = inPath;</span>
+<span class="fc" id="L2059">  }</span>
 
   /**
    * @return the outPath
    */
-  public String getOutPath() {
-<span class="fc" id="L1993">    return outPath;</span>
+  public final String getOutPath() {
+<span class="fc" id="L2065">    return outPath;</span>
   }
 
   /**
    * @param outPath the outPath to set
    */
-  public void setOutPath(final String outPath) {
-<span class="fc" id="L2000">    this.outPath = outPath;</span>
-<span class="fc" id="L2001">  }</span>
+  public final void setOutPath(final String outPath) {
+<span class="fc" id="L2072">    this.outPath = outPath;</span>
+<span class="fc" id="L2073">  }</span>
 
   /**
    * @return the archivePath
    */
-  public String getArchivePath() {
-<span class="fc" id="L2007">    return archivePath;</span>
+  public final String getArchivePath() {
+<span class="fc" id="L2079">    return archivePath;</span>
   }
 
   /**
    * @param archivePath the archivePath to set
    */
-  public void setArchivePath(final String archivePath) {
-<span class="fc" id="L2014">    this.archivePath = archivePath;</span>
-<span class="fc" id="L2015">  }</span>
+  public final void setArchivePath(final String archivePath) {
+<span class="fc" id="L2086">    this.archivePath = archivePath;</span>
+<span class="fc" id="L2087">  }</span>
 
   /**
    * @return the workingPath
    */
-  public String getWorkingPath() {
-<span class="fc" id="L2021">    return workingPath;</span>
+  public final String getWorkingPath() {
+<span class="fc" id="L2093">    return workingPath;</span>
   }
 
   /**
    * @param workingPath the workingPath to set
    */
-  public void setWorkingPath(final String workingPath) {
-<span class="fc" id="L2028">    this.workingPath = workingPath;</span>
-<span class="fc" id="L2029">  }</span>
+  public final void setWorkingPath(final String workingPath) {
+<span class="fc" id="L2100">    this.workingPath = workingPath;</span>
+<span class="fc" id="L2101">  }</span>
 
   /**
    * @return the configPath
    */
-  public String getConfigPath() {
-<span class="fc" id="L2035">    return configPath;</span>
+  public final String getConfigPath() {
+<span class="fc" id="L2107">    return configPath;</span>
   }
 
   /**
    * @param configPath the configPath to set
    */
-  public void setConfigPath(final String configPath) {
-<span class="fc" id="L2042">    this.configPath = configPath;</span>
-<span class="fc" id="L2043">  }</span>
+  public final void setConfigPath(final String configPath) {
+<span class="fc" id="L2114">    this.configPath = configPath;</span>
+<span class="fc" id="L2115">  }</span>
 
   /**
    * @return the httpBasePath
    */
-  public String getHttpBasePath() {
-<span class="fc" id="L2049">    return httpBasePath;</span>
+  public final String getHttpBasePath() {
+<span class="fc" id="L2121">    return httpBasePath;</span>
   }
 
   /**
    * @param httpBasePath the httpBasePath to set
    */
-  public void setHttpBasePath(final String httpBasePath) {
-<span class="fc" id="L2056">    this.httpBasePath = httpBasePath;</span>
-<span class="fc" id="L2057">  }</span>
+  public final void setHttpBasePath(final String httpBasePath) {
+<span class="fc" id="L2128">    this.httpBasePath = httpBasePath;</span>
+<span class="fc" id="L2129">  }</span>
 
   /**
    * @return the httpModel
    */
-  public int getHttpModel() {
-<span class="fc" id="L2063">    return httpModel;</span>
+  public final int getHttpModel() {
+<span class="fc" id="L2135">    return httpModel;</span>
   }
 
   /**
    * @param httpModel the httpModel to set
    */
-  public void setHttpModel(final int httpModel) {
-<span class="fc" id="L2070">    this.httpModel = httpModel;</span>
-<span class="fc" id="L2071">  }</span>
+  public final void setHttpModel(final int httpModel) {
+<span class="fc" id="L2142">    this.httpModel = httpModel;</span>
+<span class="fc" id="L2143">  }</span>
 
   /**
    * @return the isShutdown
    */
-  public boolean isShutdown() {
-<span class="fc" id="L2077">    return isShutdown;</span>
+  public final boolean isShutdown() {
+<span class="fc" id="L2149">    return isShutdown;</span>
   }
 
   /**
    * @param isShutdown the isShutdown to set
    */
-  public void setShutdown(final boolean isShutdown) {
-<span class="fc" id="L2084">    this.isShutdown = isShutdown;</span>
-<span class="fc" id="L2085">  }</span>
+  public final void setShutdown(final boolean isShutdown) {
+<span class="fc" id="L2156">    this.isShutdown = isShutdown;</span>
+<span class="fc" id="L2157">  }</span>
 
   /**
    * @return the serverGlobalWriteLimit
    */
-  public long getServerGlobalWriteLimit() {
-<span class="fc" id="L2091">    return serverGlobalWriteLimit;</span>
+  public final long getServerGlobalWriteLimit() {
+<span class="fc" id="L2163">    return serverGlobalWriteLimit;</span>
   }
 
   /**
    * @param serverGlobalWriteLimit the serverGlobalWriteLimit to set
    */
-  public void setServerGlobalWriteLimit(final long serverGlobalWriteLimit) {
-<span class="fc" id="L2098">    this.serverGlobalWriteLimit = serverGlobalWriteLimit;</span>
-<span class="fc" id="L2099">  }</span>
+  public final void setServerGlobalWriteLimit(
+      final long serverGlobalWriteLimit) {
+<span class="fc" id="L2171">    this.serverGlobalWriteLimit = serverGlobalWriteLimit;</span>
+<span class="fc" id="L2172">  }</span>
 
   /**
    * @return the serverGlobalReadLimit
    */
-  public long getServerGlobalReadLimit() {
-<span class="fc" id="L2105">    return serverGlobalReadLimit;</span>
+  public final long getServerGlobalReadLimit() {
+<span class="fc" id="L2178">    return serverGlobalReadLimit;</span>
   }
 
   /**
    * @param serverGlobalReadLimit the serverGlobalReadLimit to set
    */
-  public void setServerGlobalReadLimit(final long serverGlobalReadLimit) {
-<span class="fc" id="L2112">    this.serverGlobalReadLimit = serverGlobalReadLimit;</span>
-<span class="fc" id="L2113">  }</span>
+  public final void setServerGlobalReadLimit(final long serverGlobalReadLimit) {
+<span class="fc" id="L2185">    this.serverGlobalReadLimit = serverGlobalReadLimit;</span>
+<span class="fc" id="L2186">  }</span>
 
   /**
    * @return the serverChannelWriteLimit
    */
-  public long getServerChannelWriteLimit() {
-<span class="fc" id="L2119">    return serverChannelWriteLimit;</span>
+  public final long getServerChannelWriteLimit() {
+<span class="fc" id="L2192">    return serverChannelWriteLimit;</span>
   }
 
   /**
    * @param serverChannelWriteLimit the serverChannelWriteLimit to set
    */
-  public void setServerChannelWriteLimit(final long serverChannelWriteLimit) {
-<span class="fc" id="L2126">    this.serverChannelWriteLimit = serverChannelWriteLimit;</span>
-<span class="fc" id="L2127">  }</span>
+  public final void setServerChannelWriteLimit(
+      final long serverChannelWriteLimit) {
+<span class="fc" id="L2200">    this.serverChannelWriteLimit = serverChannelWriteLimit;</span>
+<span class="fc" id="L2201">  }</span>
 
   /**
    * @return the serverChannelReadLimit
    */
-  public long getServerChannelReadLimit() {
-<span class="fc" id="L2133">    return serverChannelReadLimit;</span>
+  public final long getServerChannelReadLimit() {
+<span class="fc" id="L2207">    return serverChannelReadLimit;</span>
   }
 
   /**
    * @param serverChannelReadLimit the serverChannelReadLimit to set
    */
-  public void setServerChannelReadLimit(final long serverChannelReadLimit) {
-<span class="fc" id="L2140">    this.serverChannelReadLimit = serverChannelReadLimit;</span>
-<span class="fc" id="L2141">  }</span>
+  public final void setServerChannelReadLimit(
+      final long serverChannelReadLimit) {
+<span class="fc" id="L2215">    this.serverChannelReadLimit = serverChannelReadLimit;</span>
+<span class="fc" id="L2216">  }</span>
 
   /**
    * @return the delayLimit
    */
-  public long getDelayLimit() {
-<span class="fc" id="L2147">    return delayLimit;</span>
+  public final long getDelayLimit() {
+<span class="fc" id="L2222">    return delayLimit;</span>
   }
 
   /**
    * @param delayLimit the delayLimit to set
    */
-  public void setDelayLimit(final long delayLimit) {
-<span class="fc" id="L2154">    this.delayLimit = delayLimit;</span>
-<span class="fc" id="L2155">  }</span>
+  public final void setDelayLimit(final long delayLimit) {
+<span class="fc" id="L2229">    this.delayLimit = delayLimit;</span>
+<span class="fc" id="L2230">  }</span>
 
   /**
    * @return the useSSL
    */
-  public boolean isUseSSL() {
-<span class="fc" id="L2161">    return useSSL;</span>
+  public final boolean isUseSSL() {
+<span class="fc" id="L2236">    return useSSL;</span>
   }
 
   /**
    * @param useSSL the useSSL to set
    */
-  public void setUseSSL(final boolean useSSL) {
-<span class="fc" id="L2168">    this.useSSL = useSSL;</span>
-<span class="fc" id="L2169">  }</span>
+  public final void setUseSSL(final boolean useSSL) {
+<span class="fc" id="L2243">    this.useSSL = useSSL;</span>
+<span class="fc" id="L2244">  }</span>
 
   /**
    * @return the useNOSSL
    */
-  public boolean isUseNOSSL() {
-<span class="fc" id="L2175">    return useNOSSL;</span>
+  public final boolean isUseNOSSL() {
+<span class="fc" id="L2250">    return useNOSSL;</span>
   }
 
   /**
    * @param useNOSSL the useNOSSL to set
    */
-  public void setUseNOSSL(final boolean useNOSSL) {
-<span class="fc" id="L2182">    this.useNOSSL = useNOSSL;</span>
-<span class="fc" id="L2183">  }</span>
+  public final void setUseNOSSL(final boolean useNOSSL) {
+<span class="fc" id="L2257">    this.useNOSSL = useNOSSL;</span>
+<span class="fc" id="L2258">  }</span>
 
   /**
    * @return the digest
    */
-  public FilesystemBasedDigest.DigestAlgo getDigest() {
-<span class="fc" id="L2189">    return digest;</span>
+  public final FilesystemBasedDigest.DigestAlgo getDigest() {
+<span class="fc" id="L2264">    return digest;</span>
   }
 
   /**
    * @param digest the digest to set
    */
-  public void setDigest(final FilesystemBasedDigest.DigestAlgo digest) {
-<span class="fc" id="L2196">    this.digest = digest;</span>
-<span class="fc" id="L2197">  }</span>
+  public final void setDigest(final FilesystemBasedDigest.DigestAlgo digest) {
+<span class="fc" id="L2271">    this.digest = digest;</span>
+<span class="fc" id="L2272">  }</span>
 
   /**
    * @return the useHttpCompression
    */
-  public boolean isUseHttpCompression() {
-<span class="fc" id="L2203">    return useHttpCompression;</span>
+  public final boolean isUseHttpCompression() {
+<span class="fc" id="L2278">    return useHttpCompression;</span>
   }
 
   /**
    * @param useHttpCompression the useHttpCompression to set
    */
-  public void setUseHttpCompression(final boolean useHttpCompression) {
-<span class="fc" id="L2210">    this.useHttpCompression = useHttpCompression;</span>
-<span class="fc" id="L2211">  }</span>
+  public final void setUseHttpCompression(final boolean useHttpCompression) {
+<span class="fc" id="L2285">    this.useHttpCompression = useHttpCompression;</span>
+<span class="fc" id="L2286">  }</span>
 
   /**
    * @return the cryptoKey
    */
-  public Des getCryptoKey() {
-<span class="fc" id="L2217">    return cryptoKey;</span>
+  public final Des getCryptoKey() {
+<span class="fc" id="L2292">    return cryptoKey;</span>
   }
 
   /**
    * @param cryptoKey the cryptoKey to set
    */
-  public void setCryptoKey(final Des cryptoKey) {
-<span class="fc" id="L2224">    this.cryptoKey = cryptoKey;</span>
-<span class="fc" id="L2225">  }</span>
+  public final void setCryptoKey(final Des cryptoKey) {
+<span class="fc" id="L2299">    this.cryptoKey = cryptoKey;</span>
+<span class="fc" id="L2300">  }</span>
 
   /**
    * @return the cryptoFile
    */
-  public String getCryptoFile() {
-<span class="nc" id="L2231">    return cryptoFile;</span>
+  public final String getCryptoFile() {
+<span class="nc" id="L2306">    return cryptoFile;</span>
   }
 
   /**
    * @param cryptoFile the cryptoFile to set
    */
-  public void setCryptoFile(final String cryptoFile) {
-<span class="fc" id="L2238">    this.cryptoFile = cryptoFile;</span>
-<span class="fc" id="L2239">  }</span>
+  public final void setCryptoFile(final String cryptoFile) {
+<span class="fc" id="L2313">    this.cryptoFile = cryptoFile;</span>
+<span class="fc" id="L2314">  }</span>
 
   /**
    * @return the useLocalExec
    */
-  public boolean isUseLocalExec() {
-<span class="fc" id="L2245">    return useLocalExec;</span>
+  public final boolean isUseLocalExec() {
+<span class="fc" id="L2320">    return useLocalExec;</span>
   }
 
   /**
    * @param useLocalExec the useLocalExec to set
    */
-  public void setUseLocalExec(final boolean useLocalExec) {
-<span class="fc" id="L2252">    this.useLocalExec = useLocalExec;</span>
-<span class="fc" id="L2253">  }</span>
+  public final void setUseLocalExec(final boolean useLocalExec) {
+<span class="fc" id="L2327">    this.useLocalExec = useLocalExec;</span>
+<span class="fc" id="L2328">  }</span>
 
   /**
    * @return the isServer
    */
-  public boolean isServer() {
-<span class="fc" id="L2259">    return isServer;</span>
+  public final boolean isServer() {
+<span class="fc" id="L2334">    return isServer;</span>
   }
 
   /**
    * @param isServer the isServer to set
    */
-  protected void setServer(final boolean isServer) {
-<span class="fc" id="L2266">    this.isServer = isServer;</span>
-<span class="fc" id="L2267">  }</span>
+  protected final void setServer(final boolean isServer) {
+<span class="fc" id="L2341">    this.isServer = isServer;</span>
+<span class="fc" id="L2342">  }</span>
 
   /**
    * @return the rUNNER_THREAD
    */
-  public int getRunnerThread() {
-<span class="fc" id="L2273">    return runnerThread;</span>
+  public final int getRunnerThread() {
+<span class="fc" id="L2348">    return runnerThread;</span>
   }
 
   /**
    * @param runnerTHREAD the rUNNER_THREAD to set
    */
-  public void setRunnerThread(final int runnerTHREAD) {
-<span class="pc bpc" id="L2280" title="1 of 2 branches missed.">    if (runnerTHREAD &gt; Commander.LIMIT_MAX_SUBMIT) {</span>
-<span class="nc" id="L2281">      logger.warn(&quot;RunnerThread at {} will be limited to default maximum {}&quot;,</span>
-<span class="nc" id="L2282">                  runnerTHREAD, Commander.LIMIT_MAX_SUBMIT);</span>
-<span class="nc" id="L2283">      runnerThread = Commander.LIMIT_MAX_SUBMIT;</span>
+  public final void setRunnerThread(final int runnerTHREAD) {
+<span class="pc bpc" id="L2355" title="1 of 2 branches missed.">    if (runnerTHREAD &gt; Commander.LIMIT_MAX_SUBMIT) {</span>
+<span class="nc" id="L2356">      logger.warn(&quot;RunnerThread at {} will be limited to default maximum {}&quot;,</span>
+<span class="nc" id="L2357">                  runnerTHREAD, Commander.LIMIT_MAX_SUBMIT);</span>
+<span class="nc" id="L2358">      runnerThread = Commander.LIMIT_MAX_SUBMIT;</span>
     } else {
-<span class="pc bpc" id="L2285" title="1 of 2 branches missed.">      runnerThread = runnerTHREAD &lt;= 1? 2 : runnerTHREAD;</span>
+<span class="fc bfc" id="L2360" title="All 2 branches covered.">      runnerThread = runnerTHREAD &lt;= 1? 2 : runnerTHREAD;</span>
     }
-<span class="fc" id="L2287">  }</span>
+<span class="fc" id="L2362">  }</span>
 
   /**
    * @return the delayCommander
    */
-  public long getDelayCommander() {
-<span class="fc" id="L2293">    return delayCommander;</span>
+  public final long getDelayCommander() {
+<span class="fc" id="L2368">    return delayCommander;</span>
   }
 
   /**
    * @param delayCommander the delayCommander to set
    */
-  public void setDelayCommander(final long delayCommander) {
-<span class="fc" id="L2300">    this.delayCommander = delayCommander;</span>
-<span class="fc" id="L2301">  }</span>
+  public final void setDelayCommander(final long delayCommander) {
+<span class="fc" id="L2375">    this.delayCommander = delayCommander;</span>
+<span class="fc" id="L2376">  }</span>
 
   /**
    * @return the delayRetry
    */
-  public long getDelayRetry() {
-<span class="fc" id="L2307">    return delayRetry;</span>
+  public final long getDelayRetry() {
+<span class="fc" id="L2382">    return delayRetry;</span>
   }
 
   /**
    * @param delayRetry the delayRetry to set
    */
-  public void setDelayRetry(final long delayRetry) {
-<span class="fc" id="L2314">    this.delayRetry = delayRetry;</span>
-<span class="fc" id="L2315">  }</span>
+  public final void setDelayRetry(final long delayRetry) {
+<span class="fc" id="L2389">    this.delayRetry = delayRetry;</span>
+<span class="fc" id="L2390">  }</span>
 
   /**
    * @return the constraintLimitHandler
    */
-  public R66ConstraintLimitHandler getConstraintLimitHandler() {
-<span class="fc" id="L2321">    return constraintLimitHandler;</span>
+  public final R66ConstraintLimitHandler getConstraintLimitHandler() {
+<span class="fc" id="L2396">    return constraintLimitHandler;</span>
   }
 
   /**
    * @param constraintLimitHandler the constraintLimitHandler to set
    */
-  public void setConstraintLimitHandler(
+  public final void setConstraintLimitHandler(
       final R66ConstraintLimitHandler constraintLimitHandler) {
-<span class="fc" id="L2329">    this.constraintLimitHandler = constraintLimitHandler;</span>
-<span class="fc" id="L2330">  }</span>
+<span class="fc" id="L2404">    this.constraintLimitHandler = constraintLimitHandler;</span>
+<span class="fc" id="L2405">  }</span>
 
   /**
    * @return the checkRemoteAddress
    */
-  public boolean isCheckRemoteAddress() {
-<span class="fc" id="L2336">    return checkRemoteAddress;</span>
+  public final boolean isCheckRemoteAddress() {
+<span class="fc" id="L2411">    return checkRemoteAddress;</span>
   }
 
   /**
    * @param checkRemoteAddress the checkRemoteAddress to set
    */
-  public void setCheckRemoteAddress(final boolean checkRemoteAddress) {
-<span class="nc" id="L2343">    this.checkRemoteAddress = checkRemoteAddress;</span>
-<span class="nc" id="L2344">  }</span>
+  public final void setCheckRemoteAddress(final boolean checkRemoteAddress) {
+<span class="nc" id="L2418">    this.checkRemoteAddress = checkRemoteAddress;</span>
+<span class="nc" id="L2419">  }</span>
 
   /**
    * @return the checkClientAddress
    */
-  public boolean isCheckClientAddress() {
-<span class="fc" id="L2350">    return checkClientAddress;</span>
+  public final boolean isCheckClientAddress() {
+<span class="fc" id="L2425">    return checkClientAddress;</span>
   }
 
   /**
    * @param checkClientAddress the checkClientAddress to set
    */
-  public void setCheckClientAddress(final boolean checkClientAddress) {
-<span class="nc" id="L2357">    this.checkClientAddress = checkClientAddress;</span>
-<span class="nc" id="L2358">  }</span>
+  public final void setCheckClientAddress(final boolean checkClientAddress) {
+<span class="nc" id="L2432">    this.checkClientAddress = checkClientAddress;</span>
+<span class="nc" id="L2433">  }</span>
 
   /**
    * @return the saveTaskRunnerWithNoDb
    */
-  public boolean isSaveTaskRunnerWithNoDb() {
-<span class="fc" id="L2364">    return saveTaskRunnerWithNoDb;</span>
+  public final boolean isSaveTaskRunnerWithNoDb() {
+<span class="fc" id="L2439">    return saveTaskRunnerWithNoDb;</span>
   }
 
   /**
    * @param saveTaskRunnerWithNoDb the saveTaskRunnerWithNoDb to set
    */
-  public void setSaveTaskRunnerWithNoDb(final boolean saveTaskRunnerWithNoDb) {
-<span class="nc" id="L2371">    this.saveTaskRunnerWithNoDb = saveTaskRunnerWithNoDb;</span>
-<span class="nc" id="L2372">  }</span>
+  public final void setSaveTaskRunnerWithNoDb(
+      final boolean saveTaskRunnerWithNoDb) {
+<span class="nc" id="L2447">    this.saveTaskRunnerWithNoDb = saveTaskRunnerWithNoDb;</span>
+<span class="nc" id="L2448">  }</span>
 
   /**
    * @return the multipleMonitors
    */
-  public int getMultipleMonitors() {
-<span class="fc" id="L2378">    return multipleMonitors;</span>
+  public final int getMultipleMonitors() {
+<span class="fc" id="L2454">    return multipleMonitors;</span>
   }
 
   /**
    * @param multipleMonitors the multipleMonitors to set
    */
-  public void setMultipleMonitors(final int multipleMonitors) {
-<span class="fc" id="L2385">    this.multipleMonitors = multipleMonitors;</span>
-<span class="fc" id="L2386">  }</span>
+  public final void setMultipleMonitors(final int multipleMonitors) {
+<span class="fc" id="L2461">    this.multipleMonitors = multipleMonitors;</span>
+<span class="fc" id="L2462">  }</span>
 
   /**
    * @return the monitoring
    */
-  public Monitoring getMonitoring() {
-<span class="fc" id="L2392">    return monitoring;</span>
+  public final Monitoring getMonitoring() {
+<span class="fc" id="L2468">    return monitoring;</span>
   }
 
   /**
    * @param monitoring the monitoring to set
    */
-  public void setMonitoring(final Monitoring monitoring) {
-<span class="fc" id="L2399">    this.monitoring = monitoring;</span>
-<span class="fc" id="L2400">  }</span>
+  public final void setMonitoring(final Monitoring monitoring) {
+<span class="fc" id="L2475">    this.monitoring = monitoring;</span>
+<span class="fc" id="L2476">  }</span>
 
   /**
    * @return the pastLimit
    */
-  public long getPastLimit() {
-<span class="fc" id="L2406">    return pastLimit;</span>
+  public final long getPastLimit() {
+<span class="fc" id="L2482">    return pastLimit;</span>
   }
 
   /**
    * @param pastLimit the pastLimit to set
    */
-  public void setPastLimit(final long pastLimit) {
-<span class="nc" id="L2413">    this.pastLimit = pastLimit;</span>
-<span class="nc" id="L2414">  }</span>
+  public final void setPastLimit(final long pastLimit) {
+<span class="nc" id="L2489">    this.pastLimit = pastLimit;</span>
+<span class="nc" id="L2490">  }</span>
 
   /**
    * @return the minimalDelay
    */
-  public long getMinimalDelay() {
-<span class="fc" id="L2420">    return minimalDelay;</span>
+  public final long getMinimalDelay() {
+<span class="fc" id="L2496">    return minimalDelay;</span>
   }
 
   /**
    * @param minimalDelay the minimalDelay to set
    */
-  public void setMinimalDelay(final long minimalDelay) {
-<span class="nc" id="L2427">    this.minimalDelay = minimalDelay;</span>
-<span class="nc" id="L2428">  }</span>
+  public final void setMinimalDelay(final long minimalDelay) {
+<span class="nc" id="L2503">    this.minimalDelay = minimalDelay;</span>
+<span class="nc" id="L2504">  }</span>
 
   /**
    * @return the snmpConfig
    */
-  public String getSnmpConfig() {
-<span class="fc" id="L2434">    return snmpConfig;</span>
+  public final String getSnmpConfig() {
+<span class="fc" id="L2510">    return snmpConfig;</span>
   }
 
   /**
    * @param snmpConfig the snmpConfig to set
    */
-  public void setSnmpConfig(final String snmpConfig) {
-<span class="nc" id="L2441">    this.snmpConfig = snmpConfig;</span>
-<span class="nc" id="L2442">  }</span>
+  public final void setSnmpConfig(final String snmpConfig) {
+<span class="nc" id="L2517">    this.snmpConfig = snmpConfig;</span>
+<span class="nc" id="L2518">  }</span>
 
   /**
    * @return the agentSnmp
    */
-  public WaarpSnmpAgent getAgentSnmp() {
-<span class="fc" id="L2448">    return agentSnmp;</span>
+  public final WaarpSnmpAgent getAgentSnmp() {
+<span class="fc" id="L2524">    return agentSnmp;</span>
   }
 
   /**
    * @param agentSnmp the agentSnmp to set
    */
-  public void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
-<span class="fc" id="L2455">    this.agentSnmp = agentSnmp;</span>
-<span class="fc" id="L2456">  }</span>
+  public final void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
+<span class="fc" id="L2531">    this.agentSnmp = agentSnmp;</span>
+<span class="fc" id="L2532">  }</span>
 
   /**
    * @return the r66Mib
    */
-  public R66PrivateMib getR66Mib() {
-<span class="fc" id="L2462">    return r66Mib;</span>
+  public final R66PrivateMib getR66Mib() {
+<span class="fc" id="L2538">    return r66Mib;</span>
   }
 
   /**
    * @param r66Mib the r66Mib to set
    */
-  public void setR66Mib(final R66PrivateMib r66Mib) {
-<span class="nc" id="L2469">    this.r66Mib = r66Mib;</span>
-<span class="nc" id="L2470">  }</span>
+  public final void setR66Mib(final R66PrivateMib r66Mib) {
+<span class="nc" id="L2545">    this.r66Mib = r66Mib;</span>
+<span class="nc" id="L2546">  }</span>
 
   /**
    * @return the waarpSecureKeyStore
    */
   public static WaarpSecureKeyStore getWaarpSecureKeyStore() {
-<span class="fc" id="L2476">    return waarpSecureKeyStore;</span>
+<span class="fc" id="L2552">    return waarpSecureKeyStore;</span>
   }
 
   /**
@@ -2481,14 +2557,14 @@ public class Configuration {
    */
   public static void setWaarpSecureKeyStore(
       final WaarpSecureKeyStore waarpSecureKeyStore) {
-<span class="fc" id="L2484">    Configuration.waarpSecureKeyStore = waarpSecureKeyStore;</span>
-<span class="fc" id="L2485">  }</span>
+<span class="fc" id="L2560">    Configuration.waarpSecureKeyStore = waarpSecureKeyStore;</span>
+<span class="fc" id="L2561">  }</span>
 
   /**
    * @return the waarpSslContextFactory
    */
   public static WaarpSslContextFactory getWaarpSslContextFactory() {
-<span class="fc" id="L2491">    return waarpSslContextFactory;</span>
+<span class="fc" id="L2567">    return waarpSslContextFactory;</span>
   }
 
   /**
@@ -2496,42 +2572,43 @@ public class Configuration {
    */
   public static void setWaarpSslContextFactory(
       final WaarpSslContextFactory waarpSslContextFactory) {
-<span class="fc" id="L2499">    Configuration.waarpSslContextFactory = waarpSslContextFactory;</span>
-<span class="fc" id="L2500">  }</span>
+<span class="fc" id="L2575">    Configuration.waarpSslContextFactory = waarpSslContextFactory;</span>
+<span class="fc" id="L2576">  }</span>
 
   /**
    * @return the thriftService
    */
-  public R66ThriftServerService getThriftService() {
-<span class="fc" id="L2506">    return thriftService;</span>
+  public final R66ThriftServerService getThriftService() {
+<span class="fc" id="L2582">    return thriftService;</span>
   }
 
   /**
    * @param thriftService the thriftService to set
    */
-  public void setThriftService(final R66ThriftServerService thriftService) {
-<span class="fc" id="L2513">    this.thriftService = thriftService;</span>
-<span class="fc" id="L2514">  }</span>
+  public final void setThriftService(
+      final R66ThriftServerService thriftService) {
+<span class="fc" id="L2590">    this.thriftService = thriftService;</span>
+<span class="fc" id="L2591">  }</span>
 
   /**
    * @return the thriftport
    */
-  public int getThriftport() {
-<span class="fc" id="L2520">    return thriftport;</span>
+  public final int getThriftport() {
+<span class="fc" id="L2597">    return thriftport;</span>
   }
 
   /**
    * @param thriftport the thriftport to set
    */
-  public void setThriftport(final int thriftport) {
-<span class="fc" id="L2527">    this.thriftport = thriftport;</span>
-<span class="fc" id="L2528">  }</span>
+  public final void setThriftport(final int thriftport) {
+<span class="fc" id="L2604">    this.thriftport = thriftport;</span>
+<span class="fc" id="L2605">  }</span>
 
   /**
    * @return the isExecuteErrorBeforeTransferAllowed
    */
-  public boolean isExecuteErrorBeforeTransferAllowed() {
-<span class="nc" id="L2534">    return isExecuteErrorBeforeTransferAllowed;</span>
+  public final boolean isExecuteErrorBeforeTransferAllowed() {
+<span class="fc" id="L2611">    return isExecuteErrorBeforeTransferAllowed;</span>
   }
 
   /**
@@ -2539,147 +2616,318 @@ public class Configuration {
    *     isExecuteErrorBeforeTransferAllowed
    *     to set
    */
-  public void setExecuteErrorBeforeTransferAllowed(
+  public final void setExecuteErrorBeforeTransferAllowed(
       final boolean isExecuteErrorBeforeTransferAllowed) {
-<span class="fc" id="L2544">    this.isExecuteErrorBeforeTransferAllowed =</span>
+<span class="fc" id="L2621">    this.isExecuteErrorBeforeTransferAllowed =</span>
         isExecuteErrorBeforeTransferAllowed;
-<span class="fc" id="L2546">  }</span>
+<span class="fc" id="L2623">  }</span>
 
   /**
    * @return the shutdownConfiguration
    */
-  public ShutdownConfiguration getShutdownConfiguration() {
-<span class="fc" id="L2552">    return shutdownConfiguration;</span>
+  public final ShutdownConfiguration getShutdownConfiguration() {
+<span class="fc" id="L2629">    return shutdownConfiguration;</span>
   }
 
   /**
    * @return the isHostProxyfied
    */
-  public boolean isHostProxyfied() {
-<span class="fc" id="L2559">    return isHostProxyfied;</span>
+  public final boolean isHostProxyfied() {
+<span class="fc" id="L2636">    return isHostProxyfied;</span>
   }
 
   /**
    * @param isHostProxyfied the isHostProxyfied to set
    */
-  public void setHostProxyfied(final boolean isHostProxyfied) {
-<span class="fc" id="L2566">    this.isHostProxyfied = isHostProxyfied;</span>
-<span class="fc" id="L2567">  }</span>
+  public final void setHostProxyfied(final boolean isHostProxyfied) {
+<span class="fc" id="L2643">    this.isHostProxyfied = isHostProxyfied;</span>
+<span class="fc" id="L2644">  }</span>
+
+  /**
+   * @return True if Authentication cannot be reused
+   */
+  public final boolean isAuthentNoReuse() {
+<span class="fc" id="L2650">    return authentNoReuse;</span>
+  }
+
+  /**
+   * @param authentNoReuse
+   */
+  public final void setAuthentNoReuse(final boolean authentNoReuse) {
+<span class="fc" id="L2657">    this.authentNoReuse = authentNoReuse;</span>
+<span class="fc" id="L2658">  }</span>
+
+  /**
+   * @param transferGuid
+   */
+  public final void setTransferGuid(final boolean transferGuid) {
+<span class="fc" id="L2664">    this.transferGuid = transferGuid;</span>
+<span class="pc bpc" id="L2665" title="1 of 2 branches missed.">    logger.warn(&quot;Startup: Transfer Id will use {}&quot;,</span>
+                transferGuid? &quot;GUID&quot; : &quot;SQL Sequence&quot;);
+<span class="fc" id="L2667">  }</span>
+
+  /**
+   * @return True if the GUID is to use instead of getNextLong SQL based
+   *     (default True)
+   */
+  public final boolean isTransferGuid() {
+<span class="fc" id="L2674">    return transferGuid;</span>
+  }
 
   /**
    * @return the warnOnStartup
    */
-  public boolean isWarnOnStartup() {
-<span class="fc" id="L2573">    return warnOnStartup;</span>
+  public final boolean isWarnOnStartup() {
+<span class="fc" id="L2681">    return warnOnStartup;</span>
   }
 
   /**
    * @param warnOnStartup the warnOnStartup to set
    */
-  public void setWarnOnStartup(final boolean warnOnStartup) {
-<span class="fc" id="L2580">    this.warnOnStartup = warnOnStartup;</span>
-<span class="fc" id="L2581">  }</span>
+  public final void setWarnOnStartup(final boolean warnOnStartup) {
+<span class="fc" id="L2688">    this.warnOnStartup = warnOnStartup;</span>
+<span class="fc" id="L2689">  }</span>
 
   /**
    * @return the chrootChecked
    */
-  public boolean isChrootChecked() {
-<span class="fc" id="L2587">    return chrootChecked;</span>
+  public final boolean isChrootChecked() {
+<span class="fc" id="L2695">    return chrootChecked;</span>
   }
 
   /**
    * @param chrootChecked the chrootChecked to set
    */
-  public void setChrootChecked(final boolean chrootChecked) {
-<span class="fc" id="L2594">    this.chrootChecked = chrootChecked;</span>
-<span class="fc" id="L2595">  }</span>
+  public final void setChrootChecked(final boolean chrootChecked) {
+<span class="fc" id="L2702">    this.chrootChecked = chrootChecked;</span>
+<span class="fc" id="L2703">  }</span>
 
   /**
    * @return the blacklistBadAuthent
    */
-  public boolean isBlacklistBadAuthent() {
-<span class="fc" id="L2601">    return blacklistBadAuthent;</span>
+  public final boolean isBlacklistBadAuthent() {
+<span class="fc" id="L2709">    return blacklistBadAuthent;</span>
   }
 
   /**
    * @param blacklistBadAuthent the blacklistBadAuthent to set
    */
-  public void setBlacklistBadAuthent(final boolean blacklistBadAuthent) {
-<span class="fc" id="L2608">    this.blacklistBadAuthent = blacklistBadAuthent;</span>
-<span class="fc" id="L2609">  }</span>
+  public final void setBlacklistBadAuthent(final boolean blacklistBadAuthent) {
+<span class="fc" id="L2716">    this.blacklistBadAuthent = blacklistBadAuthent;</span>
+<span class="fc" id="L2717">  }</span>
 
   /**
    * @return the maxfilenamelength
    */
-  public int getMaxfilenamelength() {
-<span class="fc" id="L2615">    return maxfilenamelength;</span>
+  public final int getMaxfilenamelength() {
+<span class="fc" id="L2723">    return maxfilenamelength;</span>
   }
 
   /**
    * @param maxfilenamelength the maxfilenamelength to set
    */
-  public void setMaxfilenamelength(final int maxfilenamelength) {
-<span class="fc" id="L2622">    this.maxfilenamelength = maxfilenamelength;</span>
-<span class="fc" id="L2623">  }</span>
+  public final void setMaxfilenamelength(final int maxfilenamelength) {
+<span class="fc" id="L2730">    this.maxfilenamelength = maxfilenamelength;</span>
+<span class="fc" id="L2731">  }</span>
 
   /**
    * @return the timeStat
    */
-  public int getTimeStat() {
-<span class="fc" id="L2629">    return timeStat;</span>
+  public final int getTimeStat() {
+<span class="fc" id="L2737">    return timeStat;</span>
   }
 
   /**
    * @param timeStat the timeStat to set
    */
-  public void setTimeStat(final int timeStat) {
-<span class="fc" id="L2636">    this.timeStat = timeStat;</span>
-<span class="fc" id="L2637">  }</span>
+  public final void setTimeStat(final int timeStat) {
+<span class="fc" id="L2744">    this.timeStat = timeStat;</span>
+<span class="fc" id="L2745">  }</span>
 
   /**
    * @return the limitCache
    */
-  public int getLimitCache() {
-<span class="fc" id="L2643">    return limitCache;</span>
+  public final int getLimitCache() {
+<span class="fc" id="L2751">    return limitCache;</span>
   }
 
   /**
    * @param limitCache the limitCache to set
    */
-  public void setLimitCache(final int limitCache) {
-<span class="fc" id="L2650">    this.limitCache = limitCache;</span>
-<span class="fc" id="L2651">  }</span>
+  public final void setLimitCache(final int limitCache) {
+<span class="fc" id="L2758">    this.limitCache = limitCache;</span>
+<span class="fc" id="L2759">  }</span>
 
   /**
    * @return the timeLimitCache
    */
-  public long getTimeLimitCache() {
-<span class="fc" id="L2657">    return timeLimitCache;</span>
+  public final long getTimeLimitCache() {
+<span class="fc" id="L2765">    return timeLimitCache;</span>
   }
 
   /**
    * @param timeLimitCache the timeLimitCache to set
    */
-  public void setTimeLimitCache(final long timeLimitCache) {
-<span class="fc" id="L2664">    this.timeLimitCache = timeLimitCache;</span>
-<span class="fc" id="L2665">  }</span>
+  public final void setTimeLimitCache(final long timeLimitCache) {
+<span class="fc" id="L2772">    this.timeLimitCache = timeLimitCache;</span>
+<span class="fc" id="L2773">  }</span>
+
+  /**
+   * Set the parameters for MonitorExporterTransfers using API REST
+   *
+   * @param url as 'http://myhost.com:8080' or 'https://myhost.com:8443'
+   * @param basicAuthent Basic Authent in Base64 to connect to REST API if
+   *     any (Basic authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param endpoint as '/waarpr66monitor' or simply '/'
+   * @param keepConnection True to keep the connexion opened, False to release the connexion each time
+   * @param monitorIntervalIncluded True to include the interval information within 'waarpMonitor'
+   *     field
+   * @param monitorTransformLongAsString True to transform Long as String (ELK)
+   * @param delay delay between 2 exports
+   */
+  public final void setMonitorExporterTransfers(final String url,
+                                                final String basicAuthent,
+                                                final String token,
+                                                final String apiKey,
+                                                final String endpoint,
+                                                final int delay,
+                                                final boolean keepConnection,
+                                                final boolean monitorIntervalIncluded,
+                                                final boolean monitorTransformLongAsString) {
+<span class="fc" id="L2801">    this.monitorExporterDelay = delay;</span>
+<span class="fc" id="L2802">    this.monitorExporterUrl = url;</span>
+<span class="fc" id="L2803">    this.monitorExporterEndPoint = endpoint;</span>
+<span class="fc" id="L2804">    this.monitorExporterKeepConnection = keepConnection;</span>
+<span class="fc" id="L2805">    this.monitorIntervalIncluded = monitorIntervalIncluded;</span>
+<span class="fc" id="L2806">    this.monitorTransformLongAsString = monitorTransformLongAsString;</span>
+<span class="fc" id="L2807">    this.monitorBasicAuthent = basicAuthent;</span>
+<span class="fc" id="L2808">    this.monitorToken = token;</span>
+<span class="fc" id="L2809">    this.monitorApiKey = apiKey;</span>
+<span class="fc" id="L2810">    isMonitorExporterApiRest = true;</span>
+<span class="fc" id="L2811">  }</span>
+
+  /**
+   * @return True if the compression is available
+   */
+  public final boolean isCompressionAvailable() {
+<span class="fc" id="L2817">    return compressionAvailable;</span>
+  }
+
+  /**
+   * @param compressionAvailable
+   */
+  public final void setCompressionAvailable(
+      final boolean compressionAvailable) {
+<span class="fc" id="L2825">    this.compressionAvailable = compressionAvailable;</span>
+<span class="fc" id="L2826">  }</span>
+
+  /**
+   * Set the parameters for MonitorExporterTransfers using Elasticsearch (JRE
+   * &gt;= 8)
+   *
+   * @param remoteBaseUrl as 'http://myelastic.com:9200' or 'https://myelastic.com:9201'
+   * @param username username to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param pwd password to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param prefix as '/prefix' or null if none
+   * @param index as 'waarpr66monitor' as the index name within
+   *     Elasticsearch, including extra dynamic information
+   * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
+   * @param transformLongAsString True to transform Long as String (ELK)
+   * @param compression True to compress REST exchanges between the client
+   *     and the Elasticsearch server
+   * @param delay delay between 2 exports
+   *
+   * @return True if the Elasticsearch factory is available
+   */
+  public final boolean setMonitorExporterTransfers(final String remoteBaseUrl,
+                                                   final String username,
+                                                   final String pwd,
+                                                   final String token,
+                                                   final String apiKey,
+                                                   final String prefix,
+                                                   final String index,
+                                                   final boolean intervalMonitoringIncluded,
+                                                   final boolean transformLongAsString,
+                                                   final boolean compression,
+                                                   final int delay) {
+<span class="nc" id="L2863">    this.monitorExporterDelay = delay;</span>
+<span class="nc" id="L2864">    this.monitorExporterUrl = remoteBaseUrl;</span>
+<span class="nc" id="L2865">    this.monitorIntervalIncluded = intervalMonitoringIncluded;</span>
+<span class="nc" id="L2866">    this.monitorTransformLongAsString = transformLongAsString;</span>
+<span class="nc" id="L2867">    this.monitorUsername = username;</span>
+<span class="nc" id="L2868">    this.monitorPwd = pwd;</span>
+<span class="nc" id="L2869">    this.monitorToken = token;</span>
+<span class="nc" id="L2870">    this.monitorApiKey = apiKey;</span>
+<span class="nc" id="L2871">    this.monitorPrefix = prefix;</span>
+<span class="nc" id="L2872">    this.monitorIndex = index;</span>
+<span class="nc" id="L2873">    this.monitorCompression = compression;</span>
+<span class="nc" id="L2874">    isMonitorExporterApiRest = false;</span>
+    try {
+<span class="nc" id="L2876">      ElasticsearchMonitoringExporterClientBuilder.getFactory();</span>
+<span class="nc" id="L2877">    } catch (final Exception e) {</span>
+<span class="nc" id="L2878">      logger.error(&quot;Elasticsearch for MonitorExpoerter is not available in &quot; +</span>
+<span class="nc" id="L2879">                   &quot;the classpath: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L2880">      return false;</span>
+<span class="nc" id="L2881">    }</span>
+<span class="nc" id="L2882">    return true;</span>
+  }
+
+  /**
+   * Start the Monitor Exporter Transfers (through REST API)
+   */
+  public final void startMonitorExporterTransfers() {
+<span class="pc bpc" id="L2889" title="2 of 6 branches missed.">    if (monitorExporterUrl != null &amp;&amp; monitorExporterEndPoint != null &amp;&amp;</span>
+        monitorExporterDelay &gt; 500) {
+<span class="pc bpc" id="L2891" title="1 of 2 branches missed.">      if (isMonitorExporterApiRest) {</span>
+<span class="fc" id="L2892">        this.monitorExporterTransfers =</span>
+            new MonitorExporterTransfers(monitorExporterUrl,
+                                         monitorExporterEndPoint,
+                                         monitorBasicAuthent, monitorToken,
+                                         monitorApiKey,
+                                         monitorExporterKeepConnection,
+                                         monitorIntervalIncluded,
+                                         monitorTransformLongAsString,
+<span class="fc" id="L2900">                                         getHttpWorkerGroup());</span>
+      } else {
+<span class="nc" id="L2902">        this.monitorExporterTransfers =</span>
+            new MonitorExporterTransfers(monitorExporterUrl, monitorPrefix,
+                                         monitorIndex, monitorUsername,
+                                         monitorPwd, monitorToken,
+                                         monitorApiKey, monitorIntervalIncluded,
+                                         monitorTransformLongAsString,
+                                         monitorCompression);
+      }
+<span class="fc" id="L2910">      scheduleWithFixedDelay(monitorExporterTransfers, monitorExporterDelay,</span>
+                             TimeUnit.MILLISECONDS);
+    }
+<span class="fc" id="L2913">  }</span>
 
   /**
    * @param r66BusinessFactory the r66BusinessFactory to set
    */
-  public void setR66BusinessFactory(
+  public final void setR66BusinessFactory(
       final R66BusinessFactoryInterface r66BusinessFactory) {
-<span class="nc" id="L2672">    this.r66BusinessFactory = r66BusinessFactory;</span>
-<span class="nc" id="L2673">  }</span>
+<span class="nc" id="L2920">    this.r66BusinessFactory = r66BusinessFactory;</span>
+<span class="nc" id="L2921">  }</span>
 
   private static class CleanLruCache extends TimerTask {
 
     @Override
     public void run() {
-<span class="nc" id="L2679">      final int nb = DbTaskRunner.clearCache();</span>
-<span class="nc" id="L2680">      logger.info(&quot;Clear Cache: &quot; + nb);</span>
-<span class="nc" id="L2681">    }</span>
+<span class="fc" id="L2927">      final int nb = DbTaskRunner.clearCache();</span>
+<span class="fc" id="L2928">      logger.info(&quot;Clear Cache: &quot; + nb);</span>
+<span class="fc" id="L2929">    }</span>
 
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

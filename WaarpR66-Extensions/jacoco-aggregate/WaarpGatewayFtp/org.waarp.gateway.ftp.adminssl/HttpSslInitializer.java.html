@@ -39,28 +39,28 @@ public class HttpSslInitializer extends ChannelInitializer&lt;SocketChannel&gt; 
   public static WaarpSecureKeyStore waarpSecureKeyStore;
   private final boolean useHttpCompression;
 
-<span class="nc" id="L42">  public HttpSslInitializer(final boolean useHttpCompression) {</span>
-<span class="nc" id="L43">    this.useHttpCompression = useHttpCompression;</span>
-<span class="nc" id="L44">  }</span>
+<span class="fc" id="L42">  public HttpSslInitializer(final boolean useHttpCompression) {</span>
+<span class="fc" id="L43">    this.useHttpCompression = useHttpCompression;</span>
+<span class="fc" id="L44">  }</span>
 
   @Override
   protected void initChannel(final SocketChannel ch) {
-<span class="nc" id="L48">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="fc" id="L48">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Add SSL handler first to encrypt and decrypt everything.
-<span class="nc" id="L50">    final SslHandler sslhandler =</span>
-<span class="nc" id="L51">        waarpSslContextFactory.createHandlerServer(false, ch);</span>
-<span class="nc" id="L52">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
+<span class="fc" id="L50">    final SslHandler sslhandler =</span>
+<span class="fc" id="L51">        waarpSslContextFactory.createHandlerServer(false, ch);</span>
+<span class="fc" id="L52">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
 
-<span class="nc" id="L54">    pipeline.addLast(&quot;codec&quot;, new HttpServerCodec());</span>
-<span class="nc" id="L55">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
-<span class="nc" id="L56">        FileBasedConfiguration.fileBasedConfiguration.getMaxGlobalMemory()));</span>
-<span class="nc" id="L57">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (useHttpCompression) {</span>
+<span class="fc" id="L54">    pipeline.addLast(&quot;codec&quot;, new HttpServerCodec());</span>
+<span class="fc" id="L55">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
+<span class="fc" id="L56">        FileBasedConfiguration.fileBasedConfiguration.getMaxGlobalMemory()));</span>
+<span class="fc" id="L57">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">    if (useHttpCompression) {</span>
 <span class="nc" id="L59">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
     }
-<span class="nc" id="L61">    pipeline.addLast(</span>
-<span class="nc" id="L62">        FileBasedConfiguration.fileBasedConfiguration.getHttpPipelineExecutor(),</span>
+<span class="fc" id="L61">    pipeline.addLast(</span>
+<span class="fc" id="L62">        FileBasedConfiguration.fileBasedConfiguration.getHttpPipelineExecutor(),</span>
         &quot;handler&quot;, new HttpSslHandler());
-<span class="nc" id="L64">  }</span>
+<span class="fc" id="L64">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

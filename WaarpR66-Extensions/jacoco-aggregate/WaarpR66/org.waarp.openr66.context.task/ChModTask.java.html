@@ -63,9 +63,9 @@ public class ChModTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L66">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L67">      WaarpLoggerFactory.getLogger(ChModTask.class);</span>
-<span class="nc" id="L68">  private static final Pattern BLANK = WaarpStringUtils.BLANK;</span>
+<span class="fc" id="L66">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L67">      WaarpLoggerFactory.getLogger(ChModTask.class);</span>
+<span class="fc" id="L68">  private static final Pattern BLANK = WaarpStringUtils.BLANK;</span>
 
   /**
    * @param argRule
@@ -75,43 +75,43 @@ public class ChModTask extends AbstractTask {
    */
   public ChModTask(final String argRule, final int delay,
                    final String argTransfer, final R66Session session) {
-<span class="nc" id="L78">    super(TaskType.CHMOD, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L79">  }</span>
+<span class="fc" id="L78">    super(TaskType.CHMOD, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L79">  }</span>
 
   @Override
   public final void run() {
-<span class="nc" id="L83">    String finalname = argRule;</span>
-<span class="nc" id="L84">    finalname = AbstractDir.normalizePath(</span>
-<span class="nc" id="L85">                               getReplacedValue(finalname, BLANK.split(argTransfer))).trim()</span>
-<span class="nc" id="L86">                           .toLowerCase();</span>
-<span class="nc" id="L87">    logger.info(&quot;ChMod with arg {} from {}&quot;, finalname, session);</span>
-<span class="nc" id="L88">    final File file = session.getFile().getTrueFile();</span>
+<span class="fc" id="L83">    String finalname = argRule;</span>
+<span class="fc" id="L84">    finalname = AbstractDir.normalizePath(</span>
+<span class="fc" id="L85">                               getReplacedValue(finalname, BLANK.split(argTransfer))).trim()</span>
+<span class="fc" id="L86">                           .toLowerCase();</span>
+<span class="fc" id="L87">    logger.info(&quot;ChMod with arg {} from {}&quot;, finalname, session);</span>
+<span class="fc" id="L88">    final File file = session.getFile().getTrueFile();</span>
     boolean user;
     boolean all;
-<span class="nc" id="L91">    boolean isall = false;</span>
+<span class="fc" id="L91">    boolean isall = false;</span>
     boolean ur;
     boolean uw;
     boolean ux;
-<span class="nc" id="L95">    boolean ar = false;</span>
-<span class="nc" id="L96">    boolean aw = false;</span>
-<span class="nc" id="L97">    boolean ax = false;</span>
-<span class="nc" id="L98">    ur = file.canRead();</span>
-<span class="nc" id="L99">    uw = file.canWrite();</span>
-<span class="nc" id="L100">    ux = file.canExecute();</span>
-<span class="nc" id="L101">    final String[] chmods = BLANK.split(finalname);</span>
-<span class="nc bnc" id="L102" title="All 2 branches missed.">    for (final String chmod : chmods) {</span>
-<span class="nc bnc" id="L103" title="All 2 branches missed.">      user = chmod.indexOf('u') &gt;= 0;</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">      all = chmod.indexOf('a') &gt;= 0;</span>
-<span class="nc bnc" id="L105" title="All 4 branches missed.">      if (!user &amp;&amp; !all) {</span>
+<span class="fc" id="L95">    boolean ar = false;</span>
+<span class="fc" id="L96">    boolean aw = false;</span>
+<span class="fc" id="L97">    boolean ax = false;</span>
+<span class="fc" id="L98">    ur = file.canRead();</span>
+<span class="fc" id="L99">    uw = file.canWrite();</span>
+<span class="fc" id="L100">    ux = file.canExecute();</span>
+<span class="fc" id="L101">    final String[] chmods = BLANK.split(finalname);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">    for (final String chmod : chmods) {</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">      user = chmod.indexOf('u') &gt;= 0;</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">      all = chmod.indexOf('a') &gt;= 0;</span>
+<span class="pc bpc" id="L105" title="3 of 4 branches missed.">      if (!user &amp;&amp; !all) {</span>
         // ignore
 <span class="nc" id="L107">        continue;</span>
       }
-<span class="nc" id="L109">      isall |= all;</span>
-<span class="nc" id="L110">      boolean isp = false;</span>
-<span class="nc" id="L111">      boolean ism = false;</span>
-<span class="nc" id="L112">      boolean ise = false;</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">      if (chmod.indexOf('=') &gt;= 0) {</span>
-<span class="nc" id="L114">        ise = true;</span>
+<span class="fc" id="L109">      isall |= all;</span>
+<span class="fc" id="L110">      boolean isp = false;</span>
+<span class="fc" id="L111">      boolean ism = false;</span>
+<span class="fc" id="L112">      boolean ise = false;</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">      if (chmod.indexOf('=') &gt;= 0) {</span>
+<span class="fc" id="L114">        ise = true;</span>
 <span class="nc bnc" id="L115" title="All 2 branches missed.">      } else if (chmod.indexOf('+') &gt;= 0) {</span>
 <span class="nc" id="L116">        isp = true;</span>
 <span class="nc bnc" id="L117" title="All 2 branches missed.">      } else if (chmod.indexOf('-') &gt;= 0) {</span>
@@ -123,42 +123,42 @@ public class ChModTask extends AbstractTask {
       final boolean isr;
       final boolean isw;
       final boolean isx;
-<span class="nc bnc" id="L126" title="All 2 branches missed.">      isr = chmod.indexOf('r') &gt;= 0;</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">      isw = chmod.indexOf('w') &gt;= 0;</span>
-<span class="nc bnc" id="L128" title="All 2 branches missed.">      isx = chmod.indexOf('x') &gt;= 0;</span>
-<span class="nc bnc" id="L129" title="All 6 branches missed.">      if (!isr &amp;&amp; !isw &amp;&amp; !isx) {</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">      isr = chmod.indexOf('r') &gt;= 0;</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">      isw = chmod.indexOf('w') &gt;= 0;</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">      isx = chmod.indexOf('x') &gt;= 0;</span>
+<span class="pc bpc" id="L129" title="5 of 6 branches missed.">      if (!isr &amp;&amp; !isw &amp;&amp; !isx) {</span>
         // ignore
 <span class="nc" id="L131">        continue;</span>
       }
-<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (user) {</span>
-<span class="nc bnc" id="L134" title="All 16 branches missed.">        ur = ise &amp;&amp; isr || isp &amp;&amp; (isr || ur) || ism &amp;&amp; !isr &amp;&amp; ur;</span>
-<span class="nc bnc" id="L135" title="All 16 branches missed.">        uw = ise &amp;&amp; isw || isp &amp;&amp; (isw || uw) || ism &amp;&amp; !isw &amp;&amp; uw;</span>
-<span class="nc bnc" id="L136" title="All 16 branches missed.">        ux = ise &amp;&amp; isx || isp &amp;&amp; (isx || ux) || ism &amp;&amp; !isx &amp;&amp; ux;</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">      if (user) {</span>
+<span class="pc bpc" id="L134" title="14 of 16 branches missed.">        ur = ise &amp;&amp; isr || isp &amp;&amp; (isr || ur) || ism &amp;&amp; !isr &amp;&amp; ur;</span>
+<span class="pc bpc" id="L135" title="14 of 16 branches missed.">        uw = ise &amp;&amp; isw || isp &amp;&amp; (isw || uw) || ism &amp;&amp; !isw &amp;&amp; uw;</span>
+<span class="pc bpc" id="L136" title="12 of 16 branches missed.">        ux = ise &amp;&amp; isx || isp &amp;&amp; (isx || ux) || ism &amp;&amp; !isx &amp;&amp; ux;</span>
       }
-<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (all) {</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">      if (all) {</span>
 <span class="nc bnc" id="L139" title="All 16 branches missed.">        ar = ise &amp;&amp; isr || isp &amp;&amp; (isr || ar) || ism &amp;&amp; !isr &amp;&amp; ar;</span>
 <span class="nc bnc" id="L140" title="All 16 branches missed.">        aw = ise &amp;&amp; isw || isp &amp;&amp; (isw || aw) || ism &amp;&amp; !isw &amp;&amp; aw;</span>
 <span class="nc bnc" id="L141" title="All 16 branches missed.">        ax = ise &amp;&amp; isx || isp &amp;&amp; (isx || ax) || ism &amp;&amp; !isx &amp;&amp; ax;</span>
       }
     }
-<span class="nc" id="L144">    boolean result = true;</span>
-<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (isall) {</span>
+<span class="fc" id="L144">    boolean result = true;</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    if (isall) {</span>
 <span class="nc" id="L146">      result &amp;= file.setReadable(ar, false);</span>
 <span class="nc" id="L147">      result &amp;= file.setWritable(aw, false);</span>
 <span class="nc" id="L148">      result &amp;= file.setExecutable(ax, false);</span>
     }
-<span class="nc" id="L150">    result &amp;= file.setReadable(ur, true);</span>
-<span class="nc" id="L151">    result &amp;= file.setWritable(uw, true);</span>
-<span class="nc" id="L152">    result &amp;= file.setExecutable(ux, true);</span>
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (result) {</span>
-<span class="nc" id="L154">      futureCompletion.setSuccess();</span>
+<span class="fc" id="L150">    result &amp;= file.setReadable(ur, true);</span>
+<span class="fc" id="L151">    result &amp;= file.setWritable(uw, true);</span>
+<span class="fc" id="L152">    result &amp;= file.setExecutable(ux, true);</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (result) {</span>
+<span class="fc" id="L154">      futureCompletion.setSuccess();</span>
     } else {
 <span class="nc" id="L156">      logger.error(</span>
           &quot;ChMod &quot; + finalname + &quot; on file : &quot; + file + &quot;     &quot; + session);
 <span class="nc" id="L158">      futureCompletion.setFailure(</span>
           new OpenR66RunnerException(&quot;Chmod not fully applied on File&quot;));
     }
-<span class="nc" id="L161">  }</span>
+<span class="fc" id="L161">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -50,21 +50,21 @@ public class HttpResumableInfo {
 <span class="fc" id="L50">    this.relativePath = relativePath;</span>
 <span class="fc" id="L51">    this.totalChunks =</span>
 <span class="fc" id="L52">        (int) Math.ceil(((double) totalSize) / ((double) chunkSize));</span>
-<span class="fc" id="L53">    logger</span>
-<span class="fc" id="L54">        .debug(&quot;{} {} {} {} {}&quot;, totalSize, chunkSize, (totalSize) / chunkSize,</span>
-<span class="fc" id="L55">               (int) Math.ceil(((double) totalSize) / ((double) chunkSize)),</span>
-<span class="fc" id="L56">               totalChunks);</span>
+<span class="fc" id="L53">    logger.debug(&quot;{} {} {} {} {}&quot;, totalSize, chunkSize,</span>
+<span class="fc" id="L54">                 (totalSize) / chunkSize,</span>
+<span class="fc" id="L55">                 (int) Math.ceil(((double) totalSize) / ((double) chunkSize)),</span>
+<span class="fc" id="L56">                 totalChunks);</span>
 <span class="fc" id="L57">  }</span>
 
   /**
    * The original file name (since a bug in Firefox results in the file name
    * not being transmitted in chunk multipart posts).
    */
-  public String getFilename() {
+  public final String getFilename() {
 <span class="fc" id="L64">    return filename;</span>
   }
 
-  public HttpResumableInfo setFilename(final String filename) {
+  public final HttpResumableInfo setFilename(final String filename) {
 <span class="fc" id="L68">    this.filename = filename;</span>
 <span class="fc" id="L69">    return this;</span>
   }
@@ -73,11 +73,11 @@ public class HttpResumableInfo {
    * The file's relative path when selecting a directory (defaults to file
    * name in all browsers except Chrome).
    */
-  public String getRelativePath() {
+  public final String getRelativePath() {
 <span class="fc" id="L77">    return relativePath;</span>
   }
 
-  public HttpResumableInfo setRelativePath(final String relativePath) {
+  public final HttpResumableInfo setRelativePath(final String relativePath) {
 <span class="fc" id="L81">    this.relativePath = relativePath;</span>
 <span class="fc" id="L82">    return this;</span>
   }
@@ -89,7 +89,7 @@ public class HttpResumableInfo {
    *     total number of chunks, identifier and current chunk vs max chunk
    *     number)
    */
-  public boolean isCompatible(final HttpResumableInfo resumableInfo) {
+  public final boolean isCompatible(final HttpResumableInfo resumableInfo) {
 <span class="fc bfc" id="L93" title="All 2 branches covered.">    return resumableInfo.getChunkSize() == getChunkSize() &amp;&amp;</span>
 <span class="fc bfc" id="L94" title="All 2 branches covered.">           resumableInfo.getTotalSize() == getTotalSize() &amp;&amp;</span>
 <span class="fc bfc" id="L95" title="All 2 branches covered.">           resumableInfo.getIdentifier().equals(getIdentifier()) &amp;&amp;</span>
@@ -103,11 +103,11 @@ public class HttpResumableInfo {
    * data received in the HTTP might be higher than resumableChunkSize for
    * the last chunk for a file. Max being 2^31, preferably 2^20 (1 MB)
    */
-  public int getChunkSize() {
+  public final int getChunkSize() {
 <span class="fc" id="L107">    return chunkSize;</span>
   }
 
-  public HttpResumableInfo setChunkSize(final int chunkSize) {
+  public final HttpResumableInfo setChunkSize(final int chunkSize) {
 <span class="fc" id="L111">    this.chunkSize = chunkSize;</span>
 <span class="fc" id="L112">    return this;</span>
   }
@@ -116,11 +116,11 @@ public class HttpResumableInfo {
    * The total file size. Max being theoretically 2^63, but in practice being
    * resumableChunkSize x resumableTotalChunks, therefore 2^20 x 2^31 = 2^51
    */
-  public long getTotalSize() {
+  public final long getTotalSize() {
 <span class="fc" id="L120">    return totalSize;</span>
   }
 
-  public HttpResumableInfo setTotalSize(final long totalSize) {
+  public final HttpResumableInfo setTotalSize(final long totalSize) {
 <span class="fc" id="L124">    this.totalSize = totalSize;</span>
 <span class="fc" id="L125">    return this;</span>
   }
@@ -128,14 +128,14 @@ public class HttpResumableInfo {
   /**
    * A unique identifier for the file contained in the request.
    */
-  public String getIdentifier() {
+  public final String getIdentifier() {
 <span class="fc" id="L132">    return identifier;</span>
   }
 
   /**
    * The total number of chunks. Max being 2^31
    */
-  public int getTotalChunks() {
+  public final int getTotalChunks() {
 <span class="fc" id="L139">    return totalChunks;</span>
   }
 
@@ -143,21 +143,21 @@ public class HttpResumableInfo {
    * The index of the chunk in the current upload. First chunk is 1 (no
    * base-0 counting here). Max being 2^31
    */
-  public int getChunkNumber() {
+  public final int getChunkNumber() {
 <span class="fc" id="L147">    return chunkNumber;</span>
   }
 
-  public HttpResumableInfo setChunkNumber(final int chunkNumber) {
+  public final HttpResumableInfo setChunkNumber(final int chunkNumber) {
 <span class="fc" id="L151">    this.chunkNumber = chunkNumber;</span>
 <span class="fc" id="L152">    return this;</span>
   }
 
-  public HttpResumableInfo setTotalChunks(final int totalChunks) {
+  public final HttpResumableInfo setTotalChunks(final int totalChunks) {
 <span class="fc" id="L156">    this.totalChunks = totalChunks;</span>
 <span class="fc" id="L157">    return this;</span>
   }
 
-  public HttpResumableInfo setIdentifier(final String identifier) {
+  public final HttpResumableInfo setIdentifier(final String identifier) {
 <span class="fc" id="L161">    this.identifier = identifier;</span>
 <span class="fc" id="L162">    return this;</span>
   }
@@ -169,4 +169,4 @@ public class HttpResumableInfo {
            filename + &quot;, RP:&quot; + relativePath + &quot;}&quot;;
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -53,40 +53,40 @@ public class ExecGatewayFtpServer {
    * @param args
    */
   public static void main(final String[] args) {
-<span class="nc bnc" id="L56" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">    if (args.length &lt; 1) {</span>
 <span class="nc" id="L57">      SysErrLogger.FAKE_LOGGER.syserr(</span>
 <span class="nc" id="L58">          &quot;Usage: &quot; + ExecGatewayFtpServer.class.getName() +</span>
           &quot; &lt;config-file&gt; [&lt;r66config-file&gt;]&quot;);
 <span class="nc" id="L60">      return;</span>
     }
-<span class="nc" id="L62">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+<span class="fc" id="L62">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
         new WaarpSlf4JLoggerFactory(null));
-<span class="nc" id="L64">    logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.class);</span>
-<span class="nc bnc" id="L65" title="All 2 branches missed.">    initialize(args[0], args.length &gt; 1? args[1] : null);</span>
-<span class="nc" id="L66">  }</span>
+<span class="fc" id="L64">    logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.class);</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">    initialize(args[0], args.length &gt; 1? args[1] : null);</span>
+<span class="fc" id="L66">  }</span>
 
   public static boolean initialize(final String config, final String r66file) {
-<span class="nc" id="L69">    boolean asAService = false;</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="fc" id="L69">    boolean asAService = false;</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (logger == null) {</span>
       // Called as a service
 <span class="nc" id="L72">      logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.class);</span>
 <span class="nc" id="L73">      asAService = true;</span>
     }
-<span class="nc" id="L75">    final FileBasedConfiguration configuration =</span>
+<span class="fc" id="L75">    final FileBasedConfiguration configuration =</span>
         new FileBasedConfiguration(ExecGatewayFtpServer.class,
                                    ExecBusinessHandler.class,
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (asAService) {</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (asAService) {</span>
 <span class="nc" id="L81">      configuration.getShutdownConfiguration().serviceFuture =</span>
           FtpEngine.closeFuture;
     }
-<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (!configuration.setConfigurationServerFromXml(config)) {</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">    if (!configuration.setConfigurationServerFromXml(config)) {</span>
 <span class="nc" id="L85">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad main configuration&quot;);</span>
 <span class="nc" id="L86">      return false;</span>
     }
-<span class="nc" id="L88">    Configuration.configuration.setUseLocalExec(configuration.isUseLocalExec());</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (AbstractExecutor.useDatabase) {</span>
+<span class="fc" id="L88">    Configuration.configuration.setUseLocalExec(configuration.isUseLocalExec());</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">    if (AbstractExecutor.useDatabase) {</span>
       // Use R66 module
 <span class="nc bnc" id="L91" title="All 2 branches missed.">      if (r66file != null) {</span>
 <span class="nc bnc" id="L92" title="All 2 branches missed.">        if (!org.waarp.openr66.configuration.FileBasedConfiguration.setSubmitClientConfigurationFromXml(</span>
@@ -100,33 +100,33 @@ public class ExecGatewayFtpServer {
             &quot;No R66PrepareTransfer configuration file&quot;);
       }
     } else {
-<span class="nc" id="L103">      SysErrLogger.FAKE_LOGGER.syserr(&quot;No R66PrepareTransfer support&quot;);</span>
+<span class="fc" id="L103">      SysErrLogger.FAKE_LOGGER.syserr(&quot;No R66PrepareTransfer support&quot;);</span>
     }
-<span class="nc" id="L105">    FileBasedConfiguration.fileBasedConfiguration = configuration;</span>
+<span class="fc" id="L105">    FileBasedConfiguration.fileBasedConfiguration = configuration;</span>
     // Start server.
-<span class="nc" id="L107">    configuration.configureLExec();</span>
+<span class="fc" id="L107">    configuration.configureLExec();</span>
     try {
-<span class="nc" id="L109">      configuration.serverStartup();</span>
+<span class="fc" id="L109">      configuration.serverStartup();</span>
 <span class="nc" id="L110">    } catch (final FtpNoConnectionException e1) {</span>
 <span class="nc" id="L111">      SysErrLogger.FAKE_LOGGER.syserr(e1);</span>
 <span class="nc" id="L112">      configuration.releaseResources();</span>
 <span class="nc" id="L113">      return false;</span>
-<span class="nc" id="L114">    }</span>
-<span class="nc" id="L115">    configuration.configureHttps();</span>
-<span class="nc" id="L116">    configuration.configureConstraint();</span>
+<span class="fc" id="L114">    }</span>
+<span class="fc" id="L115">    configuration.configureHttps();</span>
+<span class="fc" id="L116">    configuration.configureConstraint();</span>
     try {
-<span class="nc" id="L118">      configuration.configureSnmp();</span>
+<span class="fc" id="L118">      configuration.configureSnmp();</span>
 <span class="nc" id="L119">    } catch (final FtpNoConnectionException e) {</span>
 <span class="nc" id="L120">      SysErrLogger.FAKE_LOGGER.syserr(</span>
 <span class="nc" id="L121">          &quot;Cannot start SNMP support: &quot; + e.getMessage());</span>
-<span class="nc" id="L122">    }</span>
-<span class="nc" id="L123">    logger.warn(&quot;FTP started &quot; +</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">                (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?</span>
+<span class="fc" id="L122">    }</span>
+<span class="fc" id="L123">    logger.warn(&quot;FTP started &quot; +</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">                (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?</span>
                     &quot;Implicit SSL On&quot; :
-<span class="nc" id="L126">                    configuration.getFtpInternalConfiguration()</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">                                 .isAcceptAuthProt()? &quot;Explicit SSL On&quot; :</span>
+<span class="fc" id="L126">                    configuration.getFtpInternalConfiguration()</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                                 .isAcceptAuthProt()? &quot;Explicit SSL On&quot; :</span>
                         &quot;with SSL Off&quot;));
-<span class="nc" id="L129">    return true;</span>
+<span class="fc" id="L129">    return true;</span>
   }
 
 }

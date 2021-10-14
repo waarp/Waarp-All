@@ -24,10 +24,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.waarp.common.file.FileUtils;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.xml.XmlUtil;
 import org.waarp.openr66.configuration.ExtensionFilter;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
@@ -45,250 +45,265 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.waarp.openr66.dao.DAOFactory.*;
+import static org.waarp.openr66.dao.database.DBRuleDAO.*;
 
 public class XMLRuleDAO implements RuleDAO {
 
-<span class="nc" id="L61">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L62">      WaarpLoggerFactory.getLogger(XMLRuleDAO.class);</span>
+<span class="fc" id="L60">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L61">      WaarpLoggerFactory.getLogger(XMLRuleDAO.class);</span>
 
   /**
    * HashTable in case of lack of database
    */
-<span class="nc" id="L67">  private static final ConcurrentHashMap&lt;String, Rule&gt; dbR66RuleHashMap =</span>
+<span class="fc" id="L66">  private static final ConcurrentHashMap&lt;String, Rule&gt; dbR66RuleHashMap =</span>
       new ConcurrentHashMap&lt;String, Rule&gt;();
 
   public static final String ROOT_LIST = &quot;rules&quot;;
-  public static final String ROOT_ELEMENT = &quot;rule&quot;;
-
-  public static final String RULENAME_FIELD = &quot;idrule&quot;;
-  public static final String HOSTIDS_LIST = &quot;hostids&quot;;
-  public static final String MODE_FIELD = &quot;mode&quot;;
-  public static final String SEND_PATH_FIELD = &quot;sendpath&quot;;
-  public static final String RECV_PATH_FIELD = &quot;recvpath&quot;;
-  public static final String ARCH_PATH_FIELD = &quot;archivepath&quot;;
-  public static final String WORK_PATH_FIELD = &quot;workpath&quot;;
-  public static final String RPRE_TASKS_FIELD = &quot;rpretasks&quot;;
-  public static final String RPOST_TASKS_FIELD = &quot;rposttasks&quot;;
-  public static final String RERROR_TASKS_FIELD = &quot;rerrortasks&quot;;
-  public static final String SPRE_TASKS_FIELD = &quot;spretasks&quot;;
-  public static final String SPOST_TASKS_FIELD = &quot;sposttasks&quot;;
-  public static final String SERROR_TASKS_FIELD = &quot;serrortasks&quot;;
 
   private static final String XML_GET_ALL = &quot;//rule&quot;;
-<span class="nc" id="L88">  private static final File[] FILE_0_LENGTH = new File[0];</span>
+<span class="fc" id="L72">  private static final File[] FILE_0_LENGTH = new File[0];</span>
 
-<span class="nc" id="L90">  public XMLRuleDAO(final String filePath) {</span>
+<span class="fc" id="L74">  public XMLRuleDAO() {</span>
     // Nothing to do
-<span class="nc" id="L92">  }</span>
+<span class="fc" id="L76">  }</span>
 
   @Override
-  public void close() {
+  public final void close() {
     // ignore
-<span class="nc" id="L97">  }</span>
+<span class="fc" id="L81">  }</span>
 
   public static final String EXT_RULE = &quot;.rule.xml&quot;;
   public static final String EXT_RULES = &quot;.rules.xml&quot;;
 
   private File[] getRuleFiles() {
-<span class="nc" id="L103">    final File ruleDir = new File(</span>
-<span class="nc" id="L104">        Configuration.configuration.getBaseDirectory() +</span>
-<span class="nc" id="L105">        Configuration.configuration.getConfigPath());</span>
-<span class="nc" id="L106">    final List&lt;File&gt; res = new ArrayList&lt;File&gt;();</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (ruleDir.isDirectory()) {</span>
-<span class="nc" id="L108">      res.addAll(</span>
-<span class="nc" id="L109">          Arrays.asList(ruleDir.listFiles(new ExtensionFilter(EXT_RULE))));</span>
-<span class="nc" id="L110">      res.addAll(</span>
-<span class="nc" id="L111">          Arrays.asList(ruleDir.listFiles(new ExtensionFilter(EXT_RULES))));</span>
+<span class="fc" id="L87">    final File ruleDir = new File(</span>
+<span class="fc" id="L88">        Configuration.configuration.getBaseDirectory() +</span>
+<span class="fc" id="L89">        Configuration.configuration.getConfigPath());</span>
+<span class="fc" id="L90">    final List&lt;File&gt; res = new ArrayList&lt;File&gt;();</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">    if (ruleDir.isDirectory()) {</span>
+<span class="fc" id="L92">      res.addAll(</span>
+<span class="fc" id="L93">          Arrays.asList(ruleDir.listFiles(new ExtensionFilter(EXT_RULE))));</span>
+<span class="fc" id="L94">      res.addAll(</span>
+<span class="fc" id="L95">          Arrays.asList(ruleDir.listFiles(new ExtensionFilter(EXT_RULES))));</span>
     }
-<span class="nc" id="L113">    return res.toArray(FILE_0_LENGTH);</span>
+<span class="fc" id="L97">    return res.toArray(FILE_0_LENGTH);</span>
   }
 
   @Override
-  public void delete(final Rule rule) {
-<span class="nc" id="L118">    dbR66RuleHashMap.remove(rule.getName());</span>
-<span class="nc" id="L119">  }</span>
+  public final void delete(final Rule rule) {
+<span class="nc" id="L102">    dbR66RuleHashMap.remove(rule.getName());</span>
+<span class="nc" id="L103">  }</span>
 
   @Override
-  public void deleteAll() {
-<span class="nc" id="L123">    dbR66RuleHashMap.clear();</span>
-<span class="nc" id="L124">  }</span>
+  public final void deleteAll() {
+<span class="nc" id="L107">    dbR66RuleHashMap.clear();</span>
+<span class="nc" id="L108">  }</span>
 
   @Override
-  public List&lt;Rule&gt; getAll() throws DAOConnectionException {
-<span class="nc" id="L128">    final List&lt;Rule&gt; res = new ArrayList&lt;Rule&gt;();</span>
+  public final List&lt;Rule&gt; getAll() throws DAOConnectionException {
+<span class="fc" id="L112">    final List&lt;Rule&gt; res = new ArrayList&lt;Rule&gt;();</span>
 
-<span class="nc" id="L130">    final File[] files = getRuleFiles();</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">    for (final File ruleFile : files) {</span>
+<span class="fc" id="L114">    final File[] files = getRuleFiles();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">    for (final File ruleFile : files) {</span>
+<span class="fc" id="L116">      logger.debug(&quot;Load file {}&quot;, ruleFile.getAbsolutePath());</span>
       try {
-<span class="nc" id="L133">        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L134">        final Document document = dbf.newDocumentBuilder().parse(ruleFile);</span>
+<span class="fc" id="L118">        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L119">        final Document document = dbf.newDocumentBuilder().parse(ruleFile);</span>
         // Setup XPath query
-<span class="nc" id="L136">        final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L137">        final XPathExpression xpe = xPath.compile(XML_GET_ALL);</span>
-<span class="nc" id="L138">        final NodeList listNode =</span>
-<span class="nc" id="L139">            (NodeList) xpe.evaluate(document, XPathConstants.NODESET);</span>
+<span class="fc" id="L121">        final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="fc" id="L122">        final XPathExpression xpe = xPath.compile(XML_GET_ALL);</span>
+<span class="fc" id="L123">        final NodeList listNode =</span>
+<span class="fc" id="L124">            (NodeList) xpe.evaluate(document, XPathConstants.NODESET);</span>
         // Iterate through all found nodes
 
-<span class="nc bnc" id="L142" title="All 2 branches missed.">        for (int i = 0; i &lt; listNode.getLength(); i++) {</span>
-<span class="nc" id="L143">          final Node node = listNode.item(i);</span>
-<span class="nc" id="L144">          final Rule rule = getFromNode(node);</span>
-<span class="nc" id="L145">          res.add(rule);</span>
-<span class="nc" id="L146">          dbR66RuleHashMap.put(rule.getName(), rule);</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        for (int i = 0; i &lt; listNode.getLength(); i++) {</span>
+<span class="fc" id="L128">          final Node node = listNode.item(i);</span>
+<span class="fc" id="L129">          final Rule rule = getFromNode(node);</span>
+<span class="fc" id="L130">          res.add(rule);</span>
+<span class="fc" id="L131">          dbR66RuleHashMap.put(rule.getName(), rule);</span>
         }
-<span class="nc" id="L148">      } catch (final SAXException e) {</span>
-<span class="nc" id="L149">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L150">      } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L151">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L152">      } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L153">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L154">      } catch (final IOException e) {</span>
-<span class="nc" id="L155">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L156">      }</span>
+<span class="nc" id="L133">      } catch (final SAXException e) {</span>
+<span class="nc" id="L134">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L135">      } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L136">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L137">      } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L138">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L139">      } catch (final IOException e) {</span>
+<span class="nc" id="L140">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L141">      } catch (final Exception e) {</span>
+<span class="nc" id="L142">        throw new DAOConnectionException(e);</span>
+<span class="fc" id="L143">      }</span>
     }
-<span class="nc" id="L158">    return res;</span>
+<span class="fc" id="L145">    return res;</span>
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return count only if filters is empty or null
+   */
   @Override
-  public boolean exist(final String rulename) {
-<span class="nc" id="L163">    return dbR66RuleHashMap.containsKey(rulename);</span>
-  }
-
-  @Override
-  public List&lt;Rule&gt; find(final List&lt;Filter&gt; fitlers)
+  public final long count(final List&lt;Filter&gt; fitlers)
       throws DAOConnectionException {
-<span class="nc" id="L169">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
-  }
-
-  @Override
-  public void insert(final Rule rule) {
-<span class="nc" id="L174">    dbR66RuleHashMap.put(rule.getName(), rule);</span>
-<span class="nc" id="L175">  }</span>
-
-  @Override
-  public Rule select(final String rulename)
-      throws DAOConnectionException, DAONoDataException {
-<span class="nc bnc" id="L180" title="All 2 branches missed.">    if (exist(rulename)) {</span>
-<span class="nc" id="L181">      return dbR66RuleHashMap.get(rulename);</span>
+<span class="nc bnc" id="L156" title="All 4 branches missed.">    if (fitlers == null || fitlers.isEmpty()) {</span>
+<span class="nc" id="L157">      return dbR66RuleHashMap.size();</span>
     }
-<span class="nc" id="L183">    throw new DAONoDataException(&quot;Rule cannot be found&quot;);</span>
+<span class="nc" id="L159">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
-  public void update(final Rule rule) {
-<span class="nc" id="L188">    dbR66RuleHashMap.put(rule.getName(), rule);</span>
-<span class="nc" id="L189">  }</span>
+  public final boolean exist(final String rulename) {
+<span class="fc" id="L164">    return dbR66RuleHashMap.containsKey(rulename);</span>
+  }
+
+  @Override
+  public final List&lt;Rule&gt; find(final List&lt;Filter&gt; fitlers)
+      throws DAOConnectionException {
+<span class="nc" id="L170">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  @Override
+  public final void insert(final Rule rule) {
+<span class="fc" id="L175">    dbR66RuleHashMap.put(rule.getName(), rule);</span>
+<span class="fc" id="L176">  }</span>
+
+  @Override
+  public final Rule select(final String rulename)
+      throws DAOConnectionException, DAONoDataException {
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    if (exist(rulename)) {</span>
+<span class="fc" id="L182">      return dbR66RuleHashMap.get(rulename);</span>
+    }
+<span class="nc" id="L184">    throw new DAONoDataException(&quot;Rule cannot be found&quot;);</span>
+  }
+
+  @Override
+  public final void update(final Rule rule) {
+<span class="nc" id="L189">    dbR66RuleHashMap.put(rule.getName(), rule);</span>
+<span class="nc" id="L190">  }</span>
 
   private Rule getFromNode(final Node parent) throws DAOConnectionException {
-<span class="nc" id="L192">    final Rule res = new Rule();</span>
+<span class="fc" id="L193">    final Rule res = new Rule();</span>
 
-<span class="nc" id="L194">    final NodeList children = parent.getChildNodes();</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
-<span class="nc" id="L196">      final Node node = children.item(j);</span>
-<span class="nc bnc" id="L197" title="All 2 branches missed.">      if (node.getNodeName().equals(RULENAME_FIELD)) {</span>
-<span class="nc" id="L198">        res.setName(node.getTextContent());</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">      } else if (node.getNodeName().equals(HOSTIDS_LIST)) {</span>
-<span class="nc" id="L200">        res.setHostids(retrieveHostids(node.getTextContent()));</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">      } else if (node.getNodeName().equals(MODE_FIELD)) {</span>
-<span class="nc" id="L202">        res.setMode(Integer.parseInt(node.getTextContent()));</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">      } else if (node.getNodeName().equals(SEND_PATH_FIELD)) {</span>
-<span class="nc" id="L204">        res.setSendPath(node.getTextContent());</span>
-<span class="nc bnc" id="L205" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RECV_PATH_FIELD)) {</span>
-<span class="nc" id="L206">        res.setRecvPath(node.getTextContent());</span>
-<span class="nc bnc" id="L207" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ARCH_PATH_FIELD)) {</span>
-<span class="nc" id="L208">        res.setArchivePath(node.getTextContent());</span>
-<span class="nc bnc" id="L209" title="All 2 branches missed.">      } else if (node.getNodeName().equals(WORK_PATH_FIELD)) {</span>
-<span class="nc" id="L210">        res.setWorkPath(node.getTextContent());</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RPRE_TASKS_FIELD)) {</span>
-<span class="nc" id="L212">        res.setRPreTasks(retrieveTasks(node));</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RPOST_TASKS_FIELD)) {</span>
-<span class="nc" id="L214">        res.setRPostTasks(retrieveTasks(node));</span>
-<span class="nc bnc" id="L215" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RERROR_TASKS_FIELD)) {</span>
-<span class="nc" id="L216">        res.setRErrorTasks(retrieveTasks(node));</span>
-<span class="nc bnc" id="L217" title="All 2 branches missed.">      } else if (node.getNodeName().equals(SPRE_TASKS_FIELD)) {</span>
-<span class="nc" id="L218">        res.setSPreTasks(retrieveTasks(node));</span>
-<span class="nc bnc" id="L219" title="All 2 branches missed.">      } else if (node.getNodeName().equals(SPOST_TASKS_FIELD)) {</span>
-<span class="nc" id="L220">        res.setSPostTasks(retrieveTasks(node));</span>
-<span class="nc bnc" id="L221" title="All 2 branches missed.">      } else if (node.getNodeName().equals(SERROR_TASKS_FIELD)) {</span>
-<span class="nc" id="L222">        res.setSErrorTasks(retrieveTasks(node));</span>
+<span class="fc" id="L195">    final NodeList children = parent.getChildNodes();</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
+<span class="fc" id="L197">      final Node node = children.item(j);</span>
+<span class="fc" id="L198">      final String content = XmlUtil.getExtraTrimed(node.getTextContent());</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">      if (node.getNodeName().equals(ID_FIELD)) {</span>
+<span class="fc" id="L200">        res.setName(content);</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">      } else if (node.getNodeName().equals(HOSTIDS_FIELD)) {</span>
+<span class="fc" id="L202">        res.setHostids(retrieveHostids(node));</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">      } else if (node.getNodeName().equals(MODE_TRANS_FIELD)) {</span>
+<span class="nc" id="L204">        res.setMode(Integer.parseInt(content));</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">      } else if (node.getNodeName().equals(SEND_PATH_FIELD)) {</span>
+        try {
+<span class="fc" id="L207">          res.setSendPath(content);</span>
+<span class="nc" id="L208">        } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L209">          throw new DAOConnectionException(e);</span>
+<span class="fc" id="L210">        }</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">      } else if (node.getNodeName().equals(RECV_PATH_FIELD)) {</span>
+        try {
+<span class="fc" id="L213">          res.setRecvPath(content);</span>
+<span class="nc" id="L214">        } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L215">          throw new DAOConnectionException(e);</span>
+<span class="fc" id="L216">        }</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">      } else if (node.getNodeName().equals(ARCHIVE_PATH_FIELD)) {</span>
+        try {
+<span class="fc" id="L219">          res.setArchivePath(content);</span>
+<span class="nc" id="L220">        } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L221">          throw new DAOConnectionException(e);</span>
+<span class="fc" id="L222">        }</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">      } else if (node.getNodeName().equals(WORK_PATH_FIELD)) {</span>
+        try {
+<span class="fc" id="L225">          res.setWorkPath(content);</span>
+<span class="nc" id="L226">        } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L227">          throw new DAOConnectionException(e);</span>
+<span class="fc" id="L228">        }</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">      } else if (node.getNodeName().equals(R_PRE_TASKS_FIELD)) {</span>
+<span class="fc" id="L230">        res.setRPreTasks(retrieveTasks(node));</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">      } else if (node.getNodeName().equals(R_POST_TASKS_FIELD)) {</span>
+<span class="fc" id="L232">        res.setRPostTasks(retrieveTasks(node));</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">      } else if (node.getNodeName().equals(R_ERROR_TASKS_FIELD)) {</span>
+<span class="fc" id="L234">        res.setRErrorTasks(retrieveTasks(node));</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">      } else if (node.getNodeName().equals(S_PRE_TASKS_FIELD)) {</span>
+<span class="fc" id="L236">        res.setSPreTasks(retrieveTasks(node));</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">      } else if (node.getNodeName().equals(S_POST_TASKS_FIELD)) {</span>
+<span class="fc" id="L238">        res.setSPostTasks(retrieveTasks(node));</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">      } else if (node.getNodeName().equals(S_ERROR_TASKS_FIELD)) {</span>
+<span class="fc" id="L240">        res.setSErrorTasks(retrieveTasks(node));</span>
       }
     }
-<span class="nc" id="L225">    return res;</span>
+<span class="fc" id="L243">    return res;</span>
   }
 
-  public static final String HOSTID_FIELD = &quot;hostid&quot;;
-
-  private List&lt;String&gt; retrieveHostids(final String xml)
+  private List&lt;String&gt; retrieveHostids(final Node xml)
       throws DAOConnectionException {
-<span class="nc" id="L232">    final ArrayList&lt;String&gt; res = new ArrayList&lt;String&gt;();</span>
-<span class="nc bnc" id="L233" title="All 4 branches missed.">    if (xml == null || xml.isEmpty()) {</span>
-<span class="nc" id="L234">      return res;</span>
+<span class="fc" id="L248">    final ArrayList&lt;String&gt; res = new ArrayList&lt;String&gt;();</span>
+<span class="pc bpc" id="L249" title="2 of 4 branches missed.">    if (xml == null || !xml.hasChildNodes()) {</span>
+<span class="nc" id="L250">      return res;</span>
     }
-    Document document;
-<span class="nc" id="L237">    InputStream stream = null;</span>
-    try {
-<span class="nc" id="L239">      stream = new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L240">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L241">      document = dbf.newDocumentBuilder().parse(stream);</span>
-<span class="nc" id="L242">    } catch (final IOException e) {</span>
-<span class="nc" id="L243">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L244">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L245">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L246">    } catch (final SAXException e) {</span>
-<span class="nc" id="L247">      throw new DAOConnectionException(e);</span>
-    } finally {
-<span class="nc bnc" id="L249" title="All 2 branches missed.">      if (stream != null) {</span>
-<span class="nc" id="L250">        FileUtils.close(stream);</span>
-      }
+<span class="fc" id="L252">    final NodeList hostsList = xml.getChildNodes();</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">    for (int i = 0; i &lt; hostsList.getLength(); i++) {</span>
+<span class="fc" id="L254">      res.add(XmlUtil.getExtraTrimed(hostsList.item(i).getTextContent()));</span>
     }
-<span class="nc" id="L253">    document.getDocumentElement().normalize();</span>
-
-<span class="nc" id="L255">    final NodeList hostsList = document.getElementsByTagName(HOSTID_FIELD);</span>
-<span class="nc bnc" id="L256" title="All 2 branches missed.">    for (int i = 0; i &lt; hostsList.getLength(); i++) {</span>
-<span class="nc" id="L257">      res.add(hostsList.item(i).getTextContent());</span>
-    }
-<span class="nc" id="L259">    return res;</span>
+<span class="fc" id="L256">    return res;</span>
   }
-
-  public static final String TASK_NODE = &quot;task&quot;;
-  public static final String TYPE_FIELD = &quot;type&quot;;
-  public static final String PATH_FIELD = &quot;path&quot;;
-  public static final String DELAY_FIELD = &quot;delay&quot;;
 
   private List&lt;RuleTask&gt; retrieveTasks(final Node src) {
-<span class="nc" id="L268">    final List&lt;RuleTask&gt; res = new ArrayList&lt;RuleTask&gt;();</span>
-<span class="nc" id="L269">    final NodeList feed = src.getChildNodes();</span>
-<span class="nc bnc" id="L270" title="All 2 branches missed.">    for (int i = 0; i &lt; feed.getLength(); i++) {</span>
-<span class="nc" id="L271">      final Node mainnode = feed.item(i);</span>
-<span class="nc bnc" id="L272" title="All 2 branches missed.">      if (mainnode.getNodeType() == Node.ELEMENT_NODE) {</span>
-<span class="nc" id="L273">        final Element e = (Element) mainnode;</span>
-<span class="nc" id="L274">        final NodeList tasksList = e.getElementsByTagName(TASK_NODE);</span>
-<span class="nc bnc" id="L275" title="All 2 branches missed.">        for (int j = 0; j &lt; tasksList.getLength(); j++) {</span>
-<span class="nc" id="L276">          final Node taskNode = tasksList.item(j);</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">          if (taskNode.getNodeType() == Node.ELEMENT_NODE) {</span>
-<span class="nc" id="L278">            final Element task = (Element) taskNode;</span>
-<span class="nc" id="L279">            final String type =</span>
-<span class="nc" id="L280">                task.getElementsByTagName(TYPE_FIELD).item(0).getTextContent();</span>
-<span class="nc" id="L281">            final String path =</span>
-<span class="nc" id="L282">                task.getElementsByTagName(PATH_FIELD).item(0).getTextContent();</span>
-<span class="nc" id="L283">            final int delay = Integer.parseInt(</span>
-<span class="nc" id="L284">                task.getElementsByTagName(DELAY_FIELD).item(0)</span>
-<span class="nc" id="L285">                    .getTextContent());</span>
-<span class="nc" id="L286">            res.add(new RuleTask(type, path, delay));</span>
+<span class="fc" id="L260">    final List&lt;RuleTask&gt; res = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L261">    final NodeList feed = src.getChildNodes();</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">    for (int i = 0; i &lt; feed.getLength(); i++) {</span>
+<span class="fc" id="L263">      final Node mainnode = feed.item(i);</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">      if (mainnode.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L265">        final Element e = (Element) mainnode;</span>
+<span class="fc" id="L266">        final NodeList tasksList = e.getElementsByTagName(TASK_NODE);</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">        for (int j = 0; j &lt; tasksList.getLength(); j++) {</span>
+<span class="fc" id="L268">          final Node taskNode = tasksList.item(j);</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">          if (taskNode.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L270">            final Element task = (Element) taskNode;</span>
+<span class="fc" id="L271">            NodeList nodeList = task.getElementsByTagName(TYPE_FIELD);</span>
+<span class="pc bpc" id="L272" title="2 of 4 branches missed.">            if (nodeList == null || nodeList.getLength() == 0) {</span>
+<span class="nc" id="L273">              logger.error(&quot;Field not found in Rule: &quot; + TYPE_FIELD);</span>
+<span class="nc" id="L274">              continue;</span>
+            }
+<span class="fc" id="L276">            final String type =</span>
+<span class="fc" id="L277">                XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent());</span>
+<span class="fc" id="L278">            nodeList = task.getElementsByTagName(PATH_FIELD);</span>
+            final String path;
+<span class="pc bpc" id="L280" title="2 of 4 branches missed.">            if (nodeList != null &amp;&amp; nodeList.getLength() &gt; 0) {</span>
+<span class="fc" id="L281">              path = XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent());</span>
+            } else {
+<span class="nc" id="L283">              path = &quot;&quot;;</span>
+            }
+<span class="fc" id="L285">            nodeList = task.getElementsByTagName(DELAY_FIELD);</span>
+            final int delay;
+<span class="pc bpc" id="L287" title="2 of 4 branches missed.">            if (nodeList != null &amp;&amp; nodeList.getLength() &gt; 0) {</span>
+<span class="fc" id="L288">              int tmpDelay = 0;</span>
+              try {
+<span class="fc" id="L290">                tmpDelay = Integer.parseInt(</span>
+<span class="fc" id="L291">                    XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent()));</span>
+<span class="fc" id="L292">              } catch (final NumberFormatException ignored) {</span>
+                // ignore
+<span class="fc" id="L294">              }</span>
+<span class="fc" id="L295">              delay = tmpDelay;</span>
+<span class="fc" id="L296">            } else {</span>
+<span class="nc" id="L297">              delay = 0;</span>
+            }
+<span class="fc" id="L299">            final RuleTask ruleTask = new RuleTask(type, path, delay);</span>
+<span class="fc" id="L300">            logger.debug(&quot;Task {}&quot;, ruleTask);</span>
+<span class="fc" id="L301">            res.add(ruleTask);</span>
           }
         }
       }
     }
-<span class="nc" id="L291">    return res;</span>
+<span class="fc" id="L306">    return res;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

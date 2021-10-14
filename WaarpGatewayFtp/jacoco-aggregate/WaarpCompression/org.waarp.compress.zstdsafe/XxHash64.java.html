@@ -51,106 +51,106 @@ final class XxHash64 {
   public static long hash(final long seed, final byte[] base, final int address,
                           final int length) {
     long hash;
-<span class="nc bnc" id="L54" title="All 2 branches missed.">    if (length &gt;= 32) {</span>
-<span class="nc" id="L55">      hash = updateBody(seed, base, address, length);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">    if (length &gt;= 32) {</span>
+<span class="fc" id="L55">      hash = updateBody(seed, base, address, length);</span>
     } else {
-<span class="nc" id="L57">      hash = seed + PRIME64_5;</span>
+<span class="fc" id="L57">      hash = seed + PRIME64_5;</span>
     }
 
-<span class="nc" id="L60">    hash += length;</span>
+<span class="fc" id="L60">    hash += length;</span>
 
     // round to the closest 32 byte boundary
     // this is the point up to which updateBody() processed
-<span class="nc" id="L64">    final int index = length &amp; 0xFFFFFFE0;</span>
+<span class="fc" id="L64">    final int index = length &amp; 0xFFFFFFE0;</span>
 
-<span class="nc" id="L66">    return updateTail(hash, base, address, index, length);</span>
+<span class="fc" id="L66">    return updateTail(hash, base, address, index, length);</span>
   }
 
   private static long updateTail(long hash, final byte[] base,
                                  final int address, int index,
                                  final int length) {
-<span class="nc bnc" id="L72" title="All 2 branches missed.">    while (index &lt;= length - 8) {</span>
-<span class="nc" id="L73">      hash = updateTail(hash, getLong(base, address + index));</span>
-<span class="nc" id="L74">      index += 8;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">    while (index &lt;= length - 8) {</span>
+<span class="fc" id="L73">      hash = updateTail(hash, getLong(base, address + index));</span>
+<span class="fc" id="L74">      index += 8;</span>
     }
 
-<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (index &lt;= length - 4) {</span>
-<span class="nc" id="L78">      hash = updateTail(hash, getInt(base, address + index));</span>
-<span class="nc" id="L79">      index += 4;</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">    if (index &lt;= length - 4) {</span>
+<span class="fc" id="L78">      hash = updateTail(hash, getInt(base, address + index));</span>
+<span class="fc" id="L79">      index += 4;</span>
     }
 
-<span class="nc bnc" id="L82" title="All 2 branches missed.">    while (index &lt; length) {</span>
-<span class="nc" id="L83">      hash = updateTail(hash, base[address + index]);</span>
-<span class="nc" id="L84">      index++;</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">    while (index &lt; length) {</span>
+<span class="fc" id="L83">      hash = updateTail(hash, base[address + index]);</span>
+<span class="fc" id="L84">      index++;</span>
     }
 
-<span class="nc" id="L87">    hash = finalShuffle(hash);</span>
+<span class="fc" id="L87">    hash = finalShuffle(hash);</span>
 
-<span class="nc" id="L89">    return hash;</span>
+<span class="fc" id="L89">    return hash;</span>
   }
 
   private static long updateBody(final long seed, final byte[] base,
                                  int address, final int length) {
-<span class="nc" id="L94">    long v1 = seed + PRIME64_1 + PRIME64_2;</span>
-<span class="nc" id="L95">    long v2 = seed + PRIME64_2;</span>
-<span class="nc" id="L96">    long v3 = seed;</span>
-<span class="nc" id="L97">    long v4 = seed - PRIME64_1;</span>
+<span class="fc" id="L94">    long v1 = seed + PRIME64_1 + PRIME64_2;</span>
+<span class="fc" id="L95">    long v2 = seed + PRIME64_2;</span>
+<span class="fc" id="L96">    long v3 = seed;</span>
+<span class="fc" id="L97">    long v4 = seed - PRIME64_1;</span>
 
-<span class="nc" id="L99">    int remaining = length;</span>
-<span class="nc bnc" id="L100" title="All 2 branches missed.">    while (remaining &gt;= 32) {</span>
-<span class="nc" id="L101">      v1 = mix(v1, getLong(base, address));</span>
-<span class="nc" id="L102">      v2 = mix(v2, getLong(base, address + 8));</span>
-<span class="nc" id="L103">      v3 = mix(v3, getLong(base, address + 16));</span>
-<span class="nc" id="L104">      v4 = mix(v4, getLong(base, address + 24));</span>
+<span class="fc" id="L99">    int remaining = length;</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">    while (remaining &gt;= 32) {</span>
+<span class="fc" id="L101">      v1 = mix(v1, getLong(base, address));</span>
+<span class="fc" id="L102">      v2 = mix(v2, getLong(base, address + 8));</span>
+<span class="fc" id="L103">      v3 = mix(v3, getLong(base, address + 16));</span>
+<span class="fc" id="L104">      v4 = mix(v4, getLong(base, address + 24));</span>
 
-<span class="nc" id="L106">      address += 32;</span>
-<span class="nc" id="L107">      remaining -= 32;</span>
+<span class="fc" id="L106">      address += 32;</span>
+<span class="fc" id="L107">      remaining -= 32;</span>
     }
 
-<span class="nc" id="L110">    long hash = rotateLeft(v1, 1) + rotateLeft(v2, 7) + rotateLeft(v3, 12) +</span>
-<span class="nc" id="L111">                rotateLeft(v4, 18);</span>
+<span class="fc" id="L110">    long hash = rotateLeft(v1, 1) + rotateLeft(v2, 7) + rotateLeft(v3, 12) +</span>
+<span class="fc" id="L111">                rotateLeft(v4, 18);</span>
 
-<span class="nc" id="L113">    hash = update(hash, v1);</span>
-<span class="nc" id="L114">    hash = update(hash, v2);</span>
-<span class="nc" id="L115">    hash = update(hash, v3);</span>
-<span class="nc" id="L116">    hash = update(hash, v4);</span>
+<span class="fc" id="L113">    hash = update(hash, v1);</span>
+<span class="fc" id="L114">    hash = update(hash, v2);</span>
+<span class="fc" id="L115">    hash = update(hash, v3);</span>
+<span class="fc" id="L116">    hash = update(hash, v4);</span>
 
-<span class="nc" id="L118">    return hash;</span>
+<span class="fc" id="L118">    return hash;</span>
   }
 
   private static long mix(final long current, final long value) {
-<span class="nc" id="L122">    return rotateLeft(current + value * PRIME64_2, 31) * PRIME64_1;</span>
+<span class="fc" id="L122">    return rotateLeft(current + value * PRIME64_2, 31) * PRIME64_1;</span>
   }
 
   private static long update(final long hash, final long value) {
-<span class="nc" id="L126">    final long temp = hash ^ mix(0, value);</span>
-<span class="nc" id="L127">    return temp * PRIME64_1 + PRIME64_4;</span>
+<span class="fc" id="L126">    final long temp = hash ^ mix(0, value);</span>
+<span class="fc" id="L127">    return temp * PRIME64_1 + PRIME64_4;</span>
   }
 
   private static long updateTail(final long hash, final long value) {
-<span class="nc" id="L131">    final long temp = hash ^ mix(0, value);</span>
-<span class="nc" id="L132">    return rotateLeft(temp, 27) * PRIME64_1 + PRIME64_4;</span>
+<span class="fc" id="L131">    final long temp = hash ^ mix(0, value);</span>
+<span class="fc" id="L132">    return rotateLeft(temp, 27) * PRIME64_1 + PRIME64_4;</span>
   }
 
   private static long updateTail(final long hash, final int value) {
-<span class="nc" id="L136">    final long unsigned = value &amp; 0xFFFFFFFFL;</span>
-<span class="nc" id="L137">    final long temp = hash ^ (unsigned * PRIME64_1);</span>
-<span class="nc" id="L138">    return rotateLeft(temp, 23) * PRIME64_2 + PRIME64_3;</span>
+<span class="fc" id="L136">    final long unsigned = value &amp; 0xFFFFFFFFL;</span>
+<span class="fc" id="L137">    final long temp = hash ^ (unsigned * PRIME64_1);</span>
+<span class="fc" id="L138">    return rotateLeft(temp, 23) * PRIME64_2 + PRIME64_3;</span>
   }
 
   private static long updateTail(final long hash, final byte value) {
-<span class="nc" id="L142">    final int unsigned = value &amp; 0xFF;</span>
-<span class="nc" id="L143">    final long temp = hash ^ (unsigned * PRIME64_5);</span>
-<span class="nc" id="L144">    return rotateLeft(temp, 11) * PRIME64_1;</span>
+<span class="fc" id="L142">    final int unsigned = value &amp; 0xFF;</span>
+<span class="fc" id="L143">    final long temp = hash ^ (unsigned * PRIME64_5);</span>
+<span class="fc" id="L144">    return rotateLeft(temp, 11) * PRIME64_1;</span>
   }
 
   private static long finalShuffle(long hash) {
-<span class="nc" id="L148">    hash ^= hash &gt;&gt;&gt; 33;</span>
-<span class="nc" id="L149">    hash *= PRIME64_2;</span>
-<span class="nc" id="L150">    hash ^= hash &gt;&gt;&gt; 29;</span>
-<span class="nc" id="L151">    hash *= PRIME64_3;</span>
-<span class="nc" id="L152">    hash ^= hash &gt;&gt;&gt; 32;</span>
-<span class="nc" id="L153">    return hash;</span>
+<span class="fc" id="L148">    hash ^= hash &gt;&gt;&gt; 33;</span>
+<span class="fc" id="L149">    hash *= PRIME64_2;</span>
+<span class="fc" id="L150">    hash ^= hash &gt;&gt;&gt; 29;</span>
+<span class="fc" id="L151">    hash *= PRIME64_3;</span>
+<span class="fc" id="L152">    hash ^= hash &gt;&gt;&gt; 32;</span>
+<span class="fc" id="L153">    return hash;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

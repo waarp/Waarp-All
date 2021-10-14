@@ -102,107 +102,110 @@ public class ExecOutputTask extends AbstractExecTask {
     }
 
 <span class="nc" id="L104">    final PrepareCommandExec prepareCommandExec =</span>
-<span class="nc" id="L105">        new PrepareCommandExec(finalname, false, waitForValidation).invoke();</span>
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
-<span class="nc" id="L107">      return;</span>
+        new PrepareCommandExec(this, finalname, false,
+<span class="nc" id="L106">                               waitForValidation).invoke();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
+<span class="nc" id="L108">      return;</span>
     }
-<span class="nc" id="L109">    final CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
-<span class="nc" id="L110">    final DefaultExecutor defaultExecutor =</span>
-<span class="nc" id="L111">        prepareCommandExec.getDefaultExecutor();</span>
-<span class="nc" id="L112">    final PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
-<span class="nc" id="L113">    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
-<span class="nc" id="L114">    final PumpStreamHandler pumpStreamHandler =</span>
-<span class="nc" id="L115">        prepareCommandExec.getPumpStreamHandler();</span>
-<span class="nc" id="L116">    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
+<span class="nc" id="L110">    final CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
+<span class="nc" id="L111">    final DefaultExecutor defaultExecutor =</span>
+<span class="nc" id="L112">        prepareCommandExec.getDefaultExecutor();</span>
+<span class="nc" id="L113">    final PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
+<span class="nc" id="L114">    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
+<span class="nc" id="L115">    final PumpStreamHandler pumpStreamHandler =</span>
+<span class="nc" id="L116">        prepareCommandExec.getPumpStreamHandler();</span>
+<span class="nc" id="L117">    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
 
-<span class="nc" id="L118">    final AllLineReader allLineReader = new AllLineReader(inputStream);</span>
-<span class="nc" id="L119">    allLineReader</span>
-<span class="nc" id="L120">        .setName(&quot;LastLineReader&quot; + session.getRunner().getSpecialId());</span>
-<span class="nc" id="L121">    allLineReader.setDaemon(true);</span>
-<span class="nc" id="L122">    Configuration.configuration.getExecutorService().execute(allLineReader);</span>
-<span class="nc" id="L123">    final ExecuteCommand executeCommand =</span>
-        new ExecuteCommand(commandLine, defaultExecutor, inputStream,
-                           outputStream, pumpStreamHandler, allLineReader)
-<span class="nc" id="L126">            .invoke();</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (executeCommand.isError()) {</span>
-<span class="nc" id="L128">      return;</span>
+<span class="nc" id="L119">    final AllLineReader allLineReader = new AllLineReader(inputStream);</span>
+<span class="nc" id="L120">    allLineReader.setName(</span>
+<span class="nc" id="L121">        &quot;LastLineReader&quot; + session.getRunner().getSpecialId());</span>
+<span class="nc" id="L122">    allLineReader.setDaemon(true);</span>
+<span class="nc" id="L123">    Configuration.configuration.getExecutorService().execute(allLineReader);</span>
+<span class="nc" id="L124">    final ExecuteCommand executeCommand =</span>
+        new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
+                           outputStream, pumpStreamHandler,
+<span class="nc" id="L127">                           allLineReader).invoke();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (executeCommand.isError()) {</span>
+<span class="nc" id="L129">      return;</span>
     }
-<span class="nc" id="L130">    int status = executeCommand.getStatus();</span>
+<span class="nc" id="L131">    int status = executeCommand.getStatus();</span>
     final String newname;
-<span class="nc bnc" id="L132" title="All 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
       // kill by the watchdoc (time out)
-<span class="nc" id="L135">      status = -1;</span>
-<span class="nc" id="L136">      newname = &quot;TimeOut&quot;;</span>
+<span class="nc" id="L136">      status = -1;</span>
+<span class="nc" id="L137">      newname = &quot;TimeOut&quot;;</span>
     } else {
-<span class="nc" id="L138">      newname = allLineReader.getLastLine().toString();</span>
+<span class="nc" id="L139">      newname = allLineReader.getLastLine().toString();</span>
     }
-<span class="nc" id="L140">    finalizeExec(status, newname, commandLine.toString());</span>
-<span class="nc" id="L141">  }</span>
+<span class="nc" id="L141">    finalizeExec(status, newname, commandLine.toString());</span>
+<span class="nc" id="L142">  }</span>
 
   private void finalizeExec(final int status, final String newName,
                             final String commandLine) {
-<span class="nc" id="L145">    String newname = newName;</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (status == 0) {</span>
-<span class="nc" id="L147">      final R66Result result =</span>
+<span class="nc" id="L146">    String newname = newName;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (status == 0) {</span>
+<span class="nc" id="L148">      final R66Result result =</span>
           new R66Result(session, true, ErrorCode.CompleteOk,
-<span class="nc" id="L149">                        session.getRunner());</span>
-<span class="nc" id="L150">      result.setOther(newName);</span>
-<span class="nc" id="L151">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L152">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L153">      logger.info(&quot;Exec OK with {} returns {}&quot;, commandLine, newname);</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">    } else if (status == 1) {</span>
-<span class="nc" id="L155">      final R66Result result =</span>
-<span class="nc" id="L156">          new R66Result(session, true, ErrorCode.Warning, session.getRunner());</span>
-<span class="nc" id="L157">      result.setOther(newName);</span>
-<span class="nc" id="L158">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L159">      logger</span>
-<span class="nc" id="L160">          .warn(&quot;Exec in warning with &quot; + commandLine + &quot; returns &quot; + newname);</span>
-<span class="nc" id="L161">      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);</span>
-<span class="nc" id="L162">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L163">    } else {</span>
-<span class="nc" id="L164">      final int pos = newname.lastIndexOf(DELIMITER);</span>
-<span class="nc bnc" id="L165" title="All 2 branches missed.">      if (pos &gt;= 0) {</span>
-<span class="nc" id="L166">        final String newfilename = newname.substring(pos + DELIMITER.length());</span>
-<span class="nc" id="L167">        newname = newname.substring(0, pos);</span>
-<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (newfilename.indexOf(' ') &gt; 0) {</span>
-<span class="nc" id="L169">          logger.warn(</span>
+<span class="nc" id="L150">                        session.getRunner());</span>
+<span class="nc" id="L151">      result.setOther(newName);</span>
+<span class="nc" id="L152">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L153">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L154">      logger.info(&quot;Exec OK with {} returns {}&quot;, commandLine, newname);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L156">      final R66Result result =</span>
+<span class="nc" id="L157">          new R66Result(session, true, ErrorCode.Warning, session.getRunner());</span>
+<span class="nc" id="L158">      result.setOther(newName);</span>
+<span class="nc" id="L159">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L160">      logger.warn(</span>
+          &quot;Exec in warning with &quot; + commandLine + &quot; returns &quot; + newname);
+<span class="nc" id="L162">      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);</span>
+<span class="nc" id="L163">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L164">    } else {</span>
+<span class="nc" id="L165">      final int pos = newname.lastIndexOf(DELIMITER);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      if (pos &gt;= 0) {</span>
+<span class="nc" id="L167">        final String newfilename = newname.substring(pos + DELIMITER.length());</span>
+<span class="nc" id="L168">        newname = newname.substring(0, pos);</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (newfilename.indexOf(' ') &gt; 0) {</span>
+<span class="nc" id="L170">          logger.warn(</span>
               &quot;Exec returns a multiple string in final line: &quot; + newfilename);
           // XXX FIXME: should not split String[] args = newfilename.split(&quot; &quot;)
           // newfilename = args[args.length - 1]
         }
         // now test if the previous file was deleted (should be)
-<span class="nc" id="L175">        final File file = new File(newfilename);</span>
-<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (!file.exists()) {</span>
-<span class="nc" id="L177">          logger.warn(</span>
+<span class="nc" id="L176">        final File file = new File(newfilename);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (!file.exists()) {</span>
+<span class="nc" id="L178">          logger.warn(</span>
               &quot;New file does not exist at the end of the exec: &quot; + newfilename);
         }
         // now replace the file with the new one
         try {
-<span class="nc" id="L182">          session.getFile().replaceFilename(newfilename, true);</span>
-<span class="nc" id="L183">        } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L184">          logger.warn(&quot;Exec in warning with &quot; + commandLine, e);</span>
-<span class="nc" id="L185">        }</span>
-<span class="nc" id="L186">        session.getRunner().setFileMoved(newfilename, true);</span>
+<span class="nc" id="L183">          session.getFile().replaceFilename(newfilename, true);</span>
+<span class="nc" id="L184">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L185">          logger.warn(&quot;Exec in warning with &quot; + commandLine + &quot; : {}&quot;,</span>
+<span class="nc" id="L186">                      e.getMessage());</span>
+<span class="nc" id="L187">        }</span>
+<span class="nc" id="L188">        session.getRunner().setFileMoved(newfilename, true);</span>
       }
-<span class="nc" id="L188">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc" id="L190">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
                    &quot; returns &quot; + newname);
-<span class="nc" id="L190">      final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L192">      final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
           &quot;&lt;STATUS&gt;&quot; + status + &quot;&lt;/STATUS&gt;&lt;ERROR&gt;&quot; + newname + &quot;&lt;/ERROR&gt;&quot;);
-<span class="nc" id="L192">      futureCompletion.setFailure(exc);</span>
+<span class="nc" id="L194">      futureCompletion.setFailure(exc);</span>
     }
-<span class="nc" id="L194">  }</span>
+<span class="nc" id="L196">  }</span>
 
   @Override
-  void finalizeFromError(final Runnable threadReader, final int status,
-                         final CommandLine commandLine, final Exception e) {
-<span class="nc" id="L199">    final String result =</span>
-<span class="nc" id="L200">        ((AllLineReader) threadReader).getLastLine().toString();</span>
-<span class="nc" id="L201">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+  final void finalizeFromError(final Runnable threadReader, final int status,
+                               final CommandLine commandLine,
+                               final Exception e) {
+<span class="nc" id="L202">    final String result =</span>
+<span class="nc" id="L203">        ((AllLineReader) threadReader).getLastLine().toString();</span>
+<span class="nc" id="L204">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
                  &quot; returns &quot; + result);
-<span class="nc" id="L203">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L206">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
         &quot;&lt;STATUS&gt;&quot; + status + &quot;&lt;/STATUS&gt;&lt;ERROR&gt;&quot; + result + &quot;&lt;/ERROR&gt;&quot;);
-<span class="nc" id="L205">    futureCompletion.setFailure(exc);</span>
-<span class="nc" id="L206">  }</span>
+<span class="nc" id="L208">    futureCompletion.setFailure(exc);</span>
+<span class="nc" id="L209">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

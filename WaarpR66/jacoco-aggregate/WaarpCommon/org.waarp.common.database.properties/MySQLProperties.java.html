@@ -39,62 +39,62 @@ public class MySQLProperties implements DbProperties {
 
   private final String driverName;
 
-<span class="nc" id="L42">  public MySQLProperties() {</span>
-<span class="nc bnc" id="L43" title="All 2 branches missed.">    if (PlatformDependent.javaVersion() &gt;= 8) {</span>
-<span class="nc" id="L44">      String driver = MYSQL_DRIVER_JRE6;</span>
+<span class="fc" id="L42">  public MySQLProperties() {</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">    if (PlatformDependent.javaVersion() &gt;= 8) {</span>
+<span class="fc" id="L44">      String driver = MYSQL_DRIVER_JRE6;</span>
       try {
-<span class="nc" id="L46">        Class.forName(MYSQL_DRIVER_JRE8);</span>
-<span class="nc" id="L47">        driver = MYSQL_DRIVER_JRE8;</span>
+<span class="fc" id="L46">        Class.forName(MYSQL_DRIVER_JRE8);</span>
+<span class="fc" id="L47">        driver = MYSQL_DRIVER_JRE8;</span>
 <span class="nc" id="L48">      } catch (final Exception e) {</span>
 <span class="nc" id="L49">        driver = MYSQL_DRIVER_JRE6;</span>
       } finally {
-<span class="nc" id="L51">        driverName = driver;</span>
+<span class="fc" id="L51">        driverName = driver;</span>
       }
-<span class="nc" id="L53">    } else {</span>
+<span class="fc" id="L53">    } else {</span>
 <span class="nc" id="L54">      driverName = MYSQL_DRIVER_JRE6;</span>
     }
-<span class="nc" id="L56">  }</span>
+<span class="fc" id="L56">  }</span>
 
   public static String getProtocolID() {
-<span class="nc" id="L59">    return PROTOCOL;</span>
+<span class="fc" id="L59">    return PROTOCOL;</span>
   }
 
   @Override
   public String getDriverName() {
-<span class="nc" id="L64">    return driverName;</span>
+<span class="fc" id="L64">    return driverName;</span>
   }
 
   @Override
   public String getValidationQuery() {
-<span class="nc" id="L69">    return VALIDATION_QUERY;</span>
+<span class="fc" id="L69">    return VALIDATION_QUERY;</span>
   }
 
   @Override
   public int getMaximumConnections(final Connection connection)
       throws SQLException {
-<span class="nc" id="L75">    Statement stm = null;</span>
-<span class="nc" id="L76">    ResultSet rs = null;</span>
+<span class="fc" id="L75">    Statement stm = null;</span>
+<span class="fc" id="L76">    ResultSet rs = null;</span>
     try {
-<span class="nc" id="L78">      stm = connection.createStatement();</span>
-<span class="nc" id="L79">      rs = stm.executeQuery(&quot;SELECT @@GLOBAL.max_connections&quot;);</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">      if (!rs.next()) {</span>
+<span class="fc" id="L78">      stm = connection.createStatement();</span>
+<span class="fc" id="L79">      rs = stm.executeQuery(&quot;SELECT @@GLOBAL.max_connections&quot;);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">      if (!rs.next()) {</span>
 <span class="nc" id="L81">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
       }
-<span class="nc" id="L83">      return rs.getInt(1);</span>
+<span class="fc" id="L83">      return rs.getInt(1);</span>
     } finally {
-<span class="nc bnc" id="L85" title="All 2 branches missed.">      if (rs != null) {</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">      if (rs != null) {</span>
         try {
-<span class="nc" id="L87">          rs.close();</span>
+<span class="fc" id="L87">          rs.close();</span>
 <span class="nc" id="L88">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="nc" id="L90">        }</span>
+<span class="fc" id="L90">        }</span>
       }
-<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (stm != null) {</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">      if (stm != null) {</span>
         try {
-<span class="nc" id="L94">          stm.close();</span>
+<span class="fc" id="L94">          stm.close();</span>
 <span class="nc" id="L95">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="nc" id="L97">        }</span>
+<span class="fc" id="L97">        }</span>
       }
     }
   }

@@ -69,36 +69,36 @@ public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
    * Hashmap for Business
    */
   private static final SynchronizedLruCache&lt;String, Business&gt;
-<span class="nc" id="L72">      reentrantConcurrentHashMap =</span>
+<span class="fc" id="L72">      reentrantConcurrentHashMap =</span>
       new SynchronizedLruCache&lt;String, Business&gt;(500, 180000);
 
   public DBBusinessDAO(final Connection con) {
-<span class="nc" id="L76">    super(con);</span>
-<span class="nc" id="L77">  }</span>
+<span class="fc" id="L76">    super(con);</span>
+<span class="fc" id="L77">  }</span>
 
   @Override
   protected final boolean isCachedEnable() {
-<span class="nc bnc" id="L81" title="All 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
   }
 
   @Override
   protected final SynchronizedLruCache&lt;String, Business&gt; getCache() {
-<span class="nc" id="L86">    return reentrantConcurrentHashMap;</span>
+<span class="fc" id="L86">    return reentrantConcurrentHashMap;</span>
   }
 
   @Override
   protected final String getId(final Business e1) {
-<span class="nc" id="L91">    return e1.getHostid();</span>
+<span class="fc" id="L91">    return e1.getHostid();</span>
   }
 
   @Override
   protected final String getSelectRequest() {
-<span class="nc" id="L96">    return SQL_SELECT;</span>
+<span class="fc" id="L96">    return SQL_SELECT;</span>
   }
 
   @Override
   protected final String getGetAllRequest() {
-<span class="nc" id="L101">    return SQL_GET_ALL;</span>
+<span class="fc" id="L101">    return SQL_GET_ALL;</span>
   }
 
   @Override
@@ -108,61 +108,61 @@ public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
 
   @Override
   protected final String getExistRequest() {
-<span class="nc" id="L111">    return SQL_EXIST;</span>
+<span class="fc" id="L111">    return SQL_EXIST;</span>
   }
 
   @Override
   protected final Object[] getInsertValues(final Business business)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L117">    business.checkValues();</span>
-<span class="nc" id="L118">    return new Object[] {</span>
-<span class="nc" id="L119">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
-<span class="nc" id="L120">        business.getAliases(), business.getOthers(),</span>
-<span class="nc" id="L121">        business.getUpdatedInfo().ordinal()</span>
+<span class="fc" id="L117">    business.checkValues();</span>
+<span class="fc" id="L118">    return new Object[] {</span>
+<span class="fc" id="L119">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
+<span class="fc" id="L120">        business.getAliases(), business.getOthers(),</span>
+<span class="fc" id="L121">        business.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
   protected final String getInsertRequest() {
-<span class="nc" id="L127">    return SQL_INSERT;</span>
+<span class="fc" id="L127">    return SQL_INSERT;</span>
   }
 
   @Override
   protected final Object[] getUpdateValues(final Business business)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L133">    business.checkValues();</span>
-<span class="nc" id="L134">    return new Object[] {</span>
-<span class="nc" id="L135">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
-<span class="nc" id="L136">        business.getAliases(), business.getOthers(),</span>
-<span class="nc" id="L137">        business.getUpdatedInfo().ordinal(), business.getHostid()</span>
+<span class="fc" id="L133">    business.checkValues();</span>
+<span class="fc" id="L134">    return new Object[] {</span>
+<span class="fc" id="L135">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
+<span class="fc" id="L136">        business.getAliases(), business.getOthers(),</span>
+<span class="fc" id="L137">        business.getUpdatedInfo().ordinal(), business.getHostid()</span>
     };
   }
 
   @Override
   protected final String getUpdateRequest() {
-<span class="nc" id="L143">    return SQL_UPDATE;</span>
+<span class="fc" id="L143">    return SQL_UPDATE;</span>
   }
 
   @Override
   protected final String getDeleteRequest() {
-<span class="nc" id="L148">    return SQL_DELETE;</span>
+<span class="fc" id="L148">    return SQL_DELETE;</span>
   }
 
   @Override
   protected final String getDeleteAllRequest() {
-<span class="nc" id="L153">    return SQL_DELETE_ALL;</span>
+<span class="fc" id="L153">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
   public final Business getFromResultSet(final ResultSet set)
       throws SQLException {
     try {
-<span class="nc" id="L160">      return new Business(set.getString(HOSTID_FIELD),</span>
-<span class="nc" id="L161">                          set.getString(BUSINESS_FIELD),</span>
-<span class="nc" id="L162">                          set.getString(ROLES_FIELD),</span>
-<span class="nc" id="L163">                          set.getString(ALIASES_FIELD),</span>
-<span class="nc" id="L164">                          set.getString(OTHERS_FIELD),</span>
-<span class="nc" id="L165">                          UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="fc" id="L160">      return new Business(set.getString(HOSTID_FIELD),</span>
+<span class="fc" id="L161">                          set.getString(BUSINESS_FIELD),</span>
+<span class="fc" id="L162">                          set.getString(ROLES_FIELD),</span>
+<span class="fc" id="L163">                          set.getString(ALIASES_FIELD),</span>
+<span class="fc" id="L164">                          set.getString(OTHERS_FIELD),</span>
+<span class="fc" id="L165">                          UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
 <span class="nc" id="L166">    } catch (final WaarpDatabaseSqlException e) {</span>
 <span class="nc" id="L167">      throw new SQLException(e);</span>
     }
@@ -170,7 +170,7 @@ public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
 
   @Override
   protected final boolean isDbTransfer() {
-<span class="nc" id="L173">    return false;</span>
+<span class="fc" id="L173">    return false;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

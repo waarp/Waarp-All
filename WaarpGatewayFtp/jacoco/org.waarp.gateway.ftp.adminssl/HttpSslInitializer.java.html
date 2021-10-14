@@ -48,7 +48,7 @@ public class HttpSslInitializer extends ChannelInitializer&lt;SocketChannel&gt; 
 <span class="fc" id="L48">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Add SSL handler first to encrypt and decrypt everything.
 <span class="fc" id="L50">    final SslHandler sslhandler =</span>
-<span class="fc" id="L51">        waarpSslContextFactory.initInitializer(true, false);</span>
+<span class="fc" id="L51">        waarpSslContextFactory.createHandlerServer(false, ch);</span>
 <span class="fc" id="L52">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
 
 <span class="fc" id="L54">    pipeline.addLast(&quot;codec&quot;, new HttpServerCodec());</span>
@@ -56,11 +56,11 @@ public class HttpSslInitializer extends ChannelInitializer&lt;SocketChannel&gt; 
 <span class="fc" id="L56">        FileBasedConfiguration.fileBasedConfiguration.getMaxGlobalMemory()));</span>
 <span class="fc" id="L57">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
 <span class="pc bpc" id="L58" title="1 of 2 branches missed.">    if (useHttpCompression) {</span>
-<span class="fc" id="L59">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
+<span class="nc" id="L59">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
     }
 <span class="fc" id="L61">    pipeline.addLast(</span>
 <span class="fc" id="L62">        FileBasedConfiguration.fileBasedConfiguration.getHttpPipelineExecutor(),</span>
         &quot;handler&quot;, new HttpSslHandler());
 <span class="fc" id="L64">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

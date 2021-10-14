@@ -74,15 +74,44 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
 <span class="fc" id="L74">    this.logger = logger;</span>
 <span class="fc" id="L75">  }</span>
 
+  @Override
+  public final void setLevel(final WaarpLogLevel level) {
+<span class="nc bnc" id="L79" title="All 7 branches missed.">    switch (level) {</span>
+      case TRACE:
+<span class="nc" id="L81">        logger.setLevel(Level.FINEST);</span>
+<span class="nc" id="L82">        break;</span>
+      case DEBUG:
+<span class="nc" id="L84">        logger.setLevel(Level.FINE);</span>
+<span class="nc" id="L85">        break;</span>
+      case INFO:
+<span class="nc" id="L87">        logger.setLevel(Level.INFO);</span>
+<span class="nc" id="L88">        break;</span>
+      case WARN:
+<span class="nc" id="L90">        logger.setLevel(Level.WARNING);</span>
+<span class="nc" id="L91">        break;</span>
+      case ERROR:
+<span class="nc" id="L93">        logger.setLevel(Level.SEVERE);</span>
+<span class="nc" id="L94">        break;</span>
+      case NONE:
+<span class="nc" id="L96">        logger.setLevel(Level.OFF);</span>
+        break;
+    }
+<span class="nc" id="L99">  }</span>
+
   /**
    * Is this logger instance enabled for the FINEST level?
    *
    * @return True if this Logger is enabled for level FINEST, false otherwise.
    */
   @Override
-  public boolean isTraceEnabled() {
-<span class="nc" id="L84">    return logger.isLoggable(Level.FINEST);</span>
+  public final boolean isTraceEnabled() {
+<span class="nc" id="L108">    return logger.isLoggable(Level.FINEST);</span>
   }
+
+  @Override
+  public final void junit(final int callee, final String msg) {
+<span class="nc" id="L113">    logger.warning(msg);</span>
+<span class="nc" id="L114">  }</span>
 
   /**
    * Log a message object at level FINEST.
@@ -90,11 +119,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void trace(final String msg) {
-<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L95">      log(SELF, Level.FINEST, msg, null);</span>
+  public final void trace(final String msg) {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L124">      log(SELF, Level.FINEST, msg, null);</span>
     }
-<span class="fc" id="L97">  }</span>
+<span class="fc" id="L126">  }</span>
 
   /**
    * Log a message at level FINEST according to the specified format and
@@ -109,12 +138,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void trace(final String format, final Object arg) {
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L114">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
-<span class="nc" id="L115">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
+  public final void trace(final String format, final Object arg) {
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L143">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L144">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L117">  }</span>
+<span class="fc" id="L146">  }</span>
 
   /**
    * Log a message at level FINEST according to the specified format and
@@ -130,12 +159,13 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void trace(final String format, final Object argA, final Object argB) {
-<span class="pc bpc" id="L134" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L135">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
-<span class="nc" id="L136">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
+  public final void trace(final String format, final Object argA,
+                          final Object argB) {
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L165">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L166">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L138">  }</span>
+<span class="fc" id="L168">  }</span>
 
   /**
    * Log a message at level FINEST according to the specified format and
@@ -150,12 +180,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void trace(final String format, final Object... argArray) {
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L155">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
-<span class="nc" id="L156">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
+  public final void trace(final String format, final Object... argArray) {
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L185">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="nc" id="L186">      log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L158">  }</span>
+<span class="fc" id="L188">  }</span>
 
   /**
    * Log an exception (throwable) at level FINEST with an accompanying
@@ -165,11 +195,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void trace(final String msg, final Throwable t) {
-<span class="pc bpc" id="L169" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L170">      log(SELF, Level.FINEST, msg, t);</span>
+  public final void trace(final String msg, final Throwable t) {
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L200">      log(SELF, Level.FINEST, msg, t);</span>
     }
-<span class="fc" id="L172">  }</span>
+<span class="fc" id="L202">  }</span>
 
   /**
    * Is this logger instance enabled for the FINE level?
@@ -177,8 +207,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @return True if this Logger is enabled for level FINE, false otherwise.
    */
   @Override
-  public boolean isDebugEnabled() {
-<span class="nc" id="L181">    return logger.isLoggable(Level.FINE);</span>
+  public final boolean isDebugEnabled() {
+<span class="nc" id="L211">    return logger.isLoggable(Level.FINE);</span>
   }
 
   /**
@@ -187,11 +217,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void debug(final String msg) {
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
-<span class="fc" id="L192">      log(SELF, Level.FINE, msg, null);</span>
+  public final void debug(final String msg) {
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="fc" id="L222">      log(SELF, Level.FINE, msg, null);</span>
     }
-<span class="fc" id="L194">  }</span>
+<span class="fc" id="L224">  }</span>
 
   /**
    * Log a message at level FINE according to the specified format and
@@ -206,12 +236,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void debug(final String format, final Object arg) {
-<span class="pc bpc" id="L210" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
-<span class="nc" id="L211">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
-<span class="nc" id="L212">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
+  public final void debug(final String format, final Object arg) {
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L241">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="nc" id="L242">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L214">  }</span>
+<span class="fc" id="L244">  }</span>
 
   /**
    * Log a message at level FINE according to the specified format and
@@ -227,12 +257,13 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void debug(final String format, final Object argA, final Object argB) {
-<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
-<span class="nc" id="L232">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
-<span class="nc" id="L233">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
+  public final void debug(final String format, final Object argA,
+                          final Object argB) {
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L263">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="nc" id="L264">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L235">  }</span>
+<span class="fc" id="L266">  }</span>
 
   /**
    * Log a message at level FINE according to the specified format and
@@ -247,12 +278,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void debug(final String format, final Object... argArray) {
-<span class="pc bpc" id="L251" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
-<span class="nc" id="L252">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
-<span class="nc" id="L253">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
+  public final void debug(final String format, final Object... argArray) {
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="nc" id="L283">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="nc" id="L284">      log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L255">  }</span>
+<span class="fc" id="L286">  }</span>
 
   /**
    * Log an exception (throwable) at level FINE with an accompanying message.
@@ -261,11 +292,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void debug(final String msg, final Throwable t) {
-<span class="pc bpc" id="L265" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
-<span class="fc" id="L266">      log(SELF, Level.FINE, msg, t);</span>
+  public final void debug(final String msg, final Throwable t) {
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.FINE)) {</span>
+<span class="fc" id="L297">      log(SELF, Level.FINE, msg, t);</span>
     }
-<span class="fc" id="L268">  }</span>
+<span class="fc" id="L299">  }</span>
 
   /**
    * Is this logger instance enabled for the INFO level?
@@ -274,8 +305,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    *     otherwise.
    */
   @Override
-  public boolean isInfoEnabled() {
-<span class="fc" id="L278">    return logger.isLoggable(Level.INFO);</span>
+  public final boolean isInfoEnabled() {
+<span class="fc" id="L309">    return logger.isLoggable(Level.INFO);</span>
   }
 
   /**
@@ -284,11 +315,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void info(final String msg) {
-<span class="pc bpc" id="L288" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
-<span class="fc" id="L289">      log(SELF, Level.INFO, msg, null);</span>
+  public final void info(final String msg) {
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="fc" id="L320">      log(SELF, Level.INFO, msg, null);</span>
     }
-<span class="fc" id="L291">  }</span>
+<span class="fc" id="L322">  }</span>
 
   /**
    * Log a message at level INFO according to the specified format and
@@ -303,12 +334,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void info(final String format, final Object arg) {
-<span class="pc bpc" id="L307" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
-<span class="fc" id="L308">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
-<span class="fc" id="L309">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
+  public final void info(final String format, final Object arg) {
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="fc" id="L339">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="fc" id="L340">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L311">  }</span>
+<span class="fc" id="L342">  }</span>
 
   /**
    * Log a message at the INFO level according to the specified format and
@@ -324,12 +355,13 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void info(final String format, final Object argA, final Object argB) {
-<span class="pc bpc" id="L328" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
-<span class="fc" id="L329">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
-<span class="fc" id="L330">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
+  public final void info(final String format, final Object argA,
+                         final Object argB) {
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="fc" id="L361">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="fc" id="L362">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L332">  }</span>
+<span class="fc" id="L364">  }</span>
 
   /**
    * Log a message at level INFO according to the specified format and
@@ -344,12 +376,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void info(final String format, final Object... argArray) {
-<span class="pc bpc" id="L348" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
-<span class="fc" id="L349">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
-<span class="fc" id="L350">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
+  public final void info(final String format, final Object... argArray) {
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="fc" id="L381">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="fc" id="L382">      log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L352">  }</span>
+<span class="fc" id="L384">  }</span>
 
   /**
    * Log an exception (throwable) at the INFO level with an accompanying
@@ -359,11 +391,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void info(final String msg, final Throwable t) {
-<span class="pc bpc" id="L363" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
-<span class="fc" id="L364">      log(SELF, Level.INFO, msg, t);</span>
+  public final void info(final String msg, final Throwable t) {
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.INFO)) {</span>
+<span class="fc" id="L396">      log(SELF, Level.INFO, msg, t);</span>
     }
-<span class="fc" id="L366">  }</span>
+<span class="fc" id="L398">  }</span>
 
   /**
    * Is this logger instance enabled for the WARNING level?
@@ -372,8 +404,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    *     otherwise.
    */
   @Override
-  public boolean isWarnEnabled() {
-<span class="fc" id="L376">    return logger.isLoggable(Level.WARNING);</span>
+  public final boolean isWarnEnabled() {
+<span class="fc" id="L408">    return logger.isLoggable(Level.WARNING);</span>
   }
 
   /**
@@ -382,11 +414,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void warn(final String msg) {
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
-<span class="fc" id="L387">      log(SELF, Level.WARNING, msg, null);</span>
+  public final void warn(final String msg) {
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="fc" id="L419">      log(SELF, Level.WARNING, msg, null);</span>
     }
-<span class="fc" id="L389">  }</span>
+<span class="fc" id="L421">  }</span>
 
   /**
    * Log a message at the WARNING level according to the specified format and
@@ -401,12 +433,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void warn(final String format, final Object arg) {
-<span class="pc bpc" id="L405" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
-<span class="fc" id="L406">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
-<span class="fc" id="L407">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
+  public final void warn(final String format, final Object arg) {
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="fc" id="L438">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="fc" id="L439">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L409">  }</span>
+<span class="fc" id="L441">  }</span>
 
   /**
    * Log a message at the WARNING level according to the specified format and
@@ -422,12 +454,13 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void warn(final String format, final Object argA, final Object argB) {
-<span class="pc bpc" id="L426" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
-<span class="fc" id="L427">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
-<span class="fc" id="L428">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
+  public final void warn(final String format, final Object argA,
+                         final Object argB) {
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="fc" id="L460">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="fc" id="L461">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L430">  }</span>
+<span class="fc" id="L463">  }</span>
 
   /**
    * Log a message at level WARNING according to the specified format and
@@ -442,12 +475,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void warn(final String format, final Object... argArray) {
-<span class="pc bpc" id="L446" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
-<span class="fc" id="L447">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
-<span class="fc" id="L448">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
+  public final void warn(final String format, final Object... argArray) {
+<span class="pc bpc" id="L479" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="fc" id="L480">      final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);</span>
+<span class="fc" id="L481">      log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L450">  }</span>
+<span class="fc" id="L483">  }</span>
 
   /**
    * Log an exception (throwable) at the WARNING level with an accompanying
@@ -457,11 +490,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void warn(final String msg, final Throwable t) {
-<span class="pc bpc" id="L461" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
-<span class="fc" id="L462">      log(SELF, Level.WARNING, msg, t);</span>
+  public final void warn(final String msg, final Throwable t) {
+<span class="pc bpc" id="L494" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="fc" id="L495">      log(SELF, Level.WARNING, msg, t);</span>
     }
-<span class="fc" id="L464">  }</span>
+<span class="fc" id="L497">  }</span>
 
   /**
    * Is this logger instance enabled for level SEVERE?
@@ -469,8 +502,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @return True if this Logger is enabled for level SEVERE, false otherwise.
    */
   @Override
-  public boolean isErrorEnabled() {
-<span class="fc" id="L473">    return logger.isLoggable(Level.SEVERE);</span>
+  public final boolean isErrorEnabled() {
+<span class="fc" id="L506">    return logger.isLoggable(Level.SEVERE);</span>
   }
 
   /**
@@ -479,11 +512,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void error(final String msg) {
-<span class="pc bpc" id="L483" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
-<span class="fc" id="L484">      log(SELF, Level.SEVERE, msg, null);</span>
+  public final void error(final String msg) {
+<span class="pc bpc" id="L516" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="fc" id="L517">      log(SELF, Level.SEVERE, msg, null);</span>
     }
-<span class="fc" id="L486">  }</span>
+<span class="fc" id="L519">  }</span>
 
   /**
    * Log a message at the SEVERE level according to the specified format and
@@ -498,12 +531,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void error(final String format, final Object arg) {
-<span class="pc bpc" id="L502" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
-<span class="fc" id="L503">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
-<span class="fc" id="L504">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
+  public final void error(final String format, final Object arg) {
+<span class="pc bpc" id="L535" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="fc" id="L536">      final FormattingTuple ft = MessageFormatter.format(format, arg);</span>
+<span class="fc" id="L537">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L506">  }</span>
+<span class="fc" id="L539">  }</span>
 
   /**
    * Log a message at the SEVERE level according to the specified format and
@@ -519,12 +552,13 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void error(final String format, final Object argA, final Object argB) {
-<span class="pc bpc" id="L523" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
-<span class="fc" id="L524">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
-<span class="fc" id="L525">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
+  public final void error(final String format, final Object argA,
+                          final Object argB) {
+<span class="pc bpc" id="L557" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="fc" id="L558">      final FormattingTuple ft = MessageFormatter.format(format, argA, argB);</span>
+<span class="fc" id="L559">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L527">  }</span>
+<span class="fc" id="L561">  }</span>
 
   /**
    * Log a message at level SEVERE according to the specified format and
@@ -539,13 +573,13 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arguments an array of arguments
    */
   @Override
-  public void error(final String format, final Object... arguments) {
-<span class="pc bpc" id="L543" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
-<span class="fc" id="L544">      final FormattingTuple ft =</span>
-<span class="fc" id="L545">          MessageFormatter.arrayFormat(format, arguments);</span>
-<span class="fc" id="L546">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
+  public final void error(final String format, final Object... arguments) {
+<span class="pc bpc" id="L577" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="fc" id="L578">      final FormattingTuple ft =</span>
+<span class="fc" id="L579">          MessageFormatter.arrayFormat(format, arguments);</span>
+<span class="fc" id="L580">      log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());</span>
     }
-<span class="fc" id="L548">  }</span>
+<span class="fc" id="L582">  }</span>
 
   /**
    * Log an exception (throwable) at the SEVERE level with an accompanying
@@ -555,11 +589,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void error(final String msg, final Throwable t) {
-<span class="pc bpc" id="L559" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
-<span class="fc" id="L560">      log(SELF, Level.SEVERE, msg, t);</span>
+  public final void error(final String msg, final Throwable t) {
+<span class="pc bpc" id="L593" title="1 of 2 branches missed.">    if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="fc" id="L594">      log(SELF, Level.SEVERE, msg, t);</span>
     }
-<span class="fc" id="L562">  }</span>
+<span class="fc" id="L596">  }</span>
 
   /**
    * Log the message at the specified level with the specified throwable if
@@ -572,15 +606,15 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
   private void log(final String callerFQCN, final Level level, final String msg,
                    final Throwable t) {
     // millis and thread are filled by the constructor
-<span class="fc" id="L575">    final LogRecord record = new LogRecord(level, msg);</span>
-<span class="fc" id="L576">    record.setLoggerName(name());</span>
-<span class="fc" id="L577">    record.setThrown(t);</span>
-<span class="fc" id="L578">    fillCallerData(callerFQCN, record);</span>
-<span class="fc" id="L579">    logger.log(record);</span>
-<span class="fc" id="L580">  }</span>
+<span class="fc" id="L609">    final LogRecord record = new LogRecord(level, msg);</span>
+<span class="fc" id="L610">    record.setLoggerName(name());</span>
+<span class="fc" id="L611">    record.setThrown(t);</span>
+<span class="fc" id="L612">    fillCallerData(callerFQCN, record);</span>
+<span class="fc" id="L613">    logger.log(record);</span>
+<span class="fc" id="L614">  }</span>
 
-<span class="fc" id="L582">  static final String SELF = WaarpJdkLogger.class.getName();</span>
-<span class="fc" id="L583">  static final String SUPER = AbstractWaarpLogger.class.getName();</span>
+<span class="fc" id="L616">  static final String SELF = WaarpJdkLogger.class.getName();</span>
+<span class="fc" id="L617">  static final String SUPER = AbstractWaarpLogger.class.getName();</span>
 
   /**
    * Fill in caller data if possible.
@@ -589,33 +623,33 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    */
   private static void fillCallerData(final String callerFQCN,
                                      final LogRecord record) {
-<span class="fc" id="L592">    final StackTraceElement[] steArray = new Throwable().getStackTrace();</span>
+<span class="fc" id="L626">    final StackTraceElement[] steArray = new Throwable().getStackTrace();</span>
 
-<span class="fc" id="L594">    int selfIndex = -1;</span>
-<span class="pc bpc" id="L595" title="1 of 2 branches missed.">    for (int i = 0; i &lt; steArray.length; i++) {</span>
-<span class="fc" id="L596">      final String className = steArray[i].getClassName();</span>
-<span class="pc bpc" id="L597" title="3 of 4 branches missed.">      if (className.equals(callerFQCN) || className.equals(SUPER)) {</span>
-<span class="fc" id="L598">        selfIndex = i;</span>
-<span class="fc" id="L599">        break;</span>
+<span class="fc" id="L628">    int selfIndex = -1;</span>
+<span class="pc bpc" id="L629" title="1 of 2 branches missed.">    for (int i = 0; i &lt; steArray.length; i++) {</span>
+<span class="fc" id="L630">      final String className = steArray[i].getClassName();</span>
+<span class="pc bpc" id="L631" title="3 of 4 branches missed.">      if (className.equals(callerFQCN) || className.equals(SUPER)) {</span>
+<span class="fc" id="L632">        selfIndex = i;</span>
+<span class="fc" id="L633">        break;</span>
       }
     }
 
-<span class="fc" id="L603">    int found = -1;</span>
-<span class="pc bpc" id="L604" title="1 of 2 branches missed.">    for (int i = selfIndex + 1; i &lt; steArray.length; i++) {</span>
-<span class="fc" id="L605">      final String className = steArray[i].getClassName();</span>
-<span class="fc bfc" id="L606" title="All 4 branches covered.">      if (!(className.equals(callerFQCN) || className.equals(SUPER))) {</span>
-<span class="fc" id="L607">        found = i;</span>
-<span class="fc" id="L608">        break;</span>
+<span class="fc" id="L637">    int found = -1;</span>
+<span class="pc bpc" id="L638" title="1 of 2 branches missed.">    for (int i = selfIndex + 1; i &lt; steArray.length; i++) {</span>
+<span class="fc" id="L639">      final String className = steArray[i].getClassName();</span>
+<span class="fc bfc" id="L640" title="All 4 branches covered.">      if (!(className.equals(callerFQCN) || className.equals(SUPER))) {</span>
+<span class="fc" id="L641">        found = i;</span>
+<span class="fc" id="L642">        break;</span>
       }
     }
 
-<span class="pc bpc" id="L612" title="1 of 2 branches missed.">    if (found != -1) {</span>
-<span class="fc" id="L613">      final StackTraceElement ste = steArray[found];</span>
+<span class="pc bpc" id="L646" title="1 of 2 branches missed.">    if (found != -1) {</span>
+<span class="fc" id="L647">      final StackTraceElement ste = steArray[found];</span>
       // setting the class name has the side effect of setting
       // the needToInferCaller variable to false.
-<span class="fc" id="L616">      record.setSourceClassName(ste.getClassName());</span>
-<span class="fc" id="L617">      record.setSourceMethodName(ste.getMethodName());</span>
+<span class="fc" id="L650">      record.setSourceClassName(ste.getClassName());</span>
+<span class="fc" id="L651">      record.setSourceMethodName(ste.getMethodName());</span>
     }
-<span class="fc" id="L619">  }</span>
+<span class="fc" id="L653">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

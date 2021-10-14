@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.commander;
 
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
@@ -45,13 +47,13 @@ public class InternalRunner {
   /**
    * Internal Logger
    */
-<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(InternalRunner.class);</span>
+<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(InternalRunner.class);</span>
 
   private final ScheduledExecutorService scheduledExecutorService;
   private ScheduledFuture&lt;?&gt; scheduledFuture;
   private CommanderInterface commander;
-<span class="fc" id="L54">  private volatile boolean isRunning = true;</span>
+<span class="fc" id="L56">  private boolean isRunning = true;</span>
   private final ThreadPoolExecutor threadPoolExecutor;
   private final NetworkTransaction networkTransaction;
 
@@ -62,122 +64,120 @@ public class InternalRunner {
    * @throws WaarpDatabaseSqlException
    */
   public InternalRunner()
-<span class="fc" id="L65">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
-<span class="fc" id="L66">    commander = new Commander(this, true);</span>
+<span class="fc" id="L67">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
+<span class="fc" id="L68">    commander = new Commander(this, true);</span>
     // This is not daemon intentionally
-<span class="fc" id="L68">    scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(</span>
+<span class="fc" id="L70">    scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(</span>
         new WaarpThreadFactory(&quot;InternalRunner&quot;, false));
-<span class="fc" id="L70">    isRunning = true;</span>
-<span class="fc" id="L71">    final BlockingQueue&lt;Runnable&gt; workQueue = new SynchronousQueue&lt;Runnable&gt;();</span>
-<span class="fc" id="L72">    threadPoolExecutor =</span>
-<span class="fc" id="L73">        new ThreadPoolExecutor(Configuration.configuration.getRunnerThread(),</span>
-<span class="fc" id="L74">                               Configuration.configuration.getRunnerThread() *</span>
-                               2, 1000, TimeUnit.MILLISECONDS, workQueue,
-                               new WaarpThreadFactory(&quot;ClientRunner&quot;),
-<span class="fc" id="L77">                               new RejectedExecutionHandler() {</span>
-                                 @Override
-                                 public void rejectedExecution(
-                                     final Runnable runnable,
-                                     final ThreadPoolExecutor threadPoolExecutor) {
-<span class="nc" id="L82">                                   logger.debug(&quot;Task rescheduled&quot;);</span>
-<span class="nc" id="L83">                                 }</span>
-                               });
+<span class="fc" id="L72">    isRunning = true;</span>
+<span class="fc" id="L73">    final BlockingQueue&lt;Runnable&gt; workQueue = new SynchronousQueue&lt;Runnable&gt;();</span>
+<span class="fc" id="L74">    threadPoolExecutor = new ThreadPoolExecutor(</span>
+<span class="fc" id="L75">        Configuration.configuration.getRunnerThread() / 2,</span>
+<span class="fc" id="L76">        Configuration.configuration.getRunnerThread() * 2, 1000,</span>
+        TimeUnit.MILLISECONDS, workQueue,
+<span class="fc" id="L78">        new WaarpThreadFactory(&quot;ClientRunner&quot;), new RejectedExecutionHandler() {</span>
+      @Override
+      public final void rejectedExecution(final Runnable runnable,
+                                          final ThreadPoolExecutor threadPoolExecutor) {
+<span class="nc" id="L82">        logger.debug(&quot;Task rescheduled&quot;);</span>
+<span class="nc" id="L83">      }</span>
+    });
 <span class="fc" id="L85">    scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,</span>
-                                                                      Configuration.configuration
-<span class="fc" id="L87">                                                                          .getDelayCommander(),</span>
-                                                                      Configuration.configuration
-<span class="fc" id="L89">                                                                          .getDelayCommander(),</span>
+<span class="fc" id="L86">                                                                      Configuration.configuration.getDelayCommander(),</span>
+<span class="fc" id="L87">                                                                      Configuration.configuration.getDelayCommander(),</span>
                                                                       TimeUnit.MILLISECONDS);
-<span class="fc" id="L91">    networkTransaction = new NetworkTransaction();</span>
-<span class="fc" id="L92">  }</span>
+<span class="fc" id="L89">    networkTransaction = new NetworkTransaction();</span>
+<span class="fc" id="L90">  }</span>
 
-  public NetworkTransaction getNetworkTransaction() {
-<span class="fc" id="L95">    return networkTransaction;</span>
+  public final NetworkTransaction getNetworkTransaction() {
+<span class="fc" id="L93">    return networkTransaction;</span>
   }
 
-  public int allowedToSubmit() {
-<span class="fc" id="L99">    final int active = threadPoolExecutor.getActiveCount();</span>
-<span class="pc bpc" id="L100" title="3 of 4 branches missed.">    if ((isRunning || !Configuration.configuration.isShutdown()) &amp;&amp;</span>
-<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        (active &lt; Configuration.configuration.getRunnerThread())) {</span>
-<span class="fc" id="L102">      return Configuration.configuration.getRunnerThread() - active;</span>
+  public final int allowedToSubmit() {
+<span class="fc" id="L97">    final int active = threadPoolExecutor.getActiveCount();</span>
+<span class="pc bpc" id="L98" title="3 of 4 branches missed.">    if ((isRunning || !Configuration.configuration.isShutdown()) &amp;&amp;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        (active &lt; Configuration.configuration.getRunnerThread())) {</span>
+<span class="fc" id="L100">      return Configuration.configuration.getRunnerThread() - active;</span>
     }
-<span class="nc" id="L104">    return 0;</span>
+<span class="nc" id="L102">    return 0;</span>
   }
 
   /**
    * Submit a task
    *
    * @param taskRunner
+   *
+   * @return True if launched, False if not since exceeding capacity
    */
-  public void submitTaskRunner(final DbTaskRunner taskRunner) {
+  public final boolean submitTaskRunner(final DbTaskRunner taskRunner) {
 <span class="pc bpc" id="L113" title="3 of 4 branches missed.">    if (isRunning || !Configuration.configuration.isShutdown()) {</span>
-      // last check: number can have raised up since Commander checks
-<span class="fc" id="L115">      if (threadPoolExecutor.getActiveCount() &lt;</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">          Configuration.configuration.getRunnerThread()) {</span>
-<span class="fc" id="L117">        logger.debug(&quot;Will run {}&quot;, taskRunner);</span>
-<span class="fc" id="L118">        final ClientRunner runner =</span>
-            new ClientRunner(networkTransaction, taskRunner, null);
-<span class="pc bpc" id="L120" title="3 of 4 branches missed.">        if (taskRunner.isSendThrough() &amp;&amp; (taskRunner.isRescheduledTransfer() ||</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">                                           taskRunner.isPreTaskStarting())) {</span>
-<span class="nc" id="L122">          runner.setSendThroughMode();</span>
-<span class="nc" id="L123">          taskRunner.checkThroughMode();</span>
-        }
-        // create the client, connect and run
-<span class="fc" id="L126">        threadPoolExecutor.execute(runner);</span>
-<span class="fc" id="L127">      } else {</span>
-        // too many current active threads
-<span class="nc" id="L129">        logger.debug(&quot;Task rescheduled {}&quot;, taskRunner);</span>
+<span class="fc" id="L114">      logger.debug(&quot;Will run {}&quot;, taskRunner);</span>
+<span class="fc" id="L115">      final ClientRunner runner =</span>
+          new ClientRunner(networkTransaction, taskRunner, null);
+<span class="pc bpc" id="L117" title="3 of 4 branches missed.">      if (taskRunner.isSendThrough() &amp;&amp; (taskRunner.isRescheduledTransfer() ||</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                                         taskRunner.isPreTaskStarting())) {</span>
+<span class="nc" id="L119">        runner.setSendThroughMode();</span>
+<span class="nc" id="L120">        taskRunner.checkThroughMode();</span>
       }
+      try {
+<span class="fc" id="L123">        taskRunner.changeUpdatedInfo(UpdatedInfo.RUNNING);</span>
+<span class="fc" id="L124">        taskRunner.update();</span>
+<span class="nc" id="L125">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L126">        logger.error(&quot;Error in Commander: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L127">        return false;</span>
+<span class="fc" id="L128">      }</span>
+      // create the client, connect and run
+<span class="fc" id="L130">      threadPoolExecutor.execute(runner);</span>
+<span class="fc" id="L131">      return true;</span>
     }
-<span class="fc" id="L132">  }</span>
+<span class="nc" id="L133">    return false;</span>
+  }
 
   /**
    * First step while shutting down the service
    */
-  public void prepareStopInternalRunner() {
-<span class="fc" id="L138">    isRunning = false;</span>
-<span class="fc" id="L139">    scheduledFuture.cancel(false);</span>
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (commander != null) {</span>
-<span class="fc" id="L141">      commander.finalizeCommander();</span>
+  public final void prepareStopInternalRunner() {
+<span class="fc" id="L140">    isRunning = false;</span>
+<span class="fc" id="L141">    scheduledFuture.cancel(false);</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (commander != null) {</span>
+<span class="fc" id="L143">      commander.finalizeCommander();</span>
     }
-<span class="fc" id="L143">    scheduledExecutorService.shutdown();</span>
-<span class="fc" id="L144">    threadPoolExecutor.shutdown();</span>
-<span class="fc" id="L145">  }</span>
+<span class="fc" id="L145">    scheduledExecutorService.shutdown();</span>
+<span class="fc" id="L146">    threadPoolExecutor.shutdown();</span>
+<span class="fc" id="L147">  }</span>
 
   /**
    * This should be called when the server is shutting down, after stopping
    * active requests if possible.
    */
-  public void stopInternalRunner() {
-<span class="fc" id="L152">    isRunning = false;</span>
-<span class="fc" id="L153">    logger.info(&quot;Stopping Commander and Runner Tasks&quot;);</span>
-<span class="fc" id="L154">    scheduledFuture.cancel(true);</span>
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (commander != null) {</span>
-<span class="fc" id="L156">      commander.finalizeCommander();</span>
+  public final void stopInternalRunner() {
+<span class="fc" id="L154">    isRunning = false;</span>
+<span class="fc" id="L155">    logger.info(&quot;Stopping Commander and Runner Tasks&quot;);</span>
+<span class="fc" id="L156">    scheduledFuture.cancel(true);</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">    if (commander != null) {</span>
+<span class="fc" id="L158">      commander.finalizeCommander();</span>
     }
-<span class="fc" id="L158">    scheduledExecutorService.shutdownNow();</span>
-<span class="fc" id="L159">    threadPoolExecutor.shutdownNow();</span>
-<span class="fc" id="L160">    networkTransaction.closeAll(false);</span>
-<span class="fc" id="L161">  }</span>
+<span class="fc" id="L160">    scheduledExecutorService.shutdownNow();</span>
+<span class="fc" id="L161">    threadPoolExecutor.shutdownNow();</span>
+<span class="fc" id="L162">    networkTransaction.closeAll(false);</span>
+<span class="fc" id="L163">  }</span>
 
-  public int nbInternalRunner() {
-<span class="fc" id="L164">    return threadPoolExecutor.getActiveCount();</span>
+  public final int nbInternalRunner() {
+<span class="fc" id="L166">    return threadPoolExecutor.getActiveCount();</span>
   }
 
-  public void reloadInternalRunner()
+  public final void reloadInternalRunner()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L169">    scheduledFuture.cancel(false);</span>
-<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (commander != null) {</span>
-<span class="nc" id="L171">      commander.finalizeCommander();</span>
+<span class="nc" id="L171">    scheduledFuture.cancel(false);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">    if (commander != null) {</span>
+<span class="nc" id="L173">      commander.finalizeCommander();</span>
     }
-<span class="nc" id="L173">    commander = new Commander(this);</span>
-<span class="nc" id="L174">    scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,</span>
+<span class="nc" id="L175">    commander = new Commander(this);</span>
+<span class="nc" id="L176">    scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,</span>
                                                                       2 *
-                                                                      Configuration.configuration
-<span class="nc" id="L177">                                                                          .getDelayCommander(),</span>
-                                                                      Configuration.configuration
-<span class="nc" id="L179">                                                                          .getDelayCommander(),</span>
+<span class="nc" id="L178">                                                                      Configuration.configuration.getDelayCommander(),</span>
+<span class="nc" id="L179">                                                                      Configuration.configuration.getDelayCommander(),</span>
                                                                       TimeUnit.MILLISECONDS);
 <span class="nc" id="L181">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

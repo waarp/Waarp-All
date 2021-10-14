@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MultipleDirectTransfer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.client</a> &gt; <span class="el_source">MultipleDirectTransfer.java</span></div><h1>MultipleDirectTransfer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.client;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.client.utils.OutputFormat;
+import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Direct Transfer from a client with or without database connection to transfer
+ * for multiple files to
+ * multiple hosts at once.&lt;br&gt;
+ * Files will have to be separated by ','.&lt;br&gt;
+ * Hosts will have to be separated by ','.&lt;br&gt;
+ * &lt;br&gt;
+ * For instance: -to host1,host2,host3 -file file1,file2 &lt;br&gt;
+ * Will generate: &lt;br&gt;
+ * -to host1 -file file1&lt;br&gt;
+ * -to host1 -file file2&lt;br&gt;
+ * -to host2 -file file1&lt;br&gt;
+ * -to host2 -file file2&lt;br&gt;
+ * -to host3 -file file1&lt;br&gt;
+ * -to host3 -file file2&lt;br&gt;
+ */
+public class MultipleDirectTransfer extends DirectTransfer {
+  private static final String TRANSFER_STATUS = &quot;Transfer.Status&quot;;
+  private int errorMultiple;
+  private int doneMultiple;
+<span class="fc" id="L62">  private final List&lt;OutputFormat&gt; results = new ArrayList&lt;OutputFormat&gt;();</span>
+
+  public MultipleDirectTransfer(final R66Future future, final String remoteHost,
+                                final String filename, final String rulename,
+                                final String fileinfo, final boolean isMD5,
+                                final int blocksize, final long id,
+                                final NetworkTransaction networkTransaction) {
+    // no starttime since it is direct (blocking request, no delay)
+<span class="fc" id="L70">    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,</span>
+          id, networkTransaction);
+<span class="fc" id="L72">  }</span>
+
+  @Override
+  public void run() {
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L77">      logger = WaarpLoggerFactory.getLogger(MultipleDirectTransfer.class);</span>
+    }
+<span class="fc" id="L79">    final String[] localfilenames = transferArgs.getFilename().split(&quot;,&quot;);</span>
+<span class="fc" id="L80">    final String[] rhosts = transferArgs.getRemoteHost().split(&quot;,&quot;);</span>
+<span class="fc" id="L81">    boolean inError = false;</span>
+<span class="fc" id="L82">    R66Result resultError = null;</span>
+    // first check if filenames contains wildcards
+    final DbRule dbrule;
+    try {
+<span class="fc" id="L86">      dbrule = new DbRule(transferArgs.getRulename());</span>
+<span class="nc" id="L87">    } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L88">      logger.error(Messages.getString(&quot;Transfer.18&quot;) + &quot;: {}&quot;,</span>
+<span class="nc" id="L89">                   e1.getMessage()); //$NON-NLS-1$</span>
+<span class="nc" id="L90">      future.setFailure(e1);</span>
+<span class="nc" id="L91">      return;</span>
+<span class="fc" id="L92">    }</span>
+<span class="fc" id="L93">    List&lt;String&gt; files = null;</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (dbrule.isSendMode()) {</span>
+<span class="fc" id="L95">      files = getLocalFiles(dbrule, localfilenames);</span>
+    }
+<span class="fc bfc" id="L97" title="All 2 branches covered.">    for (String host : rhosts) {</span>
+<span class="fc" id="L98">      host = host.trim();</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">      if (!host.isEmpty()) {</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (dbrule.isRecvMode()) {</span>
+<span class="nc" id="L101">          files = getRemoteFiles(localfilenames, host, networkTransaction);</span>
+        }
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (String filename : files) {</span>
+<span class="fc" id="L104">          filename = filename.trim();</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">          if (!filename.isEmpty()) {</span>
+<span class="fc" id="L106">            logger.info(</span>
+                &quot;Launch transfer to &quot; + host + &quot; with file &quot; + filename);
+<span class="fc" id="L108">            final long time1 = System.currentTimeMillis();</span>
+<span class="fc" id="L109">            final R66Future future = new R66Future(true);</span>
+<span class="fc" id="L110">            final DirectTransfer transaction =</span>
+<span class="fc" id="L111">                runDirectTransfer(host, filename, future);</span>
+<span class="fc" id="L112">            final long time2 = System.currentTimeMillis();</span>
+<span class="fc" id="L113">            logger.debug(&quot;finish transfer: {}&quot;, future.isSuccess());</span>
+<span class="fc" id="L114">            final long delay = time2 - time1;</span>
+<span class="fc" id="L115">            final R66Result result = future.getResult();</span>
+<span class="fc" id="L116">            final OutputFormat outputFormat = new OutputFormat(</span>
+<span class="fc" id="L117">                &quot;Unique &quot; + MultipleDirectTransfer.class.getSimpleName(), null);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">            if (future.isSuccess()) {</span>
+<span class="fc" id="L119">              successTransfer(transaction, delay, result, outputFormat);</span>
+            } else {
+<span class="nc bnc" id="L121" title="All 4 branches missed.">              if (result == null || result.getRunner() == null) {</span>
+<span class="nc" id="L122">                prepareKoOutputFormat(future, outputFormat);</span>
+<span class="nc" id="L123">                outputFormat.sysout();</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">                if (WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L125">                  return;</span>
+                }
+<span class="nc" id="L127">                networkTransaction.closeAll();</span>
+<span class="nc" id="L128">                WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());</span>
+<span class="nc" id="L129">                return;</span>
+              }
+<span class="nc" id="L131">              prepareKoOutputFormat(future, result, outputFormat);</span>
+<span class="nc" id="L132">              getResults().add(outputFormat);</span>
+<span class="nc" id="L133">              setErrorMultiple(getErrorMultiple() + 1);</span>
+<span class="nc" id="L134">              inError = true;</span>
+<span class="nc" id="L135">              resultError = result;</span>
+            }
+          }
+<span class="fc" id="L138">        }</span>
+      }
+    }
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">    if (inError) {</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (resultError != null) {</span>
+<span class="nc" id="L143">        future.setResult(resultError);</span>
+      }
+<span class="nc" id="L145">      future.cancel();</span>
+    } else {
+<span class="fc" id="L147">      future.setSuccess();</span>
+    }
+<span class="fc" id="L149">  }</span>
+
+  private void successTransfer(final DirectTransfer transaction,
+                               final long delay, final R66Result result,
+                               final OutputFormat outputFormat) {
+<span class="fc" id="L154">    prepareOkOutputFormat(delay, result, outputFormat);</span>
+<span class="fc" id="L155">    getResults().add(outputFormat);</span>
+<span class="fc" id="L156">    setDoneMultiple(getDoneMultiple() + 1);</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">    if (transaction.normalInfoAsWarn) {</span>
+<span class="fc" id="L158">      logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L160">      logger.info(outputFormat.loggerOut());</span>
+    }
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">    if (nolog) {</span>
+      // In case of success, delete the runner
+      try {
+<span class="nc" id="L165">        result.getRunner().delete();</span>
+<span class="nc" id="L166">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L167">        logger.warn(</span>
+<span class="nc" id="L168">            &quot;Cannot apply nolog to     &quot; + result.getRunner().toShortString() +</span>
+<span class="nc" id="L169">            &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L170">      }</span>
+    }
+<span class="fc" id="L172">  }</span>
+
+  private DirectTransfer runDirectTransfer(final String host,
+                                           final String filename,
+                                           final R66Future future) {
+<span class="fc" id="L177">    final DirectTransfer transaction =</span>
+<span class="fc" id="L178">        new DirectTransfer(future, host, filename, transferArgs.getRulename(),</span>
+<span class="fc" id="L179">                           transferArgs.getTransferInfo(), transferArgs.isMD5(),</span>
+<span class="fc" id="L180">                           transferArgs.getBlockSize(), transferArgs.getId(),</span>
+                           networkTransaction);
+<span class="fc" id="L182">    transaction.transferArgs.setFollowId(transferArgs.getFollowId());</span>
+<span class="fc" id="L183">    transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="fc" id="L184">    logger.debug(&quot;rhost: {}:{}&quot;, host,</span>
+<span class="fc" id="L185">                 transaction.transferArgs.getRemoteHost());</span>
+<span class="fc" id="L186">    transaction.run();</span>
+<span class="fc" id="L187">    future.awaitOrInterruptible();</span>
+<span class="fc" id="L188">    return transaction;</span>
+  }
+
+  public static void main(final String[] args) {
+<span class="nc" id="L192">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L195">      logger = WaarpLoggerFactory.getLogger(MultipleDirectTransfer.class);</span>
+    }
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    if (!getParams(args, false)) {</span>
+<span class="nc" id="L198">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L200">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L201">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+      }
+<span class="nc bnc" id="L203" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L204">        admin.close();</span>
+      }
+<span class="nc" id="L206">      WaarpSystemUtil.systemExit(2);</span>
+<span class="nc" id="L207">      return;</span>
+    }
+
+<span class="nc" id="L210">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L211">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+    try {
+<span class="nc" id="L213">      final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L214">      final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L215">      final MultipleDirectTransfer multipleDirectTransfer =</span>
+          new MultipleDirectTransfer(future, rhost, localFilename, rule,
+                                     transferInfo, ismd5, block, idt,
+                                     networkTransaction);
+<span class="nc" id="L219">      multipleDirectTransfer.normalInfoAsWarn = snormalInfoAsWarn;</span>
+<span class="nc" id="L220">      multipleDirectTransfer.run();</span>
+<span class="nc" id="L221">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L222">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L223">      logger.debug(&quot;finish all transfers: {}&quot;, future.isSuccess());</span>
+<span class="nc" id="L224">      final long delay = time2 - time1;</span>
+<span class="nc" id="L225">      final OutputFormat outputFormat =</span>
+<span class="nc" id="L226">          new OutputFormat(MultipleDirectTransfer.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc" id="L228">        outputFormat.setValue(FIELDS.status.name(), 0);</span>
+<span class="nc" id="L229">        outputFormat.setValue(FIELDS.statusTxt.name(), &quot;Multiple &quot; +</span>
+<span class="nc" id="L230">                                                       Messages.getString(</span>
+                                                           TRANSFER_STATUS) +
+<span class="nc" id="L232">                                                       Messages.getString(</span>
+                                                           &quot;RequestInformation.Success&quot;)); //$NON-NLS-1$
+<span class="nc" id="L234">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L235">        outputFormat.setValue(&quot;ok&quot;, multipleDirectTransfer.getDoneMultiple());</span>
+<span class="nc" id="L236">        outputFormat.setValue(&quot;delay&quot;, delay);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (multipleDirectTransfer.normalInfoAsWarn) {</span>
+<span class="nc" id="L238">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L240">          logger.info(outputFormat.loggerOut());</span>
+        }
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L243">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">          for (final OutputFormat result : multipleDirectTransfer.getResults()) {</span>
+<span class="nc" id="L245">            SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="nc" id="L246">            result.sysout();</span>
+<span class="nc" id="L247">          }</span>
+        }
+      } else {
+<span class="nc" id="L250">        outputFormat.setValue(FIELDS.status.name(), 2);</span>
+<span class="nc" id="L251">        outputFormat.setValue(FIELDS.statusTxt.name(), &quot;Multiple &quot; +</span>
+<span class="nc" id="L252">                                                       Messages.getString(</span>
+                                                           TRANSFER_STATUS) +
+<span class="nc" id="L254">                                                       Messages.getString(</span>
+                                                           &quot;RequestInformation.Failure&quot;)); //$NON-NLS-1$
+<span class="nc" id="L256">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L257">        outputFormat.setValue(&quot;ok&quot;, multipleDirectTransfer.getDoneMultiple());</span>
+<span class="nc" id="L258">        outputFormat.setValue(&quot;ko&quot;, multipleDirectTransfer.getErrorMultiple());</span>
+<span class="nc" id="L259">        outputFormat.setValue(&quot;delay&quot;, delay);</span>
+<span class="nc" id="L260">        logger.error(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L262">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">          for (final OutputFormat result : multipleDirectTransfer.getResults()) {</span>
+<span class="nc" id="L264">            SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="nc" id="L265">            result.sysout();</span>
+<span class="nc" id="L266">          }</span>
+        }
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        if (WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L269">          return;</span>
+        }
+<span class="nc" id="L271">        networkTransaction.closeAll();</span>
+<span class="nc" id="L272">        WaarpSystemUtil.systemExit(multipleDirectTransfer.getErrorMultiple());</span>
+      }
+<span class="nc" id="L274">    } catch (final Throwable e) {</span>
+<span class="nc" id="L275">      logger.error(&quot;Exception&quot;, e);</span>
+    } finally {
+<span class="nc bnc" id="L277" title="All 2 branches missed.">      if (!WaarpSystemUtil.isJunit()) {</span>
+<span class="nc" id="L278">        networkTransaction.closeAll();</span>
+<span class="nc" id="L279">        WaarpSystemUtil.systemExit(0);</span>
+      }
+    }
+<span class="nc" id="L282">  }</span>
+
+  /**
+   * @return the errorMultiple
+   */
+  public final int getErrorMultiple() {
+<span class="nc" id="L288">    return errorMultiple;</span>
+  }
+
+  /**
+   * @param errorMultiple the errorMultiple to set
+   */
+  private void setErrorMultiple(final int errorMultiple) {
+<span class="nc" id="L295">    this.errorMultiple = errorMultiple;</span>
+<span class="nc" id="L296">  }</span>
+
+  /**
+   * @return the doneMultiple
+   */
+  public final int getDoneMultiple() {
+<span class="fc" id="L302">    return doneMultiple;</span>
+  }
+
+  /**
+   * @param doneMultiple the doneMultiple to set
+   */
+  private void setDoneMultiple(final int doneMultiple) {
+<span class="fc" id="L309">    this.doneMultiple = doneMultiple;</span>
+<span class="fc" id="L310">  }</span>
+
+  /**
+   * @return the results
+   */
+  public final List&lt;OutputFormat&gt; getResults() {
+<span class="fc" id="L316">    return results;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

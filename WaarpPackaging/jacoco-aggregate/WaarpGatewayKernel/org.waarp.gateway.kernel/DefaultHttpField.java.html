@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DefaultHttpField.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel</a> &gt; <span class="el_source">DefaultHttpField.java</span></div><h1>DefaultHttpField.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel;
+
+import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+
+/**
+ *
+ */
+public class DefaultHttpField extends AbstractHttpField {
+
+  /**
+   * @param fieldname
+   * @param fieldtype
+   * @param fieldinfo
+   * @param fieldvalue
+   * @param fieldvisibility
+   * @param fieldmandatory
+   * @param fieldcookieset
+   * @param fieldtovalidate
+   * @param fieldposition
+   * @param fieldrank
+   */
+  public DefaultHttpField(final String fieldname, final FieldRole fieldtype,
+                          final String fieldinfo, final String fieldvalue,
+                          final boolean fieldvisibility,
+                          final boolean fieldmandatory,
+                          final boolean fieldcookieset,
+                          final boolean fieldtovalidate,
+                          final FieldPosition fieldposition,
+                          final int fieldrank) {
+<span class="fc" id="L50">    super(fieldname, fieldtype, fieldinfo, fieldvalue, fieldvisibility,</span>
+          fieldmandatory, fieldcookieset, fieldtovalidate, fieldposition,
+          fieldrank);
+<span class="fc" id="L53">  }</span>
+
+  @Override
+  public final String getHtmlFormField(final HttpPage page)
+      throws HttpIncorrectRequestException {
+<span class="nc" id="L58">    final StringBuilder builder = new StringBuilder();</span>
+<span class="nc bnc" id="L59" title="All 7 branches missed.">    switch (getFieldtype()) {</span>
+      case BUSINESS_INPUT_CHECKBOX:
+      case BUSINESS_INPUT_RADIO: {
+<span class="nc" id="L62">        builder.append(getFieldinfo());</span>
+<span class="nc" id="L63">        final AbstractHttpField source = page.getFields().get(getFieldname());</span>
+<span class="nc" id="L64">        final String[] values = source.fieldvalue.split(&quot;,&quot;);</span>
+<span class="nc" id="L65">        final String[] finalValues = fieldvalue.split(&quot;,&quot;);</span>
+        final String inputtype;
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (getFieldtype() == FieldRole.BUSINESS_INPUT_CHECKBOX) {</span>
+<span class="nc" id="L68">          inputtype = &quot;: &lt;INPUT type=CHECKBOX name=&quot;;</span>
+        } else {
+<span class="nc" id="L70">          inputtype = &quot;: &lt;INPUT type=RADIO name=&quot;;</span>
+        }
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (final String string : values) {</span>
+<span class="nc" id="L73">          builder.append(inputtype).append(getFieldname());</span>
+<span class="nc bnc" id="L74" title="All 4 branches missed.">          if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L75">            builder.append(&quot; value=\&quot;&quot;).append(string).append('&quot;');</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (finalValues != null) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">              for (final String value : finalValues) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (value.equals(string)) {</span>
+<span class="nc" id="L79">                  builder.append(&quot; checked&quot;);</span>
+<span class="nc" id="L80">                  break;</span>
+                }
+              }
+            }
+          }
+<span class="nc" id="L85">          builder.append('&gt;').append(string).append(&quot;&lt;BR&gt;&quot;);</span>
+        }
+<span class="nc" id="L87">        break;</span>
+      }
+      case BUSINESS_INPUT_FILE:
+      case BUSINESS_INPUT_HIDDEN:
+      case BUSINESS_INPUT_PWD:
+      case BUSINESS_INPUT_TEXT:
+      case SUBMIT: {
+<span class="nc" id="L94">        builder.append(getFieldinfo());</span>
+<span class="nc bnc" id="L95" title="All 6 branches missed.">        switch (getFieldtype()) {</span>
+          case BUSINESS_INPUT_FILE:
+<span class="nc" id="L97">            builder.append(&quot;: &lt;INPUT type=FILE name=&quot;);</span>
+<span class="nc" id="L98">            break;</span>
+          case BUSINESS_INPUT_HIDDEN:
+<span class="nc" id="L100">            builder.append(&quot;: &lt;INPUT type=HIDDEN name=&quot;);</span>
+<span class="nc" id="L101">            break;</span>
+          case BUSINESS_INPUT_PWD:
+<span class="nc" id="L103">            builder.append(&quot;: &lt;INPUT type=PASSWORD name=&quot;);</span>
+<span class="nc" id="L104">            break;</span>
+          case BUSINESS_INPUT_TEXT:
+<span class="nc" id="L106">            builder.append(&quot;: &lt;INPUT type=TEXT name=&quot;);</span>
+<span class="nc" id="L107">            break;</span>
+          case SUBMIT:
+<span class="nc" id="L109">            builder.append(&quot;: &lt;INPUT type=SUBMIT name=&quot;);</span>
+<span class="nc" id="L110">            break;</span>
+          default:
+<span class="nc" id="L112">            throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L113">                &quot;Incorrect type: &quot; + getFieldtype());</span>
+        }
+<span class="nc" id="L115">        builder.append(getFieldname());</span>
+<span class="nc bnc" id="L116" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L117">          builder.append(&quot; value=\&quot;&quot;).append(fieldvalue).append('&quot;');</span>
+        }
+<span class="nc" id="L119">        builder.append('&gt;');</span>
+<span class="nc" id="L120">        break;</span>
+      }
+      case BUSINESS_INPUT_IMAGE: {
+<span class="nc" id="L123">        builder.append(getFieldinfo()).append(&quot;: &lt;INPUT type=IMAGE name=&quot;)</span>
+<span class="nc" id="L124">               .append(getFieldname());</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L126">          builder.append(&quot; src=\&quot;&quot;).append(fieldvalue).append(&quot;\&quot; &quot;);</span>
+        }
+<span class="nc bnc" id="L128" title="All 4 branches missed.">        if (getFieldinfo() != null &amp;&amp; getFieldinfo().length() &gt; 0) {</span>
+<span class="nc" id="L129">          builder.append(&quot; alt=\&quot;&quot;).append(getFieldinfo()).append(&quot;\&quot; &quot;);</span>
+        }
+<span class="nc" id="L131">        builder.append('&gt;');</span>
+<span class="nc" id="L132">        break;</span>
+      }
+      case BUSINESS_SELECT: {
+<span class="nc" id="L135">        builder.append(getFieldinfo()).append(&quot;&lt;BR&gt;&lt;SELECT name=&quot;)</span>
+<span class="nc" id="L136">               .append(getFieldname()).append('&gt;');</span>
+<span class="nc" id="L137">        final AbstractHttpField source = page.getFields().get(getFieldname());</span>
+<span class="nc" id="L138">        final String[] values = source.fieldvalue.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (final String string : values) {</span>
+<span class="nc" id="L140">          builder.append(&quot;&lt;OPTION label=\&quot;&quot;).append(string)</span>
+<span class="nc" id="L141">                 .append(&quot;\&quot; value=\&quot;&quot;).append(string);</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">          if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0 &amp;&amp;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">              fieldvalue.equals(string)) {</span>
+<span class="nc" id="L144">            builder.append(&quot;\&quot; selected&gt;&quot;);</span>
+          } else {
+<span class="nc" id="L146">            builder.append(&quot;\&quot;&gt;&quot;);</span>
+          }
+<span class="nc" id="L148">          builder.append(string).append(&quot;&lt;/OPTION&gt;&quot;);</span>
+        }
+<span class="nc" id="L150">        builder.append(&quot;&lt;/SELECT&gt;&quot;);</span>
+<span class="nc" id="L151">        break;</span>
+      }
+      case BUSINESS_TEXTAREA: {
+<span class="nc" id="L154">        builder.append(getFieldinfo()).append(&quot;&lt;BR&gt;&lt;TEXTAREA name=&quot;)</span>
+<span class="nc" id="L155">               .append(getFieldname()).append('&gt;');</span>
+<span class="nc bnc" id="L156" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L157">          builder.append(fieldvalue);</span>
+        }
+<span class="nc" id="L159">        builder.append(&quot;&lt;/TEXTAREA&gt;&quot;);</span>
+<span class="nc" id="L160">        break;</span>
+      }
+      case BUSINESS_COOKIE:
+        // no since Cookie
+<span class="nc" id="L164">        break;</span>
+      default:
+<span class="nc" id="L166">        throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L167">            &quot;Incorrect type: &quot; + getFieldtype());</span>
+    }
+<span class="nc" id="L169">    return builder.toString();</span>
+  }
+
+  @Override
+  public final String getHtmlTabField(final HttpPage page) {
+<span class="nc" id="L174">    final StringBuilder builder =</span>
+<span class="nc" id="L175">        new StringBuilder().append(getFieldinfo()).append(&quot;&lt;/TD&gt;&lt;TD&gt;&quot;);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (fieldvalue != null) {</span>
+<span class="nc" id="L177">      builder.append(fieldvalue);</span>
+    }
+<span class="nc" id="L179">    return builder.toString();</span>
+  }
+
+  @Override
+  public final DefaultHttpField clone() {
+<span class="fc" id="L184">    return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),</span>
+<span class="fc" id="L185">                                fieldvalue, isFieldvisibility(),</span>
+<span class="fc" id="L186">                                isFieldmandatory(), isFieldcookieset(),</span>
+<span class="fc" id="L187">                                isFieldtovalidate(), getFieldposition(),</span>
+<span class="fc" id="L188">                                getFieldrank());</span>
+  }
+
+  @Override
+  public final void setStringValue(final String value)
+      throws HttpIncorrectRequestException {
+<span class="nc bnc" id="L194" title="All 3 branches missed.">    switch (getFieldtype()) {</span>
+      case BUSINESS_INPUT_CHECKBOX:
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (fieldvalue != null) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">          if (fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L198">            fieldvalue += ',' + value;</span>
+          } else {
+<span class="nc" id="L200">            fieldvalue = value;</span>
+          }
+        } else {
+<span class="nc" id="L203">          fieldvalue = value;</span>
+        }
+<span class="nc" id="L205">        setPresent(true);</span>
+<span class="nc" id="L206">        break;</span>
+      case BUSINESS_INPUT_FILE:
+      case BUSINESS_INPUT_HIDDEN:
+      case BUSINESS_INPUT_IMAGE:
+      case BUSINESS_INPUT_PWD:
+      case BUSINESS_INPUT_RADIO:
+      case BUSINESS_INPUT_TEXT:
+      case BUSINESS_SELECT:
+      case BUSINESS_TEXTAREA:
+      case BUSINESS_COOKIE:
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (isPresent()) {</span>
+          // should not be
+<span class="nc" id="L218">          throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L219">              &quot;Field already filled: &quot; + getFieldname());</span>
+        }
+<span class="nc" id="L221">        fieldvalue = value;</span>
+<span class="nc" id="L222">        setPresent(true);</span>
+<span class="nc" id="L223">        break;</span>
+      default:
+        break;
+    }
+<span class="nc" id="L227">  }</span>
+
+  @Override
+  public final void setFileUpload(final FileUpload fileUpload)
+      throws HttpIncorrectRequestException {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (isPresent()) {</span>
+        // should not be
+<span class="nc" id="L235">        throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L236">            &quot;Field already filled: &quot; + getFieldname());</span>
+      }
+<span class="nc" id="L238">      this.fileUpload = fileUpload;</span>
+<span class="nc" id="L239">      fieldvalue = fileUpload.getFilename();</span>
+<span class="nc" id="L240">      setPresent(true);</span>
+    } else {
+      // should not be
+<span class="nc" id="L243">      throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L244">          &quot;Field with wrong type (should be File): &quot; + getFieldname());</span>
+    }
+<span class="nc" id="L246">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

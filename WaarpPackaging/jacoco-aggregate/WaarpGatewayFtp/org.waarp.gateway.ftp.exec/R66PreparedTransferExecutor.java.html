@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>R66PreparedTransferExecutor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.exec</a> &gt; <span class="el_source">R66PreparedTransferExecutor.java</span></div><h1>R66PreparedTransferExecutor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+
+package org.waarp.gateway.ftp.exec;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.client.TransferArgs;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+
+import java.io.File;
+
+import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.common.file.filesystembased.FilesystemBasedFileImpl.*;
+
+/**
+ * R66PreparedTransferExecutor class. If the command starts with &quot;REFUSED&quot;, the
+ * command will be refused for
+ * execution. If &quot;REFUSED&quot; is set, the command &quot;RETR&quot; or &quot;STOR&quot; like operations
+ * will be stopped at starting of
+ * command.
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Format is like r66send command in any order except &quot;-info&quot; which should be
+ * the last item:&lt;br&gt;
+ * &quot;-to Host -file FILE -rule RULE [-md5] [-nolog] [-start yyyyMMddHHmmss or
+ * -delay (delay or +delay)] [-info INFO]&quot; &lt;br&gt;
+ * &lt;br&gt;
+ * INFO is the only one field that can contains blank character and MUST be
+ * the last argument.&lt;br&gt;
+ * &lt;br&gt;
+ * The following replacement are done dynamically before the command is
+ * executed:&lt;br&gt;
+ * - #BASEPATH# is replaced by the full path for the root of FTP Directory&lt;br&gt;
+ * - #FILE# is replaced by the current file path relative to FTP Directory (so
+ * #BASEPATH##FILE# is the full
+ * path of the file)&lt;br&gt;
+ * - #USER# is replaced by the username&lt;br&gt;
+ * - #ACCOUNT# is replaced by the account&lt;br&gt;
+ * - #COMMAND# is replaced by the command issued for the file&lt;br&gt;
+ * - #SPECIALID# is replaced by the FTP id of the transfer (whatever in or
+ * out)&lt;br&gt;
+ * - #UUID# is replaced by a special UUID globally unique for the transfer, in
+ * general to be placed in -info
+ * part (for instance ##UUID## giving #uuid#)&lt;br&gt;
+ * &lt;br&gt;
+ * So for instance &quot;-to Host -file #BASEPATH##FILE# -rule RULE [-md5] [-nolog]
+ * [-delay +delay] [-info ##UUID##
+ * #USER# #ACCOUNT# #COMMAND# INFO]&quot; &lt;br&gt;
+ * will be a standard use of this function.
+ */
+public class R66PreparedTransferExecutor extends AbstractExecutor {
+  private static final String CANNOT_GET_NEW_TASK = &quot;Cannot get new task\n    &quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L85">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L86">      WaarpLoggerFactory.getLogger(R66PreparedTransferExecutor.class);</span>
+
+  protected final WaarpFuture future;
+  protected final TransferArgs transferArgs;
+
+  protected boolean nolog;
+
+  /**
+   * Transfer arguments:&lt;br&gt;
+   * &lt;br&gt;
+   * -to &lt;arg&gt;        Specify the requested Host&lt;br&gt;
+   * (-id &lt;arg&gt;|      Specify the id of transfer&lt;br&gt;
+   * (-file &lt;arg&gt;     Specify the file path to operate on&lt;br&gt;
+   * -rule &lt;arg&gt;))    Specify the Rule&lt;br&gt;
+   * [-block &lt;arg&gt;]   Specify the block size&lt;br&gt;
+   * [-nofollow]      Specify the transfer should not integrate a FOLLOW id&lt;br&gt;
+   * [-md5]           Specify the option to have a hash computed for the
+   * transfer&lt;br&gt;
+   * [-delay &lt;arg&gt;]   Specify the delay time as an epoch time or '+' a delay in ms&lt;br&gt;
+   * [-start &lt;arg&gt;]   Specify the start time as yyyyMMddHHmmss&lt;br&gt;
+   * [-info &lt;arg&gt;)    Specify the transfer information (generally in last position)&lt;br&gt;
+   * [-nolog]         Specify to not log anything included database once the
+   * transfer is done&lt;br&gt;
+   * [-notlogWarn |   Specify to log final result as Info if OK&lt;br&gt;
+   * -logWarn]        Specify to log final result as Warn if OK&lt;br&gt;
+   *
+   * @param command transfer arguments
+   * @param delay delay
+   * @param futureCompletion future for completion
+   */
+  public R66PreparedTransferExecutor(final String command, final long delay,
+<span class="nc" id="L117">                                     final WaarpFuture futureCompletion) {</span>
+<span class="nc" id="L118">    final String[] args = BLANK.split(command);</span>
+<span class="nc" id="L119">    transferArgs = TransferArgs.getParamsInternal(0, args, false);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (transferArgs != null) {</span>
+<span class="nc" id="L121">      TransferArgs.getAllInfo(transferArgs, 0, args, null);</span>
+<span class="nc" id="L122">      nolog = transferArgs.isNolog();</span>
+    }
+<span class="nc" id="L124">    future = futureCompletion;</span>
+<span class="nc" id="L125">  }</span>
+
+  @Override
+  public final void run() throws CommandAbstractException {
+<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (transferArgs == null) {</span>
+<span class="nc" id="L130">      logger.error(</span>
+          &quot;Mandatory argument is missing: -to  -rule  -file or -to -id&quot;);
+<span class="nc" id="L132">      throw new Reply421Exception(</span>
+          &quot;Mandatory argument is missing: -to  -rule  -file or -to -id&quot;);
+    }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (transferArgs.getRemoteHost() == null ||</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        transferArgs.getRulename() == null ||</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        transferArgs.getFilename() == null) {</span>
+<span class="nc" id="L138">      logger.error(</span>
+<span class="nc" id="L139">          &quot;Mandatory argument is missing: -to &quot; + transferArgs.getRemoteHost() +</span>
+<span class="nc" id="L140">          &quot; -rule &quot; + transferArgs.getRulename() + &quot; -file &quot; +</span>
+<span class="nc" id="L141">          transferArgs.getFilename());</span>
+<span class="nc" id="L142">      throw new Reply421Exception(&quot;Mandatory argument is missing&quot;);</span>
+    }
+<span class="nc" id="L144">    final String message =</span>
+<span class="nc" id="L145">        &quot;R66Prepared with -to &quot; + transferArgs.getRemoteHost() + &quot; -rule &quot; +</span>
+<span class="nc" id="L146">        transferArgs.getRulename() + &quot; -file &quot; + transferArgs.getFilename() +</span>
+<span class="nc" id="L147">        &quot; -nolog: &quot; + nolog + &quot; -isMD5: &quot; + transferArgs.isMD5() + &quot; -info &quot; +</span>
+<span class="nc" id="L148">        transferArgs.getTransferInfo();</span>
+<span class="nc" id="L149">    logger.debug(message);</span>
+    final DbRule rule;
+    try {
+<span class="nc" id="L152">      rule = new DbRule(transferArgs.getRulename());</span>
+<span class="nc" id="L153">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L154">      logger.error(&quot;Cannot get Rule: {} since {}\n    {}&quot;,</span>
+<span class="nc" id="L155">                   transferArgs.getRulename(), e.getMessage(), message);</span>
+<span class="nc" id="L156">      throw new Reply421Exception(</span>
+<span class="nc" id="L157">          &quot;Cannot get Rule: &quot; + transferArgs.getRulename() + &quot;\n    &quot; +</span>
+          message);
+<span class="nc" id="L159">    }</span>
+<span class="nc" id="L160">    int mode = rule.getMode();</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (transferArgs.isMD5()) {</span>
+<span class="nc" id="L162">      mode = RequestPacket.getModeMD5(mode);</span>
+    }
+<span class="nc" id="L164">    final String sep =</span>
+<span class="nc" id="L165">        PartnerConfiguration.getSeparator(transferArgs.getRemoteHost());</span>
+<span class="nc" id="L166">    long originalSize = -1;</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">    if (RequestPacket.isSendMode(mode) &amp;&amp; !RequestPacket.isThroughMode(mode)) {</span>
+<span class="nc" id="L168">      final File file = new File(transferArgs.getFilename());</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (canRead(file)) {</span>
+<span class="nc" id="L170">        originalSize = file.length();</span>
+      }
+    }
+<span class="nc" id="L173">    final RequestPacket request =</span>
+<span class="nc" id="L174">        new RequestPacket(transferArgs.getRulename(), mode,</span>
+<span class="nc" id="L175">                          transferArgs.getFilename(),</span>
+<span class="nc" id="L176">                          transferArgs.getBlockSize(), 0, ILLEGALVALUE,</span>
+<span class="nc" id="L177">                          transferArgs.getTransferInfo(), originalSize, sep);</span>
+    // Not isRecv since it is the requester, so send =&gt; isRetrieve is true
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());</span>
+<span class="nc" id="L180">    logger.debug(&quot;Will prepare: {}&quot;, request);</span>
+    final DbTaskRunner taskRunner;
+    try {
+<span class="nc" id="L183">      taskRunner = new DbTaskRunner(rule, isRetrieve, request,</span>
+<span class="nc" id="L184">                                    transferArgs.getRemoteHost(),</span>
+<span class="nc" id="L185">                                    transferArgs.getStartTime());</span>
+<span class="nc" id="L186">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L187">      logger.error(&quot;Cannot get new task since {}\n    {}&quot;, e.getMessage(),</span>
+                   message);
+<span class="nc" id="L189">      throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
+<span class="nc" id="L190">    }</span>
+<span class="nc" id="L191">    taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">    if (!taskRunner.forceSaveStatus()) {</span>
+      try {
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (!taskRunner.specialSubmit()) {</span>
+<span class="nc" id="L195">          logger.error(&quot;Cannot prepare task: &quot; + message);</span>
+<span class="nc" id="L196">          throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
+        }
+<span class="nc" id="L198">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L199">        logger.error(&quot;Cannot prepare task since {}\n    {}&quot;, e.getMessage(),</span>
+                     message);
+<span class="nc" id="L201">        throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
+<span class="nc" id="L202">      }</span>
+    }
+<span class="nc" id="L204">    logger.debug(&quot;R66PreparedTransfer prepared: {}&quot;, request);</span>
+<span class="nc" id="L205">    future.setSuccess();</span>
+<span class="nc" id="L206">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

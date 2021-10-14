@@ -123,10 +123,10 @@ public class LogExport implements Runnable {
 <span class="nc" id="L123">      }</span>
     }
 <span class="nc" id="L125">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
-<span class="nc" id="L126">    AbstractTransfer</span>
-<span class="nc" id="L127">        .sendValidPacket(host, localChannelReference, valid, future);</span>
-<span class="nc" id="L128">    logger</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">        .info(&quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L126">    AbstractTransfer.sendValidPacket(host, localChannelReference, valid,</span>
+                                     future);
+<span class="nc" id="L128">    logger.info(</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
 <span class="nc" id="L130">  }</span>
 
   protected static boolean spurgeLog;
@@ -143,8 +143,8 @@ public class LogExport implements Runnable {
 <span class="nc" id="L143">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L144">      return false;</span>
     }
-<span class="nc" id="L146">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L147" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
 <span class="nc" id="L148">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L149">      return false;</span>
     }
@@ -185,8 +185,8 @@ public class LogExport implements Runnable {
   }
 
   public static void main(final String[] args) {
-<span class="nc" id="L188">    WaarpLoggerFactory</span>
-<span class="nc" id="L189">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L188">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="nc bnc" id="L190" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L191">      logger = WaarpLoggerFactory.getLogger(LogExport.class);</span>
     }
@@ -237,18 +237,22 @@ public class LogExport implements Runnable {
         }
       } else {
 <span class="nc bnc" id="L239" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
-<span class="nc" id="L240">          logger.warn(&quot;LogExport is     WARNED&quot;, future.getCause());</span>
+<span class="nc" id="L240">          logger.warn(&quot;LogExport is     WARNED&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">                      future.getCause() != null?</span>
+<span class="nc" id="L242">                          future.getCause().getMessage() : &quot;&quot;);</span>
         } else {
-<span class="nc" id="L242">          logger.error(&quot;LogExport in     FAILURE&quot;, future.getCause());</span>
+<span class="nc" id="L244">          logger.error(&quot;LogExport in     FAILURE&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                       future.getCause() != null?</span>
+<span class="nc" id="L246">                           future.getCause().getMessage() : &quot;&quot;);</span>
         }
-<span class="nc" id="L244">        networkTransaction.closeAll();</span>
-<span class="nc" id="L245">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+<span class="nc" id="L248">        networkTransaction.closeAll();</span>
+<span class="nc" id="L249">        System.exit(result.getCode().ordinal());//NOSONAR</span>
       }
     } finally {
-<span class="nc" id="L248">      networkTransaction.closeAll();</span>
-<span class="nc" id="L249">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L252">      networkTransaction.closeAll();</span>
+<span class="nc" id="L253">      System.exit(0);//NOSONAR</span>
     }
-<span class="nc" id="L251">  }</span>
+<span class="nc" id="L255">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

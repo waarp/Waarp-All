@@ -22,30 +22,34 @@ package org.waarp.openr66.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.sql.Types;
 
+import static org.waarp.common.database.data.AbstractDbData.*;
 import static org.waarp.openr66.configuration.FileBasedElements.*;
 
 /**
  * Host data object
  */
-@XmlType(name = XML_AUTHENTIFICATION_ENTRY)
+@XmlType(name = XML_AUTHENTICATION_ENTRY)
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Host {
-  @XmlElement(name = XML_AUTHENTIFICATION_HOSTID)
+  @XmlElement(name = XML_AUTHENTICATION_HOSTID)
   @JsonProperty(&quot;HOSTID&quot;)
   private String hostid;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ADDRESS)
+  @XmlElement(name = XML_AUTHENTICATION_ADDRESS)
   @JsonProperty(&quot;ADDRESS&quot;)
   private String address;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_PORT)
+  @XmlElement(name = XML_AUTHENTICATION_PORT)
   @JsonProperty(&quot;PORT&quot;)
   private int port;
 
@@ -53,159 +57,169 @@ public class Host {
   @JsonProperty(&quot;HOSTKEY&quot;)
   private byte[] hostkey;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISSSL)
+  @XmlElement(name = XML_AUTHENTICATION_ISSSL)
   @JsonProperty(&quot;ISSSL&quot;)
   private boolean ssl;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISCLIENT)
+  @XmlElement(name = XML_AUTHENTICATION_ISCLIENT)
   @JsonProperty(&quot;ISCLIENT&quot;)
   private boolean client;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISPROXIFIED)
+  @XmlElement(name = XML_AUTHENTICATION_ISPROXIFIED)
   @JsonProperty(&quot;ISPROXIFIED&quot;)
   private boolean proxified;
 
-<span class="pc" id="L68">  @XmlElement(name = XML_AUTHENTIFICATION_ADMIN)</span>
+<span class="pc" id="L72">  @XmlElement(name = XML_AUTHENTICATION_ADMIN)</span>
   @JsonProperty(&quot;ADMINROLE&quot;)
   private boolean admin = true;
 
-<span class="pc" id="L72">  @XmlElement(name = XML_AUTHENTIFICATION_ISACTIVE)</span>
+<span class="pc" id="L76">  @XmlElement(name = XML_AUTHENTICATION_ISACTIVE)</span>
   @JsonProperty(&quot;ISACTIVE&quot;)
   private boolean active = true;
 
-<span class="pc" id="L76">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
+<span class="pc" id="L80">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
    * Empty constructor
    */
-<span class="nc" id="L82">  public Host() {</span>
+<span class="nc" id="L86">  public Host() {</span>
     // Nothing
-<span class="nc" id="L84">  }</span>
+<span class="nc" id="L88">  }</span>
 
   public Host(final String hostid, final String address, final int port,
               final byte[] hostkey, final boolean ssl, final boolean client,
               final boolean proxified, final boolean admin,
-              final boolean active, final UpdatedInfo updatedInfo) {
-<span class="fc" id="L90">    this(hostid, address, port, hostkey, ssl, client, proxified, admin, active);</span>
-<span class="fc" id="L91">    this.updatedInfo = updatedInfo;</span>
-<span class="fc" id="L92">  }</span>
+              final boolean active, final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L95">    this(hostid, address, port, hostkey, ssl, client, proxified, admin, active);</span>
+<span class="fc" id="L96">    this.updatedInfo = updatedInfo;</span>
+<span class="fc" id="L97">  }</span>
 
   public Host(final String hostid, final String address, final int port,
               final byte[] hostkey, final boolean ssl, final boolean client,
               final boolean proxified, final boolean admin,
-<span class="fc" id="L97">              final boolean active) {</span>
-<span class="fc" id="L98">    this.hostid = hostid;</span>
-<span class="fc" id="L99">    this.hostkey = hostkey;</span>
+<span class="fc" id="L102">              final boolean active) throws WaarpDatabaseSqlException {</span>
+<span class="fc" id="L103">    this.hostid = hostid;</span>
+<span class="fc" id="L104">    this.hostkey = hostkey;</span>
     // Force client status if unvalid port
-<span class="fc" id="L101">    this.address = address;</span>
-<span class="fc" id="L102">    this.port = port;</span>
-<span class="fc" id="L103">    this.client = client;</span>
-<span class="fc" id="L104">    this.ssl = ssl;</span>
-<span class="fc" id="L105">    this.proxified = proxified;</span>
-<span class="fc" id="L106">    this.admin = admin;</span>
-<span class="fc" id="L107">    this.active = active;</span>
-<span class="fc" id="L108">  }</span>
-
-  public Host(final String hostid, final String address, final int port,
-              final byte[] hostkey, final boolean ssl, final boolean client,
-              final boolean proxified, final boolean admin) {
-<span class="fc" id="L113">    this(hostid, address, port, hostkey, ssl, client, proxified, admin, true);</span>
+<span class="fc" id="L106">    this.address = address;</span>
+<span class="fc" id="L107">    this.port = port;</span>
+<span class="fc" id="L108">    this.client = client;</span>
+<span class="fc" id="L109">    this.ssl = ssl;</span>
+<span class="fc" id="L110">    this.proxified = proxified;</span>
+<span class="fc" id="L111">    this.admin = admin;</span>
+<span class="fc" id="L112">    this.active = active;</span>
+<span class="fc" id="L113">    checkValues();</span>
 <span class="fc" id="L114">  }</span>
 
   public Host(final String hostid, final String address, final int port,
-              final byte[] hostkey, final boolean ssl, final boolean client) {
-<span class="nc" id="L118">    this(hostid, address, port, hostkey, ssl, client, false, true);</span>
-<span class="nc" id="L119">  }</span>
+              final byte[] hostkey, final boolean ssl, final boolean client,
+              final boolean proxified, final boolean admin)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L120">    this(hostid, address, port, hostkey, ssl, client, proxified, admin, true);</span>
+<span class="fc" id="L121">  }</span>
 
-  public String getHostid() {
-<span class="fc" id="L122">    return hostid;</span>
-  }
-
-  public void setHostid(final String hostid) {
-<span class="nc" id="L126">    this.hostid = hostid;</span>
+  public Host(final String hostid, final String address, final int port,
+              final byte[] hostkey, final boolean ssl, final boolean client)
+      throws WaarpDatabaseSqlException {
+<span class="nc" id="L126">    this(hostid, address, port, hostkey, ssl, client, false, true, true);</span>
 <span class="nc" id="L127">  }</span>
 
-  public String getAddress() {
-<span class="fc" id="L130">    return address;</span>
-  }
-
-  public void setAddress(final String address) {
-<span class="fc" id="L134">    this.address = address;</span>
-<span class="fc" id="L135">  }</span>
-
-  public int getPort() {
-<span class="fc" id="L138">    return port;</span>
-  }
-
-  public void setPort(final int port) {
-<span class="nc" id="L142">    this.port = port;</span>
-<span class="nc" id="L143">  }</span>
-
-  public byte[] getHostkey() {
-<span class="fc" id="L146">    return hostkey;</span>
-  }
-
-  @XmlElement(name = XML_AUTHENTIFICATION_KEY)
   @JsonIgnore
-  public String getKey() {
-<span class="nc" id="L152">    return new String(hostkey);</span>
+  public final void checkValues() throws WaarpDatabaseSqlException {
+<span class="fc" id="L131">    validateLength(hostkey);</span>
+<span class="fc" id="L132">    validateLength(Types.NVARCHAR, address, hostid);</span>
+<span class="fc" id="L133">  }</span>
+
+  public final String getHostid() {
+<span class="fc" id="L136">    return hostid;</span>
   }
 
-  public void setKey(final String key) {
-<span class="nc" id="L156">    hostkey = key.getBytes();</span>
+  public final void setHostid(final String hostid) {
+<span class="nc" id="L140">    this.hostid = hostid;</span>
+<span class="nc" id="L141">  }</span>
+
+  public final String getAddress() {
+<span class="fc" id="L144">    return address;</span>
+  }
+
+  public final void setAddress(final String address) {
+<span class="fc" id="L148">    this.address = address;</span>
+<span class="fc" id="L149">  }</span>
+
+  public final int getPort() {
+<span class="fc" id="L152">    return port;</span>
+  }
+
+  public final void setPort(final int port) {
+<span class="nc" id="L156">    this.port = port;</span>
 <span class="nc" id="L157">  }</span>
 
-  public void setHostkey(final byte[] hostkey) {
-<span class="fc" id="L160">    this.hostkey = hostkey;</span>
-<span class="fc" id="L161">  }</span>
-
-  public boolean isSSL() {
-<span class="fc" id="L164">    return ssl;</span>
+  public final byte[] getHostkey() {
+<span class="fc" id="L160">    return hostkey;</span>
   }
 
-  public void setSSL(final boolean ssl) {
-<span class="nc" id="L168">    this.ssl = ssl;</span>
-<span class="nc" id="L169">  }</span>
-
-  public boolean isClient() {
-<span class="fc" id="L172">    return client;</span>
+  @XmlElement(name = XML_AUTHENTICATION_KEY)
+  @JsonIgnore
+  public final String getKey() {
+<span class="nc" id="L166">    return new String(hostkey, WaarpStringUtils.UTF8);</span>
   }
 
-  public void setClient(final boolean client) {
-<span class="fc" id="L176">    this.client = client;</span>
-<span class="fc" id="L177">  }</span>
+  public final void setKey(final String key) {
+<span class="nc" id="L170">    hostkey = key.getBytes(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L171">  }</span>
 
-  public boolean isAdmin() {
-<span class="fc" id="L180">    return admin;</span>
+  public final void setHostkey(final byte[] hostkey) {
+<span class="fc" id="L174">    this.hostkey = hostkey;</span>
+<span class="fc" id="L175">  }</span>
+
+  public final boolean isSSL() {
+<span class="fc" id="L178">    return ssl;</span>
   }
 
-  public void setAdmin(final boolean admin) {
-<span class="nc" id="L184">    this.admin = admin;</span>
-<span class="nc" id="L185">  }</span>
+  public final void setSSL(final boolean ssl) {
+<span class="nc" id="L182">    this.ssl = ssl;</span>
+<span class="nc" id="L183">  }</span>
 
-  public boolean isProxified() {
-<span class="fc" id="L188">    return proxified;</span>
+  public final boolean isClient() {
+<span class="fc" id="L186">    return client;</span>
   }
 
-  public void setProxified(final boolean proxified) {
-<span class="fc" id="L192">    this.proxified = proxified;</span>
-<span class="fc" id="L193">  }</span>
+  public final void setClient(final boolean client) {
+<span class="fc" id="L190">    this.client = client;</span>
+<span class="fc" id="L191">  }</span>
 
-  public boolean isActive() {
-<span class="fc" id="L196">    return active;</span>
+  public final boolean isAdmin() {
+<span class="fc" id="L194">    return admin;</span>
   }
 
-  public void setActive(final boolean active) {
-<span class="fc" id="L200">    this.active = active;</span>
-<span class="fc" id="L201">  }</span>
+  public final void setAdmin(final boolean admin) {
+<span class="nc" id="L198">    this.admin = admin;</span>
+<span class="nc" id="L199">  }</span>
 
-  public UpdatedInfo getUpdatedInfo() {
-<span class="fc" id="L204">    return updatedInfo;</span>
+  public final boolean isProxified() {
+<span class="fc" id="L202">    return proxified;</span>
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
-<span class="nc" id="L208">    updatedInfo = info;</span>
-<span class="nc" id="L209">  }</span>
+  public final void setProxified(final boolean proxified) {
+<span class="fc" id="L206">    this.proxified = proxified;</span>
+<span class="fc" id="L207">  }</span>
+
+  public final boolean isActive() {
+<span class="fc" id="L210">    return active;</span>
+  }
+
+  public final void setActive(final boolean active) {
+<span class="fc" id="L214">    this.active = active;</span>
+<span class="fc" id="L215">  }</span>
+
+  public final UpdatedInfo getUpdatedInfo() {
+<span class="fc" id="L218">    return updatedInfo;</span>
+  }
+
+  public final void setUpdatedInfo(final UpdatedInfo info) {
+<span class="nc" id="L222">    updatedInfo = info;</span>
+<span class="nc" id="L223">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

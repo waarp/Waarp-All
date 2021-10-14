@@ -1446,7 +1446,7 @@ import java.util.zip.GZIPOutputStream;
 
         } // end try
 <span class="nc" id="L1448">        catch (final IOException e) {</span>
-<span class="nc" id="L1449">          SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L1449">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
           // Just return originally-decoded bytes
         } // end catch
         finally {
@@ -1525,29 +1525,30 @@ import java.util.zip.GZIPOutputStream;
       else {
 <span class="nc" id="L1526">        ois = new ObjectInputStream(bais) {</span>
           @Override
-          public Class&lt;?&gt; resolveClass(final ObjectStreamClass streamClass)
+          public final Class&lt;?&gt; resolveClass(
+              final ObjectStreamClass streamClass)
               throws IOException, ClassNotFoundException {
-<span class="nc" id="L1530">            final Class&lt;?&gt; c =</span>
-<span class="nc" id="L1531">                Class.forName(streamClass.getName(), false, loader);//NOSONAR</span>
-<span class="nc bnc" id="L1532" title="All 2 branches missed.">            if (c == null) {</span>
-<span class="nc" id="L1533">              return super.resolveClass(streamClass);</span>
+<span class="nc" id="L1531">            final Class&lt;?&gt; c =</span>
+<span class="nc" id="L1532">                Class.forName(streamClass.getName(), false, loader);//NOSONAR</span>
+<span class="nc bnc" id="L1533" title="All 2 branches missed.">            if (c == null) {</span>
+<span class="nc" id="L1534">              return super.resolveClass(streamClass);</span>
             } else {
-<span class="nc" id="L1535">              return c; // Class loader knows of this class.</span>
+<span class="nc" id="L1536">              return c; // Class loader knows of this class.</span>
             } // end else: not null
           } // end resolveClass
         }; // end ois
       } // end else: no custom class loader
 
-<span class="fc" id="L1541">      obj = ois.readObject();</span>
+<span class="fc" id="L1542">      obj = ois.readObject();</span>
     } // end try
     // end catch
     // end catch
     finally {
-<span class="fc" id="L1546">      FileUtils.close(bais);</span>
-<span class="fc" id="L1547">      FileUtils.close(ois);</span>
+<span class="fc" id="L1547">      FileUtils.close(bais);</span>
+<span class="fc" id="L1548">      FileUtils.close(ois);</span>
     } // end finally
 
-<span class="fc" id="L1550">    return obj;</span>
+<span class="fc" id="L1551">    return obj;</span>
   } // end decodeObject
 
   /**
@@ -1570,21 +1571,21 @@ import java.util.zip.GZIPOutputStream;
   public static void encodeToFile(final byte[] dataToEncode,
                                   final String filename) throws IOException {
 
-<span class="pc bpc" id="L1573" title="1 of 2 branches missed.">    if (dataToEncode == null) {</span>
-<span class="nc" id="L1574">      throw new IllegalArgumentException(&quot;Data to encode was null.&quot;);</span>
+<span class="pc bpc" id="L1574" title="1 of 2 branches missed.">    if (dataToEncode == null) {</span>
+<span class="nc" id="L1575">      throw new IllegalArgumentException(&quot;Data to encode was null.&quot;);</span>
     } // end iff
 
-<span class="fc" id="L1577">    InnerOutputStream bos = null;</span>
+<span class="fc" id="L1578">    InnerOutputStream bos = null;</span>
     try {
-<span class="fc" id="L1579">      bos = new InnerOutputStream(new FileOutputStream(filename), ENCODE);</span>
-<span class="fc" id="L1580">      bos.write(dataToEncode);</span>
+<span class="fc" id="L1580">      bos = new InnerOutputStream(new FileOutputStream(filename), ENCODE);</span>
+<span class="fc" id="L1581">      bos.write(dataToEncode);</span>
     } // end try
     // end catch: java.io.IOException
     finally {
-<span class="fc" id="L1584">      FileUtils.close(bos);</span>
+<span class="fc" id="L1585">      FileUtils.close(bos);</span>
     } // end finally
 
-<span class="fc" id="L1587">  } // end encodeToFile</span>
+<span class="fc" id="L1588">  } // end encodeToFile</span>
 
   /**
    * Convenience method for decoding data to a file.
@@ -1605,17 +1606,17 @@ import java.util.zip.GZIPOutputStream;
   public static void decodeToFile(final String dataToDecode,
                                   final String filename) throws IOException {
 
-<span class="fc" id="L1608">    InnerOutputStream bos = null;</span>
+<span class="fc" id="L1609">    InnerOutputStream bos = null;</span>
     try {
-<span class="fc" id="L1610">      bos = new InnerOutputStream(new FileOutputStream(filename), DECODE);</span>
-<span class="fc" id="L1611">      bos.write(dataToDecode.getBytes(PREFERRED_ENCODING));</span>
+<span class="fc" id="L1611">      bos = new InnerOutputStream(new FileOutputStream(filename), DECODE);</span>
+<span class="fc" id="L1612">      bos.write(dataToDecode.getBytes(PREFERRED_ENCODING));</span>
     } // end try
     // end catch: java.io.IOException
     finally {
-<span class="fc" id="L1615">      FileUtils.close(bos);</span>
+<span class="fc" id="L1616">      FileUtils.close(bos);</span>
     } // end finally
 
-<span class="fc" id="L1618">  } // end decodeToFile</span>
+<span class="fc" id="L1619">  } // end decodeToFile</span>
 
   /**
    * Convenience method for reading a base64-encoded file and decoding it.
@@ -1638,42 +1639,42 @@ import java.util.zip.GZIPOutputStream;
       throws IOException {
 
     byte[] decodedData;
-<span class="fc" id="L1641">    InnerInputStream bis = null;</span>
+<span class="fc" id="L1642">    InnerInputStream bis = null;</span>
     try {
       // Set up some useful variables
-<span class="fc" id="L1644">      final File file = new File(filename);</span>
+<span class="fc" id="L1645">      final File file = new File(filename);</span>
       final byte[] buffer;
-<span class="fc" id="L1646">      int length = 0;</span>
+<span class="fc" id="L1647">      int length = 0;</span>
       int numBytes;
 
       // Check for size of file
-<span class="pc bpc" id="L1650" title="1 of 2 branches missed.">      if (file.length() &gt; Integer.MAX_VALUE) {</span>
-<span class="nc" id="L1651">        throw new IOException(</span>
-<span class="nc" id="L1652">            &quot;File is too big for this convenience method (&quot; + file.length() +</span>
+<span class="pc bpc" id="L1651" title="1 of 2 branches missed.">      if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L1652">        throw new IOException(</span>
+<span class="nc" id="L1653">            &quot;File is too big for this convenience method (&quot; + file.length() +</span>
             &quot; bytes).&quot;);
       } // end if: file too big for int index
-<span class="fc" id="L1655">      buffer = new byte[(int) file.length()];</span>
+<span class="fc" id="L1656">      buffer = new byte[(int) file.length()];</span>
 
       // Open a stream
-<span class="fc" id="L1658">      bis = new InnerInputStream(</span>
+<span class="fc" id="L1659">      bis = new InnerInputStream(</span>
           new BufferedInputStream(new FileInputStream(file)), DECODE);
 
       // Read until done
-<span class="fc bfc" id="L1662" title="All 2 branches covered.">      while ((numBytes = bis.read(buffer, length, 4096)) &gt;= 0) {</span>
-<span class="fc" id="L1663">        length += numBytes;</span>
+<span class="fc bfc" id="L1663" title="All 2 branches covered.">      while ((numBytes = bis.read(buffer, length, 4096)) &gt;= 0) {</span>
+<span class="fc" id="L1664">        length += numBytes;</span>
       } // end while
 
       // Save in a variable to return
-<span class="fc" id="L1667">      decodedData = new byte[length];</span>
-<span class="fc" id="L1668">      System.arraycopy(buffer, 0, decodedData, 0, length);</span>
+<span class="fc" id="L1668">      decodedData = new byte[length];</span>
+<span class="fc" id="L1669">      System.arraycopy(buffer, 0, decodedData, 0, length);</span>
 
     } // end try
     // end catch: java.io.IOException
     finally {
-<span class="fc" id="L1673">      FileUtils.close(bis);</span>
+<span class="fc" id="L1674">      FileUtils.close(bis);</span>
     } // end finally
 
-<span class="fc" id="L1676">    return decodedData;</span>
+<span class="fc" id="L1677">    return decodedData;</span>
   } // end decodeFromFile
 
   /**
@@ -1697,42 +1698,42 @@ import java.util.zip.GZIPOutputStream;
       throws IOException {
 
     String encodedData;
-<span class="fc" id="L1700">    InnerInputStream bis = null;</span>
+<span class="fc" id="L1701">    InnerInputStream bis = null;</span>
     try {
       // Set up some useful variables
-<span class="fc" id="L1703">      final File file = new File(filename);</span>
+<span class="fc" id="L1704">      final File file = new File(filename);</span>
       // Check for size of file
-<span class="pc bpc" id="L1705" title="1 of 2 branches missed.">      if (file.length() &gt; Integer.MAX_VALUE) {</span>
-<span class="nc" id="L1706">        throw new IOException(</span>
-<span class="nc" id="L1707">            &quot;File is too big for this convenience method (&quot; + file.length() +</span>
+<span class="pc bpc" id="L1706" title="1 of 2 branches missed.">      if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L1707">        throw new IOException(</span>
+<span class="nc" id="L1708">            &quot;File is too big for this convenience method (&quot; + file.length() +</span>
             &quot; bytes).&quot;);
       } // end if: file too big for int index
-<span class="fc" id="L1710">      final byte[] buffer = new byte[Math.max((int) (file.length() * 1.4 + 1),</span>
+<span class="fc" id="L1711">      final byte[] buffer = new byte[Math.max((int) (file.length() * 1.4 + 1),</span>
                                               40)]; // Need max() for math on small
       // files (v2.2.1); Need +1 for a
       // few corner cases (v2.3.5)
-<span class="fc" id="L1714">      int length = 0;</span>
+<span class="fc" id="L1715">      int length = 0;</span>
       int numBytes;
 
       // Open a stream
-<span class="fc" id="L1718">      bis = new InnerInputStream(</span>
+<span class="fc" id="L1719">      bis = new InnerInputStream(</span>
           new BufferedInputStream(new FileInputStream(file)), ENCODE);
 
       // Read until done
-<span class="fc bfc" id="L1722" title="All 2 branches covered.">      while ((numBytes = bis.read(buffer, length, 4096)) &gt;= 0) {</span>
-<span class="fc" id="L1723">        length += numBytes;</span>
+<span class="fc bfc" id="L1723" title="All 2 branches covered.">      while ((numBytes = bis.read(buffer, length, 4096)) &gt;= 0) {</span>
+<span class="fc" id="L1724">        length += numBytes;</span>
       } // end while
 
       // Save in a variable to return
-<span class="fc" id="L1727">      encodedData = new String(buffer, 0, length, PREFERRED_ENCODING);</span>
+<span class="fc" id="L1728">      encodedData = new String(buffer, 0, length, PREFERRED_ENCODING);</span>
 
     } // end try
     // end catch: java.io.IOException
     finally {
-<span class="fc" id="L1732">      FileUtils.close(bis);</span>
+<span class="fc" id="L1733">      FileUtils.close(bis);</span>
     } // end finally
 
-<span class="fc" id="L1735">    return encodedData;</span>
+<span class="fc" id="L1736">    return encodedData;</span>
   } // end encodeFromFile
 
   /**
@@ -1747,17 +1748,17 @@ import java.util.zip.GZIPOutputStream;
   public static void encodeFileToFile(final String infile, final String outfile)
       throws IOException {
 
-<span class="fc" id="L1750">    final String encoded = encodeFromFile(infile);</span>
-<span class="fc" id="L1751">    OutputStream out = null;</span>
+<span class="fc" id="L1751">    final String encoded = encodeFromFile(infile);</span>
+<span class="fc" id="L1752">    OutputStream out = null;</span>
     try {
-<span class="fc" id="L1753">      out = new BufferedOutputStream(new FileOutputStream(outfile));</span>
-<span class="fc" id="L1754">      out.write(encoded.getBytes(PREFERRED_ENCODING)); // Strict, 7-bit output.</span>
+<span class="fc" id="L1754">      out = new BufferedOutputStream(new FileOutputStream(outfile));</span>
+<span class="fc" id="L1755">      out.write(encoded.getBytes(PREFERRED_ENCODING)); // Strict, 7-bit output.</span>
     } // end try
     // end catch
     finally {
-<span class="fc" id="L1758">      FileUtils.close(out);</span>
+<span class="fc" id="L1759">      FileUtils.close(out);</span>
     } // end finally
-<span class="fc" id="L1760">  } // end encodeFileToFile</span>
+<span class="fc" id="L1761">  } // end encodeFileToFile</span>
 
   /**
    * Reads &lt;tt&gt;infile&lt;/tt&gt; and decodes it to &lt;tt&gt;outfile&lt;/tt&gt;.
@@ -1771,17 +1772,17 @@ import java.util.zip.GZIPOutputStream;
   public static void decodeFileToFile(final String infile, final String outfile)
       throws IOException {
 
-<span class="fc" id="L1774">    final byte[] decoded = decodeFromFile(infile);</span>
-<span class="fc" id="L1775">    OutputStream out = null;</span>
+<span class="fc" id="L1775">    final byte[] decoded = decodeFromFile(infile);</span>
+<span class="fc" id="L1776">    OutputStream out = null;</span>
     try {
-<span class="fc" id="L1777">      out = new BufferedOutputStream(new FileOutputStream(outfile));</span>
-<span class="fc" id="L1778">      out.write(decoded);</span>
+<span class="fc" id="L1778">      out = new BufferedOutputStream(new FileOutputStream(outfile));</span>
+<span class="fc" id="L1779">      out.write(decoded);</span>
     } // end try
     // end catch
     finally {
-<span class="fc" id="L1782">      FileUtils.close(out);</span>
+<span class="fc" id="L1783">      FileUtils.close(out);</span>
     } // end finally
-<span class="fc" id="L1784">  } // end decodeFileToFile</span>
+<span class="fc" id="L1785">  } // end decodeFileToFile</span>
 
   /* ******** I N N E R C L A S S I N P U T S T R E A M ******** */
 
@@ -1816,8 +1817,8 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     public InnerInputStream(final InputStream in) {
-<span class="nc" id="L1819">      this(in, DECODE);</span>
-<span class="nc" id="L1820">    } // end constructor</span>
+<span class="nc" id="L1820">      this(in, DECODE);</span>
+<span class="nc" id="L1821">    } // end constructor</span>
 
     /**
      * Constructs a {@link InnerInputStream} in either ENCODE or DECODE
@@ -1844,18 +1845,18 @@ import java.util.zip.GZIPOutputStream;
      */
     private InnerInputStream(final InputStream in, final int options) {
 
-<span class="fc" id="L1847">      super(in);</span>
-<span class="fc" id="L1848">      this.options = options; // Record for later</span>
-<span class="pc bpc" id="L1849" title="1 of 2 branches missed.">      breakLines = (options &amp; DO_BREAK_LINES) &gt; 0;</span>
-<span class="fc bfc" id="L1850" title="All 2 branches covered.">      encode = (options &amp; ENCODE) &gt; 0;</span>
-<span class="fc bfc" id="L1851" title="All 2 branches covered.">      bufferLength = encode? 4 : 3;</span>
-<span class="fc" id="L1852">      final byte[] bsize3 = { 0, 0, 0 };</span>
-<span class="fc" id="L1853">      final byte[] bsize4 = { 0, 0, 0, 0 };</span>
-<span class="fc bfc" id="L1854" title="All 2 branches covered.">      buffer = encode? bsize4 : bsize3;</span>
-<span class="fc" id="L1855">      position = -1;</span>
-<span class="fc" id="L1856">      lineLength = 0;</span>
-<span class="fc" id="L1857">      decodabet = getDecodabet(options);</span>
-<span class="fc" id="L1858">    } // end constructor</span>
+<span class="fc" id="L1848">      super(in);</span>
+<span class="fc" id="L1849">      this.options = options; // Record for later</span>
+<span class="pc bpc" id="L1850" title="1 of 2 branches missed.">      breakLines = (options &amp; DO_BREAK_LINES) &gt; 0;</span>
+<span class="fc bfc" id="L1851" title="All 2 branches covered.">      encode = (options &amp; ENCODE) &gt; 0;</span>
+<span class="fc bfc" id="L1852" title="All 2 branches covered.">      bufferLength = encode? 4 : 3;</span>
+<span class="fc" id="L1853">      final byte[] bsize3 = { 0, 0, 0 };</span>
+<span class="fc" id="L1854">      final byte[] bsize4 = { 0, 0, 0, 0 };</span>
+<span class="fc bfc" id="L1855" title="All 2 branches covered.">      buffer = encode? bsize4 : bsize3;</span>
+<span class="fc" id="L1856">      position = -1;</span>
+<span class="fc" id="L1857">      lineLength = 0;</span>
+<span class="fc" id="L1858">      decodabet = getDecodabet(options);</span>
+<span class="fc" id="L1859">    } // end constructor</span>
 
     /**
      * Reads enough of the input stream to convert to/from Base64 and
@@ -1866,99 +1867,99 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     @Override
-    public int read() throws IOException {
+    public final int read() throws IOException {
 
       // Do we need to get data?
-<span class="fc bfc" id="L1872" title="All 2 branches covered.">      if (position &lt; 0) {</span>
-<span class="fc bfc" id="L1873" title="All 2 branches covered.">        if (encode) {</span>
-<span class="fc" id="L1874">          final byte[] b3 = { 0, 0, 0 };</span>
-<span class="fc" id="L1875">          int numBinaryBytes = 0;</span>
-<span class="fc bfc" id="L1876" title="All 2 branches covered.">          for (int i = 0; i &lt; 3; i++) {</span>
-<span class="fc" id="L1877">            final int b = in.read();</span>
+<span class="fc bfc" id="L1873" title="All 2 branches covered.">      if (position &lt; 0) {</span>
+<span class="fc bfc" id="L1874" title="All 2 branches covered.">        if (encode) {</span>
+<span class="fc" id="L1875">          final byte[] b3 = { 0, 0, 0 };</span>
+<span class="fc" id="L1876">          int numBinaryBytes = 0;</span>
+<span class="fc bfc" id="L1877" title="All 2 branches covered.">          for (int i = 0; i &lt; 3; i++) {</span>
+<span class="fc" id="L1878">            final int b = in.read();</span>
 
             // If end of stream, b is -1.
-<span class="fc bfc" id="L1880" title="All 2 branches covered.">            if (b &gt;= 0) {</span>
-<span class="fc" id="L1881">              b3[i] = (byte) b;</span>
-<span class="fc" id="L1882">              numBinaryBytes++;</span>
+<span class="fc bfc" id="L1881" title="All 2 branches covered.">            if (b &gt;= 0) {</span>
+<span class="fc" id="L1882">              b3[i] = (byte) b;</span>
+<span class="fc" id="L1883">              numBinaryBytes++;</span>
             } else {
               break; // out of for loop
             } // end else: end of stream
 
           } // end for: each needed input byte
 
-<span class="fc bfc" id="L1889" title="All 2 branches covered.">          if (numBinaryBytes &gt; 0) {</span>
-<span class="fc" id="L1890">            encode3to4(b3, 0, numBinaryBytes, buffer, 0, options);</span>
-<span class="fc" id="L1891">            position = 0;</span>
-<span class="fc" id="L1892">            numSigBytes = 4;</span>
+<span class="fc bfc" id="L1890" title="All 2 branches covered.">          if (numBinaryBytes &gt; 0) {</span>
+<span class="fc" id="L1891">            encode3to4(b3, 0, numBinaryBytes, buffer, 0, options);</span>
+<span class="fc" id="L1892">            position = 0;</span>
+<span class="fc" id="L1893">            numSigBytes = 4;</span>
           } // end if: got data
           else {
-<span class="fc" id="L1895">            return -1; // Must be end of stream</span>
+<span class="fc" id="L1896">            return -1; // Must be end of stream</span>
           } // end else
-<span class="fc" id="L1897">        } // end if: encoding</span>
+<span class="fc" id="L1898">        } // end if: encoding</span>
 
         // Else decoding
         else {
-<span class="fc" id="L1901">          final byte[] b4 = { 0, 0, 0, 0 };</span>
+<span class="fc" id="L1902">          final byte[] b4 = { 0, 0, 0, 0 };</span>
           int i;
-<span class="fc bfc" id="L1903" title="All 2 branches covered.">          for (i = 0; i &lt; 4; i++) {</span>
+<span class="fc bfc" id="L1904" title="All 2 branches covered.">          for (i = 0; i &lt; 4; i++) {</span>
             // Read four &quot;meaningful&quot; bytes:
             int b;
             do {
-<span class="fc" id="L1907">              b = in.read();</span>
-<span class="pc bpc" id="L1908" title="2 of 4 branches missed.">            } while (b &gt;= 0 &amp;&amp; decodabet[b &amp; 0x7f] &lt;= WHITE_SPACE_ENC);</span>
+<span class="fc" id="L1908">              b = in.read();</span>
+<span class="pc bpc" id="L1909" title="2 of 4 branches missed.">            } while (b &gt;= 0 &amp;&amp; decodabet[b &amp; 0x7f] &lt;= WHITE_SPACE_ENC);</span>
 
-<span class="pc bpc" id="L1910" title="1 of 2 branches missed.">            if (b &lt; 0) {</span>
-<span class="nc" id="L1911">              break; // Reads a -1 if end of stream</span>
+<span class="pc bpc" id="L1911" title="1 of 2 branches missed.">            if (b &lt; 0) {</span>
+<span class="nc" id="L1912">              break; // Reads a -1 if end of stream</span>
             } // end if: end of stream
 
-<span class="fc" id="L1914">            b4[i] = (byte) b;</span>
+<span class="fc" id="L1915">            b4[i] = (byte) b;</span>
           } // end for: each needed input byte
 
-<span class="pc bpc" id="L1917" title="1 of 2 branches missed.">          if (i == 4) {</span>
-<span class="fc" id="L1918">            numSigBytes = decode4to3(b4, 0, buffer, 0, options);</span>
-<span class="fc" id="L1919">            position = 0;</span>
+<span class="pc bpc" id="L1918" title="1 of 2 branches missed.">          if (i == 4) {</span>
+<span class="fc" id="L1919">            numSigBytes = decode4to3(b4, 0, buffer, 0, options);</span>
+<span class="fc" id="L1920">            position = 0;</span>
           } // end if: got four characters
-<span class="nc bnc" id="L1921" title="All 2 branches missed.">          else if (i == 0) {</span>
-<span class="nc" id="L1922">            return -1;</span>
+<span class="nc bnc" id="L1922" title="All 2 branches missed.">          else if (i == 0) {</span>
+<span class="nc" id="L1923">            return -1;</span>
           } // end else if: also padded correctly
           else {
             // Must have broken out from above.
-<span class="nc" id="L1926">            throw new IOException(&quot;Improperly padded Base64 input.&quot;);</span>
+<span class="nc" id="L1927">            throw new IOException(&quot;Improperly padded Base64 input.&quot;);</span>
           } // end
 
         } // end else: decode
       } // end else: get data
 
       // Got data?
-<span class="pc bpc" id="L1933" title="1 of 2 branches missed.">      if (position &gt;= 0) {</span>
+<span class="pc bpc" id="L1934" title="1 of 2 branches missed.">      if (position &gt;= 0) {</span>
         // End of relevant data?
-<span class="fc bfc" id="L1935" title="All 2 branches covered.">        if ( /* !encode &amp;&amp; */position &gt;= numSigBytes) {</span>
-<span class="fc" id="L1936">          return -1;</span>
+<span class="fc bfc" id="L1936" title="All 2 branches covered.">        if ( /* !encode &amp;&amp; */position &gt;= numSigBytes) {</span>
+<span class="fc" id="L1937">          return -1;</span>
         } // end if: got data
 
-<span class="pc bpc" id="L1939" title="3 of 6 branches missed.">        if (encode &amp;&amp; breakLines &amp;&amp; lineLength &gt;= MAX_LINE_LENGTH) {</span>
-<span class="nc" id="L1940">          lineLength = 0;</span>
-<span class="nc" id="L1941">          return '\n';</span>
+<span class="pc bpc" id="L1940" title="3 of 6 branches missed.">        if (encode &amp;&amp; breakLines &amp;&amp; lineLength &gt;= MAX_LINE_LENGTH) {</span>
+<span class="nc" id="L1941">          lineLength = 0;</span>
+<span class="nc" id="L1942">          return '\n';</span>
         } // end if
         else {
-<span class="fc" id="L1944">          lineLength++; // This isn't important when decoding</span>
+<span class="fc" id="L1945">          lineLength++; // This isn't important when decoding</span>
           // but throwing an extra &quot;if&quot; seems
           // just as wasteful.
 
-<span class="fc" id="L1948">          final int b = buffer[position++];</span>
+<span class="fc" id="L1949">          final int b = buffer[position++];</span>
 
-<span class="fc bfc" id="L1950" title="All 2 branches covered.">          if (position &gt;= bufferLength) {</span>
-<span class="fc" id="L1951">            position = -1;</span>
+<span class="fc bfc" id="L1951" title="All 2 branches covered.">          if (position &gt;= bufferLength) {</span>
+<span class="fc" id="L1952">            position = -1;</span>
           } // end if: end
 
-<span class="fc" id="L1954">          return b &amp; 0xFF; // This is how you &quot;cast&quot; a byte that's</span>
+<span class="fc" id="L1955">          return b &amp; 0xFF; // This is how you &quot;cast&quot; a byte that's</span>
           // intended to be unsigned.
         } // end else
       } // end if: position &gt;= 0
 
       // Else error
       else {
-<span class="nc" id="L1961">        throw new IOException(&quot;Error in Base64 code reading stream.&quot;);</span>
+<span class="nc" id="L1962">        throw new IOException(&quot;Error in Base64 code reading stream.&quot;);</span>
       } // end else
     } // end read
 
@@ -1977,22 +1978,22 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     @Override
-    public int read(final byte[] dest, final int off, final int len)
+    public final int read(final byte[] dest, final int off, final int len)
         throws IOException {
       int i;
       int b;
-<span class="pc bpc" id="L1984" title="1 of 2 branches missed.">      for (i = 0; i &lt; len; i++) {</span>
-<span class="fc" id="L1985">        b = read();</span>
+<span class="pc bpc" id="L1985" title="1 of 2 branches missed.">      for (i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L1986">        b = read();</span>
 
-<span class="fc bfc" id="L1987" title="All 2 branches covered.">        if (b &gt;= 0) {</span>
-<span class="fc" id="L1988">          dest[off + i] = (byte) b;</span>
-<span class="fc bfc" id="L1989" title="All 2 branches covered.">        } else if (i == 0) {</span>
-<span class="fc" id="L1990">          return -1;</span>
+<span class="fc bfc" id="L1988" title="All 2 branches covered.">        if (b &gt;= 0) {</span>
+<span class="fc" id="L1989">          dest[off + i] = (byte) b;</span>
+<span class="fc bfc" id="L1990" title="All 2 branches covered.">        } else if (i == 0) {</span>
+<span class="fc" id="L1991">          return -1;</span>
         } else {
           break; // Out of 'for' loop
         } // Out of 'for' loop
       } // end for: each byte read
-<span class="fc" id="L1995">      return i;</span>
+<span class="fc" id="L1996">      return i;</span>
     } // end read
 
   } // end inner class InputStream
@@ -2015,7 +2016,7 @@ import java.util.zip.GZIPOutputStream;
     private final int bufferLength;
     private int lineLength;
     private final boolean breakLines;
-<span class="fc" id="L2018">    private final byte[] b4 = { 0, 0, 0, 0 }; // Scratch used in a few places</span>
+<span class="fc" id="L2019">    private final byte[] b4 = { 0, 0, 0, 0 }; // Scratch used in a few places</span>
     private boolean suspendEncoding;
     private final int options; // Record for later
     private final byte[] decodabet;
@@ -2030,8 +2031,8 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     public InnerOutputStream(final OutputStream out) {
-<span class="nc" id="L2033">      this(out, ENCODE);</span>
-<span class="nc" id="L2034">    } // end constructor</span>
+<span class="nc" id="L2034">      this(out, ENCODE);</span>
+<span class="nc" id="L2035">    } // end constructor</span>
 
     /**
      * Constructs a {@link InnerOutputStream} in either ENCODE or DECODE
@@ -2057,19 +2058,19 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     private InnerOutputStream(final OutputStream out, final int options) {
-<span class="fc" id="L2060">      super(out);</span>
-<span class="pc bpc" id="L2061" title="1 of 2 branches missed.">      breakLines = (options &amp; DO_BREAK_LINES) != 0;</span>
-<span class="fc bfc" id="L2062" title="All 2 branches covered.">      encode = (options &amp; ENCODE) != 0;</span>
-<span class="fc bfc" id="L2063" title="All 2 branches covered.">      bufferLength = encode? 3 : 4;</span>
-<span class="fc" id="L2064">      final byte[] bsize3 = { 0, 0, 0 };</span>
-<span class="fc" id="L2065">      final byte[] bsize4 = { 0, 0, 0, 0 };</span>
-<span class="fc bfc" id="L2066" title="All 2 branches covered.">      buffer = encode? bsize3 : bsize4;</span>
-<span class="fc" id="L2067">      position = 0;</span>
-<span class="fc" id="L2068">      lineLength = 0;</span>
-<span class="fc" id="L2069">      suspendEncoding = false;</span>
-<span class="fc" id="L2070">      this.options = options;</span>
-<span class="fc" id="L2071">      decodabet = getDecodabet(options);</span>
-<span class="fc" id="L2072">    } // end constructor</span>
+<span class="fc" id="L2061">      super(out);</span>
+<span class="pc bpc" id="L2062" title="1 of 2 branches missed.">      breakLines = (options &amp; DO_BREAK_LINES) != 0;</span>
+<span class="fc bfc" id="L2063" title="All 2 branches covered.">      encode = (options &amp; ENCODE) != 0;</span>
+<span class="fc bfc" id="L2064" title="All 2 branches covered.">      bufferLength = encode? 3 : 4;</span>
+<span class="fc" id="L2065">      final byte[] bsize3 = { 0, 0, 0 };</span>
+<span class="fc" id="L2066">      final byte[] bsize4 = { 0, 0, 0, 0 };</span>
+<span class="fc bfc" id="L2067" title="All 2 branches covered.">      buffer = encode? bsize3 : bsize4;</span>
+<span class="fc" id="L2068">      position = 0;</span>
+<span class="fc" id="L2069">      lineLength = 0;</span>
+<span class="fc" id="L2070">      suspendEncoding = false;</span>
+<span class="fc" id="L2071">      this.options = options;</span>
+<span class="fc" id="L2072">      decodabet = getDecodabet(options);</span>
+<span class="fc" id="L2073">    } // end constructor</span>
 
     /**
      * Writes the byte to the output stream after converting to/from Base64
@@ -2083,47 +2084,47 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     @Override
-    public void write(final int theByte) throws IOException {
+    public final void write(final int theByte) throws IOException {
       // Encoding suspended?
-<span class="pc bpc" id="L2088" title="1 of 2 branches missed.">      if (suspendEncoding) {</span>
-<span class="nc" id="L2089">        out.write(theByte);</span>
-<span class="nc" id="L2090">        return;</span>
+<span class="pc bpc" id="L2089" title="1 of 2 branches missed.">      if (suspendEncoding) {</span>
+<span class="nc" id="L2090">        out.write(theByte);</span>
+<span class="nc" id="L2091">        return;</span>
       } // end if: supsended
 
       // Encode?
-<span class="fc bfc" id="L2094" title="All 2 branches covered.">      if (encode) {</span>
-<span class="fc" id="L2095">        buffer[position++] = (byte) theByte;</span>
-<span class="fc bfc" id="L2096" title="All 2 branches covered.">        if (position &gt;= bufferLength) { // Enough to encode.</span>
+<span class="fc bfc" id="L2095" title="All 2 branches covered.">      if (encode) {</span>
+<span class="fc" id="L2096">        buffer[position++] = (byte) theByte;</span>
+<span class="fc bfc" id="L2097" title="All 2 branches covered.">        if (position &gt;= bufferLength) { // Enough to encode.</span>
 
-<span class="fc" id="L2098">          out.write(encode3to4(b4, buffer, bufferLength, options));</span>
+<span class="fc" id="L2099">          out.write(encode3to4(b4, buffer, bufferLength, options));</span>
 
-<span class="fc" id="L2100">          lineLength += 4;</span>
-<span class="pc bpc" id="L2101" title="3 of 4 branches missed.">          if (breakLines &amp;&amp; lineLength &gt;= MAX_LINE_LENGTH) {</span>
-<span class="nc" id="L2102">            out.write(NEW_LINE);</span>
-<span class="nc" id="L2103">            lineLength = 0;</span>
+<span class="fc" id="L2101">          lineLength += 4;</span>
+<span class="pc bpc" id="L2102" title="3 of 4 branches missed.">          if (breakLines &amp;&amp; lineLength &gt;= MAX_LINE_LENGTH) {</span>
+<span class="nc" id="L2103">            out.write(NEW_LINE);</span>
+<span class="nc" id="L2104">            lineLength = 0;</span>
           } // end if: end of line
 
-<span class="fc" id="L2106">          position = 0;</span>
+<span class="fc" id="L2107">          position = 0;</span>
         } // end if: enough to output
       } // end if: encoding
 
       // Else, Decoding
       else {
         // Meaningful Base64 character?
-<span class="pc bpc" id="L2113" title="1 of 2 branches missed.">        if (decodabet[theByte &amp; 0x7f] &gt; WHITE_SPACE_ENC) {</span>
-<span class="fc" id="L2114">          buffer[position++] = (byte) theByte;</span>
-<span class="fc bfc" id="L2115" title="All 2 branches covered.">          if (position &gt;= bufferLength) { // Enough to output.</span>
+<span class="pc bpc" id="L2114" title="1 of 2 branches missed.">        if (decodabet[theByte &amp; 0x7f] &gt; WHITE_SPACE_ENC) {</span>
+<span class="fc" id="L2115">          buffer[position++] = (byte) theByte;</span>
+<span class="fc bfc" id="L2116" title="All 2 branches covered.">          if (position &gt;= bufferLength) { // Enough to output.</span>
 
-<span class="fc" id="L2117">            final int len = decode4to3(buffer, 0, b4, 0, options);</span>
-<span class="fc" id="L2118">            out.write(b4, 0, len);</span>
-<span class="fc" id="L2119">            position = 0;</span>
-<span class="fc" id="L2120">          } // end if: enough to output</span>
+<span class="fc" id="L2118">            final int len = decode4to3(buffer, 0, b4, 0, options);</span>
+<span class="fc" id="L2119">            out.write(b4, 0, len);</span>
+<span class="fc" id="L2120">            position = 0;</span>
+<span class="fc" id="L2121">          } // end if: enough to output</span>
         } // end if: meaningful base64 character
-<span class="nc bnc" id="L2122" title="All 2 branches missed.">        else if (decodabet[theByte &amp; 0x7f] != WHITE_SPACE_ENC) {</span>
-<span class="nc" id="L2123">          throw new IOException(&quot;Invalid character in Base64 data.&quot;);</span>
+<span class="nc bnc" id="L2123" title="All 2 branches missed.">        else if (decodabet[theByte &amp; 0x7f] != WHITE_SPACE_ENC) {</span>
+<span class="nc" id="L2124">          throw new IOException(&quot;Invalid character in Base64 data.&quot;);</span>
         } // end else: not white space either
       } // end else: decoding
-<span class="fc" id="L2126">    } // end write</span>
+<span class="fc" id="L2127">    } // end write</span>
 
     /**
      * Calls {@link #write(int)} repeatedly until &lt;var&gt;len&lt;/var&gt; bytes are
@@ -2136,19 +2137,19 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     @Override
-    public void write(final byte[] theBytes, final int off, final int len)
+    public final void write(final byte[] theBytes, final int off, final int len)
         throws IOException {
       // Encoding suspended?
-<span class="pc bpc" id="L2142" title="1 of 2 branches missed.">      if (suspendEncoding) {</span>
-<span class="nc" id="L2143">        out.write(theBytes, off, len);</span>
-<span class="nc" id="L2144">        return;</span>
+<span class="pc bpc" id="L2143" title="1 of 2 branches missed.">      if (suspendEncoding) {</span>
+<span class="nc" id="L2144">        out.write(theBytes, off, len);</span>
+<span class="nc" id="L2145">        return;</span>
       } // end if: supsended
 
-<span class="fc bfc" id="L2147" title="All 2 branches covered.">      for (int i = 0; i &lt; len; i++) {</span>
-<span class="fc" id="L2148">        write(theBytes[off + i]);</span>
+<span class="fc bfc" id="L2148" title="All 2 branches covered.">      for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L2149">        write(theBytes[off + i]);</span>
       } // end for: each byte written
 
-<span class="fc" id="L2151">    } // end write</span>
+<span class="fc" id="L2152">    } // end write</span>
 
     /**
      * Method added by PHIL. [Thanks, PHIL. -Rob] This pads the buffer
@@ -2156,18 +2157,18 @@ import java.util.zip.GZIPOutputStream;
      *
      * @throws IOException if there's an error.
      */
-    public void flushBase64() throws IOException {
-<span class="fc bfc" id="L2160" title="All 2 branches covered.">      if (position &gt; 0) {</span>
-<span class="pc bpc" id="L2161" title="1 of 2 branches missed.">        if (encode) {</span>
-<span class="fc" id="L2162">          out.write(encode3to4(b4, buffer, position, options));</span>
-<span class="fc" id="L2163">          position = 0;</span>
+    public final void flushBase64() throws IOException {
+<span class="fc bfc" id="L2161" title="All 2 branches covered.">      if (position &gt; 0) {</span>
+<span class="pc bpc" id="L2162" title="1 of 2 branches missed.">        if (encode) {</span>
+<span class="fc" id="L2163">          out.write(encode3to4(b4, buffer, position, options));</span>
+<span class="fc" id="L2164">          position = 0;</span>
         } // end if: encoding
         else {
-<span class="nc" id="L2166">          throw new IOException(&quot;Base64 input not properly padded.&quot;);</span>
+<span class="nc" id="L2167">          throw new IOException(&quot;Base64 input not properly padded.&quot;);</span>
         } // end else: decoding
       } // end if: buffer partially full
 
-<span class="fc" id="L2170">    } // end flush</span>
+<span class="fc" id="L2171">    } // end flush</span>
 
     /**
      * Flushes and closes (I think, in the superclass) the stream.
@@ -2175,17 +2176,17 @@ import java.util.zip.GZIPOutputStream;
      * @since 1.3
      */
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
       // 1. Ensure that pending characters are written
-<span class="fc" id="L2180">      flushBase64();</span>
+<span class="fc" id="L2181">      flushBase64();</span>
 
       // 2. Actually close the stream
       // Base class both flushes and closes.
-<span class="fc" id="L2184">      super.close();</span>
+<span class="fc" id="L2185">      super.close();</span>
 
-<span class="fc" id="L2186">      buffer = null;</span>
-<span class="fc" id="L2187">      out = null;</span>
-<span class="fc" id="L2188">    } // end close</span>
+<span class="fc" id="L2187">      buffer = null;</span>
+<span class="fc" id="L2188">      out = null;</span>
+<span class="fc" id="L2189">    } // end close</span>
 
     /**
      * Suspends encoding of the stream. May be helpful if you need to embed
@@ -2195,10 +2196,10 @@ import java.util.zip.GZIPOutputStream;
      * @throws IOException if there's an error flushing
      * @since 1.5.1
      */
-    public void suspendEncoding() throws IOException {
-<span class="nc" id="L2199">      flushBase64();</span>
-<span class="nc" id="L2200">      suspendEncoding = true;</span>
-<span class="nc" id="L2201">    } // end suspendEncoding</span>
+    public final void suspendEncoding() throws IOException {
+<span class="nc" id="L2200">      flushBase64();</span>
+<span class="nc" id="L2201">      suspendEncoding = true;</span>
+<span class="nc" id="L2202">    } // end suspendEncoding</span>
 
     /**
      * Resumes encoding of the stream. May be helpful if you need to embed a
@@ -2207,11 +2208,11 @@ import java.util.zip.GZIPOutputStream;
      *
      * @since 1.5.1
      */
-    public void resumeEncoding() {
-<span class="nc" id="L2211">      suspendEncoding = false;</span>
-<span class="nc" id="L2212">    } // end resumeEncoding</span>
+    public final void resumeEncoding() {
+<span class="nc" id="L2212">      suspendEncoding = false;</span>
+<span class="nc" id="L2213">    } // end resumeEncoding</span>
 
   } // end inner class OutputStream
 
 } // end class Base64
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

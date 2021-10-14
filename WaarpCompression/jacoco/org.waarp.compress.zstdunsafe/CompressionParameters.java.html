@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CompressionParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Compression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdunsafe</a> &gt; <span class="el_source">CompressionParameters.java</span></div><h1>CompressionParameters.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdunsafe;
+
+import static org.waarp.compress.zstdunsafe.Constants.*;
+
+class CompressionParameters {
+  private static final int MIN_HASH_LOG = 6;
+
+  public static final int DEFAULT_COMPRESSION_LEVEL = 3;
+  private static final int MAX_COMPRESSION_LEVEL = 22;
+
+  private final int windowLog;
+  // largest match distance : larger == more compression, more memory needed during decompression
+  private final int chainLog;
+  // fully searched segment : larger == more compression, slower, more memory (useless for fast)
+  private final int hashLog;   // dispatch table : larger == faster, more memory
+  private final int searchLog;
+  // nb of searches : larger == more compression, slower
+  private final int searchLength;
+  // match length searched : larger == faster decompression, sometimes less compression
+  private final int targetLength;
+  // acceptable match size for optimal parser (only) : larger == more compression, slower
+  private final Strategy strategy;
+
+  private static final CompressionParameters[][]
+<span class="fc" id="L58">      DEFAULT_COMPRESSION_PARAMETERS = new CompressionParameters[][] {</span>
+      {
+          // default
+          new CompressionParameters(19, 12, 13, 1, 6, 1, Strategy.FAST),
+          /* base for negative levels */
+          new CompressionParameters(19, 13, 14, 1, 7, 0, Strategy.FAST),
+          /* level  1 */
+          new CompressionParameters(19, 15, 16, 1, 6, 0, Strategy.FAST),
+          /* level  2 */
+          new CompressionParameters(20, 16, 17, 1, 5, 1, Strategy.DFAST),
+          /* level  3 */
+          new CompressionParameters(20, 18, 18, 1, 5, 1, Strategy.DFAST),
+          /* level  4 */
+          new CompressionParameters(20, 18, 18, 2, 5, 2, Strategy.GREEDY),
+          /* level  5 */
+          new CompressionParameters(21, 18, 19, 2, 5, 4, Strategy.LAZY),
+          /* level  6 */
+          new CompressionParameters(21, 18, 19, 3, 5, 8, Strategy.LAZY2),
+          /* level  7 */
+          new CompressionParameters(21, 19, 19, 3, 5, 16, Strategy.LAZY2),
+          /* level  8 */
+          new CompressionParameters(21, 19, 20, 4, 5, 16, Strategy.LAZY2),
+          /* level  9 */
+          new CompressionParameters(21, 20, 21, 4, 5, 16, Strategy.LAZY2),
+          /* level 10 */
+          new CompressionParameters(21, 21, 22, 4, 5, 16, Strategy.LAZY2),
+          /* level 11 */
+          new CompressionParameters(22, 20, 22, 5, 5, 16, Strategy.LAZY2),
+          /* level 12 */
+          new CompressionParameters(22, 21, 22, 4, 5, 32, Strategy.BTLAZY2),
+          /* level 13 */
+          new CompressionParameters(22, 21, 22, 5, 5, 32, Strategy.BTLAZY2),
+          /* level 14 */
+          new CompressionParameters(22, 22, 22, 6, 5, 32, Strategy.BTLAZY2),
+          /* level 15 */
+          new CompressionParameters(22, 21, 22, 4, 5, 48, Strategy.BTOPT),
+          /* level 16 */
+          new CompressionParameters(23, 22, 22, 4, 4, 64, Strategy.BTOPT),
+          /* level 17 */
+          new CompressionParameters(23, 23, 22, 6, 3, 256, Strategy.BTOPT),
+          /* level 18 */
+          new CompressionParameters(23, 24, 22, 7, 3, 256, Strategy.BTULTRA),
+          /* level 19 */
+          new CompressionParameters(25, 25, 23, 7, 3, 256, Strategy.BTULTRA),
+          /* level 20 */
+          new CompressionParameters(26, 26, 24, 7, 3, 512, Strategy.BTULTRA),
+          /* level 21 */
+          new CompressionParameters(27, 27, 25, 9, 3, 999, Strategy.BTULTRA)
+          /* level 22 */
+      }, {
+      // for size &lt;= 256 KB
+      new CompressionParameters(18, 12, 13, 1, 5, 1, Strategy.FAST),
+      /* base for negative levels */
+      new CompressionParameters(18, 13, 14, 1, 6, 0, Strategy.FAST),
+      /* level  1 */
+      new CompressionParameters(18, 14, 14, 1, 5, 1, Strategy.DFAST),
+      /* level  2 */
+      new CompressionParameters(18, 16, 16, 1, 4, 1, Strategy.DFAST),
+      /* level  3 */
+      new CompressionParameters(18, 16, 17, 2, 5, 2, Strategy.GREEDY),
+      /* level  4.*/
+      new CompressionParameters(18, 18, 18, 3, 5, 2, Strategy.GREEDY),
+      /* level  5.*/
+      new CompressionParameters(18, 18, 19, 3, 5, 4, Strategy.LAZY),
+      /* level  6.*/
+      new CompressionParameters(18, 18, 19, 4, 4, 4, Strategy.LAZY),
+      /* level  7 */
+      new CompressionParameters(18, 18, 19, 4, 4, 8, Strategy.LAZY2),
+      /* level  8 */
+      new CompressionParameters(18, 18, 19, 5, 4, 8, Strategy.LAZY2),
+      /* level  9 */
+      new CompressionParameters(18, 18, 19, 6, 4, 8, Strategy.LAZY2),
+      /* level 10 */
+      new CompressionParameters(18, 18, 19, 5, 4, 16, Strategy.BTLAZY2),
+      /* level 11.*/
+      new CompressionParameters(18, 19, 19, 6, 4, 16, Strategy.BTLAZY2),
+      /* level 12.*/
+      new CompressionParameters(18, 19, 19, 8, 4, 16, Strategy.BTLAZY2),
+      /* level 13 */
+      new CompressionParameters(18, 18, 19, 4, 4, 24, Strategy.BTOPT),
+      /* level 14.*/
+      new CompressionParameters(18, 18, 19, 4, 3, 24, Strategy.BTOPT),
+      /* level 15.*/
+      new CompressionParameters(18, 19, 19, 6, 3, 64, Strategy.BTOPT),
+      /* level 16.*/
+      new CompressionParameters(18, 19, 19, 8, 3, 128, Strategy.BTOPT),
+      /* level 17.*/
+      new CompressionParameters(18, 19, 19, 10, 3, 256, Strategy.BTOPT),
+      /* level 18.*/
+      new CompressionParameters(18, 19, 19, 10, 3, 256, Strategy.BTULTRA),
+      /* level 19.*/
+      new CompressionParameters(18, 19, 19, 11, 3, 512, Strategy.BTULTRA),
+      /* level 20.*/
+      new CompressionParameters(18, 19, 19, 12, 3, 512, Strategy.BTULTRA),
+      /* level 21.*/
+      new CompressionParameters(18, 19, 19, 13, 3, 999, Strategy.BTULTRA)
+      /* level 22.*/
+  }, {
+      // for size &lt;= 128 KB
+      new CompressionParameters(17, 12, 12, 1, 5, 1, Strategy.FAST),
+      /* base for negative levels */
+      new CompressionParameters(17, 12, 13, 1, 6, 0, Strategy.FAST),
+      /* level  1 */
+      new CompressionParameters(17, 13, 15, 1, 5, 0, Strategy.FAST),
+      /* level  2 */
+      new CompressionParameters(17, 15, 16, 2, 5, 1, Strategy.DFAST),
+      /* level  3 */
+      new CompressionParameters(17, 17, 17, 2, 4, 1, Strategy.DFAST),
+      /* level  4 */
+      new CompressionParameters(17, 16, 17, 3, 4, 2, Strategy.GREEDY),
+      /* level  5 */
+      new CompressionParameters(17, 17, 17, 3, 4, 4, Strategy.LAZY),
+      /* level  6 */
+      new CompressionParameters(17, 17, 17, 3, 4, 8, Strategy.LAZY2),
+      /* level  7 */
+      new CompressionParameters(17, 17, 17, 4, 4, 8, Strategy.LAZY2),
+      /* level  8 */
+      new CompressionParameters(17, 17, 17, 5, 4, 8, Strategy.LAZY2),
+      /* level  9 */
+      new CompressionParameters(17, 17, 17, 6, 4, 8, Strategy.LAZY2),
+      /* level 10 */
+      new CompressionParameters(17, 17, 17, 7, 4, 8, Strategy.LAZY2),
+      /* level 11 */
+      new CompressionParameters(17, 18, 17, 6, 4, 16, Strategy.BTLAZY2),
+      /* level 12 */
+      new CompressionParameters(17, 18, 17, 8, 4, 16, Strategy.BTLAZY2),
+      /* level 13.*/
+      new CompressionParameters(17, 18, 17, 4, 4, 32, Strategy.BTOPT),
+      /* level 14.*/
+      new CompressionParameters(17, 18, 17, 6, 3, 64, Strategy.BTOPT),
+      /* level 15.*/
+      new CompressionParameters(17, 18, 17, 7, 3, 128, Strategy.BTOPT),
+      /* level 16.*/
+      new CompressionParameters(17, 18, 17, 7, 3, 256, Strategy.BTOPT),
+      /* level 17.*/
+      new CompressionParameters(17, 18, 17, 8, 3, 256, Strategy.BTOPT),
+      /* level 18.*/
+      new CompressionParameters(17, 18, 17, 8, 3, 256, Strategy.BTULTRA),
+      /* level 19.*/
+      new CompressionParameters(17, 18, 17, 9, 3, 256, Strategy.BTULTRA),
+      /* level 20.*/
+      new CompressionParameters(17, 18, 17, 10, 3, 256, Strategy.BTULTRA),
+      /* level 21.*/
+      new CompressionParameters(17, 18, 17, 11, 3, 512, Strategy.BTULTRA)
+      /* level 22.*/
+  }, {
+      // for size &lt;= 16 KB
+      new CompressionParameters(14, 12, 13, 1, 5, 1, Strategy.FAST),
+      /* base for negative levels */
+      new CompressionParameters(14, 14, 15, 1, 5, 0, Strategy.FAST),
+      /* level  1 */
+      new CompressionParameters(14, 14, 15, 1, 4, 0, Strategy.FAST),
+      /* level  2 */
+      new CompressionParameters(14, 14, 14, 2, 4, 1, Strategy.DFAST),
+      /* level  3.*/
+      new CompressionParameters(14, 14, 14, 4, 4, 2, Strategy.GREEDY),
+      /* level  4.*/
+      new CompressionParameters(14, 14, 14, 3, 4, 4, Strategy.LAZY),
+      /* level  5.*/
+      new CompressionParameters(14, 14, 14, 4, 4, 8, Strategy.LAZY2),
+      /* level  6 */
+      new CompressionParameters(14, 14, 14, 6, 4, 8, Strategy.LAZY2),
+      /* level  7 */
+      new CompressionParameters(14, 14, 14, 8, 4, 8, Strategy.LAZY2),
+      /* level  8.*/
+      new CompressionParameters(14, 15, 14, 5, 4, 8, Strategy.BTLAZY2),
+      /* level  9.*/
+      new CompressionParameters(14, 15, 14, 9, 4, 8, Strategy.BTLAZY2),
+      /* level 10.*/
+      new CompressionParameters(14, 15, 14, 3, 4, 12, Strategy.BTOPT),
+      /* level 11.*/
+      new CompressionParameters(14, 15, 14, 6, 3, 16, Strategy.BTOPT),
+      /* level 12.*/
+      new CompressionParameters(14, 15, 14, 6, 3, 24, Strategy.BTOPT),
+      /* level 13.*/
+      new CompressionParameters(14, 15, 15, 6, 3, 48, Strategy.BTOPT),
+      /* level 14.*/
+      new CompressionParameters(14, 15, 15, 6, 3, 64, Strategy.BTOPT),
+      /* level 15.*/
+      new CompressionParameters(14, 15, 15, 6, 3, 96, Strategy.BTOPT),
+      /* level 16.*/
+      new CompressionParameters(14, 15, 15, 6, 3, 128, Strategy.BTOPT),
+      /* level 17.*/
+      new CompressionParameters(14, 15, 15, 8, 3, 256, Strategy.BTOPT),
+      /* level 18.*/
+      new CompressionParameters(14, 15, 15, 6, 3, 256, Strategy.BTULTRA),
+      /* level 19.*/
+      new CompressionParameters(14, 15, 15, 8, 3, 256, Strategy.BTULTRA),
+      /* level 20.*/
+      new CompressionParameters(14, 15, 15, 9, 3, 256, Strategy.BTULTRA),
+      /* level 21.*/
+      new CompressionParameters(14, 15, 15, 10, 3, 512, Strategy.BTULTRA)
+      /* level 22.*/
+  }
+  };
+
+<span class="fc" id="L254">  public enum Strategy {</span>
+    // from faster to stronger
+
+    // YC: fast is a &quot;single probe&quot; strategy : at every position, we attempt to find a match, and give up if we don't find any. similar to lz4.
+<span class="fc" id="L258">    FAST(BlockCompressor.UNSUPPORTED),</span>
+
+    // YC: double_fast is a 2 attempts strategies. They are not symmetrical by the way. One attempt is &quot;normal&quot; while the second one looks for &quot;long matches&quot;. It was
+    // empirically found that this was the best trade off. As can be guessed, it's slower than single-attempt, but find more and better matches, so compresses better.
+<span class="fc" id="L262">    DFAST(new DoubleFastBlockCompressor()),</span>
+
+    // YC: greedy uses a hash chain strategy. Every position is hashed, and all positions with same hash are chained. The algorithm goes through all candidates. There are
+    // diminishing returns in going deeper and deeper, so after a nb of attempts (which can be selected), it abandons the search. The best (longest) match wins. If there is
+    // one winner, it's immediately encoded.
+<span class="fc" id="L267">    GREEDY(BlockCompressor.UNSUPPORTED),</span>
+
+    // YC: lazy will do something similar to greedy, but will not encode immediately. It will search again at next position, in case it would find something better.
+    // It's actually fairly common to have a small match at position p hiding a more worthy one at position p+1. This obviously increases the search workload. But the
+    // resulting compressed stream generally contains larger matches, hence compresses better.
+<span class="fc" id="L272">    LAZY(BlockCompressor.UNSUPPORTED),</span>
+
+    // YC: lazy2 is same as lazy, but deeper. It will search at P, P+1 and then P+2 in case it would find something even better. More workload. Better matches.
+<span class="fc" id="L275">    LAZY2(BlockCompressor.UNSUPPORTED),</span>
+
+    // YC: btlazy2 is like lazy2, but trades the hash chain for a binary tree. This becomes necessary, as the nb of attempts becomes prohibitively expensive. The binary tree
+    // complexity increases with log of search depth, instead of proportionally with search depth. So searching deeper in history quickly becomes the dominant operation.
+    // btlazy2 cuts into that. But it costs 2x more memory. It's also relatively &quot;slow&quot;, even when trying to cut its parameters to make it perform faster. So it's really
+    // a high compression strategy.
+<span class="fc" id="L281">    BTLAZY2(BlockCompressor.UNSUPPORTED),</span>
+
+    // YC: btopt is, well, a hell of lot more complex.
+    // It will compute and find multiple matches per position, will dynamically compare every path from point P to P+N, reverse the graph to find cheapest path, iterate on
+    // batches of overlapping matches, etc. It's much more expensive. But the compression ratio is also much better.
+<span class="fc" id="L286">    BTOPT(BlockCompressor.UNSUPPORTED),</span>
+
+    // YC: btultra is about the same, but doesn't cut as many corners (btopt &quot;abandons&quot; more quickly unpromising little gains). Slower, stronger.
+<span class="fc" id="L289">    BTULTRA(BlockCompressor.UNSUPPORTED);</span>
+
+    private final BlockCompressor compressor;
+
+<span class="fc" id="L293">    Strategy(final BlockCompressor compressor) {</span>
+<span class="fc" id="L294">      this.compressor = compressor;</span>
+<span class="fc" id="L295">    }</span>
+
+    public BlockCompressor getCompressor() {
+<span class="fc" id="L298">      return compressor;</span>
+    }
+  }
+
+  public CompressionParameters(final int windowLog, final int chainLog,
+                               final int hashLog, final int searchLog,
+                               final int searchLength, final int targetLength,
+<span class="fc" id="L305">                               final Strategy strategy) {</span>
+<span class="fc" id="L306">    this.windowLog = windowLog;</span>
+<span class="fc" id="L307">    this.chainLog = chainLog;</span>
+<span class="fc" id="L308">    this.hashLog = hashLog;</span>
+<span class="fc" id="L309">    this.searchLog = searchLog;</span>
+<span class="fc" id="L310">    this.searchLength = searchLength;</span>
+<span class="fc" id="L311">    this.targetLength = targetLength;</span>
+<span class="fc" id="L312">    this.strategy = strategy;</span>
+<span class="fc" id="L313">  }</span>
+
+  public int getWindowLog() {
+<span class="fc" id="L316">    return windowLog;</span>
+  }
+
+  public int getSearchLength() {
+<span class="fc" id="L320">    return searchLength;</span>
+  }
+
+  public int getChainLog() {
+<span class="fc" id="L324">    return chainLog;</span>
+  }
+
+  public int getHashLog() {
+<span class="fc" id="L328">    return hashLog;</span>
+  }
+
+  public int getSearchLog() {
+<span class="nc" id="L332">    return searchLog;</span>
+  }
+
+  public int getTargetLength() {
+<span class="nc" id="L336">    return targetLength;</span>
+  }
+
+  public Strategy getStrategy() {
+<span class="fc" id="L340">    return strategy;</span>
+  }
+
+  public static CompressionParameters compute(final int compressionLevel,
+                                              final int inputSize) {
+<span class="fc" id="L345">    final CompressionParameters defaultParameters =</span>
+<span class="fc" id="L346">        getDefaultParameters(compressionLevel, inputSize);</span>
+
+<span class="fc" id="L348">    int targetLength = defaultParameters.targetLength;</span>
+<span class="fc" id="L349">    int windowLog = defaultParameters.windowLog;</span>
+<span class="fc" id="L350">    int chainLog = defaultParameters.chainLog;</span>
+<span class="fc" id="L351">    int hashLog = defaultParameters.hashLog;</span>
+<span class="fc" id="L352">    final int searchLog = defaultParameters.searchLog;</span>
+<span class="fc" id="L353">    final int searchLength = defaultParameters.searchLength;</span>
+<span class="fc" id="L354">    final Strategy strategy = defaultParameters.strategy;</span>
+
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    if (compressionLevel &lt; 0) {</span>
+<span class="nc" id="L357">      targetLength = -compressionLevel;   // acceleration factor</span>
+    }
+
+    // resize windowLog if input is small enough, to use less memory
+<span class="fc" id="L361">    final long maxWindowResize = 1L &lt;&lt; (MAX_WINDOW_LOG - 1);</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (inputSize &lt; maxWindowResize) {</span>
+<span class="fc" id="L363">      final int hashSizeMin = 1 &lt;&lt; MIN_HASH_LOG;</span>
+<span class="fc bfc" id="L364" title="All 2 branches covered.">      final int inputSizeLog = (inputSize &lt; hashSizeMin)? MIN_HASH_LOG :</span>
+<span class="fc" id="L365">          Util.highestBit(inputSize - 1) + 1;</span>
+<span class="fc bfc" id="L366" title="All 2 branches covered.">      if (windowLog &gt; inputSizeLog) {</span>
+<span class="fc" id="L367">        windowLog = inputSizeLog;</span>
+      }
+    }
+
+<span class="fc bfc" id="L371" title="All 2 branches covered.">    if (hashLog &gt; windowLog + 1) {</span>
+<span class="fc" id="L372">      hashLog = windowLog + 1;</span>
+    }
+
+<span class="fc" id="L375">    final int cycleLog = Util.cycleLog(chainLog, strategy);</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">    if (cycleLog &gt; windowLog) {</span>
+<span class="fc" id="L377">      chainLog -= (cycleLog - windowLog);</span>
+    }
+
+<span class="fc bfc" id="L380" title="All 2 branches covered.">    if (windowLog &lt; MIN_WINDOW_LOG) {</span>
+<span class="fc" id="L381">      windowLog = MIN_WINDOW_LOG;</span>
+    }
+
+<span class="fc" id="L384">    return new CompressionParameters(windowLog, chainLog, hashLog, searchLog,</span>
+                                     searchLength, targetLength, strategy);
+  }
+
+  private static CompressionParameters getDefaultParameters(
+      final int compressionLevel, final long estimatedInputSize) {
+<span class="fc" id="L390">    int table = 0;</span>
+
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">    if (estimatedInputSize != 0) {</span>
+<span class="fc bfc" id="L393" title="All 2 branches covered.">      if (estimatedInputSize &lt;= 16 * 1024) {</span>
+<span class="fc" id="L394">        table = 3;</span>
+<span class="fc bfc" id="L395" title="All 2 branches covered.">      } else if (estimatedInputSize &lt;= 128 * 1024) {</span>
+<span class="fc" id="L396">        table = 2;</span>
+<span class="fc bfc" id="L397" title="All 2 branches covered.">      } else if (estimatedInputSize &lt;= 256 * 1024) {</span>
+<span class="fc" id="L398">        table = 1;</span>
+      }
+    }
+
+<span class="fc" id="L402">    int row = DEFAULT_COMPRESSION_LEVEL;</span>
+
+<span class="pc bpc" id="L404" title="1 of 2 branches missed.">    if (compressionLevel !=</span>
+        0) { // TODO: figure out better way to indicate default compression level
+<span class="fc" id="L406">      row = Math.min(Math.max(0, compressionLevel), MAX_COMPRESSION_LEVEL);</span>
+    }
+
+<span class="fc" id="L409">    return DEFAULT_COMPRESSION_PARAMETERS[table][row];</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

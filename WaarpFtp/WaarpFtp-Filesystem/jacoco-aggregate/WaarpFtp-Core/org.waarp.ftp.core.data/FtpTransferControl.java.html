@@ -661,86 +661,88 @@ public class FtpTransferControl {
    * Abort the current transfer
    */
   private void abortTransfer() {
-<span class="nc" id="L664">    logger.debug(&quot;Will abort transfer and write: &quot;,</span>
-                 new Exception(&quot;trace only&quot;));
-    final FtpFile file;
-<span class="nc" id="L667">    FtpTransfer current = null;</span>
-    try {
-<span class="nc" id="L669">      current = getExecutingFtpTransfer();</span>
-<span class="nc" id="L670">      file = current.getFtpFile();</span>
-<span class="nc" id="L671">      file.abortFile();</span>
-<span class="nc" id="L672">    } catch (final FtpNoTransferException e) {</span>
-<span class="nc" id="L673">      logger.info(&quot;Warning Abort problem in {} : {}&quot;, session, e.getMessage());</span>
-<span class="nc" id="L674">    } catch (final FtpNoFileException ignored) {</span>
-      // nothing
-<span class="nc" id="L676">    } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L677">      logger.warn(&quot;Abort problem in {} : {}&quot;, session, e.getMessage());</span>
-<span class="nc" id="L678">    }</span>
-<span class="nc bnc" id="L679" title="All 2 branches missed.">    if (current != null) {</span>
-<span class="nc" id="L680">      current.setStatus(false);</span>
+<span class="nc bnc" id="L664" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L665">      logger.debug(&quot;Will abort transfer and write: &quot;,</span>
+                   new Exception(&quot;trace only&quot;));
     }
-<span class="nc" id="L682">    endDataConnection();</span>
-<span class="nc bnc" id="L683" title="All 2 branches missed.">    session.setReplyCode(ReplyCode.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED,</span>
+    final FtpFile file;
+<span class="nc" id="L669">    FtpTransfer current = null;</span>
+    try {
+<span class="nc" id="L671">      current = getExecutingFtpTransfer();</span>
+<span class="nc" id="L672">      file = current.getFtpFile();</span>
+<span class="nc" id="L673">      file.abortFile();</span>
+<span class="nc" id="L674">    } catch (final FtpNoTransferException e) {</span>
+<span class="nc" id="L675">      logger.info(&quot;Warning Abort problem in {} : {}&quot;, session, e.getMessage());</span>
+<span class="nc" id="L676">    } catch (final FtpNoFileException ignored) {</span>
+      // nothing
+<span class="nc" id="L678">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L679">      logger.warn(&quot;Abort problem in {} : {}&quot;, session, e.getMessage());</span>
+<span class="nc" id="L680">    }</span>
+<span class="nc bnc" id="L681" title="All 2 branches missed.">    if (current != null) {</span>
+<span class="nc" id="L682">      current.setStatus(false);</span>
+    }
+<span class="nc" id="L684">    endDataConnection();</span>
+<span class="nc bnc" id="L685" title="All 2 branches missed.">    session.setReplyCode(ReplyCode.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED,</span>
                          &quot;Transfer aborted for &quot; +
                          (current == null? &quot;Unknown command&quot; :
-<span class="nc" id="L686">                             current.toString()));</span>
-<span class="nc bnc" id="L687" title="All 2 branches missed.">    if (current != null &amp;&amp;</span>
-<span class="nc bnc" id="L688" title="All 2 branches missed.">        !FtpCommandCode.isListLikeCommand(current.getCommand())) {</span>
+<span class="nc" id="L688">                             current.toString()));</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">    if (current != null &amp;&amp;</span>
+<span class="nc bnc" id="L690" title="All 2 branches missed.">        !FtpCommandCode.isListLikeCommand(current.getCommand())) {</span>
       try {
-<span class="nc" id="L690">        session.getBusinessHandler().afterTransferDoneBeforeAnswer(current);</span>
-<span class="nc" id="L691">      } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L692">        session.setReplyCode(e);</span>
-<span class="nc" id="L693">      }</span>
+<span class="nc" id="L692">        session.getBusinessHandler().afterTransferDoneBeforeAnswer(current);</span>
+<span class="nc" id="L693">      } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L694">        session.setReplyCode(e);</span>
+<span class="nc" id="L695">      }</span>
     }
-<span class="nc" id="L695">    finalizeExecution();</span>
-<span class="nc" id="L696">  }</span>
+<span class="nc" id="L697">    finalizeExecution();</span>
+<span class="nc" id="L698">  }</span>
 
   /**
    * Finish correctly a transfer
    */
   private void closeTransfer() {
-<span class="nc" id="L702">    logger.debug(&quot;Will close transfer&quot;);</span>
+<span class="nc" id="L704">    logger.debug(&quot;Will close transfer&quot;);</span>
     final FtpFile file;
-<span class="nc" id="L704">    FtpTransfer current = null;</span>
+<span class="nc" id="L706">    FtpTransfer current = null;</span>
     try {
-<span class="nc" id="L706">      current = getExecutingFtpTransfer();</span>
-<span class="nc" id="L707">      file = current.getFtpFile();</span>
-<span class="nc" id="L708">      file.closeFile();</span>
-<span class="nc" id="L709">    } catch (final FtpNoTransferException e) {</span>
-<span class="nc" id="L710">      logger.warn(&quot;Close problem&quot; + &quot; : {}&quot;, e.getMessage());</span>
-<span class="nc" id="L711">    } catch (final FtpNoFileException ignored) {</span>
+<span class="nc" id="L708">      current = getExecutingFtpTransfer();</span>
+<span class="nc" id="L709">      file = current.getFtpFile();</span>
+<span class="nc" id="L710">      file.closeFile();</span>
+<span class="nc" id="L711">    } catch (final FtpNoTransferException e) {</span>
+<span class="nc" id="L712">      logger.warn(&quot;Close problem&quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L713">    } catch (final FtpNoFileException ignored) {</span>
       // nothing
-<span class="nc" id="L713">    } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L714">      logger.warn(&quot;Close problem&quot; + &quot; : {}&quot;, e.getMessage());</span>
-<span class="nc" id="L715">    }</span>
-<span class="nc bnc" id="L716" title="All 2 branches missed.">    if (current != null) {</span>
-<span class="nc" id="L717">      current.setStatus(true);</span>
+<span class="nc" id="L715">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L716">      logger.warn(&quot;Close problem&quot; + &quot; : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L717">    }</span>
+<span class="nc bnc" id="L718" title="All 2 branches missed.">    if (current != null) {</span>
+<span class="nc" id="L719">      current.setStatus(true);</span>
     }
-<span class="nc bnc" id="L719" title="All 2 branches missed.">    if (session.getDataConn().isStreamFile()) {</span>
-<span class="nc" id="L720">      endDataConnection();</span>
+<span class="nc bnc" id="L721" title="All 2 branches missed.">    if (session.getDataConn().isStreamFile()) {</span>
+<span class="nc" id="L722">      endDataConnection();</span>
     }
-<span class="nc bnc" id="L722" title="All 2 branches missed.">    session.setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION,</span>
+<span class="nc bnc" id="L724" title="All 2 branches missed.">    session.setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION,</span>
                          &quot;Transfer complete for &quot; +
                          (current == null? &quot;Unknown command&quot; :
-<span class="nc" id="L725">                             current.toString()));</span>
-<span class="nc bnc" id="L726" title="All 2 branches missed.">    if (current != null) {</span>
-<span class="nc bnc" id="L727" title="All 2 branches missed.">      if (!FtpCommandCode.isListLikeCommand(current.getCommand())) {</span>
+<span class="nc" id="L727">                             current.toString()));</span>
+<span class="nc bnc" id="L728" title="All 2 branches missed.">    if (current != null) {</span>
+<span class="nc bnc" id="L729" title="All 2 branches missed.">      if (!FtpCommandCode.isListLikeCommand(current.getCommand())) {</span>
         try {
-<span class="nc" id="L729">          session.getBusinessHandler().afterTransferDoneBeforeAnswer(current);</span>
-<span class="nc" id="L730">        } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L731">          session.setReplyCode(e);</span>
-<span class="nc" id="L732">        }</span>
+<span class="nc" id="L731">          session.getBusinessHandler().afterTransferDoneBeforeAnswer(current);</span>
+<span class="nc" id="L732">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L733">          session.setReplyCode(e);</span>
+<span class="nc" id="L734">        }</span>
       } else {
         // Special wait to prevent fast LIST following by STOR or RETR command
         try {
-<span class="nc" id="L736">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
-<span class="nc" id="L737">        } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L738">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L739">        }</span>
+<span class="nc" id="L738">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
+<span class="nc" id="L739">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L740">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L741">        }</span>
       }
     }
-<span class="nc" id="L742">    finalizeExecution();</span>
-<span class="nc" id="L743">  }</span>
+<span class="nc" id="L744">    finalizeExecution();</span>
+<span class="nc" id="L745">  }</span>
 
   /**
    * Set the current transfer as finished. Called from {@link
@@ -748,11 +750,11 @@ public class FtpTransferControl {
    */
   public final void setEndOfTransfer() {
     try {
-<span class="nc" id="L751">      checkFtpTransferStatus();</span>
-<span class="nc" id="L752">    } catch (final FtpNoTransferException ignored) {</span>
+<span class="nc" id="L753">      checkFtpTransferStatus();</span>
+<span class="nc" id="L754">    } catch (final FtpNoTransferException ignored) {</span>
       // nothing
-<span class="nc" id="L754">    }</span>
-<span class="nc" id="L755">  }</span>
+<span class="nc" id="L756">    }</span>
+<span class="nc" id="L757">  }</span>
 
   /**
    * To enable abort from internal error
@@ -761,17 +763,19 @@ public class FtpTransferControl {
    *     command, false it is only prepared
    */
   public final void setTransferAbortedFromInternal(final boolean write) {
-<span class="nc" id="L764">    logger.debug(&quot;Set transfer aborted internal {}&quot;, write);</span>
-<span class="nc" id="L765">    abortTransfer();</span>
-<span class="nc bnc" id="L766" title="All 4 branches missed.">    if (write &amp;&amp; session.getNetworkHandler() != null) {</span>
-<span class="nc" id="L767">      session.getNetworkHandler().writeIntermediateAnswer();</span>
+<span class="nc" id="L766">    logger.debug(&quot;Set transfer aborted internal {}&quot;, write);</span>
+<span class="nc" id="L767">    abortTransfer();</span>
+<span class="nc bnc" id="L768" title="All 4 branches missed.">    if (write &amp;&amp; session.getNetworkHandler() != null) {</span>
+<span class="nc" id="L769">      session.getNetworkHandler().writeIntermediateAnswer();</span>
     }
-<span class="nc bnc" id="L769" title="All 4 branches missed.">    if (endOfCommand != null &amp;&amp; !endOfCommand.isDone()) {</span>
-<span class="nc" id="L770">      logger.warn(&quot;Command cancelled&quot;);</span>
-<span class="nc" id="L771">      logger.debug(new Exception(&quot;TRACE&quot;));</span>
-<span class="nc" id="L772">      endOfCommand.cancel();</span>
+<span class="nc bnc" id="L771" title="All 4 branches missed.">    if (endOfCommand != null &amp;&amp; !endOfCommand.isDone()) {</span>
+<span class="nc" id="L772">      logger.warn(&quot;Command cancelled&quot;);</span>
+<span class="nc bnc" id="L773" title="All 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L774">        logger.debug(new Exception(&quot;Trace only&quot;));</span>
+      }
+<span class="nc" id="L776">      endOfCommand.cancel();</span>
     }
-<span class="nc" id="L774">  }</span>
+<span class="nc" id="L778">  }</span>
 
   /**
    * Called by channelClosed (from {@link DataNetworkHandler} ) or
@@ -780,11 +784,11 @@ public class FtpTransferControl {
    * transfer is over
    */
   public final void setPreEndOfTransfer() {
-<span class="nc bnc" id="L783" title="All 2 branches missed.">    if (endOfCommand != null) {</span>
-<span class="nc" id="L784">      endOfCommand.setSuccess();</span>
-<span class="nc" id="L785">      logger.debug(&quot;Transfer completed&quot;);</span>
+<span class="nc bnc" id="L787" title="All 2 branches missed.">    if (endOfCommand != null) {</span>
+<span class="nc" id="L788">      endOfCommand.setSuccess();</span>
+<span class="nc" id="L789">      logger.debug(&quot;Transfer completed&quot;);</span>
     }
-<span class="nc" id="L787">  }</span>
+<span class="nc" id="L791">  }</span>
 
   /**
    * Wait for the current transfer to finish, called from {@link
@@ -793,45 +797,47 @@ public class FtpTransferControl {
    * @throws InterruptedException
    */
   public final void waitForEndOfTransfer() throws InterruptedException {
-<span class="nc bnc" id="L796" title="All 2 branches missed.">    if (endOfCommand != null) {</span>
-<span class="nc" id="L797">      endOfCommand.awaitOrInterruptible();</span>
-<span class="nc bnc" id="L798" title="All 2 branches missed.">      if (endOfCommand.isFailed()) {</span>
-<span class="nc" id="L799">        logger.error(&quot;Transfer aborted&quot;);</span>
-<span class="nc" id="L800">        logger.debug(new Exception(&quot;TRACE&quot;));</span>
-<span class="nc" id="L801">        throw new InterruptedException(&quot;Transfer aborted&quot;);</span>
+<span class="nc bnc" id="L800" title="All 2 branches missed.">    if (endOfCommand != null) {</span>
+<span class="nc" id="L801">      endOfCommand.awaitOrInterruptible();</span>
+<span class="nc bnc" id="L802" title="All 2 branches missed.">      if (endOfCommand.isFailed()) {</span>
+<span class="nc" id="L803">        logger.error(&quot;Transfer aborted&quot;);</span>
+<span class="nc bnc" id="L804" title="All 2 branches missed.">        if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L805">          logger.debug(new Exception(&quot;Trace only&quot;));</span>
+        }
+<span class="nc" id="L807">        throw new InterruptedException(&quot;Transfer aborted&quot;);</span>
       }
     }
-<span class="nc" id="L804">  }</span>
+<span class="nc" id="L810">  }</span>
 
   /**
    * Finalize execution
    */
   private void finalizeExecution() {
-<span class="nc bnc" id="L810" title="All 2 branches missed.">    if (commandFinishing != null) {</span>
-<span class="nc" id="L811">      commandFinishing.setSuccess();</span>
+<span class="nc bnc" id="L816" title="All 2 branches missed.">    if (commandFinishing != null) {</span>
+<span class="nc" id="L817">      commandFinishing.setSuccess();</span>
     }
-<span class="nc" id="L813">    isExecutingCommandFinished.set(true);</span>
-<span class="nc" id="L814">    executingCommand = null;</span>
-<span class="nc" id="L815">    resetWaitForOpenedDataChannel();</span>
-<span class="nc" id="L816">  }</span>
+<span class="nc" id="L819">    isExecutingCommandFinished.set(true);</span>
+<span class="nc" id="L820">    executingCommand = null;</span>
+<span class="nc" id="L821">    resetWaitForOpenedDataChannel();</span>
+<span class="nc" id="L822">  }</span>
 
   /**
    * End the data connection if any
    */
   private synchronized void endDataConnection() {
-<span class="nc" id="L822">    logger.debug(&quot;End Data connection&quot;);</span>
-<span class="nc bnc" id="L823" title="All 4 branches missed.">    if (isDataNetworkHandlerReady.get() &amp;&amp; dataChannel != null) {</span>
-<span class="nc" id="L824">      WaarpNettyUtil.awaitOrInterrupted(</span>
-<span class="nc" id="L825">          WaarpSslUtility.closingSslChannel(dataChannel));</span>
-<span class="nc" id="L826">      isDataNetworkHandlerReady.set(false);</span>
-<span class="nc" id="L827">      dataChannel = null;</span>
-<span class="nc bnc" id="L828" title="All 2 branches missed.">    } else if (dataChannel != null) {</span>
-<span class="nc" id="L829">      WaarpSslUtility.closingSslChannel(dataChannel);</span>
-<span class="nc" id="L830">      isDataNetworkHandlerReady.set(false);</span>
-<span class="nc" id="L831">      dataChannel = null;</span>
+<span class="nc" id="L828">    logger.debug(&quot;End Data connection&quot;);</span>
+<span class="nc bnc" id="L829" title="All 4 branches missed.">    if (isDataNetworkHandlerReady.get() &amp;&amp; dataChannel != null) {</span>
+<span class="nc" id="L830">      WaarpNettyUtil.awaitOrInterrupted(</span>
+<span class="nc" id="L831">          WaarpSslUtility.closingSslChannel(dataChannel));</span>
+<span class="nc" id="L832">      isDataNetworkHandlerReady.set(false);</span>
+<span class="nc" id="L833">      dataChannel = null;</span>
+<span class="nc bnc" id="L834" title="All 2 branches missed.">    } else if (dataChannel != null) {</span>
+<span class="nc" id="L835">      WaarpSslUtility.closingSslChannel(dataChannel);</span>
+<span class="nc" id="L836">      isDataNetworkHandlerReady.set(false);</span>
+<span class="nc" id="L837">      dataChannel = null;</span>
     }
-<span class="nc" id="L833">    isDataNetworkHandlerReady.set(false);</span>
-<span class="nc" id="L834">  }</span>
+<span class="nc" id="L839">    isDataNetworkHandlerReady.set(false);</span>
+<span class="nc" id="L840">  }</span>
 
   /**
    * Clear the FtpTransferControl (called when the data connection must be
@@ -840,24 +846,24 @@ public class FtpTransferControl {
    * connection from {@link NetworkHandler}.
    */
   public final void clear() {
-<span class="nc" id="L843">    final WaarpFuture commandSetupFuture = commandSetup;</span>
-<span class="nc" id="L844">    endDataConnection();</span>
-<span class="nc" id="L845">    finalizeExecution();</span>
-<span class="nc bnc" id="L846" title="All 4 branches missed.">    if (endOfCommand != null &amp;&amp; !endOfCommand.isDone()) {</span>
-<span class="nc" id="L847">      logger.error(&quot;Command cancelled&quot;);</span>
-<span class="nc" id="L848">      endOfCommand.cancel();</span>
+<span class="nc" id="L849">    final WaarpFuture commandSetupFuture = commandSetup;</span>
+<span class="nc" id="L850">    endDataConnection();</span>
+<span class="nc" id="L851">    finalizeExecution();</span>
+<span class="nc bnc" id="L852" title="All 4 branches missed.">    if (endOfCommand != null &amp;&amp; !endOfCommand.isDone()) {</span>
+<span class="nc" id="L853">      logger.error(&quot;Command cancelled&quot;);</span>
+<span class="nc" id="L854">      endOfCommand.cancel();</span>
     }
-<span class="nc" id="L850">    final WaarpChannelFuture wait = waitForOpenedDataChannel;</span>
-<span class="nc bnc" id="L851" title="All 4 branches missed.">    if (wait != null &amp;&amp; !wait.isDone()) {</span>
-<span class="nc" id="L852">      wait.cancel();</span>
+<span class="nc" id="L856">    final WaarpChannelFuture wait = waitForOpenedDataChannel;</span>
+<span class="nc bnc" id="L857" title="All 4 branches missed.">    if (wait != null &amp;&amp; !wait.isDone()) {</span>
+<span class="nc" id="L858">      wait.cancel();</span>
     }
-<span class="nc bnc" id="L854" title="All 4 branches missed.">    if (commandSetupFuture != null &amp;&amp; !commandSetupFuture.isDone()) {</span>
-<span class="nc" id="L855">      commandSetupFuture.cancel();</span>
+<span class="nc bnc" id="L860" title="All 4 branches missed.">    if (commandSetupFuture != null &amp;&amp; !commandSetupFuture.isDone()) {</span>
+<span class="nc" id="L861">      commandSetupFuture.cancel();</span>
     }
-<span class="nc bnc" id="L857" title="All 2 branches missed.">    if (executorService != null) {</span>
-<span class="nc" id="L858">      executorService.shutdownNow();</span>
-<span class="nc" id="L859">      executorService = null;</span>
+<span class="nc bnc" id="L863" title="All 2 branches missed.">    if (executorService != null) {</span>
+<span class="nc" id="L864">      executorService.shutdownNow();</span>
+<span class="nc" id="L865">      executorService = null;</span>
     }
-<span class="nc" id="L861">  }</span>
+<span class="nc" id="L867">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

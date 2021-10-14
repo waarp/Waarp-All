@@ -58,16 +58,16 @@ import static org.waarp.common.database.DbConstant.*;
 /**
  * Embedded service attached with the Thrift service
  */
-<span class="nc" id="L61">public class R66EmbeddedServiceImpl implements R66Service.Iface {</span>
+<span class="fc" id="L61">public class R66EmbeddedServiceImpl implements R66Service.Iface {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L65">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L66">      WaarpLoggerFactory.getLogger(R66EmbeddedServiceImpl.class);</span>
+<span class="fc" id="L65">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L66">      WaarpLoggerFactory.getLogger(R66EmbeddedServiceImpl.class);</span>
 
   private DbTaskRunner initRequest(final R66Request request) {
-<span class="nc" id="L69">    Timestamp ttimestart = null;</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (request.isSetStart()) {</span>
+<span class="fc" id="L69">    Timestamp ttimestart = null;</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (request.isSetStart()) {</span>
       final Date date;
       try {
 <span class="nc" id="L73">        final SimpleDateFormat dateFormat =</span>
@@ -77,7 +77,7 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="nc" id="L77">      } catch (final ParseException ignored) {</span>
         // nothing
 <span class="nc" id="L79">      }</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    } else if (request.isSetDelay()) {</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    } else if (request.isSetDelay()) {</span>
 <span class="nc bnc" id="L81" title="All 2 branches missed.">      if (request.getDelay().charAt(0) == '+') {</span>
 <span class="nc" id="L82">        ttimestart = new Timestamp(System.currentTimeMillis() + Long.parseLong(</span>
 <span class="nc" id="L83">            request.getDelay().substring(1)));</span>
@@ -87,22 +87,22 @@ import static org.waarp.common.database.DbConstant.*;
     }
     final DbRule rule;
     try {
-<span class="nc" id="L90">      rule = new DbRule(request.getRule());</span>
+<span class="fc" id="L90">      rule = new DbRule(request.getRule());</span>
 <span class="nc" id="L91">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L92">      logger.warn(&quot;Cannot get Rule: &quot; + request.getRule() + &quot; : {}&quot;,</span>
 <span class="nc" id="L93">                  e.getMessage());</span>
 <span class="nc" id="L94">      return null;</span>
-<span class="nc" id="L95">    }</span>
-<span class="nc" id="L96">    int mode = rule.getMode();</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (request.isMd5()) {</span>
+<span class="fc" id="L95">    }</span>
+<span class="fc" id="L96">    int mode = rule.getMode();</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">    if (request.isMd5()) {</span>
 <span class="nc" id="L98">      mode = RequestPacket.getModeMD5(mode);</span>
     }
     final DbTaskRunner taskRunner;
-<span class="nc" id="L101">    long tid = ILLEGALVALUE;</span>
-<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (request.isSetTid()) {</span>
+<span class="fc" id="L101">    long tid = ILLEGALVALUE;</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (request.isSetTid()) {</span>
 <span class="nc" id="L103">      tid = request.getTid();</span>
     }
-<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (tid != ILLEGALVALUE) {</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    if (tid != ILLEGALVALUE) {</span>
       try {
 <span class="nc" id="L107">        taskRunner = new DbTaskRunner(tid, request.getDestuid());</span>
         // requested
@@ -112,42 +112,42 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="nc" id="L112">        return null;</span>
 <span class="nc" id="L113">      }</span>
     } else {
-<span class="nc" id="L115">      final String sep =</span>
-<span class="nc" id="L116">          PartnerConfiguration.getSeparator(request.getDestuid());</span>
-<span class="nc" id="L117">      final RequestPacket requestPacket =</span>
-<span class="nc" id="L118">          new RequestPacket(request.getRule(), mode, request.getFile(),</span>
-<span class="nc" id="L119">                            request.getBlocksize(), 0, tid, request.getInfo(),</span>
+<span class="fc" id="L115">      final String sep =</span>
+<span class="fc" id="L116">          PartnerConfiguration.getSeparator(request.getDestuid());</span>
+<span class="fc" id="L117">      final RequestPacket requestPacket =</span>
+<span class="fc" id="L118">          new RequestPacket(request.getRule(), mode, request.getFile(),</span>
+<span class="fc" id="L119">                            request.getBlocksize(), 0, tid, request.getInfo(),</span>
                             -1, sep);
       // Not isRecv since it is the requester, so send =&gt; isRetrieve is true
-<span class="nc" id="L122">      final boolean isRetrieve =</span>
-<span class="nc bnc" id="L123" title="All 2 branches missed.">          !RequestPacket.isRecvMode(requestPacket.getMode());</span>
+<span class="fc" id="L122">      final boolean isRetrieve =</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">          !RequestPacket.isRecvMode(requestPacket.getMode());</span>
       try {
-<span class="nc" id="L125">        taskRunner = new DbTaskRunner(rule, isRetrieve, requestPacket,</span>
-<span class="nc" id="L126">                                      request.getDestuid(), ttimestart);</span>
+<span class="fc" id="L125">        taskRunner = new DbTaskRunner(rule, isRetrieve, requestPacket,</span>
+<span class="fc" id="L126">                                      request.getDestuid(), ttimestart);</span>
 <span class="nc" id="L127">      } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L128">        logger.warn(&quot;Cannot get task&quot; + &quot; : {}&quot;, e.getMessage());</span>
 <span class="nc" id="L129">        return null;</span>
-<span class="nc" id="L130">      }</span>
+<span class="fc" id="L130">      }</span>
     }
-<span class="nc" id="L132">    return taskRunner;</span>
+<span class="fc" id="L132">    return taskRunner;</span>
   }
 
   @Override
   public R66Result transferRequestQuery(final R66Request request)
       throws TException {
-<span class="nc" id="L138">    final DbTaskRunner runner = initRequest(request);</span>
-<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (runner != null) {</span>
-<span class="nc" id="L140">      runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);</span>
-<span class="nc" id="L141">      final boolean isSender = runner.isSender();</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (!runner.forceSaveStatus()) {</span>
+<span class="fc" id="L138">    final DbTaskRunner runner = initRequest(request);</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="fc" id="L140">      runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);</span>
+<span class="fc" id="L141">      final boolean isSender = runner.isSender();</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">      if (!runner.forceSaveStatus()) {</span>
 <span class="nc" id="L143">        logger.warn(&quot;Cannot prepare task&quot;);</span>
 <span class="nc" id="L144">        return new R66Result(request.getMode(), ErrorCode.CommandNotFound,</span>
                              &quot;ERROR: Cannot prepare transfer&quot;);
       }
-<span class="nc" id="L147">      final R66Result result =</span>
-<span class="nc" id="L148">          new R66Result(request.getMode(), ErrorCode.InitOk,</span>
+<span class="fc" id="L147">      final R66Result result =</span>
+<span class="fc" id="L148">          new R66Result(request.getMode(), ErrorCode.InitOk,</span>
                         &quot;Transfer Scheduled&quot;);
-<span class="nc bnc" id="L150" title="All 2 branches missed.">      if (request.getMode() == RequestMode.SYNCTRANSFER) {</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">      if (request.getMode() == RequestMode.SYNCTRANSFER) {</span>
         // now need to wait but first, reload the runner
         try {
 <span class="nc" id="L153">          runner.select();</span>
@@ -174,14 +174,14 @@ import static org.waarp.common.database.DbConstant.*;
         }
       } else {
         try {
-<span class="nc" id="L177">          runner.select();</span>
+<span class="fc" id="L177">          runner.select();</span>
 <span class="nc" id="L178">        } catch (final WaarpDatabaseException ignored) {</span>
           // nothing
-<span class="nc" id="L180">        }</span>
-<span class="nc" id="L181">        runner.setSender(isSender);</span>
-<span class="nc" id="L182">        setResultFromRunner(runner, result);</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        runner.setSender(isSender);</span>
+<span class="fc" id="L182">        setResultFromRunner(runner, result);</span>
       }
-<span class="nc" id="L184">      return result;</span>
+<span class="fc" id="L184">      return result;</span>
     } else {
 <span class="nc" id="L186">      logger.warn(&quot;ERROR: Transfer NOT scheduled&quot;);</span>
 <span class="nc" id="L187">      return new R66Result(request.getMode(), ErrorCode.Internal,</span>
@@ -191,23 +191,23 @@ import static org.waarp.common.database.DbConstant.*;
 
   private void setResultFromRunner(final DbTaskRunner runner,
                                    final R66Result result) {
-<span class="nc" id="L194">    result.setDestuid(runner.getRequested());</span>
-<span class="nc" id="L195">    result.setFromuid(runner.getRequester());</span>
-<span class="nc" id="L196">    result.setTid(runner.getSpecialId());</span>
-<span class="nc" id="L197">    result.setRule(runner.getRuleId());</span>
-<span class="nc" id="L198">    result.setBlocksize(runner.getBlocksize());</span>
-<span class="nc" id="L199">    result.setFile(runner.getFilename());</span>
-<span class="nc" id="L200">    result.setOriginalfilename(runner.getOriginalFilename());</span>
-<span class="nc" id="L201">    result.setIsmoved(runner.isFileMoved());</span>
-<span class="nc" id="L202">    result.setModetransfer(runner.getMode());</span>
-<span class="nc" id="L203">    result.setRetrievemode(runner.isSender());</span>
-<span class="nc" id="L204">    result.setStep(runner.getStep());</span>
-<span class="nc" id="L205">    result.setGloballaststep(runner.getGloballaststep());</span>
-<span class="nc" id="L206">    result.setRank(runner.getRank());</span>
-<span class="nc" id="L207">    result.setStart(runner.getStart().toString());</span>
-<span class="nc" id="L208">    result.setStop(runner.getStop().toString());</span>
-<span class="nc" id="L209">    result.setResultinfo(runner.getFileInformation());</span>
-<span class="nc" id="L210">  }</span>
+<span class="fc" id="L194">    result.setDestuid(runner.getRequested());</span>
+<span class="fc" id="L195">    result.setFromuid(runner.getRequester());</span>
+<span class="fc" id="L196">    result.setTid(runner.getSpecialId());</span>
+<span class="fc" id="L197">    result.setRule(runner.getRuleId());</span>
+<span class="fc" id="L198">    result.setBlocksize(runner.getBlocksize());</span>
+<span class="fc" id="L199">    result.setFile(runner.getFilename());</span>
+<span class="fc" id="L200">    result.setOriginalfilename(runner.getOriginalFilename());</span>
+<span class="fc" id="L201">    result.setIsmoved(runner.isFileMoved());</span>
+<span class="fc" id="L202">    result.setModetransfer(runner.getMode());</span>
+<span class="fc" id="L203">    result.setRetrievemode(runner.isSender());</span>
+<span class="fc" id="L204">    result.setStep(runner.getStep());</span>
+<span class="fc" id="L205">    result.setGloballaststep(runner.getGloballaststep());</span>
+<span class="fc" id="L206">    result.setRank(runner.getRank());</span>
+<span class="fc" id="L207">    result.setStart(runner.getStart().toString());</span>
+<span class="fc" id="L208">    result.setStop(runner.getStop().toString());</span>
+<span class="fc" id="L209">    result.setResultinfo(runner.getFileInformation());</span>
+<span class="fc" id="L210">  }</span>
 
   private void setResultFromLCR(final LocalChannelReference lcr,
                                 final R66Result result) {
@@ -322,50 +322,50 @@ import static org.waarp.common.database.DbConstant.*;
   @Override
   public R66Result infoTransferQuery(final R66Request request)
       throws TException {
-<span class="nc" id="L325">    final RequestMode mode = request.getMode();</span>
-<span class="nc bnc" id="L326" title="All 2 branches missed.">    if (mode != RequestMode.INFOREQUEST) {</span>
+<span class="fc" id="L325">    final RequestMode mode = request.getMode();</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">    if (mode != RequestMode.INFOREQUEST) {</span>
       // error
 <span class="nc" id="L328">      logger.warn(&quot;Mode is uncompatible with infoTransferQuery&quot;);</span>
 <span class="nc" id="L329">      return new R66Result(request.getMode(), ErrorCode.Unimplemented,</span>
                            &quot;Mode is uncompatible with infoTransferQuery&quot;);
     }
     // now check if enough arguments are provided
-<span class="nc bnc" id="L333" title="All 2 branches missed.">    if (!request.isSetTid() ||</span>
-<span class="nc bnc" id="L334" title="All 4 branches missed.">        !request.isSetDestuid() &amp;&amp; !request.isSetFromuid() ||</span>
-<span class="nc bnc" id="L335" title="All 2 branches missed.">        !request.isSetAction()) {</span>
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">    if (!request.isSetTid() ||</span>
+<span class="pc bpc" id="L334" title="3 of 4 branches missed.">        !request.isSetDestuid() &amp;&amp; !request.isSetFromuid() ||</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">        !request.isSetAction()) {</span>
       // error
 <span class="nc" id="L337">      logger.warn(&quot;Not enough arguments&quot;);</span>
 <span class="nc" id="L338">      return new R66Result(request.getMode(), ErrorCode.RemoteError,</span>
                            &quot;Not enough arguments&quot;);
     }
     // requested+blank+requester+blank+specialId
-<span class="nc" id="L342">    final LocalChannelReference lcr =</span>
-<span class="nc" id="L343">        Configuration.configuration.getLocalTransaction().getFromRequest(</span>
-<span class="nc" id="L344">            request.getDestuid() + ' ' + request.getFromuid() + ' ' +</span>
-<span class="nc" id="L345">            request.getTid());</span>
+<span class="fc" id="L342">    final LocalChannelReference lcr =</span>
+<span class="fc" id="L343">        Configuration.configuration.getLocalTransaction().getFromRequest(</span>
+<span class="fc" id="L344">            request.getDestuid() + ' ' + request.getFromuid() + ' ' +</span>
+<span class="fc" id="L345">            request.getTid());</span>
     final org.waarp.openr66.context.ErrorCode r66code;
-<span class="nc bnc" id="L347" title="All 5 branches missed.">    switch (request.getAction()) {</span>
+<span class="pc bpc" id="L347" title="4 of 5 branches missed.">    switch (request.getAction()) {</span>
       case Detail: {
-<span class="nc" id="L349">        final R66Result result =</span>
-<span class="nc" id="L350">            new R66Result(request.getMode(), ErrorCode.CompleteOk,</span>
+<span class="fc" id="L349">        final R66Result result =</span>
+<span class="fc" id="L350">            new R66Result(request.getMode(), ErrorCode.CompleteOk,</span>
                           &quot;Existence test OK&quot;);
-<span class="nc" id="L352">        result.setAction(Action.Exist);</span>
-<span class="nc" id="L353">        result.setDestuid(request.getDestuid());</span>
-<span class="nc" id="L354">        result.setFromuid(request.getFromuid());</span>
-<span class="nc" id="L355">        result.setTid(request.getTid());</span>
-<span class="nc bnc" id="L356" title="All 2 branches missed.">        if (lcr != null) {</span>
+<span class="fc" id="L352">        result.setAction(Action.Exist);</span>
+<span class="fc" id="L353">        result.setDestuid(request.getDestuid());</span>
+<span class="fc" id="L354">        result.setFromuid(request.getFromuid());</span>
+<span class="fc" id="L355">        result.setTid(request.getTid());</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">        if (lcr != null) {</span>
 <span class="nc" id="L357">          setResultFromLCR(lcr, result);</span>
         } else {
           try {
-<span class="nc" id="L360">            final DbTaskRunner runner =</span>
-<span class="nc" id="L361">                new DbTaskRunner(null, null, request.getTid(),</span>
-<span class="nc" id="L362">                                 request.getFromuid(), request.getDestuid());</span>
-<span class="nc" id="L363">            setResultFromRunner(runner, result);</span>
+<span class="fc" id="L360">            final DbTaskRunner runner =</span>
+<span class="fc" id="L361">                new DbTaskRunner(null, null, request.getTid(),</span>
+<span class="fc" id="L362">                                 request.getFromuid(), request.getDestuid());</span>
+<span class="fc" id="L363">            setResultFromRunner(runner, result);</span>
 <span class="nc" id="L364">          } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L365">            result.setCode(ErrorCode.FileNotFound);</span>
-<span class="nc" id="L366">          }</span>
+<span class="fc" id="L366">          }</span>
         }
-<span class="nc" id="L368">        return result;</span>
+<span class="fc" id="L368">        return result;</span>
       }
       case Restart:
 <span class="nc" id="L371">        return restart(request, lcr);</span>
@@ -386,61 +386,61 @@ import static org.waarp.common.database.DbConstant.*;
   public final boolean isStillRunning(final String fromuid, final String touid,
                                       final long tid) throws TException {
     // now check if enough arguments are provided
-<span class="nc bnc" id="L389" title="All 6 branches missed.">    if (fromuid == null || touid == null || tid == ILLEGALVALUE) {</span>
+<span class="pc bpc" id="L389" title="3 of 6 branches missed.">    if (fromuid == null || touid == null || tid == ILLEGALVALUE) {</span>
       // error
 <span class="nc" id="L391">      logger.warn(&quot;Not enough arguments&quot;);</span>
 <span class="nc" id="L392">      return false;</span>
     }
     // header = ?; middle = requested+blank+requester+blank+specialId
-<span class="nc" id="L395">    final LocalChannelReference lcr =</span>
-<span class="nc" id="L396">        Configuration.configuration.getLocalTransaction().getFromRequest(</span>
+<span class="fc" id="L395">    final LocalChannelReference lcr =</span>
+<span class="fc" id="L396">        Configuration.configuration.getLocalTransaction().getFromRequest(</span>
             touid + ' ' + fromuid + ' ' + tid);
-<span class="nc bnc" id="L398" title="All 2 branches missed.">    return lcr != null;</span>
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    return lcr != null;</span>
   }
 
   @Override
   public final List&lt;String&gt; infoListQuery(final R66Request request)
       throws TException {
-<span class="nc" id="L404">    List&lt;String&gt; list = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L405">    final RequestMode mode = request.getMode();</span>
-<span class="nc bnc" id="L406" title="All 2 branches missed.">    if (mode != RequestMode.INFOFILE) {</span>
+<span class="fc" id="L404">    List&lt;String&gt; list = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L405">    final RequestMode mode = request.getMode();</span>
+<span class="pc bpc" id="L406" title="1 of 2 branches missed.">    if (mode != RequestMode.INFOFILE) {</span>
       // error
 <span class="nc" id="L408">      logger.warn(&quot;Not correct mode for infoListQuery&quot;);</span>
 <span class="nc" id="L409">      list.add(&quot;Not correct mode for infoListQuery&quot;);</span>
 <span class="nc" id="L410">      return list;</span>
     }
     // now check if enough arguments are provided
-<span class="nc bnc" id="L413" title="All 4 branches missed.">    if (!request.isSetRule() || !request.isSetAction()) {</span>
+<span class="pc bpc" id="L413" title="1 of 4 branches missed.">    if (!request.isSetRule() || !request.isSetAction()) {</span>
       // error
-<span class="nc" id="L415">      logger.warn(&quot;Not enough arguments&quot;);</span>
-<span class="nc" id="L416">      list.add(&quot;Not enough arguments&quot;);</span>
-<span class="nc" id="L417">      return list;</span>
+<span class="fc" id="L415">      logger.warn(&quot;Not enough arguments&quot;);</span>
+<span class="fc" id="L416">      list.add(&quot;Not enough arguments&quot;);</span>
+<span class="fc" id="L417">      return list;</span>
     }
-<span class="nc" id="L419">    final R66Session session = new R66Session(false);</span>
-<span class="nc" id="L420">    session.getAuth().specialNoSessionAuth(false,</span>
-<span class="nc" id="L421">                                           Configuration.configuration.getHostId());</span>
+<span class="fc" id="L419">    final R66Session session = new R66Session(false);</span>
+<span class="fc" id="L420">    session.getAuth().specialNoSessionAuth(false,</span>
+<span class="fc" id="L421">                                           Configuration.configuration.getHostId());</span>
     final DbRule rule;
     try {
-<span class="nc" id="L424">      rule = new DbRule(request.getRule());</span>
+<span class="fc" id="L424">      rule = new DbRule(request.getRule());</span>
 <span class="nc" id="L425">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L426">      logger.warn(&quot;Rule is unknown: &quot; + request.getRule());</span>
 <span class="nc" id="L427">      list.add(&quot;Rule is unknown: &quot; + request.getRule());</span>
 <span class="nc" id="L428">      return list;</span>
-<span class="nc" id="L429">    }</span>
+<span class="fc" id="L429">    }</span>
     try {
-<span class="nc bnc" id="L431" title="All 2 branches missed.">      if (RequestPacket.isRecvMode(rule.getMode())) {</span>
+<span class="pc bpc" id="L431" title="1 of 2 branches missed.">      if (RequestPacket.isRecvMode(rule.getMode())) {</span>
 <span class="nc" id="L432">        session.getDir().changeDirectory(rule.getWorkPath());</span>
       } else {
-<span class="nc" id="L434">        session.getDir().changeDirectory(rule.getSendPath());</span>
+<span class="fc" id="L434">        session.getDir().changeDirectory(rule.getSendPath());</span>
       }
 
-<span class="nc bnc" id="L437" title="All 2 branches missed.">      if (request.getAction() == Action.List ||</span>
-<span class="nc bnc" id="L438" title="All 2 branches missed.">          request.getAction() == Action.Mlsx) {</span>
+<span class="fc bfc" id="L437" title="All 2 branches covered.">      if (request.getAction() == Action.List ||</span>
+<span class="pc bpc" id="L438" title="1 of 2 branches missed.">          request.getAction() == Action.Mlsx) {</span>
         // ls or mls from current directory
-<span class="nc bnc" id="L440" title="All 2 branches missed.">        if (request.getAction() == Action.List) {</span>
-<span class="nc" id="L441">          list = session.getDir().list(request.getFile());</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">        if (request.getAction() == Action.List) {</span>
+<span class="fc" id="L441">          list = session.getDir().list(request.getFile());</span>
         } else {
-<span class="nc" id="L443">          list = session.getDir().listFull(request.getFile(), false);</span>
+<span class="fc" id="L443">          list = session.getDir().listFull(request.getFile(), false);</span>
         }
       } else {
         // ls pr mls from current directory and filename
@@ -462,7 +462,7 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="nc" id="L462">          list.add(sresult);</span>
         }
       }
-<span class="nc" id="L465">      return list;</span>
+<span class="fc" id="L465">      return list;</span>
 <span class="nc" id="L466">    } catch (final CommandAbstractException e) {</span>
 <span class="nc" id="L467">      logger.warn(&quot;Error occurs during: &quot; + request + &quot; : {}&quot;, e.getMessage());</span>
 <span class="nc" id="L468">      list.add(&quot;Error occurs during: &quot; + request);</span>

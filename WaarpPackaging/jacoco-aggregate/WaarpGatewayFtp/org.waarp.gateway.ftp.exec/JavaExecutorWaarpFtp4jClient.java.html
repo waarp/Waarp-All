@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>JavaExecutorWaarpFtp4jClient.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.exec</a> &gt; <span class="el_source">JavaExecutorWaarpFtp4jClient.java</span></div><h1>JavaExecutorWaarpFtp4jClient.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.ftp.exec;
+
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.ftp.client.WaarpFtp4jClient;
+import org.waarp.ftp.core.config.FtpInternalConfiguration;
+import org.waarp.openr66.context.task.FtpArgs;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Pattern;
+
+/**
+ * FTP client compatible for Waarp Gateway Kernel as JavaExecutor&lt;br&gt;
+ * &lt;br&gt;
+ * Ftp Transfer task: synchronous&lt;br&gt;
+ * &lt;p&gt;
+ * Result of arguments will be as FTP command.&lt;br&gt;
+ * Format is the following:&lt;br&gt;
+ * &quot;-file filepath &lt;br&gt;
+ * -to requestedHost &lt;br&gt;
+ * -port port &lt;br&gt;
+ * -user user &lt;br&gt;
+ * -pwd pwd &lt;br&gt;
+ * [-account account] &lt;br&gt;
+ * [-mode active/passive] &lt;br&gt;
+ * [-ssl no/implicit/explicit]&lt;br&gt;
+ * [-cwd remotepath] &lt;br&gt;
+ * [-digest (crc,md5,sha1)] &lt;br&gt;
+ * [-pre extraCommand1 with ',' as separator of arguments] &lt;br&gt;
+ * -command command from (get,put,append) &lt;br&gt;
+ * [-post extraCommand2 with ',' as separator of arguments]&quot; &lt;br&gt;
+ * &lt;br&gt;
+ * &lt;br&gt;
+ * The order of commands will be:&lt;br&gt;
+ * 1) connection to requestHost on port (if ssl native =&gt; using native ssl
+ * link)&lt;br&gt;
+ * 2) User user&lt;br&gt;
+ * 3) PASS pwd&lt;br&gt;
+ * 4) if account =&gt; ACCT account&lt;br&gt;
+ * 5) if -ssl &amp; auth =&gt; AUTH, PBSZ 0, PROT P &lt;br&gt;
+ * 6) if passive =&gt; PASV&lt;br&gt;
+ * 7) CWD remotepath; if error =&gt; MKD remotepath then CWD remotepath (and
+ * ignoring any error)&lt;br&gt;
+ * 8) if pre =&gt; extraCommand1 with ',' replaced by ' ' (note: do not use
+ * standard commands from FTP like
+ * ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE,
+ * MDTM,MLSD,MLST,SIZE,AUTH) &lt;br&gt;
+ * 9) BINARY (binary format)&lt;br&gt;
+ * 10) if get =&gt; RETR filepath.basename ; if put =&gt; STOR filepath ; if append
+ * =&gt;
+ * APPE filepath.basename&lt;br&gt;
+ * 11) if digest &amp; get/put/append &amp; remote site compatible with XCRC,XMD5,XSHA1
+ * =&gt; FEAT (parsing if found
+ * corresponding XCRC,XMD5,XSHA1) ; then XCRC/XMD5/XSHA1 filepath.basename ;
+ * then locally comparing this
+ * XCRC/XMD5/XSHA1 with the local file&lt;br&gt;
+ * 12) if post =&gt; extraCommand2 with ',' replaced by ' ' (note: do not use
+ * standard commands from FTP like
+ * ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE
+ * ,MDTM,MLSD,MLST,SIZE,AUTH)&lt;br&gt;
+ * 13) QUIT&lt;br&gt;
+ */
+public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L90">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L91">      WaarpLoggerFactory.getLogger(JavaExecutorWaarpFtp4jClient.class);</span>
+<span class="nc" id="L92">  private static final Pattern BLANK = WaarpStringUtils.BLANK;</span>
+
+  boolean waitForValidation;
+  boolean useLocalExec;
+  int delay;
+  String[] args;
+  int status;
+
+<span class="nc" id="L100">  public JavaExecutorWaarpFtp4jClient() {</span>
+    // nothing
+<span class="nc" id="L102">  }</span>
+
+  /**
+   * &quot;-file filepath &lt;br&gt; -to requestedHost &lt;br&gt; -port port &lt;br&gt; -user user &lt;br&gt; -pwd pwd &lt;br&gt; [-account
+   * account] &lt;br&gt; [-mode active/passive] &lt;br&gt; [-ssl no/implicit/explicit]&lt;br&gt; [-cwd remotepath] &lt;br&gt; [-digest
+   * (crc,md5,sha1)] &lt;br&gt; [-pre extraCommand1 with ',' as separator of arguments] &lt;br&gt; -command command from
+   * (get,put,append) &lt;br&gt; [-post extraCommand2 with ',' as separator of arguments]&quot; &lt;br&gt;
+   **/
+  @Override
+  public final void run() {
+<span class="nc" id="L112">    logger.info(&quot;FtpTransfer with {} arguments&quot;, args.length);</span>
+    final FtpArgs ftpArgs;
+    try {
+<span class="nc" id="L115">      ftpArgs = FtpArgs.getFtpArgs(args);</span>
+<span class="nc" id="L116">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L117">      status = -2;</span>
+<span class="nc" id="L118">      logger.error(&quot;Not enough arguments: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L119">      return;</span>
+<span class="nc" id="L120">    }</span>
+<span class="nc" id="L121">    int timeout = 30000;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (delay &gt; 10000) {</span>
+<span class="nc" id="L123">      timeout = delay;</span>
+    }
+<span class="nc" id="L125">    final WaarpFtp4jClient ftpClient =</span>
+<span class="nc" id="L126">        new WaarpFtp4jClient(ftpArgs.getRequested(), ftpArgs.getPort(),</span>
+<span class="nc" id="L127">                             ftpArgs.getUser(), ftpArgs.getPwd(),</span>
+<span class="nc" id="L128">                             ftpArgs.getAcct(), ftpArgs.isPassive(),</span>
+<span class="nc" id="L129">                             ftpArgs.getSsl(), 5000, timeout);</span>
+<span class="nc" id="L130">    boolean connected = false;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">    for (int i = 0; i &lt; 3; i++) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (ftpClient.connect()) {</span>
+<span class="nc" id="L133">        connected = true;</span>
+<span class="nc" id="L134">        break;</span>
+      }
+    }
+<span class="nc bnc" id="L137" title="All 2 branches missed.">    if (!connected) {</span>
+<span class="nc" id="L138">      status = -3;</span>
+<span class="nc" id="L139">      logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L140">      return;</span>
+    }
+    try {
+<span class="nc bnc" id="L143" title="All 4 branches missed.">      if (ftpArgs.getCwd() != null &amp;&amp; !ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L144">        ftpClient.makeDir(ftpArgs.getCwd());</span>
+        try {
+<span class="nc" id="L146">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
+<span class="nc" id="L147">        } catch (final InterruptedException e) {// NOSONAR</span>
+          // Ignore
+<span class="nc" id="L149">        }</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (!ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L151">          logger.warn(&quot;Cannot change od directory: &quot; + ftpArgs.getCwd());</span>
+        }
+      }
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (ftpArgs.getPreArgs() != null) {</span>
+<span class="nc" id="L155">        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L157">          logger.debug(&quot;PRE: {}&quot;, string);</span>
+        }
+      }
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),</span>
+<span class="nc" id="L161">                                  ftpArgs.getCodeCommand())) {</span>
+<span class="nc" id="L162">        status = -4;</span>
+<span class="nc" id="L163">        logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L164">        return;</span>
+      }
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      if (ftpArgs.getDigest() != null) {</span>
+<span class="nc" id="L167">        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());</span>
+<span class="nc" id="L168">        String hashresult = null;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (values != null) {</span>
+<span class="nc" id="L170">          values = BLANK.split(values[0]);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">          hashresult = values.length &gt; 3? values[1] : values[0];</span>
+        }
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (hashresult == null) {</span>
+<span class="nc" id="L174">          status = -5;</span>
+<span class="nc" id="L175">          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L176">          return;</span>
+        }
+        // now check locally
+        String hash;
+        try {
+<span class="nc" id="L181">          hash = FilesystemBasedDigest.getHex(</span>
+<span class="nc" id="L182">              FilesystemBasedDigest.getHash(new File(ftpArgs.getFilepath()),</span>
+<span class="nc" id="L183">                                            false, ftpArgs.getDigest()));</span>
+<span class="nc" id="L184">        } catch (final IOException e) {</span>
+<span class="nc" id="L185">          hash = null;</span>
+<span class="nc" id="L186">        }</span>
+<span class="nc bnc" id="L187" title="All 4 branches missed.">        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {</span>
+<span class="nc" id="L188">          status = -6;</span>
+<span class="nc" id="L189">          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L190">          return;</span>
+        }
+      }
+<span class="nc bnc" id="L193" title="All 2 branches missed.">      if (ftpArgs.getPostArgs() != null) {</span>
+<span class="nc" id="L194">        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L196">          logger.debug(&quot;POST: {}&quot;, string);</span>
+        }
+      }
+    } finally {
+<span class="nc" id="L200">      ftpClient.logout();</span>
+    }
+<span class="nc" id="L202">    logger.info(&quot;FTP transfer in\n    SUCCESS\n    {}\n    &lt;REMOTE&gt;{}&lt;/REMOTE&gt;&quot;,</span>
+<span class="nc" id="L203">                ftpArgs.getFilepath(), ftpArgs.getRequested());</span>
+<span class="nc" id="L204">    status = 0;</span>
+<span class="nc" id="L205">  }</span>
+
+  @Override
+  public final void setArgs(final boolean waitForValidation,
+                            final boolean useLocalExec, final int delay,
+                            final String[] args) {
+<span class="nc" id="L211">    this.waitForValidation = waitForValidation;</span>
+<span class="nc" id="L212">    this.useLocalExec = useLocalExec;</span>
+<span class="nc" id="L213">    this.delay = delay;</span>
+<span class="nc" id="L214">    this.args = args;</span>
+<span class="nc" id="L215">  }</span>
+
+  @Override
+  public final int getFinalStatus() {
+<span class="nc" id="L219">    return status;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LogExport.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp</a> &gt; <span class="el_source">LogExport.java</span></div><h1>LogExport.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.ftp;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.gateway.ftp.config.FileBasedConfiguration;
+import org.waarp.gateway.ftp.control.ExecBusinessHandler;
+import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
+import org.waarp.gateway.ftp.database.data.DbTransferLog;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.sql.Timestamp;
+
+/**
+ * Program to export log history from database to a file and optionally purge
+ * exported entries.
+ */
+public class LogExport {
+  /**
+   * Command Flags
+   */
+  private static boolean purge;
+  private static boolean correctOnly;
+  private static String destinationPath;
+  protected static Timestamp start;
+  protected static Timestamp stop;
+
+  /**
+   * Internal pointer to the destination writer object
+   */
+  private static Writer destinationWriter;
+
+  /**
+   * Internal pointer to the configuration
+   */
+  private static FileBasedConfiguration config;
+
+  /**
+   * Usage for the command
+   */
+  private static final String USAGE =
+      &quot;Need at least the configuration file as first argument then optionally\n&quot; +
+      &quot;    -correctOnly      Only exports successful transfers\n&quot; +
+      &quot;    -purge            Purge exported transfers\n&quot; +
+      &quot;    -out [filepath|-] The path to the file created\n&quot; +
+      &quot;                      Use '-' for stdout\n&quot; +
+      &quot;    -start timestamp  in format yyyyMMddHHmmssSSS possibly truncated and where one of ':-. ' can be separators\n&quot; +
+      &quot;    -stop timestamp   in same format than start\n&quot;;
+
+  private LogExport() {
+  }
+
+  /**
+   * Verifies command line arguments and initialize internals (mainly config)
+   *
+   * @param args command line arguments
+   *
+   * @return the result of the initialization. if an error occured at this
+   *     stage, return value will be false
+   */
+  protected static boolean initialize(final String[] args) {
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L92">      return false;</span>
+    }
+
+<span class="nc" id="L95">    config = new FileBasedConfiguration(ExecGatewayFtpServer.class,</span>
+                                        ExecBusinessHandler.class,
+                                        FileSystemBasedDataBusinessHandler.class,
+                                        new FilesystemBasedFileParameterImpl());
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (!config.setConfigurationServerFromXml(args[0])) {</span>
+<span class="nc" id="L101">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad main configuration&quot;);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L103">        DbConstantFtp.gatewayAdmin.close();</span>
+      }
+<span class="nc" id="L105">      return false;</span>
+    }
+
+<span class="nc" id="L108">    FileBasedConfiguration.fileBasedConfiguration = config;</span>
+
+<span class="nc" id="L110">    return setDestinationWriter();</span>
+  }
+
+  /**
+   * Creates and sets destinationWriter according to the following logic based
+   * on the value of the '-out'
+   * command line argument: - if no value is given, a default path is computed
+   * (the same as online export, i.e.
+   * in [data directory]/[admin name]) - if the value '-' is given,
+   * destinationWriter is the standard output
+   * (System.out) - if any other value is given, then it is considered as the
+   * path to the destination file
+   *
+   * @return a bollean indicating the success in opening the Writer.
+   */
+  public static boolean setDestinationWriter() {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (destinationPath == null) {</span>
+<span class="nc" id="L127">      destinationPath = config.getBaseDirectory() + DirInterface.SEPARATOR +</span>
+<span class="nc" id="L128">                        config.getAdminName() + DirInterface.SEPARATOR +</span>
+<span class="nc" id="L129">                        config.getHostId() + &quot;_logs_&quot; +</span>
+<span class="nc" id="L130">                        System.currentTimeMillis() + &quot;.xml&quot;;</span>
+    }
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (&quot;-&quot;.equalsIgnoreCase(destinationPath)) {</span>
+<span class="nc" id="L134">      destinationWriter = new OutputStreamWriter(System.out);</span>
+    } else {
+      try {
+<span class="nc" id="L137">        destinationWriter = new FileWriter(destinationPath);</span>
+<span class="nc" id="L138">      } catch (final IOException e) {</span>
+<span class="nc" id="L139">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+            &quot;Cannot open out file &quot; + destinationPath);
+<span class="nc" id="L141">        return false;</span>
+<span class="nc" id="L142">      }</span>
+    }
+<span class="nc" id="L144">    return true;</span>
+  }
+
+  /**
+   * Parses command line arguments
+   *
+   * @param args command line arguments to parse
+   *
+   * @return [description]
+   */
+  protected static boolean getParams(final String[] args) {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L156">      SysErrLogger.FAKE_LOGGER.syserr(USAGE);</span>
+<span class="nc" id="L157">      return false;</span>
+    }
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (&quot;-purge&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L162">        purge = true;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">      } else if (&quot;-correctOnly&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L164">        correctOnly = true;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">      } else if (&quot;-out&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L166">        i++;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
+<span class="nc bnc" id="L168" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
+<span class="nc" id="L169">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+              &quot;Error: -out needs a value.\n\n&quot; + USAGE);
+<span class="nc" id="L171">          return false;</span>
+        }
+<span class="nc" id="L173">        destinationPath = args[i].trim();</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L175">        i++;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
+<span class="nc bnc" id="L177" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
+<span class="nc" id="L178">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+              &quot;Error: -start needs a value.\n\n&quot; + USAGE);
+<span class="nc" id="L180">          return false;</span>
+        }
+<span class="nc" id="L182">        start = WaarpStringUtils.fixDate(args[i]);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">      } else if (&quot;-stop&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L184">        i++;</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (i &gt;= args.length ||</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">            args[i].charAt(0) == '-' &amp;&amp; args[i].length() &gt; 1) {</span>
+<span class="nc" id="L187">          SysErrLogger.FAKE_LOGGER.syserr(</span>
+              &quot;Error: -stop needs a value.\n\n&quot; + USAGE);
+<span class="nc" id="L189">          return false;</span>
+        }
+<span class="nc" id="L191">        stop = WaarpStringUtils.fixDate(args[i]);</span>
+      }
+    }
+<span class="nc" id="L194">    return true;</span>
+  }
+
+  /**
+   * Main logic for the command.
+   *
+   * @return an error message or null
+   */
+  protected static String run() {
+<span class="nc" id="L203">    ReplyCode status = null;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (correctOnly) {</span>
+<span class="nc" id="L205">      status = ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION;</span>
+    }
+
+    final DbPreparedStatement preparedStatement;
+    try {
+<span class="nc" id="L210">      preparedStatement = DbTransferLog.getLogPrepareStament(</span>
+<span class="nc" id="L211">          DbConstantFtp.gatewayAdmin.getSession(), start, stop, status);</span>
+
+<span class="nc" id="L213">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L214">      return &quot;An error occured while connecting to the database: &quot; +</span>
+<span class="nc" id="L215">             e.getMessage();</span>
+
+<span class="nc" id="L217">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L218">      return &quot;An error occured with the database: &quot; + e.getMessage();</span>
+<span class="nc" id="L219">    }</span>
+
+<span class="nc" id="L221">    return DbTransferLog.saveDbTransferLogFile(preparedStatement,</span>
+                                               destinationWriter, purge);
+  }
+
+  /**
+   * Command Entry point
+   *
+   * @param args command line arguments
+   */
+  public static void main(final String[] args) {
+    try {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">      if (!initialize(args)) {</span>
+<span class="nc" id="L233">        WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L234">        return;</span>
+      }
+
+<span class="nc" id="L237">      final String message = run();</span>
+
+<span class="nc bnc" id="L239" title="All 2 branches missed.">      if (message.contains(&quot;successfully&quot;)) {</span>
+<span class="nc" id="L240">        WaarpSystemUtil.systemExit(0);</span>
+      } else {
+<span class="nc" id="L242">        SysErrLogger.FAKE_LOGGER.syserr(message);</span>
+<span class="nc" id="L243">        WaarpSystemUtil.systemExit(1);</span>
+      }
+
+    } finally {
+<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="nc" id="L248">        DbConstantFtp.gatewayAdmin.close();</span>
+      }
+    }
+<span class="nc" id="L251">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

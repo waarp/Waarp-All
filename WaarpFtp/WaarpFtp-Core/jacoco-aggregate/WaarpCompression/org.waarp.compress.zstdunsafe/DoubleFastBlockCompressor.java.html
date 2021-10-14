@@ -33,7 +33,7 @@
  */
 package org.waarp.compress.zstdunsafe;
 
-<span class="nc" id="L36">class DoubleFastBlockCompressor implements BlockCompressor {</span>
+<span class="fc" id="L36">class DoubleFastBlockCompressor implements BlockCompressor {</span>
   private static final int MIN_MATCH = 3;
   private static final int SEARCH_STRENGTH = 8;
   private static final int REP_MOVE = Constants.REPEATED_OFFSET_COUNT - 1;
@@ -43,204 +43,204 @@ package org.waarp.compress.zstdunsafe;
                            final BlockCompressionState state,
                            final RepeatedOffsets offsets,
                            final CompressionParameters parameters) {
-<span class="nc" id="L46">    final int matchSearchLength = Math.max(parameters.getSearchLength(), 4);</span>
+<span class="fc" id="L46">    final int matchSearchLength = Math.max(parameters.getSearchLength(), 4);</span>
 
     // Offsets in hash tables are relative to baseAddress. Hash tables can be reused across calls to compressBlock as long as
     // baseAddress is kept constant.
     // We don't want to generate sequences that point before the current window limit, so we &quot;filter&quot; out all results from looking up in the hash tables
     // beyond that point.
-<span class="nc" id="L52">    final long baseAddress = state.getBaseAddress();</span>
-<span class="nc" id="L53">    final long windowBaseAddress = baseAddress + state.getWindowBaseOffset();</span>
+<span class="fc" id="L52">    final long baseAddress = state.getBaseAddress();</span>
+<span class="fc" id="L53">    final long windowBaseAddress = baseAddress + state.getWindowBaseOffset();</span>
 
-<span class="nc" id="L55">    final int[] longHashTable = state.hashTable;</span>
-<span class="nc" id="L56">    final int longHashBits = parameters.getHashLog();</span>
+<span class="fc" id="L55">    final int[] longHashTable = state.hashTable;</span>
+<span class="fc" id="L56">    final int longHashBits = parameters.getHashLog();</span>
 
-<span class="nc" id="L58">    final int[] shortHashTable = state.chainTable;</span>
-<span class="nc" id="L59">    final int shortHashBits = parameters.getChainLog();</span>
+<span class="fc" id="L58">    final int[] shortHashTable = state.chainTable;</span>
+<span class="fc" id="L59">    final int shortHashBits = parameters.getChainLog();</span>
 
-<span class="nc" id="L61">    final long inputEnd = inputAddress + inputSize;</span>
-<span class="nc" id="L62">    final long inputLimit = inputEnd -</span>
+<span class="fc" id="L61">    final long inputEnd = inputAddress + inputSize;</span>
+<span class="fc" id="L62">    final long inputLimit = inputEnd -</span>
                             Constants.SIZE_OF_LONG; // We read a long at a time for computing the hashes
 
-<span class="nc" id="L65">    long input = inputAddress;</span>
-<span class="nc" id="L66">    long anchor = inputAddress;</span>
+<span class="fc" id="L65">    long input = inputAddress;</span>
+<span class="fc" id="L66">    long anchor = inputAddress;</span>
 
-<span class="nc" id="L68">    int offset1 = offsets.getOffset0();</span>
-<span class="nc" id="L69">    int offset2 = offsets.getOffset1();</span>
+<span class="fc" id="L68">    int offset1 = offsets.getOffset0();</span>
+<span class="fc" id="L69">    int offset2 = offsets.getOffset1();</span>
 
-<span class="nc" id="L71">    int savedOffset = 0;</span>
+<span class="fc" id="L71">    int savedOffset = 0;</span>
 
-<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (input - windowBaseAddress == 0) {</span>
-<span class="nc" id="L74">      input++;</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">    if (input - windowBaseAddress == 0) {</span>
+<span class="fc" id="L74">      input++;</span>
     }
-<span class="nc" id="L76">    final int maxRep = (int) (input - windowBaseAddress);</span>
+<span class="fc" id="L76">    final int maxRep = (int) (input - windowBaseAddress);</span>
 
-<span class="nc bnc" id="L78" title="All 2 branches missed.">    if (offset2 &gt; maxRep) {</span>
-<span class="nc" id="L79">      savedOffset = offset2;</span>
-<span class="nc" id="L80">      offset2 = 0;</span>
-    }
-
-<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (offset1 &gt; maxRep) {</span>
-<span class="nc" id="L84">      savedOffset = offset1;</span>
-<span class="nc" id="L85">      offset1 = 0;</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">    if (offset2 &gt; maxRep) {</span>
+<span class="fc" id="L79">      savedOffset = offset2;</span>
+<span class="fc" id="L80">      offset2 = 0;</span>
     }
 
-<span class="nc bnc" id="L88" title="All 2 branches missed.">    while (input &lt;</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">    if (offset1 &gt; maxRep) {</span>
+<span class="fc" id="L84">      savedOffset = offset1;</span>
+<span class="fc" id="L85">      offset1 = 0;</span>
+    }
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">    while (input &lt;</span>
            inputLimit) {   // &lt; instead of &lt;=, because repcode check at (input+1)
-<span class="nc" id="L90">      final int shortHash =</span>
-<span class="nc" id="L91">          hash(inputBase, input, shortHashBits, matchSearchLength);</span>
-<span class="nc" id="L92">      long shortMatchAddress = baseAddress + shortHashTable[shortHash];</span>
+<span class="fc" id="L90">      final int shortHash =</span>
+<span class="fc" id="L91">          hash(inputBase, input, shortHashBits, matchSearchLength);</span>
+<span class="fc" id="L92">      long shortMatchAddress = baseAddress + shortHashTable[shortHash];</span>
 
-<span class="nc" id="L94">      final int longHash =</span>
-<span class="nc" id="L95">          hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input), longHashBits);</span>
-<span class="nc" id="L96">      long longMatchAddress = baseAddress + longHashTable[longHash];</span>
+<span class="fc" id="L94">      final int longHash =</span>
+<span class="fc" id="L95">          hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input), longHashBits);</span>
+<span class="fc" id="L96">      long longMatchAddress = baseAddress + longHashTable[longHash];</span>
 
       // update hash tables
-<span class="nc" id="L99">      final int current = (int) (input - baseAddress);</span>
-<span class="nc" id="L100">      longHashTable[longHash] = current;</span>
-<span class="nc" id="L101">      shortHashTable[shortHash] = current;</span>
+<span class="fc" id="L99">      final int current = (int) (input - baseAddress);</span>
+<span class="fc" id="L100">      longHashTable[longHash] = current;</span>
+<span class="fc" id="L101">      shortHashTable[shortHash] = current;</span>
 
       int matchLength;
       final int offset;
 
-<span class="nc bnc" id="L106" title="All 2 branches missed.">      if (offset1 &gt; 0 &amp;&amp;</span>
-<span class="nc" id="L107">          UnsafeUtil.UNSAFE.getInt(inputBase, input + 1 - offset1) ==</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">          UnsafeUtil.UNSAFE.getInt(inputBase, input + 1)) {</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">      if (offset1 &gt; 0 &amp;&amp;</span>
+<span class="fc" id="L107">          UnsafeUtil.UNSAFE.getInt(inputBase, input + 1 - offset1) ==</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">          UnsafeUtil.UNSAFE.getInt(inputBase, input + 1)) {</span>
         // found a repeated sequence of at least 4 bytes, separated by offset1
-<span class="nc" id="L110">        matchLength =</span>
-<span class="nc" id="L111">            count(inputBase, input + 1 + Constants.SIZE_OF_INT, inputEnd,</span>
+<span class="fc" id="L110">        matchLength =</span>
+<span class="fc" id="L111">            count(inputBase, input + 1 + Constants.SIZE_OF_INT, inputEnd,</span>
                   input + 1 + Constants.SIZE_OF_INT - offset1) +
             Constants.SIZE_OF_INT;
-<span class="nc" id="L114">        input++;</span>
-<span class="nc" id="L115">        output.storeSequence(inputBase, anchor, (int) (input - anchor), 0,</span>
+<span class="fc" id="L114">        input++;</span>
+<span class="fc" id="L115">        output.storeSequence(inputBase, anchor, (int) (input - anchor), 0,</span>
                              matchLength - MIN_MATCH);
       } else {
         // check prefix long match
-<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (longMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
-<span class="nc" id="L120">            UnsafeUtil.UNSAFE.getLong(inputBase, longMatchAddress) ==</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">            UnsafeUtil.UNSAFE.getLong(inputBase, input)) {</span>
-<span class="nc" id="L122">          matchLength =</span>
-<span class="nc" id="L123">              count(inputBase, input + Constants.SIZE_OF_LONG, inputEnd,</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (longMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="fc" id="L120">            UnsafeUtil.UNSAFE.getLong(inputBase, longMatchAddress) ==</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            UnsafeUtil.UNSAFE.getLong(inputBase, input)) {</span>
+<span class="fc" id="L122">          matchLength =</span>
+<span class="fc" id="L123">              count(inputBase, input + Constants.SIZE_OF_LONG, inputEnd,</span>
                     longMatchAddress + Constants.SIZE_OF_LONG) +
               Constants.SIZE_OF_LONG;
-<span class="nc" id="L126">          offset = (int) (input - longMatchAddress);</span>
-<span class="nc bnc" id="L127" title="All 4 branches missed.">          while (input &gt; anchor &amp;&amp; longMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
-<span class="nc" id="L128">                 UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">                 UnsafeUtil.UNSAFE.getByte(inputBase, longMatchAddress - 1)) {</span>
-<span class="nc" id="L130">            input--;</span>
-<span class="nc" id="L131">            longMatchAddress--;</span>
-<span class="nc" id="L132">            matchLength++;</span>
+<span class="fc" id="L126">          offset = (int) (input - longMatchAddress);</span>
+<span class="fc bfc" id="L127" title="All 4 branches covered.">          while (input &gt; anchor &amp;&amp; longMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="fc" id="L128">                 UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">                 UnsafeUtil.UNSAFE.getByte(inputBase, longMatchAddress - 1)) {</span>
+<span class="fc" id="L130">            input--;</span>
+<span class="fc" id="L131">            longMatchAddress--;</span>
+<span class="fc" id="L132">            matchLength++;</span>
           }
         } else {
           // check prefix short match
-<span class="nc bnc" id="L136" title="All 2 branches missed.">          if (shortMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
-<span class="nc" id="L137">              UnsafeUtil.UNSAFE.getInt(inputBase, shortMatchAddress) ==</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">              UnsafeUtil.UNSAFE.getInt(inputBase, input)) {</span>
-<span class="nc" id="L139">            final int nextOffsetHash =</span>
-<span class="nc" id="L140">                hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input + 1),</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">          if (shortMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="fc" id="L137">              UnsafeUtil.UNSAFE.getInt(inputBase, shortMatchAddress) ==</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">              UnsafeUtil.UNSAFE.getInt(inputBase, input)) {</span>
+<span class="fc" id="L139">            final int nextOffsetHash =</span>
+<span class="fc" id="L140">                hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input + 1),</span>
                       longHashBits);
-<span class="nc" id="L142">            long nextOffsetMatchAddress =</span>
+<span class="fc" id="L142">            long nextOffsetMatchAddress =</span>
                 baseAddress + longHashTable[nextOffsetHash];
-<span class="nc" id="L144">            longHashTable[nextOffsetHash] = current + 1;</span>
+<span class="fc" id="L144">            longHashTable[nextOffsetHash] = current + 1;</span>
 
             // check prefix long +1 match
-<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (nextOffsetMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
-<span class="nc" id="L148">                UnsafeUtil.UNSAFE.getLong(inputBase, nextOffsetMatchAddress) ==</span>
-<span class="nc bnc" id="L149" title="All 2 branches missed.">                UnsafeUtil.UNSAFE.getLong(inputBase, input + 1)) {</span>
-<span class="nc" id="L150">              matchLength =</span>
-<span class="nc" id="L151">                  count(inputBase, input + 1 + Constants.SIZE_OF_LONG, inputEnd,</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            if (nextOffsetMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="fc" id="L148">                UnsafeUtil.UNSAFE.getLong(inputBase, nextOffsetMatchAddress) ==</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">                UnsafeUtil.UNSAFE.getLong(inputBase, input + 1)) {</span>
+<span class="fc" id="L150">              matchLength =</span>
+<span class="fc" id="L151">                  count(inputBase, input + 1 + Constants.SIZE_OF_LONG, inputEnd,</span>
                         nextOffsetMatchAddress + Constants.SIZE_OF_LONG) +
                   Constants.SIZE_OF_LONG;
-<span class="nc" id="L154">              input++;</span>
-<span class="nc" id="L155">              offset = (int) (input - nextOffsetMatchAddress);</span>
-<span class="nc bnc" id="L156" title="All 4 branches missed.">              while (input &gt; anchor &amp;&amp;</span>
+<span class="fc" id="L154">              input++;</span>
+<span class="fc" id="L155">              offset = (int) (input - nextOffsetMatchAddress);</span>
+<span class="fc bfc" id="L156" title="All 4 branches covered.">              while (input &gt; anchor &amp;&amp;</span>
                      nextOffsetMatchAddress &gt; windowBaseAddress &amp;&amp;
-<span class="nc" id="L158">                     UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==</span>
-<span class="nc bnc" id="L159" title="All 2 branches missed.">                     UnsafeUtil.UNSAFE.getByte(inputBase,</span>
+<span class="fc" id="L158">                     UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">                     UnsafeUtil.UNSAFE.getByte(inputBase,</span>
                                                nextOffsetMatchAddress - 1)) {
-<span class="nc" id="L161">                input--;</span>
-<span class="nc" id="L162">                nextOffsetMatchAddress--;</span>
-<span class="nc" id="L163">                matchLength++;</span>
+<span class="fc" id="L161">                input--;</span>
+<span class="fc" id="L162">                nextOffsetMatchAddress--;</span>
+<span class="fc" id="L163">                matchLength++;</span>
               }
             } else {
               // if no long +1 match, explore the short match we found
-<span class="nc" id="L167">              matchLength =</span>
-<span class="nc" id="L168">                  count(inputBase, input + Constants.SIZE_OF_INT, inputEnd,</span>
+<span class="fc" id="L167">              matchLength =</span>
+<span class="fc" id="L168">                  count(inputBase, input + Constants.SIZE_OF_INT, inputEnd,</span>
                         shortMatchAddress + Constants.SIZE_OF_INT) +
                   Constants.SIZE_OF_INT;
-<span class="nc" id="L171">              offset = (int) (input - shortMatchAddress);</span>
-<span class="nc bnc" id="L172" title="All 4 branches missed.">              while (input &gt; anchor &amp;&amp; shortMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
-<span class="nc" id="L173">                     UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">                     UnsafeUtil.UNSAFE.getByte(inputBase,</span>
+<span class="fc" id="L171">              offset = (int) (input - shortMatchAddress);</span>
+<span class="fc bfc" id="L172" title="All 4 branches covered.">              while (input &gt; anchor &amp;&amp; shortMatchAddress &gt; windowBaseAddress &amp;&amp;</span>
+<span class="fc" id="L173">                     UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">                     UnsafeUtil.UNSAFE.getByte(inputBase,</span>
                                                shortMatchAddress - 1)) {
-<span class="nc" id="L176">                input--;</span>
-<span class="nc" id="L177">                shortMatchAddress--;</span>
-<span class="nc" id="L178">                matchLength++;</span>
+<span class="fc" id="L176">                input--;</span>
+<span class="fc" id="L177">                shortMatchAddress--;</span>
+<span class="fc" id="L178">                matchLength++;</span>
               }
             }
-<span class="nc" id="L181">          } else {</span>
-<span class="nc" id="L182">            input += ((input - anchor) &gt;&gt; SEARCH_STRENGTH) + 1;</span>
-<span class="nc" id="L183">            continue;</span>
+<span class="fc" id="L181">          } else {</span>
+<span class="fc" id="L182">            input += ((input - anchor) &gt;&gt; SEARCH_STRENGTH) + 1;</span>
+<span class="fc" id="L183">            continue;</span>
           }
         }
 
-<span class="nc" id="L187">        offset2 = offset1;</span>
-<span class="nc" id="L188">        offset1 = offset;</span>
+<span class="fc" id="L187">        offset2 = offset1;</span>
+<span class="fc" id="L188">        offset1 = offset;</span>
 
-<span class="nc" id="L190">        output.storeSequence(inputBase, anchor, (int) (input - anchor),</span>
+<span class="fc" id="L190">        output.storeSequence(inputBase, anchor, (int) (input - anchor),</span>
                              offset + REP_MOVE, matchLength - MIN_MATCH);
       }
 
-<span class="nc" id="L194">      input += matchLength;</span>
-<span class="nc" id="L195">      anchor = input;</span>
+<span class="fc" id="L194">      input += matchLength;</span>
+<span class="fc" id="L195">      anchor = input;</span>
 
-<span class="nc bnc" id="L197" title="All 2 branches missed.">      if (input &lt;= inputLimit) {</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">      if (input &lt;= inputLimit) {</span>
         // Fill Table
-<span class="nc" id="L199">        longHashTable[hash8(</span>
-<span class="nc" id="L200">            UnsafeUtil.UNSAFE.getLong(inputBase, baseAddress + current + 2),</span>
+<span class="fc" id="L199">        longHashTable[hash8(</span>
+<span class="fc" id="L200">            UnsafeUtil.UNSAFE.getLong(inputBase, baseAddress + current + 2),</span>
             longHashBits)] = current + 2;
-<span class="nc" id="L202">        shortHashTable[hash(inputBase, baseAddress + current + 2, shortHashBits,</span>
+<span class="fc" id="L202">        shortHashTable[hash(inputBase, baseAddress + current + 2, shortHashBits,</span>
                             matchSearchLength)] = current + 2;
 
-<span class="nc" id="L205">        longHashTable[hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input - 2),</span>
+<span class="fc" id="L205">        longHashTable[hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input - 2),</span>
                             longHashBits)] = (int) (input - 2 - baseAddress);
-<span class="nc" id="L207">        shortHashTable[hash(inputBase, input - 2, shortHashBits,</span>
+<span class="fc" id="L207">        shortHashTable[hash(inputBase, input - 2, shortHashBits,</span>
                             matchSearchLength)] =
             (int) (input - 2 - baseAddress);
 
-<span class="nc bnc" id="L211" title="All 4 branches missed.">        while (input &lt;= inputLimit &amp;&amp; offset2 &gt; 0 &amp;&amp;</span>
-<span class="nc" id="L212">               UnsafeUtil.UNSAFE.getInt(inputBase, input) ==</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">               UnsafeUtil.UNSAFE.getInt(inputBase, input - offset2)) {</span>
-<span class="nc" id="L214">          final int repetitionLength =</span>
-<span class="nc" id="L215">              count(inputBase, input + Constants.SIZE_OF_INT, inputEnd,</span>
+<span class="fc bfc" id="L211" title="All 4 branches covered.">        while (input &lt;= inputLimit &amp;&amp; offset2 &gt; 0 &amp;&amp;</span>
+<span class="fc" id="L212">               UnsafeUtil.UNSAFE.getInt(inputBase, input) ==</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">               UnsafeUtil.UNSAFE.getInt(inputBase, input - offset2)) {</span>
+<span class="fc" id="L214">          final int repetitionLength =</span>
+<span class="fc" id="L215">              count(inputBase, input + Constants.SIZE_OF_INT, inputEnd,</span>
                     input + Constants.SIZE_OF_INT - offset2) +
               Constants.SIZE_OF_INT;
 
           // swap offset2 &lt;=&gt; offset1
-<span class="nc" id="L220">          final int temp = offset2;</span>
-<span class="nc" id="L221">          offset2 = offset1;</span>
-<span class="nc" id="L222">          offset1 = temp;</span>
+<span class="fc" id="L220">          final int temp = offset2;</span>
+<span class="fc" id="L221">          offset2 = offset1;</span>
+<span class="fc" id="L222">          offset1 = temp;</span>
 
-<span class="nc" id="L224">          shortHashTable[hash(inputBase, input, shortHashBits,</span>
+<span class="fc" id="L224">          shortHashTable[hash(inputBase, input, shortHashBits,</span>
                               matchSearchLength)] = (int) (input - baseAddress);
-<span class="nc" id="L226">          longHashTable[hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input),</span>
+<span class="fc" id="L226">          longHashTable[hash8(UnsafeUtil.UNSAFE.getLong(inputBase, input),</span>
                               longHashBits)] = (int) (input - baseAddress);
 
-<span class="nc" id="L229">          output.storeSequence(inputBase, anchor, 0, 0,</span>
+<span class="fc" id="L229">          output.storeSequence(inputBase, anchor, 0, 0,</span>
                                repetitionLength - MIN_MATCH);
 
-<span class="nc" id="L232">          input += repetitionLength;</span>
-<span class="nc" id="L233">          anchor = input;</span>
-<span class="nc" id="L234">        }</span>
+<span class="fc" id="L232">          input += repetitionLength;</span>
+<span class="fc" id="L233">          anchor = input;</span>
+<span class="fc" id="L234">        }</span>
       }
-<span class="nc" id="L236">    }</span>
+<span class="fc" id="L236">    }</span>
 
     // save reps for next block
-<span class="nc bnc" id="L239" title="All 2 branches missed.">    offsets.saveOffset0(offset1 != 0? offset1 : savedOffset);</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">    offsets.saveOffset1(offset2 != 0? offset2 : savedOffset);</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">    offsets.saveOffset0(offset1 != 0? offset1 : savedOffset);</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">    offsets.saveOffset1(offset2 != 0? offset2 : savedOffset);</span>
 
     // return the last literals size
-<span class="nc" id="L243">    return (int) (inputEnd - anchor);</span>
+<span class="fc" id="L243">    return (int) (inputEnd - anchor);</span>
   }
 
   // TODO: same as LZ4RawCompressor.count
@@ -250,38 +250,38 @@ package org.waarp.compress.zstdunsafe;
    */
   public static int count(final Object inputBase, final long inputAddress,
                           final long inputLimit, final long matchAddress) {
-<span class="nc" id="L253">    long input = inputAddress;</span>
-<span class="nc" id="L254">    long match = matchAddress;</span>
+<span class="fc" id="L253">    long input = inputAddress;</span>
+<span class="fc" id="L254">    long match = matchAddress;</span>
 
-<span class="nc" id="L256">    final int remaining = (int) (inputLimit - inputAddress);</span>
+<span class="fc" id="L256">    final int remaining = (int) (inputLimit - inputAddress);</span>
 
     // first, compare long at a time
-<span class="nc" id="L259">    int count = 0;</span>
-<span class="nc bnc" id="L260" title="All 2 branches missed.">    while (count &lt; remaining - (Constants.SIZE_OF_LONG - 1)) {</span>
-<span class="nc" id="L261">      final long diff = UnsafeUtil.UNSAFE.getLong(inputBase, match) ^</span>
-<span class="nc" id="L262">                        UnsafeUtil.UNSAFE.getLong(inputBase, input);</span>
-<span class="nc bnc" id="L263" title="All 2 branches missed.">      if (diff != 0) {</span>
-<span class="nc" id="L264">        return count + (Long.numberOfTrailingZeros(diff) &gt;&gt; 3);</span>
+<span class="fc" id="L259">    int count = 0;</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">    while (count &lt; remaining - (Constants.SIZE_OF_LONG - 1)) {</span>
+<span class="fc" id="L261">      final long diff = UnsafeUtil.UNSAFE.getLong(inputBase, match) ^</span>
+<span class="fc" id="L262">                        UnsafeUtil.UNSAFE.getLong(inputBase, input);</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">      if (diff != 0) {</span>
+<span class="fc" id="L264">        return count + (Long.numberOfTrailingZeros(diff) &gt;&gt; 3);</span>
       }
 
-<span class="nc" id="L267">      count += Constants.SIZE_OF_LONG;</span>
-<span class="nc" id="L268">      input += Constants.SIZE_OF_LONG;</span>
-<span class="nc" id="L269">      match += Constants.SIZE_OF_LONG;</span>
-<span class="nc" id="L270">    }</span>
+<span class="fc" id="L267">      count += Constants.SIZE_OF_LONG;</span>
+<span class="fc" id="L268">      input += Constants.SIZE_OF_LONG;</span>
+<span class="fc" id="L269">      match += Constants.SIZE_OF_LONG;</span>
+<span class="fc" id="L270">    }</span>
 
-<span class="nc bnc" id="L272" title="All 2 branches missed.">    while (count &lt; remaining &amp;&amp; UnsafeUtil.UNSAFE.getByte(inputBase, match) ==</span>
-<span class="nc bnc" id="L273" title="All 2 branches missed.">                                UnsafeUtil.UNSAFE.getByte(inputBase, input)) {</span>
-<span class="nc" id="L274">      count++;</span>
-<span class="nc" id="L275">      input++;</span>
-<span class="nc" id="L276">      match++;</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">    while (count &lt; remaining &amp;&amp; UnsafeUtil.UNSAFE.getByte(inputBase, match) ==</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">                                UnsafeUtil.UNSAFE.getByte(inputBase, input)) {</span>
+<span class="fc" id="L274">      count++;</span>
+<span class="fc" id="L275">      input++;</span>
+<span class="fc" id="L276">      match++;</span>
     }
 
-<span class="nc" id="L279">    return count;</span>
+<span class="fc" id="L279">    return count;</span>
   }
 
   private static int hash(final Object inputBase, final long inputAddress,
                           final int bits, final int matchSearchLength) {
-<span class="nc bnc" id="L284" title="All 5 branches missed.">    switch (matchSearchLength) {</span>
+<span class="pc bpc" id="L284" title="3 of 5 branches missed.">    switch (matchSearchLength) {</span>
       case 8:
 <span class="nc" id="L286">        return hash8(UnsafeUtil.UNSAFE.getLong(inputBase, inputAddress), bits);</span>
       case 7:
@@ -289,9 +289,9 @@ package org.waarp.compress.zstdunsafe;
       case 6:
 <span class="nc" id="L290">        return hash6(UnsafeUtil.UNSAFE.getLong(inputBase, inputAddress), bits);</span>
       case 5:
-<span class="nc" id="L292">        return hash5(UnsafeUtil.UNSAFE.getLong(inputBase, inputAddress), bits);</span>
+<span class="fc" id="L292">        return hash5(UnsafeUtil.UNSAFE.getLong(inputBase, inputAddress), bits);</span>
       default:
-<span class="nc" id="L294">        return hash4(UnsafeUtil.UNSAFE.getInt(inputBase, inputAddress), bits);</span>
+<span class="fc" id="L294">        return hash4(UnsafeUtil.UNSAFE.getInt(inputBase, inputAddress), bits);</span>
     }
   }
 
@@ -302,11 +302,11 @@ package org.waarp.compress.zstdunsafe;
   private static final long PRIME_8_BYTES = 0xCF1BBCDCB7A56463L;
 
   private static int hash4(final int value, final int bits) {
-<span class="nc" id="L305">    return (value * PRIME_4_BYTES) &gt;&gt;&gt; (Integer.SIZE - bits);</span>
+<span class="fc" id="L305">    return (value * PRIME_4_BYTES) &gt;&gt;&gt; (Integer.SIZE - bits);</span>
   }
 
   private static int hash5(final long value, final int bits) {
-<span class="nc" id="L309">    return (int) (((value &lt;&lt; (Long.SIZE - 40)) * PRIME_5_BYTES) &gt;&gt;&gt;</span>
+<span class="fc" id="L309">    return (int) (((value &lt;&lt; (Long.SIZE - 40)) * PRIME_5_BYTES) &gt;&gt;&gt;</span>
                   (Long.SIZE - bits));
   }
 
@@ -321,7 +321,7 @@ package org.waarp.compress.zstdunsafe;
   }
 
   private static int hash8(final long value, final int bits) {
-<span class="nc" id="L324">    return (int) ((value * PRIME_8_BYTES) &gt;&gt;&gt; (Long.SIZE - bits));</span>
+<span class="fc" id="L324">    return (int) ((value * PRIME_8_BYTES) &gt;&gt;&gt; (Long.SIZE - bits));</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

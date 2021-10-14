@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.database.mariadb;
 
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,46 +32,37 @@ import java.sql.SQLException;
 public class MariaDBTransferDAO extends DBTransferDAO {
 
   protected static final String SQL_GET_ID =
-      &quot;SELECT seq FROM Sequences &quot; + &quot;WHERE name='RUNSEQ' FOR UPDATE&quot;;
-  private static final String SQL_UPDATE_ID =
-      &quot;UPDATE Sequences SET seq = ? &quot; + &quot;WHERE name='RUNSEQ'&quot;;
+      &quot;SELECT NEXT VALUE FOR &quot; + DbTaskRunner.fieldseq;
 
   public MariaDBTransferDAO(final Connection con)
       throws DAOConnectionException {
-<span class="nc" id="L40">    super(con);</span>
-<span class="nc" id="L41">  }</span>
+<span class="fc" id="L39">    super(con);</span>
+<span class="fc" id="L40">  }</span>
 
   @Override
   protected final long getNextId() throws DAOConnectionException {
-<span class="nc" id="L45">    PreparedStatement ps = null;</span>
-<span class="nc" id="L46">    PreparedStatement ps2 = null;</span>
-<span class="nc" id="L47">    ResultSet rs = null;</span>
+<span class="fc" id="L44">    PreparedStatement ps = null;</span>
+<span class="fc" id="L45">    ResultSet rs = null;</span>
     try {
-<span class="nc" id="L49">      ps = connection.prepareStatement(SQL_GET_ID);</span>
-<span class="nc" id="L50">      rs = ps.executeQuery();</span>
-      final long res;
-<span class="nc bnc" id="L52" title="All 2 branches missed.">      if (rs.next()) {</span>
-<span class="nc" id="L53">        res = rs.getLong(1);</span>
-<span class="nc" id="L54">        ps2 = connection.prepareStatement(SQL_UPDATE_ID);</span>
-<span class="nc" id="L55">        ps2.setLong(1, res + 1);</span>
-<span class="nc" id="L56">        ps2.executeUpdate();</span>
-<span class="nc" id="L57">        return res;</span>
+<span class="fc" id="L47">      ps = connection.prepareStatement(SQL_GET_ID);</span>
+<span class="fc" id="L48">      rs = ps.executeQuery();</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">      if (rs.next()) {</span>
+<span class="fc" id="L50">        return rs.getLong(1);</span>
       } else {
-<span class="nc" id="L59">        throw new DAOConnectionException(</span>
+<span class="nc" id="L52">        throw new DAOConnectionException(</span>
             &quot;Error no id available, you should purge the database.&quot;);
       }
-<span class="nc" id="L62">    } catch (final SQLException e) {</span>
-<span class="nc" id="L63">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L55">    } catch (final SQLException e) {</span>
+<span class="nc" id="L56">      throw new DAOConnectionException(&quot;While executing: &quot; + SQL_GET_ID, e);</span>
     } finally {
       try {
-<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (rs != null) {</span>
-<span class="nc" id="L67">          rs.close();</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (rs != null) {</span>
+<span class="fc" id="L60">          rs.close();</span>
         }
-<span class="nc" id="L69">      } catch (final SQLException e) {</span>
+<span class="nc" id="L62">      } catch (final SQLException e) {</span>
         // ignore
-<span class="nc" id="L71">      }</span>
-<span class="nc" id="L72">      closeStatement(ps);</span>
-<span class="nc" id="L73">      closeStatement(ps2);</span>
+<span class="fc" id="L64">      }</span>
+<span class="fc" id="L65">      closeStatement(ps);</span>
     }
   }
 }

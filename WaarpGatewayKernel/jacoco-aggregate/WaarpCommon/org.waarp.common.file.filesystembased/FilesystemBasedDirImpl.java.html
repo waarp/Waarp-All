@@ -68,8 +68,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   /**
    * Internal Logger
    */
-<span class="nc" id="L71">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L72">      WaarpLoggerFactory.getLogger(FilesystemBasedDirImpl.class);</span>
+<span class="fc" id="L71">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L72">      WaarpLoggerFactory.getLogger(FilesystemBasedDirImpl.class);</span>
 
   /**
    * Class that handles specifity of one Jdk or another
@@ -80,19 +80,19 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * Initialize the filesystem
    */
   static {
-<span class="nc" id="L83">    initJdkDependent();</span>
-<span class="nc" id="L84">  }</span>
+<span class="fc" id="L83">    initJdkDependent();</span>
+<span class="fc" id="L84">  }</span>
 
   /**
    * Init according to internals of JDK
    */
   private static void initJdkDependent() {
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (DetectionUtils.javaVersion() &gt;= 6) {</span>
-<span class="nc" id="L91">      filesystemBasedFtpDirJdk = new FilesystemBasedDirJdk6();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">    if (DetectionUtils.javaVersion() &gt;= 6) {</span>
+<span class="fc" id="L91">      filesystemBasedFtpDirJdk = new FilesystemBasedDirJdk6();</span>
     } else {
 <span class="nc" id="L93">      filesystemBasedFtpDirJdk = new FilesystemBasedDirJdk5();</span>
     }
-<span class="nc" id="L95">  }</span>
+<span class="fc" id="L95">  }</span>
 
   /**
    * Init the dependant object according to internals of JDK
@@ -112,14 +112,14 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @param optsMLSx
    */
   protected FilesystemBasedDirImpl(final SessionInterface session,
-<span class="nc" id="L115">                                   final OptsMLSxInterface optsMLSx) {</span>
-<span class="nc" id="L116">    this.session = session;</span>
-<span class="nc" id="L117">    this.optsMLSx = optsMLSx;</span>
-<span class="nc" id="L118">    this.optsMLSx.setOptsModify((byte) 1);</span>
-<span class="nc" id="L119">    this.optsMLSx.setOptsPerm((byte) 1);</span>
-<span class="nc" id="L120">    this.optsMLSx.setOptsSize((byte) 1);</span>
-<span class="nc" id="L121">    this.optsMLSx.setOptsType((byte) 1);</span>
-<span class="nc" id="L122">  }</span>
+<span class="fc" id="L115">                                   final OptsMLSxInterface optsMLSx) {</span>
+<span class="fc" id="L116">    this.session = session;</span>
+<span class="fc" id="L117">    this.optsMLSx = optsMLSx;</span>
+<span class="fc" id="L118">    this.optsMLSx.setOptsModify((byte) 1);</span>
+<span class="fc" id="L119">    this.optsMLSx.setOptsPerm((byte) 1);</span>
+<span class="fc" id="L120">    this.optsMLSx.setOptsSize((byte) 1);</span>
+<span class="fc" id="L121">    this.optsMLSx.setOptsType((byte) 1);</span>
+<span class="fc" id="L122">  }</span>
 
   /**
    * Finds all files matching a wildcard expression (based on '?', '~' or
@@ -141,16 +141,16 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   protected final List&lt;String&gt; wildcardFiles(final String pathWithWildcard)
       throws CommandAbstractException {
-<span class="nc" id="L144">    final List&lt;String&gt; resultPaths = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L144">    final List&lt;String&gt; resultPaths = new ArrayList&lt;String&gt;();</span>
     // First check if pathWithWildcard contains wildcards
-<span class="nc bnc" id="L146" title="All 4 branches missed.">    if (!(pathWithWildcard.contains(&quot;*&quot;) || pathWithWildcard.contains(&quot;?&quot;) ||</span>
-<span class="nc bnc" id="L147" title="All 2 branches missed.">          pathWithWildcard.contains(&quot;~&quot;))) {</span>
+<span class="pc bpc" id="L146" title="2 of 4 branches missed.">    if (!(pathWithWildcard.contains(&quot;*&quot;) || pathWithWildcard.contains(&quot;?&quot;) ||</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">          pathWithWildcard.contains(&quot;~&quot;))) {</span>
       // No so simply return the list containing this path after
       // validating it
-<span class="nc bnc" id="L150" title="All 2 branches missed.">      if (getSession().getAuth().isBusinessPathValid(pathWithWildcard)) {</span>
-<span class="nc" id="L151">        resultPaths.add(pathWithWildcard);</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">      if (getSession().getAuth().isBusinessPathValid(pathWithWildcard)) {</span>
+<span class="fc" id="L151">        resultPaths.add(pathWithWildcard);</span>
       }
-<span class="nc" id="L153">      return resultPaths;</span>
+<span class="fc" id="L153">      return resultPaths;</span>
     }
     // Do we support Wildcard path
 <span class="nc bnc" id="L156" title="All 2 branches missed.">    if (!FilesystemBasedDirJdkAbstract.ueApacheCommonsIo) {</span>
@@ -298,18 +298,18 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public final boolean changeDirectoryNotChecked(final String path)
       throws CommandAbstractException {
-<span class="nc" id="L301">    checkIdentify();</span>
-<span class="nc" id="L302">    final String newpath = consolidatePath(path);</span>
-<span class="nc" id="L303">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
-<span class="nc bnc" id="L304" title="All 2 branches missed.">    if (paths.size() != 1) {</span>
+<span class="fc" id="L301">    checkIdentify();</span>
+<span class="fc" id="L302">    final String newpath = consolidatePath(path);</span>
+<span class="fc" id="L303">    final List&lt;String&gt; paths = wildcardFiles(newpath);</span>
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">    if (paths.size() != 1) {</span>
 <span class="nc" id="L305">      logger.warn(&quot;CD error: {}&quot;, newpath);</span>
 <span class="nc" id="L306">      throw new Reply550Exception(</span>
 <span class="nc" id="L307">          DIRECTORY_NOT_FOUND + paths.size() + &quot; founds&quot;);</span>
     }
-<span class="nc" id="L309">    String extDir = paths.get(0);</span>
-<span class="nc" id="L310">    extDir = validatePath(extDir);</span>
-<span class="nc" id="L311">    currentDir = extDir;</span>
-<span class="nc" id="L312">    return true;</span>
+<span class="fc" id="L309">    String extDir = paths.get(0);</span>
+<span class="fc" id="L310">    extDir = validatePath(extDir);</span>
+<span class="fc" id="L311">    currentDir = extDir;</span>
+<span class="fc" id="L312">    return true;</span>
   }
 
   @Override

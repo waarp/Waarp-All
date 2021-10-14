@@ -1,0 +1,2045 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FileBasedConfiguration.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayFtp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.config</a> &gt; <span class="el_source">FileBasedConfiguration.java</span></div><h1>FileBasedConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.gateway.ftp.config;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.ChannelGroupFuture;
+import io.netty.channel.group.ChannelGroupFutureListener;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.traffic.AbstractTrafficShapingHandler;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.waarp.common.crypto.Des;
+import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
+import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.exception.CryptoException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileParameterInterface;
+import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.file.filesystembased.specific.FilesystemBasedDirJdkAbstract;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpThreadFactory;
+import org.waarp.common.xml.XmlDecl;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlType;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.control.BusinessHandler;
+import org.waarp.ftp.core.control.ftps.FtpsInitializer;
+import org.waarp.ftp.core.data.handler.DataBusinessHandler;
+import org.waarp.ftp.core.exception.FtpNoConnectionException;
+import org.waarp.ftp.core.exception.FtpUnknownFieldException;
+import org.waarp.gateway.ftp.adminssl.HttpSslInitializer;
+import org.waarp.gateway.ftp.control.FtpConstraintLimitHandler;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
+import org.waarp.gateway.ftp.database.data.DbTransferLog;
+import org.waarp.gateway.ftp.database.model.DbModelFactoryFtp;
+import org.waarp.gateway.ftp.exec.AbstractExecutor;
+import org.waarp.gateway.ftp.exec.LocalExecClient;
+import org.waarp.gateway.ftp.file.SimpleAuth;
+import org.waarp.gateway.ftp.snmp.FtpMonitoring;
+import org.waarp.gateway.ftp.snmp.FtpPrivateMib;
+import org.waarp.gateway.ftp.snmp.FtpVariableFactory;
+import org.waarp.snmp.SnmpConfiguration;
+import org.waarp.snmp.WaarpMOFactory;
+import org.waarp.snmp.WaarpSnmpAgent;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * FtpConfiguration based on a XML file
+ */
+public class FileBasedConfiguration extends FtpConfiguration {
+  private static final String ERROR_DURING_WRITE_AUTHENTICATION_FILE =
+      &quot;Error during Write Authentication file&quot;;
+
+  private static final String UNABLE_TO_FIND_LOCAL_EXEC_ADDRESS_IN_CONFIG_FILE =
+      &quot;Unable to find LocalExec Address in Config file&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L104">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L105">      WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);</span>
+
+  /**
+   * SERVER HOSTID
+   */
+  private static final String XML_SERVER_HOSTID = &quot;hostid&quot;;
+  /**
+   * Authentication
+   */
+  private static final String XML_AUTHENTIFICATION_FILE = &quot;authentfile&quot;;
+  /**
+   * SERVER CRYPTO for Password
+   */
+  private static final String XML_PATH_CRYPTOKEY = &quot;cryptokey&quot;;
+
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L123">  private static final XmlDecl[] configIdentityDecls = {</span>
+      // identity
+      new XmlDecl(XmlType.STRING, XML_SERVER_HOSTID),
+      new XmlDecl(XmlType.STRING, XML_PATH_CRYPTOKEY),
+      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_FILE)
+  };
+  /**
+   * Use HTTP compression for R66 HTTP connection
+   */
+  private static final String XML_USEHTTPCOMP = &quot;usehttpcomp&quot;;
+  /**
+   * Use external Waarp Local Exec for ExecTask and ExecMoveTask
+   */
+  private static final String XML_USELOCALEXEC = &quot;uselocalexec&quot;;
+
+  /**
+   * Address of Waarp Local Exec for ExecTask and ExecMoveTask
+   */
+  private static final String XML_LEXECADDR = &quot;lexecaddr&quot;;
+
+  /**
+   * Port of Waarp Local Exec for ExecTask and ExecMoveTask
+   */
+  private static final String XML_LEXECPORT = &quot;lexecport&quot;;
+  /**
+   * ADMINISTRATOR SERVER NAME (shutdown)
+   */
+  private static final String XML_SERVER_ADMIN = &quot;serveradmin&quot;;
+  /**
+   * SERVER PASSWORD (shutdown)
+   */
+  private static final String XML_SERVER_PASSWD = &quot;serverpasswd&quot;; //NOSONAR
+  /**
+   * SERVER SSL STOREKEY PATH ADMIN
+   */
+  private static final String XML_PATH_ADMIN_KEYPATH = &quot;admkeypath&quot;;
+
+  /**
+   * SERVER SSL KEY PASS ADMIN
+   */
+  private static final String XML_PATH_ADMIN_KEYPASS = &quot;admkeypass&quot;;
+
+  /**
+   * SERVER SSL STOREKEY PASS ADMIN
+   */
+  private static final String XML_PATH_ADMIN_KEYSTOREPASS = &quot;admkeystorepass&quot;;
+  /**
+   * HTTP Admin Directory
+   */
+  private static final String XML_HTTPADMINPATH = &quot;httpadmin&quot;;
+  /**
+   * Monitoring: snmp configuration file (if empty, no snmp support)
+   */
+  private static final String XML_MONITOR_SNMP_CONFIG = &quot;snmpconfig&quot;;
+
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L181">  private static final XmlDecl[] configServerParamDecls = {</span>
+      // server
+      new XmlDecl(XmlType.BOOLEAN, XML_USELOCALEXEC),
+      new XmlDecl(XmlType.STRING, XML_LEXECADDR),
+      new XmlDecl(XmlType.INTEGER, XML_LEXECPORT),
+      new XmlDecl(XmlType.STRING, XML_SERVER_ADMIN),
+      new XmlDecl(XmlType.STRING, XML_SERVER_PASSWD),
+      new XmlDecl(XmlType.BOOLEAN, XML_USEHTTPCOMP),
+      new XmlDecl(XmlType.STRING, XML_HTTPADMINPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_ADMIN_KEYPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_ADMIN_KEYSTOREPASS),
+      new XmlDecl(XmlType.STRING, XML_PATH_ADMIN_KEYPASS),
+      new XmlDecl(XmlType.STRING, XML_MONITOR_SNMP_CONFIG)
+  };
+  /**
+   * SERVER PORT
+   */
+  private static final String XML_SERVER_PORT = &quot;serverport&quot;;
+  /**
+   * SERVER ADDRESS if any
+   */
+  private static final String XML_SERVER_ADDRESS = &quot;serveraddress&quot;;
+  /**
+   * RANGE of PORT for Passive Mode
+   */
+  private static final String XML_RANGE_PORT_MIN = &quot;portmin&quot;;
+
+  /**
+   * RANGE of PORT for Passive Mode
+   */
+  private static final String XML_RANGE_PORT_MAX = &quot;portmax&quot;;
+  /**
+   * SERVER HTTP PORT MONITORING
+   */
+  private static final String XML_SERVER_HTTP_PORT = &quot;serverhttpport&quot;;
+  /**
+   * SERVER HTTPS PORT ADMINISTRATION
+   */
+  private static final String XML_SERVER_HTTPS_PORT = &quot;serverhttpsport&quot;;
+
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L224">  private static final XmlDecl[] configNetworkServerDecls = {</span>
+      // network
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_PORT),
+      new XmlDecl(XmlType.STRING, XML_SERVER_ADDRESS),
+      new XmlDecl(XmlType.INTEGER, XML_RANGE_PORT_MIN),
+      new XmlDecl(XmlType.INTEGER, XML_RANGE_PORT_MAX),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTP_PORT),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPS_PORT)
+  };
+  /**
+   * Database Driver as of oracle, mysql, postgresql, h2
+   */
+  private static final String XML_DBDRIVER = &quot;dbdriver&quot;;
+
+  /**
+   * Database Server connection string as of jdbc:type://[host:port],[failoverhost:port]
+   * .../[database][?propertyName1][ =propertyValue1][&amp;propertyName2][=propertyValue2]...
+   */
+  private static final String XML_DBSERVER = &quot;dbserver&quot;;
+
+  /**
+   * Database User
+   */
+  private static final String XML_DBUSER = &quot;dbuser&quot;;
+
+  /**
+   * Database Password
+   */
+  private static final String XML_DBPASSWD = &quot;dbpasswd&quot;;//NOSONAR
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L256">  private static final XmlDecl[] configDbDecls = {</span>
+      // db
+      new XmlDecl(XmlType.STRING, XML_DBDRIVER),
+      new XmlDecl(XmlType.STRING, XML_DBSERVER),
+      new XmlDecl(XmlType.STRING, XML_DBUSER),
+      new XmlDecl(XmlType.STRING, XML_DBPASSWD)
+  };
+  /**
+   * Allow PASSIVE = -1 / ACTIVE = 1 / Both = 0
+   */
+  private static final String XML_ACTIVE_OR_PASSIVE = &quot;activepassive&quot;;
+  /**
+   * Should a file be deleted when a Store like command is aborted
+   */
+  private static final String XML_DELETEONABORT = &quot;deleteonabort&quot;;
+  /**
+   * Default number of threads in pool for Server.
+   */
+  private static final String XML_SERVER_THREAD = &quot;serverthread&quot;;
+
+  /**
+   * Default number of threads in pool for Client.
+   */
+  private static final String XML_CLIENT_THREAD = &quot;clientthread&quot;;
+  /**
+   * Memory Limit to use.
+   */
+  private static final String XML_MEMORY_LIMIT = &quot;memorylimit&quot;;
+
+  /**
+   * Limit for Session
+   */
+  private static final String XML_LIMITSESSION = &quot;sessionlimit&quot;;
+
+  /**
+   * Limit for Global
+   */
+  private static final String XML_LIMITGLOBAL = &quot;globallimit&quot;;
+  /**
+   * Delay between two checks for Limit
+   */
+  private static final String XML_LIMITDELAY = &quot;delaylimit&quot;;
+  /**
+   * Nb of milliseconds after connection is in timeout
+   */
+  private static final String XML_TIMEOUTCON = &quot;timeoutcon&quot;;
+  /**
+   * Nb of milliseconds after data connection is in timeout
+   */
+  private static final String XML_DATA_TIMEOUTCON = &quot;datatimeoutcon&quot;;
+  /**
+   * Size by default of block size for receive/sending files. Should be a
+   * multiple of 8192 (maximum = 64K due to
+   * block limitation to 2 bytes)
+   */
+  private static final String XML_BLOCKSIZE = &quot;blocksize&quot;;
+  /**
+   * Should a file MD5 SHA1 be computed using NIO
+   */
+  private static final String XML_USENIO = &quot;usenio&quot;;
+
+  /**
+   * Should a file MD5 be computed using FastMD5
+   */
+  private static final String XML_USEFASTMD5 = &quot;usefastmd5&quot;;
+
+  /**
+   * If using Fast MD5, should we used the binary JNI library, empty meaning
+   * no
+   */
+  private static final String XML_FASTMD5 = &quot;fastmd5&quot;;
+  /**
+   * Usage of CPU Limit
+   */
+  private static final String XML_CSTRT_USECPULIMIT = &quot;usecpulimit&quot;;
+
+  /**
+   * Usage of JDK CPU Limit (True) or SysMon CPU Limit
+   */
+  private static final String XML_CSTRT_USECPUJDKLIMIT = &quot;usejdkcpulimit&quot;;
+
+  /**
+   * CPU LIMIT between 0 and 1, where 1 stands for no limit
+   */
+  private static final String XML_CSTRT_CPULIMIT = &quot;cpulimit&quot;;
+  /**
+   * Connection limit where 0 stands for no limit
+   */
+  private static final String XML_CSTRT_CONNLIMIT = &quot;connlimit&quot;;
+  /**
+   * CPU LOW limit to apply increase of throttle
+   */
+  private static final String XML_CSTRT_LOWCPULIMIT = &quot;lowcpulimit&quot;;
+  /**
+   * CPU HIGH limit to apply decrease of throttle, 0 meaning no throttle
+   * activated
+   */
+  private static final String XML_CSTRT_HIGHCPULIMIT = &quot;highcpulimit&quot;;
+  /**
+   * PERCENTAGE DECREASE of Bandwidth
+   */
+  private static final String XML_CSTRT_PERCENTDECREASE = &quot;percentdecrease&quot;;
+  /**
+   * Delay between 2 checks of throttle test
+   */
+  private static final String XML_CSTRT_DELAYTHROTTLE = &quot;delaythrottle&quot;;
+  /**
+   * Bandwidth low limit to not got below
+   */
+  private static final String XML_CSTRT_LIMITLOWBANDWIDTH = &quot;limitlowbandwidth&quot;;
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L369">  private static final XmlDecl[] configLimitDecls = {</span>
+      // limit
+      new XmlDecl(XmlType.INTEGER, XML_ACTIVE_OR_PASSIVE),
+      new XmlDecl(XmlType.BOOLEAN, XML_DELETEONABORT),
+      new XmlDecl(XmlType.LONG, XML_LIMITSESSION),
+      new XmlDecl(XmlType.LONG, XML_LIMITGLOBAL),
+      new XmlDecl(XmlType.LONG, XML_LIMITDELAY),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_THREAD),
+      new XmlDecl(XmlType.INTEGER, XML_CLIENT_THREAD),
+      new XmlDecl(XmlType.LONG, XML_MEMORY_LIMIT),
+      new XmlDecl(XmlType.BOOLEAN, XML_CSTRT_USECPULIMIT),
+      new XmlDecl(XmlType.BOOLEAN, XML_CSTRT_USECPUJDKLIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_CPULIMIT),
+      new XmlDecl(XmlType.INTEGER, XML_CSTRT_CONNLIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_LOWCPULIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_HIGHCPULIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_PERCENTDECREASE),
+      new XmlDecl(XmlType.LONG, XML_CSTRT_LIMITLOWBANDWIDTH),
+      new XmlDecl(XmlType.LONG, XML_CSTRT_DELAYTHROTTLE),
+      new XmlDecl(XmlType.LONG, XML_TIMEOUTCON),
+      new XmlDecl(XmlType.LONG, XML_DATA_TIMEOUTCON),
+      new XmlDecl(XmlType.BOOLEAN, XML_USENIO),
+      new XmlDecl(XmlType.BOOLEAN, XML_USEFASTMD5),
+      new XmlDecl(XmlType.STRING, XML_FASTMD5),
+      new XmlDecl(XmlType.INTEGER, XML_BLOCKSIZE)
+  };
+
+  /**
+   * RETRIEVE COMMAND
+   */
+  public static final String XML_RETRIEVE_COMMAND = &quot;retrievecmd&quot;;
+
+  /**
+   * STORE COMMAND
+   */
+  public static final String XML_STORE_COMMAND = &quot;storecmd&quot;;
+
+  /**
+   * DELAY RETRIEVE COMMAND
+   */
+  public static final String XML_DELAYRETRIEVE_COMMAND = &quot;retrievedelay&quot;;
+
+  /**
+   * DELAY STORE COMMAND
+   */
+  public static final String XML_DELAYSTORE_COMMAND = &quot;storedelay&quot;;
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L418">  private static final XmlDecl[] configExecDecls = {</span>
+      // Exec
+      new XmlDecl(XmlType.STRING, XML_RETRIEVE_COMMAND),
+      new XmlDecl(XmlType.LONG, XML_DELAYRETRIEVE_COMMAND),
+      new XmlDecl(XmlType.STRING, XML_STORE_COMMAND),
+      new XmlDecl(XmlType.LONG, XML_DELAYSTORE_COMMAND)
+  };
+  /**
+   * Base Directory
+   */
+  private static final String XML_SERVER_HOME = &quot;serverhome&quot;;
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L432">  private static final XmlDecl[] configDirectoryDecls = {</span>
+      // directory
+      new XmlDecl(XmlType.STRING, XML_SERVER_HOME)
+  };
+  /**
+   * SERVER SSL STOREKEY PATH
+   */
+  private static final String XML_PATH_KEYPATH = &quot;keypath&quot;;
+
+  /**
+   * SERVER SSL KEY PASS
+   */
+  private static final String XML_PATH_KEYPASS = &quot;keypass&quot;;
+
+  /**
+   * SERVER SSL STOREKEY PASS
+   */
+  private static final String XML_PATH_KEYSTOREPASS = &quot;keystorepass&quot;;
+
+  /**
+   * SERVER SSL TRUSTSTOREKEY PATH
+   */
+  private static final String XML_PATH_TRUSTKEYPATH = &quot;trustkeypath&quot;;
+
+  /**
+   * SERVER SSL TRUSTSTOREKEY PASS
+   */
+  private static final String XML_PATH_TRUSTKEYSTOREPASS = &quot;trustkeystorepass&quot;;
+
+  /**
+   * SERVER SSL Use TrustStore for Client Authentication
+   */
+  private static final String XML_USECLIENT_AUTHENT =
+      &quot;trustuseclientauthenticate&quot;;
+  /**
+   * SERVER SSL Use Implicit FTPS
+   */
+  private static final String XML_IMPLICIT_FTPS = &quot;useimplicitftps&quot;;
+  /**
+   * SERVER SSL Use Explicit FTPS
+   */
+  private static final String XML_EXPLICIT_FTPS = &quot;useexplicitftps&quot;;
+
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L478">  private static final XmlDecl[] configSslDecls = {</span>
+      // ssl
+      new XmlDecl(XmlType.STRING, XML_PATH_KEYPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_KEYSTOREPASS),
+      new XmlDecl(XmlType.STRING, XML_PATH_KEYPASS),
+      new XmlDecl(XmlType.STRING, XML_PATH_TRUSTKEYPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_TRUSTKEYSTOREPASS),
+      new XmlDecl(XmlType.BOOLEAN, XML_USECLIENT_AUTHENT),
+      new XmlDecl(XmlType.BOOLEAN, XML_IMPLICIT_FTPS),
+      new XmlDecl(XmlType.BOOLEAN, XML_EXPLICIT_FTPS)
+  };
+  /**
+   * Overall structure of the Configuration file
+   */
+  private static final String XML_ROOT = &quot;/config/&quot;;
+  private static final String XML_IDENTITY = &quot;identity&quot;;
+  private static final String XML_SERVER = &quot;server&quot;;
+  private static final String XML_DIRECTORY = &quot;directory&quot;;
+  private static final String XML_LIMIT = &quot;limit&quot;;
+  private static final String XML_NETWORK = &quot;network&quot;;
+  private static final String XML_EXEC = &quot;exec&quot;;
+  private static final String XML_DB = &quot;db&quot;;
+  private static final String XML_SSL = &quot;ssl&quot;;
+  /**
+   * Global Structure for Server Configuration
+   */
+<span class="fc" id="L504">  private static final XmlDecl[] configServer = {</span>
+      new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
+                  configIdentityDecls, false),
+      new XmlDecl(XML_SERVER, XmlType.XVAL, XML_ROOT + XML_SERVER,
+                  configServerParamDecls, false),
+      new XmlDecl(XML_NETWORK, XmlType.XVAL, XML_ROOT + XML_NETWORK,
+                  configNetworkServerDecls, false),
+      new XmlDecl(XML_EXEC, XmlType.XVAL, XML_ROOT + XML_EXEC, configExecDecls,
+                  false),
+      new XmlDecl(XML_DIRECTORY, XmlType.XVAL, XML_ROOT + XML_DIRECTORY,
+                  configDirectoryDecls, false),
+      new XmlDecl(XML_LIMIT, XmlType.XVAL, XML_ROOT + XML_LIMIT,
+                  configLimitDecls, false),
+      new XmlDecl(XML_DB, XmlType.XVAL, XML_ROOT + XML_DB, configDbDecls,
+                  false),
+      new XmlDecl(XML_SSL, XmlType.XVAL, XML_ROOT + XML_SSL, configSslDecls,
+                  false)
+  };
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_ROOT = &quot;authent&quot;;
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_ENTRY = &quot;entry&quot;;
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_BASED =
+      '/' + XML_AUTHENTIFICATION_ROOT + '/' + XML_AUTHENTIFICATION_ENTRY;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTICATION_USER = &quot;user&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTICATION_PASSWD = &quot;passwd&quot;;//NOSONAR
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTICATION_PASSWDFILE = //NOSONAR
+      &quot;passwdfile&quot;;//NOSONAR
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTICATION_ACCOUNT = &quot;account&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTICATION_ADMIN = &quot;admin&quot;;
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L564">  private static final XmlDecl[] configAuthenticationDecls = {</span>
+      // identity
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_USER),
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_PASSWDFILE),
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_PASSWD),
+      new XmlDecl(XML_AUTHENTICATION_ACCOUNT, XmlType.STRING,
+                  XML_AUTHENTICATION_ACCOUNT, true),
+      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTICATION_ADMIN),
+      // Exec
+      new XmlDecl(XmlType.STRING, XML_RETRIEVE_COMMAND),
+      new XmlDecl(XmlType.LONG, XML_DELAYRETRIEVE_COMMAND),
+      new XmlDecl(XmlType.STRING, XML_STORE_COMMAND),
+      new XmlDecl(XmlType.LONG, XML_DELAYSTORE_COMMAND)
+  };
+  /**
+   * Global Structure for Server Configuration
+   */
+<span class="fc" id="L581">  private static final XmlDecl[] authentElements = {</span>
+      new XmlDecl(XML_AUTHENTIFICATION_ENTRY, XmlType.XVAL,
+                  XML_AUTHENTIFICATION_BASED, configAuthenticationDecls, true)
+  };
+
+  /**
+   * RANGE of PORT for Passive Mode
+   */
+  private static final String RANGE_PORT = &quot;FTP_RANGE_PORT&quot;;
+  /**
+   * Use to access directly the configuration
+   */
+  public static FileBasedConfiguration fileBasedConfiguration;
+  /**
+   * All authentications
+   */
+<span class="fc" id="L597">  private final ConcurrentHashMap&lt;String, SimpleAuth&gt; authentications =</span>
+      new ConcurrentHashMap&lt;String, SimpleAuth&gt;();
+
+  /**
+   * File containing the authentications
+   */
+  private String authenticationFile;
+
+  /**
+   * Default HTTP server port
+   */
+<span class="fc" id="L608">  private int serverHttpsPort = 8067;</span>
+  /**
+   * Http Admin base
+   */
+<span class="fc" id="L612">  private String httpBasePath = &quot;src/main/admin/&quot;;</span>
+  /**
+   * Does this server will try to compress HTTP connections
+   */
+  private boolean useHttpCompression;
+
+  /**
+   * Does this server will use Waarp LocalExec Daemon for Execute
+   */
+  private boolean useLocalExec;
+
+  /**
+   * Crypto Key
+   */
+  private Des cryptoKey;
+  /**
+   * Server Administration Key
+   */
+  private byte[] serverAdminKey;
+  /**
+   * FTP server ID
+   */
+<span class="fc" id="L634">  private String hostId = &quot;noId&quot;;</span>
+  /**
+   * Admin name Id
+   */
+<span class="fc" id="L638">  private String adminName = &quot;noAdmin&quot;;</span>
+  /**
+   * Limit on CPU and Connection
+   */
+  private FtpConstraintLimitHandler constraintLimitHandler;
+
+  /**
+   * List of all Http Channels to enable the close call on them using Netty
+   * ChannelGroup
+   */
+  private ChannelGroup httpChannelGroup;
+
+  /**
+   * Server Group for HTTP
+   */
+  private EventLoopGroup serverGroup;
+
+  /**
+   * Worker Group for HTTP
+   */
+  private EventLoopGroup workerGroup;
+
+  /**
+   * ThreadPoolExecutor for Http and Https Server
+   */
+  private EventExecutorGroup httpExecutor;
+  /**
+   * Monitoring: snmp configuration file (empty means no snmp support)
+   */
+  private String snmpConfig;
+  /**
+   * SNMP Agent (if any)
+   */
+  private WaarpSnmpAgent agentSnmp;
+  /**
+   * Associated MIB
+   */
+  private FtpPrivateMib ftpMib;
+  /**
+   * Monitoring object
+   */
+  private FtpMonitoring monitoring;
+
+  /**
+   * @param classtype
+   * @param businessHandler class that will be used for
+   *     BusinessHandler
+   * @param dataBusinessHandler class that will be used for
+   *     DataBusinessHandler
+   * @param fileParameter the FileParameter to use
+   */
+  public FileBasedConfiguration(final Class&lt;?&gt; classtype,
+                                final Class&lt;? extends BusinessHandler&gt; businessHandler,
+                                final Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler,
+                                final FileParameterInterface fileParameter) {
+<span class="fc" id="L693">    super(classtype, businessHandler, dataBusinessHandler, fileParameter);</span>
+<span class="fc" id="L694">    computeNbThreads();</span>
+<span class="fc" id="L695">  }</span>
+
+  private static XmlHash hashConfig;
+
+  private boolean loadIdentity() {
+<span class="fc" id="L700">    final XmlValue value = hashConfig.get(XML_SERVER_HOSTID);</span>
+<span class="pc bpc" id="L701" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L702">      setHostId(value.getString());</span>
+    } else {
+<span class="nc" id="L704">      logger.error(&quot;Unable to find Host ID in Config file&quot;);</span>
+<span class="nc" id="L705">      return false;</span>
+    }
+<span class="fc" id="L707">    return setCryptoKey();</span>
+  }
+
+  private boolean loadAuthentication() {
+    // if no database, must load authentication from file
+<span class="fc" id="L712">    final XmlValue value = hashConfig.get(XML_AUTHENTIFICATION_FILE);</span>
+<span class="pc bpc" id="L713" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L714">      setAuthenticationFile(value.getString());</span>
+<span class="fc" id="L715">      return initializeAuthent(getAuthenticationFile(), false);</span>
+    } else {
+<span class="nc" id="L717">      logger.warn(&quot;Unable to find Authentication file in Config file&quot;);</span>
+<span class="nc" id="L718">      return false;</span>
+    }
+  }
+
+  private boolean loadServerParam() {
+<span class="fc" id="L723">    XmlValue value = hashConfig.get(XML_USEHTTPCOMP);</span>
+<span class="pc bpc" id="L724" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L725">      setUseHttpCompression(value.getBoolean());</span>
+    }
+<span class="fc" id="L727">    value = hashConfig.get(XML_USELOCALEXEC);</span>
+<span class="pc bpc" id="L728" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L729">      setUseLocalExec(value.getBoolean());</span>
+<span class="pc bpc" id="L730" title="1 of 2 branches missed.">      if (isUseLocalExec()) {</span>
+<span class="nc" id="L731">        value = hashConfig.get(XML_LEXECADDR);</span>
+        final String saddr;
+        final InetAddress addr;
+<span class="nc bnc" id="L734" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L735">          saddr = value.getString();</span>
+          try {
+<span class="nc" id="L737">            addr = InetAddress.getByName(saddr);</span>
+<span class="nc" id="L738">          } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L739">            logger.error(UNABLE_TO_FIND_LOCAL_EXEC_ADDRESS_IN_CONFIG_FILE);</span>
+<span class="nc" id="L740">            return false;</span>
+<span class="nc" id="L741">          }</span>
+        } else {
+<span class="nc" id="L743">          logger.warn(UNABLE_TO_FIND_LOCAL_EXEC_ADDRESS_IN_CONFIG_FILE);</span>
+          try {
+<span class="nc" id="L745">            addr = InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 });</span>
+<span class="nc" id="L746">          } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L747">            logger.error(UNABLE_TO_FIND_LOCAL_EXEC_ADDRESS_IN_CONFIG_FILE);</span>
+<span class="nc" id="L748">            return false;</span>
+<span class="nc" id="L749">          }</span>
+        }
+<span class="nc" id="L751">        value = hashConfig.get(XML_LEXECPORT);</span>
+        final int port;
+<span class="nc bnc" id="L753" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L754">          port = value.getInteger();</span>
+        } else {
+<span class="nc" id="L756">          port = 9999;</span>
+        }
+<span class="nc" id="L758">        LocalExecClient.setAddress(new InetSocketAddress(addr, port));</span>
+      }
+    }
+<span class="fc" id="L761">    value = hashConfig.get(XML_SERVER_ADMIN);</span>
+<span class="pc bpc" id="L762" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L763">      setAdminName(value.getString());</span>
+    } else {
+<span class="nc" id="L765">      logger.error(&quot;Unable to find Administrator name in Config file&quot;);</span>
+<span class="nc" id="L766">      return false;</span>
+    }
+<span class="pc bpc" id="L768" title="3 of 4 branches missed.">    if (getCryptoKey() == null &amp;&amp; !setCryptoKey()) {</span>
+<span class="nc" id="L769">      logger.error(&quot;Unable to find Crypto Key in Config file&quot;);</span>
+<span class="nc" id="L770">      return false;</span>
+    }
+    final String passwd;
+<span class="fc" id="L773">    value = hashConfig.get(XML_SERVER_PASSWD);</span>
+<span class="pc bpc" id="L774" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L775">      passwd = value.getString();</span>
+    } else {
+<span class="nc" id="L777">      logger.error(&quot;Unable to find Password in Config file&quot;);</span>
+<span class="nc" id="L778">      return false;</span>
+    }
+    final byte[] decodedByteKeys;
+    try {
+<span class="fc" id="L782">      decodedByteKeys = getCryptoKey().decryptHexInBytes(passwd);</span>
+<span class="nc" id="L783">    } catch (final Exception e) {</span>
+<span class="nc" id="L784">      logger.error(</span>
+          &quot;Unable to Decrypt Server Password in Config file from: &quot; + passwd,
+          e);
+<span class="nc" id="L787">      return false;</span>
+<span class="fc" id="L788">    }</span>
+<span class="fc" id="L789">    setSERVERKEY(decodedByteKeys);</span>
+<span class="fc" id="L790">    value = hashConfig.get(XML_HTTPADMINPATH);</span>
+<span class="pc bpc" id="L791" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L792">      logger.error(&quot;Unable to find Http Admin Base in Config file&quot;);</span>
+<span class="nc" id="L793">      return false;</span>
+    }
+<span class="fc" id="L795">    final String path = value.getString();</span>
+<span class="pc bpc" id="L796" title="2 of 4 branches missed.">    if (path == null || path.length() == 0) {</span>
+<span class="nc" id="L797">      logger.warn(</span>
+          &quot;Unable to set correct Http Admin Base in Config file. No HTTPS support will be used.&quot;);
+<span class="nc" id="L799">      setHttpBasePath(null);</span>
+    } else {
+<span class="fc" id="L801">      final File file = new File(path);</span>
+<span class="pc bpc" id="L802" title="1 of 2 branches missed.">      if (!file.isDirectory()) {</span>
+<span class="nc" id="L803">        logger.error(&quot;Http Admin is not a directory in Config file&quot;);</span>
+<span class="nc" id="L804">        return false;</span>
+      }
+      try {
+<span class="fc" id="L807">        setHttpBasePath(AbstractDir.normalizePath(file.getCanonicalPath()) +</span>
+                        DirInterface.SEPARATOR);
+<span class="nc" id="L809">      } catch (final IOException e1) {</span>
+<span class="nc" id="L810">        logger.error(&quot;Unable to set Http Admin Path in Config file&quot;);</span>
+<span class="nc" id="L811">        return false;</span>
+<span class="fc" id="L812">      }</span>
+    }
+<span class="pc bpc" id="L814" title="1 of 2 branches missed.">    if (getHttpBasePath() != null) {</span>
+      // Key for HTTPS
+<span class="fc" id="L816">      value = hashConfig.get(XML_PATH_ADMIN_KEYPATH);</span>
+<span class="pc bpc" id="L817" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L818">        final String keypath = value.getString();</span>
+<span class="pc bpc" id="L819" title="2 of 4 branches missed.">        if (keypath == null || keypath.length() == 0) {</span>
+<span class="nc" id="L820">          logger.error(&quot;Bad Key Path&quot;);</span>
+<span class="nc" id="L821">          return false;</span>
+        }
+<span class="fc" id="L823">        value = hashConfig.get(XML_PATH_ADMIN_KEYSTOREPASS);</span>
+<span class="pc bpc" id="L824" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L825">          logger.error(&quot;Unable to find KeyStore Passwd&quot;);</span>
+<span class="nc" id="L826">          return false;</span>
+        }
+<span class="fc" id="L828">        final String keystorepass = value.getString();</span>
+<span class="pc bpc" id="L829" title="2 of 4 branches missed.">        if (keystorepass == null || keystorepass.length() == 0) {</span>
+<span class="nc" id="L830">          logger.error(&quot;Bad KeyStore Passwd&quot;);</span>
+<span class="nc" id="L831">          return false;</span>
+        }
+<span class="fc" id="L833">        value = hashConfig.get(XML_PATH_ADMIN_KEYPASS);</span>
+<span class="pc bpc" id="L834" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L835">          logger.error(&quot;Unable to find Key Passwd&quot;);</span>
+<span class="nc" id="L836">          return false;</span>
+        }
+<span class="fc" id="L838">        final String keypass = value.getString();</span>
+<span class="pc bpc" id="L839" title="2 of 4 branches missed.">        if (keypass == null || keypass.length() == 0) {</span>
+<span class="nc" id="L840">          logger.error(&quot;Bad Key Passwd&quot;);</span>
+<span class="nc" id="L841">          return false;</span>
+        }
+        try {
+<span class="fc" id="L844">          HttpSslInitializer.waarpSecureKeyStore =</span>
+              new WaarpSecureKeyStore(keypath, keystorepass, keypass);
+<span class="nc" id="L846">        } catch (final CryptoException e) {</span>
+<span class="nc" id="L847">          logger.error(&quot;Bad SecureKeyStore construction for AdminSsl&quot;);</span>
+<span class="nc" id="L848">          return false;</span>
+<span class="fc" id="L849">        }</span>
+        // No client authentication
+<span class="fc" id="L851">        HttpSslInitializer.waarpSecureKeyStore.initEmptyTrustStore();</span>
+<span class="fc" id="L852">        HttpSslInitializer.waarpSslContextFactory =</span>
+            new WaarpSslContextFactory(HttpSslInitializer.waarpSecureKeyStore,
+                                       true);
+      }
+    }
+<span class="fc" id="L857">    value = hashConfig.get(XML_MONITOR_SNMP_CONFIG);</span>
+<span class="pc bpc" id="L858" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L859">      setSnmpConfig(value.getString());</span>
+<span class="fc" id="L860">      logger.warn(&quot;SNMP configuration file: &quot; + getSnmpConfig());</span>
+<span class="fc" id="L861">      final File snmpfile = new File(getSnmpConfig());</span>
+<span class="pc bpc" id="L862" title="1 of 2 branches missed.">      if (snmpfile.canRead()) {</span>
+<span class="pc bpc" id="L863" title="1 of 2 branches missed.">        if (!SnmpConfiguration.setConfigurationFromXml(snmpfile)) {</span>
+<span class="nc" id="L864">          logger.warn(&quot;Bad SNMP configuration file: &quot; + getSnmpConfig());</span>
+<span class="nc" id="L865">          setSnmpConfig(null);</span>
+        }
+      } else {
+<span class="nc" id="L868">        logger.warn(&quot;Cannot read SNMP configuration file: &quot; + getSnmpConfig());</span>
+<span class="nc" id="L869">        setSnmpConfig(null);</span>
+      }
+<span class="fc" id="L871">    } else {</span>
+<span class="nc" id="L872">      logger.warn(&quot;NO SNMP configuration file&quot;);</span>
+    }
+<span class="fc" id="L874">    return true;</span>
+  }
+
+  private boolean loadDirectory() {
+<span class="fc" id="L878">    final XmlValue value = hashConfig.get(XML_SERVER_HOME);</span>
+<span class="pc bpc" id="L879" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L880">      logger.error(&quot;Unable to find Home in Config file&quot;);</span>
+<span class="nc" id="L881">      return false;</span>
+    }
+<span class="fc" id="L883">    final String path = value.getString();</span>
+<span class="fc" id="L884">    final File file = new File(path);</span>
+<span class="pc bpc" id="L885" title="1 of 2 branches missed.">    if (!file.isDirectory()) {</span>
+<span class="nc" id="L886">      logger.error(&quot;Home is not a directory in Config file&quot;);</span>
+<span class="nc" id="L887">      return false;</span>
+    }
+    try {
+<span class="fc" id="L890">      setBaseDirectory(AbstractDir.normalizePath(file.getCanonicalPath()));</span>
+<span class="nc" id="L891">    } catch (final IOException e1) {</span>
+<span class="nc" id="L892">      logger.error(&quot;Unable to set Home in Config file: &quot; + path);</span>
+<span class="nc" id="L893">      return false;</span>
+<span class="fc" id="L894">    }</span>
+<span class="fc" id="L895">    return true;</span>
+  }
+
+  private boolean loadLimit() {
+<span class="fc" id="L899">    XmlValue value = hashConfig.get(XML_LIMITGLOBAL);</span>
+<span class="pc bpc" id="L900" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L901">      serverGlobalReadLimit = value.getLong();</span>
+<span class="pc bpc" id="L902" title="1 of 2 branches missed.">      if (serverGlobalReadLimit &lt;= 0) {</span>
+<span class="fc" id="L903">        serverGlobalReadLimit = 0;</span>
+      }
+<span class="fc" id="L905">      serverGlobalWriteLimit = serverGlobalReadLimit;</span>
+<span class="fc" id="L906">      logger.info(&quot;Global Limit: {}&quot;, serverGlobalReadLimit);</span>
+    }
+<span class="fc" id="L908">    value = hashConfig.get(XML_LIMITSESSION);</span>
+<span class="pc bpc" id="L909" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L910">      serverChannelReadLimit = value.getLong();</span>
+<span class="pc bpc" id="L911" title="1 of 2 branches missed.">      if (serverChannelReadLimit &lt;= 0) {</span>
+<span class="fc" id="L912">        serverChannelReadLimit = 0;</span>
+      }
+<span class="fc" id="L914">      serverChannelWriteLimit = serverChannelReadLimit;</span>
+<span class="fc" id="L915">      logger.info(&quot;SessionInterface Limit: {}&quot;, serverChannelReadLimit);</span>
+    }
+<span class="fc" id="L917">    delayLimit = AbstractTrafficShapingHandler.DEFAULT_CHECK_INTERVAL;</span>
+<span class="fc" id="L918">    value = hashConfig.get(XML_LIMITDELAY);</span>
+<span class="pc bpc" id="L919" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L920">      delayLimit = (value.getLong() / 10) * 10;</span>
+<span class="pc bpc" id="L921" title="1 of 2 branches missed.">      if (delayLimit &lt;= 0) {</span>
+<span class="nc" id="L922">        delayLimit = 0;</span>
+      }
+<span class="fc" id="L924">      logger.info(&quot;Delay Limit: {}&quot;, delayLimit);</span>
+    }
+<span class="fc" id="L926">    boolean useCpuLimit = false;</span>
+<span class="fc" id="L927">    boolean useCpuLimitJDK = false;</span>
+<span class="fc" id="L928">    double cpulimit = 1.0;</span>
+<span class="fc" id="L929">    value = hashConfig.get(XML_CSTRT_USECPULIMIT);</span>
+<span class="pc bpc" id="L930" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L931">      useCpuLimit = value.getBoolean();</span>
+<span class="fc" id="L932">      value = hashConfig.get(XML_CSTRT_USECPUJDKLIMIT);</span>
+<span class="pc bpc" id="L933" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L934">        useCpuLimitJDK = value.getBoolean();</span>
+      }
+<span class="fc" id="L936">      value = hashConfig.get(XML_CSTRT_CPULIMIT);</span>
+<span class="pc bpc" id="L937" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L938">        cpulimit = value.getDouble();</span>
+      }
+    }
+<span class="fc" id="L941">    int connlimit = 0;</span>
+<span class="fc" id="L942">    value = hashConfig.get(XML_CSTRT_CONNLIMIT);</span>
+<span class="pc bpc" id="L943" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L944">      connlimit = value.getInteger();</span>
+    }
+<span class="fc" id="L946">    double lowcpuLimit = 0;</span>
+<span class="fc" id="L947">    double highcpuLimit = 0;</span>
+<span class="fc" id="L948">    double percentageDecrease = 0;</span>
+<span class="fc" id="L949">    long delay = 1000000;</span>
+<span class="fc" id="L950">    long limitLowBandwidth = 4096;</span>
+<span class="fc" id="L951">    value = hashConfig.get(XML_CSTRT_LOWCPULIMIT);</span>
+<span class="pc bpc" id="L952" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L953">      lowcpuLimit = value.getDouble();</span>
+    }
+<span class="fc" id="L955">    value = hashConfig.get(XML_CSTRT_HIGHCPULIMIT);</span>
+<span class="pc bpc" id="L956" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L957">      highcpuLimit = value.getDouble();</span>
+    }
+<span class="fc" id="L959">    value = hashConfig.get(XML_CSTRT_PERCENTDECREASE);</span>
+<span class="pc bpc" id="L960" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L961">      percentageDecrease = value.getDouble();</span>
+    }
+<span class="fc" id="L963">    value = hashConfig.get(XML_CSTRT_DELAYTHROTTLE);</span>
+<span class="pc bpc" id="L964" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L965">      delay = (value.getLong() / 10) * 10;</span>
+    }
+<span class="fc" id="L967">    value = hashConfig.get(XML_CSTRT_LIMITLOWBANDWIDTH);</span>
+<span class="pc bpc" id="L968" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L969">      limitLowBandwidth = value.getLong();</span>
+    }
+<span class="fc" id="L971">    value = hashConfig.get(XML_TIMEOUTCON);</span>
+<span class="pc bpc" id="L972" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L973">      setTimeoutCon((value.getLong() / 10) * 10);</span>
+<span class="fc" id="L974">      value = hashConfig.get(XML_DATA_TIMEOUTCON);</span>
+<span class="pc bpc" id="L975" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L976">        setDataTimeoutCon((value.getLong() / 10) * 10);</span>
+      } else {
+<span class="fc" id="L978">        setDataTimeoutCon(getTimeoutCon());</span>
+      }
+    } else {
+<span class="nc" id="L981">      value = hashConfig.get(XML_DATA_TIMEOUTCON);</span>
+<span class="nc bnc" id="L982" title="All 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L983">        setDataTimeoutCon((value.getLong() / 10) * 10);</span>
+      }
+    }
+<span class="pc bpc" id="L986" title="1 of 2 branches missed.">    if (highcpuLimit &gt; 0) {</span>
+<span class="nc" id="L987">      setConstraintLimitHandler(</span>
+<span class="nc" id="L988">          new FtpConstraintLimitHandler(getTimeoutCon(), useCpuLimit,</span>
+                                        useCpuLimitJDK, cpulimit, connlimit,
+                                        lowcpuLimit, highcpuLimit,
+                                        percentageDecrease, null, delay,
+                                        limitLowBandwidth));
+    } else {
+<span class="fc" id="L994">      setConstraintLimitHandler(</span>
+<span class="fc" id="L995">          new FtpConstraintLimitHandler(getTimeoutCon(), useCpuLimit,</span>
+                                        useCpuLimitJDK, cpulimit, connlimit));
+    }
+<span class="fc" id="L998">    value = hashConfig.get(XML_SERVER_THREAD);</span>
+<span class="pc bpc" id="L999" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1000">      setServerThread(value.getInteger());</span>
+    }
+<span class="fc" id="L1002">    value = hashConfig.get(XML_CLIENT_THREAD);</span>
+<span class="pc bpc" id="L1003" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1004">      setClientThread(value.getInteger());</span>
+    }
+<span class="pc bpc" id="L1006" title="2 of 4 branches missed.">    if (getServerThread() == 0 || getClientThread() == 0) {</span>
+<span class="nc" id="L1007">      computeNbThreads();</span>
+    }
+<span class="fc" id="L1009">    value = hashConfig.get(XML_MEMORY_LIMIT);</span>
+<span class="pc bpc" id="L1010" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1011">      long lvalue = value.getLong();</span>
+<span class="pc bpc" id="L1012" title="1 of 2 branches missed.">      if (lvalue &gt; Integer.MAX_VALUE) {</span>
+<span class="fc" id="L1013">        lvalue = Integer.MAX_VALUE;</span>
+      }
+<span class="fc" id="L1015">      setMaxGlobalMemory((int) lvalue);</span>
+    }
+<span class="fc" id="L1017">    ((FilesystemBasedFileParameterImpl) getFileParameter()).deleteOnAbort =</span>
+        false;
+<span class="fc" id="L1019">    value = hashConfig.get(XML_USENIO);</span>
+<span class="pc bpc" id="L1020" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1021">      FilesystemBasedFileParameterImpl.useNio = value.getBoolean();</span>
+    }
+<span class="fc" id="L1023">    value = hashConfig.get(XML_BLOCKSIZE);</span>
+<span class="pc bpc" id="L1024" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1025">      setBlocksize(value.getInteger());</span>
+    }
+<span class="fc" id="L1027">    value = hashConfig.get(XML_DELETEONABORT);</span>
+<span class="pc bpc" id="L1028" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1029">      setDeleteOnAbort(value.getBoolean());</span>
+    }
+<span class="fc" id="L1031">    value = hashConfig.get(XML_ACTIVE_OR_PASSIVE);</span>
+<span class="pc bpc" id="L1032" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1033">      setActivePassiveMode(value.getInteger());</span>
+    }
+    // We use Apache Commons IO
+<span class="fc" id="L1036">    FilesystemBasedDirJdkAbstract.ueApacheCommonsIo = true;</span>
+<span class="fc" id="L1037">    return true;</span>
+  }
+
+  private boolean loadNetworkServer() {
+<span class="fc" id="L1041">    XmlValue value = hashConfig.get(XML_SERVER_PORT);</span>
+    final int port;
+<span class="pc bpc" id="L1043" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1044">      port = value.getInteger();</span>
+    } else {
+<span class="nc" id="L1046">      port = 21;</span>
+    }
+<span class="fc" id="L1048">    setServerPort(port);</span>
+<span class="fc" id="L1049">    value = hashConfig.get(XML_SERVER_ADDRESS);</span>
+<span class="fc" id="L1050">    String address = null;</span>
+<span class="pc bpc" id="L1051" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1052">      address = value.getString();</span>
+    }
+<span class="fc" id="L1054">    setServerAddress(address);</span>
+<span class="fc" id="L1055">    int min = 100;</span>
+<span class="fc" id="L1056">    int max = 65535;</span>
+<span class="fc" id="L1057">    value = hashConfig.get(XML_RANGE_PORT_MIN);</span>
+<span class="pc bpc" id="L1058" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1059">      min = value.getInteger();</span>
+    }
+<span class="fc" id="L1061">    value = hashConfig.get(XML_RANGE_PORT_MAX);</span>
+<span class="pc bpc" id="L1062" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1063">      max = value.getInteger();</span>
+    }
+<span class="fc" id="L1065">    logger.warn(&quot;Passive Port range Min: &quot; + min + &quot; Max: &quot; + max);</span>
+<span class="fc" id="L1066">    final CircularIntValue rangePort = new CircularIntValue(min, max);</span>
+<span class="fc" id="L1067">    setRangePort(rangePort);</span>
+<span class="fc" id="L1068">    value = hashConfig.get(XML_SERVER_HTTPS_PORT);</span>
+<span class="fc" id="L1069">    int httpsport = 8067;</span>
+<span class="pc bpc" id="L1070" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1071">      httpsport = value.getInteger();</span>
+    }
+<span class="fc" id="L1073">    serverHttpsPort = httpsport;</span>
+<span class="fc" id="L1074">    return true;</span>
+  }
+
+  /**
+   * Set the Crypto Key from the Document
+   *
+   * @return True if OK
+   */
+  private boolean setCryptoKey() {
+<span class="fc" id="L1083">    final XmlValue value = hashConfig.get(XML_PATH_CRYPTOKEY);</span>
+<span class="pc bpc" id="L1084" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1085">      logger.error(&quot;Unable to find CryptoKey in Config file&quot;);</span>
+<span class="nc" id="L1086">      return false;</span>
+    }
+<span class="fc" id="L1088">    final String filename = value.getString();</span>
+<span class="fc" id="L1089">    final File key = new File(filename);</span>
+<span class="fc" id="L1090">    final Des des = new Des();</span>
+    try {
+<span class="fc" id="L1092">      des.setSecretKey(key);</span>
+<span class="nc" id="L1093">    } catch (final CryptoException e) {</span>
+<span class="nc" id="L1094">      logger.error(&quot;Unable to load CryptoKey from Config file&quot;);</span>
+<span class="nc" id="L1095">      return false;</span>
+<span class="nc" id="L1096">    } catch (final IOException e) {</span>
+<span class="nc" id="L1097">      logger.error(&quot;Unable to load CryptoKey from Config file&quot;);</span>
+<span class="nc" id="L1098">      return false;</span>
+<span class="fc" id="L1099">    }</span>
+<span class="fc" id="L1100">    cryptoKey = des;</span>
+<span class="fc" id="L1101">    return true;</span>
+  }
+
+  /**
+   * @return True if the global Exec parameters are correctly loaded
+   */
+  private boolean loadExec() {
+    // Specific Exec command options
+<span class="fc" id="L1109">    XmlValue value = hashConfig.get(XML_RETRIEVE_COMMAND);</span>
+<span class="pc bpc" id="L1110" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1111">      logger.error(&quot;Unable to find Retrieve Command in Config file&quot;);</span>
+<span class="nc" id="L1112">      return false;</span>
+    }
+<span class="fc" id="L1114">    final String retrieve = value.getString();</span>
+<span class="fc" id="L1115">    value = hashConfig.get(XML_DELAYRETRIEVE_COMMAND);</span>
+<span class="fc" id="L1116">    long retrievedelay = 0;</span>
+<span class="pc bpc" id="L1117" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1118">      retrievedelay = (value.getLong() / 10) * 10;</span>
+    }
+<span class="fc" id="L1120">    value = hashConfig.get(XML_STORE_COMMAND);</span>
+<span class="pc bpc" id="L1121" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1122">      logger.error(&quot;Unable to find Store Command in Config file&quot;);</span>
+<span class="nc" id="L1123">      return false;</span>
+    }
+<span class="fc" id="L1125">    final String store = value.getString();</span>
+<span class="fc" id="L1126">    value = hashConfig.get(XML_DELAYSTORE_COMMAND);</span>
+<span class="fc" id="L1127">    long storedelay = 0;</span>
+<span class="pc bpc" id="L1128" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1129">      storedelay = (value.getLong() / 10) * 10;</span>
+    }
+<span class="fc" id="L1131">    AbstractExecutor.initializeExecutor(retrieve, retrievedelay, store,</span>
+                                        storedelay);
+<span class="fc" id="L1133">    return true;</span>
+  }
+
+  /**
+   * Load database parameter
+   *
+   * @return True if OK
+   */
+  private boolean loadDatabase() {
+<span class="fc" id="L1142">    XmlValue value = hashConfig.get(XML_DBDRIVER);</span>
+<span class="pc bpc" id="L1143" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1144">      logger.error(&quot;Unable to find DBDriver in Config file&quot;);</span>
+<span class="nc" id="L1145">      DbConstantFtp.gatewayAdmin = new DbAdmin(); // no database support</span>
+    } else {
+<span class="fc" id="L1147">      final String dbdriver = value.getString();</span>
+<span class="fc" id="L1148">      value = hashConfig.get(XML_DBSERVER);</span>
+<span class="pc bpc" id="L1149" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1150">        logger.error(&quot;Unable to find DBServer in Config file&quot;);</span>
+<span class="nc" id="L1151">        return false;</span>
+      }
+<span class="fc" id="L1153">      final String dbserver = value.getString();</span>
+<span class="fc" id="L1154">      value = hashConfig.get(XML_DBUSER);</span>
+<span class="pc bpc" id="L1155" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1156">        logger.error(&quot;Unable to find DBUser in Config file&quot;);</span>
+<span class="nc" id="L1157">        return false;</span>
+      }
+<span class="fc" id="L1159">      final String dbuser = value.getString();</span>
+<span class="fc" id="L1160">      value = hashConfig.get(XML_DBPASSWD);</span>
+<span class="pc bpc" id="L1161" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1162">        logger.error(&quot;Unable to find DBPassword in Config file&quot;);</span>
+<span class="nc" id="L1163">        return false;</span>
+      }
+<span class="fc" id="L1165">      final String dbpasswd = value.getString();</span>
+<span class="pc bpc" id="L1166" title="4 of 8 branches missed.">      if (dbdriver == null || dbserver == null || dbuser == null ||</span>
+<span class="pc bpc" id="L1167" title="1 of 2 branches missed.">          dbpasswd == null || dbdriver.length() == 0 ||</span>
+<span class="pc bpc" id="L1168" title="2 of 4 branches missed.">          dbserver.length() == 0 || dbuser.length() == 0 ||</span>
+<span class="pc bpc" id="L1169" title="1 of 2 branches missed.">          dbpasswd.length() == 0) {</span>
+<span class="nc" id="L1170">        logger.error(&quot;Unable to find Correct DB data in Config file&quot;);</span>
+<span class="nc" id="L1171">        return false;</span>
+      }
+      try {
+<span class="fc" id="L1174">        DbConstantFtp.gatewayAdmin =</span>
+<span class="fc" id="L1175">            DbModelFactoryFtp.initialize(dbdriver, dbserver, dbuser, dbpasswd,</span>
+                                         true);
+<span class="fc" id="L1177">        org.waarp.common.database.DbConstant.admin = DbConstantFtp.gatewayAdmin;</span>
+<span class="nc" id="L1178">      } catch (final WaarpDatabaseNoConnectionException e2) {</span>
+<span class="nc" id="L1179">        logger.error(&quot;Unable to Connect to DB&quot;, e2);</span>
+<span class="nc" id="L1180">        return false;</span>
+<span class="fc" id="L1181">      }</span>
+    }
+<span class="fc" id="L1183">    return true;</span>
+  }
+
+  protected final boolean loadSsl() {
+    // StoreKey for Server
+<span class="fc" id="L1188">    XmlValue value = hashConfig.get(XML_PATH_KEYPATH);</span>
+<span class="pc bpc" id="L1189" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L1190">      logger.info(&quot;Unable to find Key Path&quot;);</span>
+<span class="fc" id="L1191">      getFtpInternalConfiguration().setUsingNativeSsl(false);</span>
+<span class="fc" id="L1192">      getFtpInternalConfiguration().setAcceptAuthProt(false);</span>
+<span class="fc" id="L1193">      return true;</span>
+    } else {
+<span class="nc" id="L1195">      final String keypath = value.getString();</span>
+<span class="nc bnc" id="L1196" title="All 4 branches missed.">      if (keypath == null || keypath.length() == 0) {</span>
+<span class="nc" id="L1197">        logger.error(&quot;Bad Key Path&quot;);</span>
+<span class="nc" id="L1198">        return false;</span>
+      }
+<span class="nc" id="L1200">      value = hashConfig.get(XML_PATH_KEYSTOREPASS);</span>
+<span class="nc bnc" id="L1201" title="All 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1202">        logger.error(&quot;Unable to find KeyStore Passwd&quot;);</span>
+<span class="nc" id="L1203">        return false;</span>
+      }
+<span class="nc" id="L1205">      final String keystorepass = value.getString();</span>
+<span class="nc bnc" id="L1206" title="All 4 branches missed.">      if (keystorepass == null || keystorepass.length() == 0) {</span>
+<span class="nc" id="L1207">        logger.error(&quot;Bad KeyStore Passwd&quot;);</span>
+<span class="nc" id="L1208">        return false;</span>
+      }
+<span class="nc" id="L1210">      value = hashConfig.get(XML_PATH_KEYPASS);</span>
+<span class="nc bnc" id="L1211" title="All 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1212">        logger.error(&quot;Unable to find Key Passwd&quot;);</span>
+<span class="nc" id="L1213">        return false;</span>
+      }
+<span class="nc" id="L1215">      final String keypass = value.getString();</span>
+<span class="nc bnc" id="L1216" title="All 4 branches missed.">      if (keypass == null || keypass.length() == 0) {</span>
+<span class="nc" id="L1217">        logger.error(&quot;Bad Key Passwd&quot;);</span>
+<span class="nc" id="L1218">        return false;</span>
+      }
+      try {
+<span class="nc" id="L1221">        FtpsInitializer.waarpSecureKeyStore =</span>
+            new WaarpSecureKeyStore(keypath, keystorepass, keypass);
+<span class="nc" id="L1223">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L1224">        logger.error(&quot;Bad SecureKeyStore construction&quot;);</span>
+<span class="nc" id="L1225">        return false;</span>
+<span class="nc" id="L1226">      }</span>
+
+    }
+    // TrustedKey for OpenR66 server
+<span class="nc" id="L1230">    value = hashConfig.get(XML_PATH_TRUSTKEYPATH);</span>
+<span class="nc bnc" id="L1231" title="All 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1232">      logger.info(&quot;Unable to find TRUST Key Path&quot;);</span>
+<span class="nc" id="L1233">      FtpsInitializer.waarpSecureKeyStore.initEmptyTrustStore();</span>
+    } else {
+<span class="nc" id="L1235">      final String keypath = value.getString();</span>
+<span class="nc bnc" id="L1236" title="All 4 branches missed.">      if (keypath == null || keypath.length() == 0) {</span>
+<span class="nc" id="L1237">        logger.error(&quot;Bad TRUST Key Path&quot;);</span>
+<span class="nc" id="L1238">        return false;</span>
+      }
+<span class="nc" id="L1240">      value = hashConfig.get(XML_PATH_TRUSTKEYSTOREPASS);</span>
+<span class="nc bnc" id="L1241" title="All 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1242">        logger.error(&quot;Unable to find TRUST KeyStore Passwd&quot;);</span>
+<span class="nc" id="L1243">        return false;</span>
+      }
+<span class="nc" id="L1245">      final String keystorepass = value.getString();</span>
+<span class="nc bnc" id="L1246" title="All 4 branches missed.">      if (keystorepass == null || keystorepass.length() == 0) {</span>
+<span class="nc" id="L1247">        logger.error(&quot;Bad TRUST KeyStore Passwd&quot;);</span>
+<span class="nc" id="L1248">        return false;</span>
+      }
+<span class="nc" id="L1250">      boolean useClientAuthent = false;</span>
+<span class="nc" id="L1251">      value = hashConfig.get(XML_USECLIENT_AUTHENT);</span>
+<span class="nc bnc" id="L1252" title="All 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1253">        useClientAuthent = value.getBoolean();</span>
+      }
+      try {
+<span class="nc" id="L1256">        FtpsInitializer.waarpSecureKeyStore.initTrustStore(keypath,</span>
+                                                           keystorepass,
+                                                           useClientAuthent);
+<span class="nc" id="L1259">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L1260">        logger.error(&quot;Bad TrustKeyStore construction&quot;);</span>
+<span class="nc" id="L1261">        return false;</span>
+<span class="nc" id="L1262">      }</span>
+    }
+<span class="nc" id="L1264">    FtpsInitializer.waarpSslContextFactory =</span>
+        new WaarpSslContextFactory(FtpsInitializer.waarpSecureKeyStore);
+<span class="nc" id="L1266">    boolean useImplicit = false;</span>
+<span class="nc" id="L1267">    value = hashConfig.get(XML_IMPLICIT_FTPS);</span>
+<span class="nc bnc" id="L1268" title="All 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1269">      useImplicit = value.getBoolean();</span>
+    }
+<span class="nc" id="L1271">    boolean useExplicit = false;</span>
+<span class="nc" id="L1272">    value = hashConfig.get(XML_EXPLICIT_FTPS);</span>
+<span class="nc bnc" id="L1273" title="All 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1274">      useExplicit = value.getBoolean();</span>
+    }
+<span class="nc bnc" id="L1276" title="All 4 branches missed.">    if (useImplicit &amp;&amp; useExplicit) {</span>
+<span class="nc" id="L1277">      logger.error(&quot;Only one of IMPLICIT or EXPLICIT could be True&quot;);</span>
+<span class="nc" id="L1278">      return false;</span>
+    }
+<span class="nc bnc" id="L1280" title="All 4 branches missed.">    if (!useImplicit &amp;&amp; !useExplicit) {</span>
+<span class="nc" id="L1281">      logger.error(</span>
+          &quot;Since all SecureStore are specified, one of IMPLICIT or EXPLICIT should be True&quot;);
+<span class="nc" id="L1283">      logger.warn(&quot;FTPS support will be ignored...&quot;);</span>
+<span class="nc" id="L1284">      getFtpInternalConfiguration().setUsingNativeSsl(false);</span>
+<span class="nc" id="L1285">      getFtpInternalConfiguration().setAcceptAuthProt(false);</span>
+<span class="nc" id="L1286">      return true;</span>
+    }
+<span class="nc" id="L1288">    getFtpInternalConfiguration().setUsingNativeSsl(useImplicit);</span>
+<span class="nc" id="L1289">    getFtpInternalConfiguration().setAcceptAuthProt(useExplicit);</span>
+<span class="nc" id="L1290">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for server
+   *
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public final boolean setConfigurationServerFromXml(final String filename) {
+    final Document document;
+    // Open config file
+    try {
+<span class="fc" id="L1304">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1305">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1306">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L1307">                   e.getMessage());</span>
+<span class="nc" id="L1308">      return false;</span>
+<span class="fc" id="L1309">    }</span>
+<span class="pc bpc" id="L1310" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1311">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L1312">      return false;</span>
+    }
+<span class="fc" id="L1314">    XmlValue[] configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L1315">    hashConfig = new XmlHash(configuration);</span>
+    // Now read the configuration
+<span class="pc bpc" id="L1317" title="1 of 2 branches missed.">    if (!loadIdentity()) {</span>
+<span class="nc" id="L1318">      logger.error(&quot;Cannot load Identity&quot;);</span>
+<span class="nc" id="L1319">      return false;</span>
+    }
+<span class="pc bpc" id="L1321" title="1 of 2 branches missed.">    if (!loadDatabase()) {</span>
+<span class="nc" id="L1322">      logger.error(&quot;Cannot load Database configuration&quot;);</span>
+<span class="nc" id="L1323">      return false;</span>
+    }
+<span class="pc bpc" id="L1325" title="1 of 2 branches missed.">    if (!loadServerParam()) {</span>
+<span class="nc" id="L1326">      logger.error(&quot;Cannot load Server Parameters&quot;);</span>
+<span class="nc" id="L1327">      return false;</span>
+    }
+<span class="pc bpc" id="L1329" title="1 of 2 branches missed.">    if (!loadDirectory()) {</span>
+<span class="nc" id="L1330">      logger.error(&quot;Cannot load Directory configuration&quot;);</span>
+<span class="nc" id="L1331">      return false;</span>
+    }
+<span class="pc bpc" id="L1333" title="1 of 2 branches missed.">    if (!loadLimit()) {</span>
+<span class="nc" id="L1334">      logger.error(&quot;Cannot load Limit configuration&quot;);</span>
+<span class="nc" id="L1335">      return false;</span>
+    }
+<span class="pc bpc" id="L1337" title="1 of 2 branches missed.">    if (!loadNetworkServer()) {</span>
+<span class="nc" id="L1338">      logger.error(&quot;Cannot load Network configuration&quot;);</span>
+<span class="nc" id="L1339">      return false;</span>
+    }
+<span class="pc bpc" id="L1341" title="1 of 2 branches missed.">    if (!loadExec()) {</span>
+<span class="nc" id="L1342">      logger.error(&quot;Cannot load Exec configuration&quot;);</span>
+<span class="nc" id="L1343">      return false;</span>
+    }
+    // if no database, must load authentication from file
+<span class="pc bpc" id="L1346" title="1 of 2 branches missed.">    if (!loadAuthentication()) {</span>
+<span class="nc" id="L1347">      logger.error(&quot;Cannot load Authentication configuration&quot;);</span>
+<span class="nc" id="L1348">      return false;</span>
+    }
+<span class="pc bpc" id="L1350" title="1 of 2 branches missed.">    if (!loadSsl()) {</span>
+      // ignore and continue =&gt; No SSL
+<span class="nc" id="L1352">      getFtpInternalConfiguration().setUsingNativeSsl(false);</span>
+<span class="nc" id="L1353">      getFtpInternalConfiguration().setAcceptAuthProt(false);</span>
+    }
+<span class="fc" id="L1355">    hashConfig.clear();</span>
+<span class="fc" id="L1356">    hashConfig = null;</span>
+<span class="fc" id="L1357">    configuration = null;</span>
+<span class="fc" id="L1358">    logger.debug(&quot;File based configuration loaded&quot;);</span>
+<span class="fc" id="L1359">    return true;</span>
+  }
+
+  /**
+   * Configure HTTPS
+   */
+  public final void configureHttps() {
+<span class="fc" id="L1366">    logger.debug(&quot;Start HTTPS&quot;);</span>
+    // Now start the HTTPS support
+    // Configure the server.
+    /*
+     * Bootstrap for Https server
+     */
+<span class="fc" id="L1372">    final ServerBootstrap httpsBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L1373">    httpExecutor = new NioEventLoopGroup(getServerThread() * 10,</span>
+                                         new WaarpThreadFactory(
+                                             &quot;HttpExecutor&quot;));
+<span class="fc" id="L1376">    serverGroup = new NioEventLoopGroup(getServerThread(),</span>
+                                        new WaarpThreadFactory(&quot;HTTP_Server&quot;));
+<span class="fc" id="L1378">    workerGroup = new NioEventLoopGroup(getServerThread() * 10,</span>
+                                        new WaarpThreadFactory(&quot;HTTP_Worker&quot;));
+<span class="fc" id="L1380">    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, serverGroup, workerGroup,</span>
+<span class="fc" id="L1381">                                      (int) getTimeoutCon());</span>
+
+    // Configure the pipeline factory.
+<span class="fc" id="L1384">    httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));</span>
+<span class="fc" id="L1385">    httpChannelGroup =</span>
+<span class="fc" id="L1386">        new DefaultChannelGroup(&quot;HttpOpenR66&quot;, httpExecutor.next());</span>
+
+    // Bind and start to accept incoming connections.
+<span class="fc" id="L1389">    logger.warn(&quot;Start Https Support on port: &quot; + serverHttpsPort + &quot; with &quot; +</span>
+<span class="pc bpc" id="L1390" title="1 of 2 branches missed.">                (isUseHttpCompression()? &quot;&quot; : &quot;no&quot;) + &quot; compression support&quot;);</span>
+<span class="fc" id="L1391">    final ChannelFuture future =</span>
+<span class="fc" id="L1392">        httpsBootstrap.bind(new InetSocketAddress(serverHttpsPort));</span>
+<span class="pc bpc" id="L1393" title="1 of 2 branches missed.">    if (WaarpNettyUtil.awaitIsSuccessOfInterrupted(future)) {</span>
+<span class="fc" id="L1394">      httpChannelGroup.add(future.channel());</span>
+    }
+<span class="fc" id="L1396">  }</span>
+
+  /**
+   * Configure ConstraintLimitHandler
+   */
+  public final void configureConstraint() {
+<span class="fc" id="L1402">    logger.debug(&quot;Configure constraints&quot;);</span>
+<span class="fc" id="L1403">    getConstraintLimitHandler().setHandler(</span>
+<span class="fc" id="L1404">        getFtpInternalConfiguration().getGlobalTrafficShapingHandler());</span>
+<span class="fc" id="L1405">  }</span>
+
+  /**
+   * Configure LocalExec
+   */
+  public final void configureLExec() {
+<span class="pc bpc" id="L1411" title="1 of 2 branches missed.">    if (isUseLocalExec()) {</span>
+<span class="nc" id="L1412">      logger.debug(&quot;Start LExec&quot;);</span>
+<span class="nc" id="L1413">      LocalExecClient.initialize(getClientThread(), getMaxGlobalMemory());</span>
+    }
+<span class="fc" id="L1415">  }</span>
+
+  /**
+   * Configure the SNMP support if needed
+   *
+   * @throws FtpNoConnectionException
+   */
+  public final void configureSnmp() throws FtpNoConnectionException {
+<span class="fc" id="L1423">    logger.debug(&quot;Start SNMP&quot;);</span>
+<span class="fc" id="L1424">    setMonitoring(new FtpMonitoring(null));</span>
+<span class="pc bpc" id="L1425" title="1 of 2 branches missed.">    if (getSnmpConfig() != null) {</span>
+<span class="fc" id="L1426">      final int snmpPortShow = getServerPort();</span>
+<span class="fc" id="L1427">      setFtpMib(new FtpPrivateMib(snmpPortShow));</span>
+<span class="fc" id="L1428">      WaarpMOFactory.setFactory(new FtpVariableFactory());</span>
+<span class="fc" id="L1429">      setAgentSnmp(</span>
+<span class="fc" id="L1430">          new WaarpSnmpAgent(new File(getSnmpConfig()), getMonitoring(),</span>
+<span class="fc" id="L1431">                             getFtpMib()));</span>
+      try {
+<span class="fc" id="L1433">        getAgentSnmp().start();</span>
+<span class="fc" id="L1434">        logger.debug(&quot;SNMP configured&quot;);</span>
+<span class="nc" id="L1435">      } catch (final IOException e) {</span>
+<span class="nc" id="L1436">        getMonitoring().releaseResources();</span>
+<span class="nc" id="L1437">        setMonitoring(null);</span>
+<span class="nc" id="L1438">        setFtpMib(null);</span>
+<span class="nc" id="L1439">        setAgentSnmp(null);</span>
+<span class="nc" id="L1440">        throw new FtpNoConnectionException(&quot;AgentSnmp Error while starting&quot;, e);</span>
+<span class="fc" id="L1441">      }</span>
+    }
+<span class="fc" id="L1443">  }</span>
+
+  /**
+   * @param serverkey the SERVERADMINKEY to set
+   */
+  public final void setSERVERKEY(final byte[] serverkey) {
+<span class="fc" id="L1449">    serverAdminKey = serverkey;</span>
+<span class="fc" id="L1450">  }</span>
+
+  /**
+   * Check the password for Shutdown
+   *
+   * @param password
+   *
+   * @return True if the password is OK
+   */
+  @Override
+  public final boolean checkPassword(final String password) {
+<span class="pc bpc" id="L1461" title="1 of 2 branches missed.">    if (password == null) {</span>
+<span class="nc" id="L1462">      return false;</span>
+    }
+<span class="fc" id="L1464">    return Arrays.equals(serverAdminKey,</span>
+<span class="fc" id="L1465">                         password.getBytes(WaarpStringUtils.UTF8));</span>
+  }
+
+  /**
+   * Initialize Authentication from current authenticationFile
+   *
+   * @param filename the filename from which authentication will be
+   *     loaded
+   * @param purge if True, the current authentications are totally
+   *     replaced
+   *     by the new ones
+   *
+   * @return True if OK
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public final boolean initializeAuthent(final String filename,
+                                         final boolean purge) {
+<span class="fc" id="L1482">    logger.debug(&quot;Load authent&quot;);</span>
+    final Document document;
+    try {
+<span class="fc" id="L1485">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1486">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1487">      logger.error(</span>
+          &quot;Unable to read the XML Authentication file: &quot; + filename + &quot;: {}&quot;,
+<span class="nc" id="L1489">          e.getMessage());</span>
+<span class="nc" id="L1490">      return false;</span>
+<span class="fc" id="L1491">    }</span>
+<span class="pc bpc" id="L1492" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1493">      logger.error(&quot;Unable to read the XML Authentication file: &quot; + filename);</span>
+<span class="nc" id="L1494">      return false;</span>
+    }
+<span class="fc" id="L1496">    final XmlValue[] configurationXml = XmlUtil.read(document, authentElements);</span>
+<span class="fc" id="L1497">    XmlHash hashConfigXml = new XmlHash(configurationXml);</span>
+
+<span class="fc" id="L1499">    XmlValue value = hashConfigXml.get(XML_AUTHENTIFICATION_ENTRY);</span>
+<span class="fc" id="L1500">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="fc" id="L1501">    final ConcurrentHashMap&lt;String, SimpleAuth&gt; newAuthents =</span>
+        new ConcurrentHashMap&lt;String, SimpleAuth&gt;();
+<span class="fc bfc" id="L1503" title="All 2 branches covered.">    for (final XmlValue[] xmlValues : list) {</span>
+<span class="fc" id="L1504">      hashConfigXml = new XmlHash(xmlValues);</span>
+<span class="fc" id="L1505">      value = hashConfigXml.get(XML_AUTHENTICATION_USER);</span>
+<span class="pc bpc" id="L1506" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1507">        logger.error(&quot;Unable to find a User in Config file&quot;);</span>
+<span class="nc" id="L1508">        continue;</span>
+      }
+<span class="fc" id="L1510">      final String user = value.getString();</span>
+<span class="fc" id="L1511">      value = hashConfigXml.get(XML_AUTHENTICATION_ACCOUNT);</span>
+<span class="pc bpc" id="L1512" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1513">        logger.error(&quot;Unable to find a Account in Config file: &quot; + user);</span>
+<span class="nc" id="L1514">        continue;</span>
+      }
+      final String[] account;
+<span class="fc" id="L1517">      final List&lt;String&gt; listaccount = (List&lt;String&gt;) value.getList();</span>
+<span class="pc bpc" id="L1518" title="1 of 2 branches missed.">      if (!listaccount.isEmpty()) {</span>
+<span class="fc" id="L1519">        account = new String[listaccount.size()];</span>
+<span class="fc" id="L1520">        int i = 0;</span>
+<span class="fc bfc" id="L1521" title="All 2 branches covered.">        for (final String s : listaccount) {</span>
+<span class="fc" id="L1522">          account[i] = s;</span>
+<span class="fc" id="L1523">          final File directory =</span>
+<span class="fc" id="L1524">              new File(getBaseDirectory() + '/' + user + '/' + account[i]);</span>
+<span class="fc" id="L1525">          directory.mkdirs();//NOSONAR</span>
+<span class="fc" id="L1526">          i++;</span>
+<span class="fc" id="L1527">        }</span>
+<span class="fc" id="L1528">      } else {</span>
+<span class="nc" id="L1529">        logger.error(&quot;Unable to find a Account in Config file: &quot; + user);</span>
+<span class="nc" id="L1530">        continue;</span>
+      }
+<span class="fc" id="L1532">      value = hashConfigXml.get(XML_AUTHENTICATION_ADMIN);</span>
+<span class="fc" id="L1533">      boolean isAdmin = false;</span>
+<span class="pc bpc" id="L1534" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1535">        isAdmin = value.getBoolean();</span>
+      }
+<span class="fc" id="L1537">      String retrcmd = null;</span>
+<span class="fc" id="L1538">      long retrdelay = 0;</span>
+<span class="fc" id="L1539">      String storcmd = null;</span>
+<span class="fc" id="L1540">      long stordelay = 0;</span>
+<span class="fc" id="L1541">      value = hashConfigXml.get(XML_RETRIEVE_COMMAND);</span>
+<span class="pc bpc" id="L1542" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1543">        retrcmd = value.getString();</span>
+      }
+<span class="fc" id="L1545">      value = hashConfigXml.get(XML_DELAYRETRIEVE_COMMAND);</span>
+<span class="pc bpc" id="L1546" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1547">        retrdelay = (value.getLong() / 10) * 10;</span>
+      }
+<span class="fc" id="L1549">      value = hashConfigXml.get(XML_STORE_COMMAND);</span>
+<span class="pc bpc" id="L1550" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1551">        storcmd = value.getString();</span>
+      }
+<span class="fc" id="L1553">      value = hashConfigXml.get(XML_DELAYSTORE_COMMAND);</span>
+<span class="pc bpc" id="L1554" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1555">        stordelay = (value.getLong() / 10) * 10;</span>
+      }
+      final String passwd;
+<span class="fc" id="L1558">      value = hashConfigXml.get(XML_AUTHENTICATION_PASSWDFILE);</span>
+<span class="pc bpc" id="L1559" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+        // load key from file
+<span class="fc" id="L1561">        final File key = new File(value.getString());</span>
+<span class="pc bpc" id="L1562" title="1 of 2 branches missed.">        if (!key.canRead()) {</span>
+<span class="nc" id="L1563">          logger.error(</span>
+<span class="nc" id="L1564">              &quot;Cannot read key for user &quot; + user + ':' + key.getName());</span>
+<span class="nc" id="L1565">          continue;</span>
+        }
+        try {
+<span class="fc" id="L1568">          final byte[] byteKeys = getCryptoKey().decryptHexFile(key);</span>
+<span class="fc" id="L1569">          passwd = new String(byteKeys, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L1570">        } catch (final Exception e2) {</span>
+<span class="nc" id="L1571">          logger.error(&quot;Cannot read key for user &quot; + user, e2);</span>
+<span class="nc" id="L1572">          continue;</span>
+<span class="fc" id="L1573">        }</span>
+<span class="fc" id="L1574">      } else {</span>
+<span class="nc" id="L1575">        value = hashConfigXml.get(XML_AUTHENTICATION_PASSWD);</span>
+<span class="nc bnc" id="L1576" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1577">          final String encrypted = value.getString();</span>
+          final byte[] byteKeys;
+          try {
+<span class="nc" id="L1580">            byteKeys = getCryptoKey().decryptHexInBytes(encrypted);</span>
+<span class="nc" id="L1581">            passwd = new String(byteKeys, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L1582">          } catch (final Exception e) {</span>
+<span class="nc" id="L1583">            logger.error(&quot;Unable to Decrypt Key for user &quot; + user, e);</span>
+<span class="nc" id="L1584">            continue;</span>
+<span class="nc" id="L1585">          }</span>
+<span class="nc" id="L1586">        } else {</span>
+<span class="nc" id="L1587">          logger.error(&quot;Unable to find Password in Config file&quot;);</span>
+          // DO NOT Allow empty key
+<span class="nc" id="L1589">          continue;</span>
+        }
+      }
+<span class="fc" id="L1592">      final SimpleAuth auth =</span>
+          new SimpleAuth(user, passwd, account, storcmd, stordelay, retrcmd,
+                         retrdelay);
+<span class="fc" id="L1595">      auth.setAdmin(isAdmin);</span>
+<span class="fc" id="L1596">      newAuthents.put(user, auth);</span>
+<span class="fc" id="L1597">      hashConfigXml.clear();</span>
+<span class="fc" id="L1598">    }</span>
+<span class="fc" id="L1599">    hashConfigXml.clear();</span>
+<span class="pc bpc" id="L1600" title="1 of 2 branches missed.">    if (purge) {</span>
+<span class="nc" id="L1601">      authentications.clear();</span>
+    }
+<span class="fc" id="L1603">    authentications.putAll(newAuthents);</span>
+<span class="fc" id="L1604">    newAuthents.clear();</span>
+<span class="fc" id="L1605">    return true;</span>
+  }
+
+  /**
+   * Export the Authentication to the original files
+   *
+   * @param filename the filename where the authentication will be
+   *     exported
+   *
+   * @return True if successful
+   */
+  public final boolean saveAuthenticationFile(final String filename) {
+<span class="nc" id="L1617">    final Document document = XmlUtil.createEmptyDocument();</span>
+<span class="nc" id="L1618">    final XmlValue[] roots = new XmlValue[1];</span>
+<span class="nc" id="L1619">    final XmlValue root = new XmlValue(authentElements[0]);</span>
+<span class="nc" id="L1620">    roots[0] = root;</span>
+<span class="nc" id="L1621">    final Enumeration&lt;SimpleAuth&gt; auths = authentications.elements();</span>
+<span class="nc bnc" id="L1622" title="All 2 branches missed.">    while (auths.hasMoreElements()) {</span>
+<span class="nc" id="L1623">      final SimpleAuth auth = auths.nextElement();</span>
+<span class="nc" id="L1624">      final XmlValue[] values = new XmlValue[configAuthenticationDecls.length];</span>
+<span class="nc bnc" id="L1625" title="All 2 branches missed.">      for (int i = 0; i &lt; configAuthenticationDecls.length; i++) {</span>
+<span class="nc" id="L1626">        values[i] = new XmlValue(configAuthenticationDecls[i]);</span>
+      }
+      try {
+<span class="nc" id="L1629">        values[0].setFromString(auth.getUser());</span>
+        // PasswdFile: none values[1].setFromString()
+<span class="nc" id="L1631">        values[2].setFromString(auth.getPassword());</span>
+        // Accounts
+<span class="nc" id="L1633">        final String[] accts = auth.getAccounts();</span>
+<span class="nc bnc" id="L1634" title="All 2 branches missed.">        for (final String string : accts) {</span>
+<span class="nc" id="L1635">          values[3].addFromString(string);</span>
+        }
+<span class="nc" id="L1637">        values[4].setValue(auth.isAdmin());</span>
+<span class="nc" id="L1638">        values[5].setFromString(auth.getRetrCmd());</span>
+<span class="nc" id="L1639">        values[6].setValue(auth.getRetrDelay());</span>
+<span class="nc" id="L1640">        values[7].setFromString(auth.getStorCmd());</span>
+<span class="nc" id="L1641">        values[8].setValue(auth.getStorDelay());</span>
+<span class="nc" id="L1642">      } catch (final InvalidArgumentException e1) {</span>
+<span class="nc" id="L1643">        logger.error(ERROR_DURING_WRITE_AUTHENTICATION_FILE, e1);</span>
+<span class="nc" id="L1644">        return false;</span>
+<span class="nc" id="L1645">      } catch (final InvalidObjectException e) {</span>
+<span class="nc" id="L1646">        logger.error(ERROR_DURING_WRITE_AUTHENTICATION_FILE, e);</span>
+<span class="nc" id="L1647">        return false;</span>
+<span class="nc" id="L1648">      }</span>
+      try {
+<span class="nc" id="L1650">        root.addValue(values);</span>
+<span class="nc" id="L1651">      } catch (final InvalidObjectException e) {</span>
+<span class="nc" id="L1652">        logger.error(ERROR_DURING_WRITE_AUTHENTICATION_FILE, e);</span>
+<span class="nc" id="L1653">        return false;</span>
+<span class="nc" id="L1654">      }</span>
+<span class="nc" id="L1655">    }</span>
+<span class="nc" id="L1656">    XmlUtil.write(document, roots);</span>
+    try {
+<span class="nc" id="L1658">      XmlUtil.saveDocument(filename, document);</span>
+<span class="nc" id="L1659">    } catch (final IOException e1) {</span>
+<span class="nc" id="L1660">      logger.error(&quot;Cannot write to file: &quot; + filename + &quot; since {}&quot;,</span>
+<span class="nc" id="L1661">                   e1.getMessage());</span>
+<span class="nc" id="L1662">      return false;</span>
+<span class="nc" id="L1663">    }</span>
+<span class="nc" id="L1664">    return true;</span>
+  }
+
+  /**
+   * @param user
+   *
+   * @return the SimpleAuth if any for this user
+   */
+  public final SimpleAuth getSimpleAuth(final String user) {
+<span class="fc" id="L1673">    return authentications.get(user);</span>
+  }
+
+  /**
+   * @param format Format in HTML to use as ouput format
+   *
+   * @return the Html String containing the table of all Authentication
+   *     entries
+   */
+  public final String getHtmlAuth(final String format) {
+    final String result;
+<span class="fc" id="L1684">    final StringBuilder builder = new StringBuilder();</span>
+    /*
+     * XXXUSERXXX XXXPWDXXX XXXACTSXXX XXXADMXXX XXXSTCXXX XXXSTDXXX XXXRTCXXX XXXRTDXXX
+     */
+<span class="fc" id="L1688">    final Enumeration&lt;SimpleAuth&gt; simpleAuths = authentications.elements();</span>
+    SimpleAuth auth;
+<span class="fc bfc" id="L1690" title="All 2 branches covered.">    while (simpleAuths.hasMoreElements()) {</span>
+<span class="fc" id="L1691">      auth = simpleAuths.nextElement();</span>
+<span class="fc" id="L1692">      String newElt = format.replace(&quot;XXXUSERXXX&quot;, auth.getUser());</span>
+<span class="fc" id="L1693">      newElt = newElt.replace(&quot;XXXPWDXXX&quot;, auth.getPassword());</span>
+<span class="fc bfc" id="L1694" title="All 2 branches covered.">      if (auth.getStorCmd() != null) {</span>
+<span class="fc" id="L1695">        newElt = newElt.replace(&quot;XXXSTCXXX&quot;, auth.getStorCmd());</span>
+      } else {
+<span class="fc" id="L1697">        newElt = newElt.replace(&quot;XXXSTCXXX&quot;, &quot;&quot;);</span>
+      }
+<span class="fc bfc" id="L1699" title="All 2 branches covered.">      if (auth.getRetrCmd() != null) {</span>
+<span class="fc" id="L1700">        newElt = newElt.replace(&quot;XXXRTCXXX&quot;, auth.getRetrCmd());</span>
+      } else {
+<span class="fc" id="L1702">        newElt = newElt.replace(&quot;XXXRTCXXX&quot;, &quot;&quot;);</span>
+      }
+<span class="fc" id="L1704">      newElt = newElt.replace(&quot;XXXSTDXXX&quot;, Long.toString(auth.getStorDelay()));</span>
+<span class="fc" id="L1705">      newElt = newElt.replace(&quot;XXXRTDXXX&quot;, Long.toString(auth.getRetrDelay()));</span>
+<span class="fc" id="L1706">      newElt = newElt.replace(&quot;XXXADMXXX&quot;, Boolean.toString(auth.isAdmin()));</span>
+<span class="pc bpc" id="L1707" title="1 of 2 branches missed.">      if (auth.getAccounts() != null) {</span>
+<span class="fc" id="L1708">        final StringBuilder accts = new StringBuilder();</span>
+<span class="fc bfc" id="L1709" title="All 2 branches covered.">        for (int i = 0; i &lt; auth.getAccounts().length - 1; i++) {</span>
+<span class="fc" id="L1710">          accts.append(auth.getAccounts()[i]).append(&quot;, &quot;);</span>
+        }
+<span class="fc" id="L1712">        accts.append(auth.getAccounts()[auth.getAccounts().length - 1]);</span>
+<span class="fc" id="L1713">        newElt = newElt.replace(&quot;XXXACTSXXX&quot;, accts.toString());</span>
+<span class="fc" id="L1714">      } else {</span>
+<span class="nc" id="L1715">        newElt = newElt.replace(&quot;XXXACTSXXX&quot;, &quot;No Account&quot;);</span>
+      }
+<span class="fc" id="L1717">      builder.append(newElt);</span>
+<span class="fc" id="L1718">    }</span>
+<span class="fc" id="L1719">    result = builder.toString();</span>
+<span class="fc" id="L1720">    return result;</span>
+  }
+
+  /**
+   * Only available with Database support for Waarp
+   *
+   * @param format Format in HTML to use as ouput format
+   * @param limit number of TransferLog to populate
+   *
+   * @return the Html String containing the table of all Transfer entries
+   */
+  public final String getHtmlTransfer(final String format, final int limit) {
+    final String result;
+<span class="fc" id="L1733">    final StringBuilder builder = new StringBuilder();</span>
+    /*
+     * XXXIDXXX XXXUSERXXX XXXACCTXXX XXXFILEXXX XXXMODEXXX XXXSTATUSXXX XXXINFOXXX XXXUPINFXXX XXXSTARTXXX
+     * XXXSTOPXXX
+     */
+<span class="fc" id="L1738">    DbPreparedStatement preparedStatement = null;</span>
+    try {
+      try {
+<span class="fc" id="L1741">        preparedStatement = DbTransferLog.getStatusPrepareStament(</span>
+<span class="fc" id="L1742">            DbConstantFtp.gatewayAdmin.getSession(), null, limit);</span>
+<span class="fc" id="L1743">        preparedStatement.executeQuery();</span>
+<span class="nc" id="L1744">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L1745">        return &quot;&quot;;</span>
+<span class="nc" id="L1746">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L1747">        return &quot;&quot;;</span>
+<span class="fc" id="L1748">      }</span>
+      try {
+<span class="fc bfc" id="L1750" title="All 2 branches covered.">        while (preparedStatement.getNext()) {</span>
+<span class="fc" id="L1751">          final DbTransferLog log =</span>
+<span class="fc" id="L1752">              DbTransferLog.getFromStatement(preparedStatement);</span>
+<span class="fc" id="L1753">          String newElt =</span>
+<span class="fc" id="L1754">              format.replace(&quot;XXXIDXXX&quot;, Long.toString(log.getSpecialId()));</span>
+<span class="fc" id="L1755">          newElt = newElt.replace(&quot;XXXUSERXXX&quot;, log.getUser());</span>
+<span class="fc" id="L1756">          newElt = newElt.replace(&quot;XXXACCTXXX&quot;, log.getAccount());</span>
+<span class="fc" id="L1757">          newElt = newElt.replace(&quot;XXXFILEXXX&quot;, log.getFilename());</span>
+<span class="fc" id="L1758">          newElt = newElt.replace(&quot;XXXMODEXXX&quot;, log.getMode());</span>
+<span class="fc" id="L1759">          newElt = newElt.replace(&quot;XXXSTATUSXXX&quot;, log.getErrorInfo().getMesg());</span>
+<span class="fc" id="L1760">          newElt = newElt.replace(&quot;XXXINFOXXX&quot;, log.getInfotransf());</span>
+<span class="fc" id="L1761">          newElt = newElt.replace(&quot;XXXUPINFXXX&quot;, log.getUpdatedInfo().name());</span>
+<span class="fc" id="L1762">          newElt = newElt.replace(&quot;XXXSTARTXXX&quot;, log.getStart().toString());</span>
+<span class="fc" id="L1763">          newElt = newElt.replace(&quot;XXXSTOPXXX&quot;, log.getStop().toString());</span>
+<span class="fc" id="L1764">          builder.append(newElt);</span>
+<span class="fc" id="L1765">        }</span>
+<span class="nc" id="L1766">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L1767">        return &quot;&quot;;</span>
+<span class="nc" id="L1768">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L1769">        return &quot;&quot;;</span>
+<span class="fc" id="L1770">      }</span>
+<span class="fc" id="L1771">      result = builder.toString();</span>
+<span class="fc" id="L1772">      return result;</span>
+    } finally {
+<span class="pc bpc" id="L1774" title="1 of 2 branches missed.">      if (preparedStatement != null) {</span>
+<span class="fc" id="L1775">        preparedStatement.realClose();</span>
+      }
+    }
+  }
+
+  /**
+   * @see FtpConfiguration#getNextRangePort()
+   */
+  @Override
+  public final int getNextRangePort() {
+    try {
+<span class="fc" id="L1786">      return ((CircularIntValue) getProperty(RANGE_PORT)).getNext();</span>
+<span class="nc" id="L1787">    } catch (final FtpUnknownFieldException e) {</span>
+<span class="nc" id="L1788">      return -1;</span>
+    }
+  }
+
+  /**
+   * @param rangePort the range of available ports for Passive
+   *     connections
+   */
+  private void setRangePort(final CircularIntValue rangePort) {
+<span class="fc" id="L1797">    setProperty(RANGE_PORT, rangePort);</span>
+<span class="fc" id="L1798">  }</span>
+
+  /**
+   * @return the httpPipelineExecutor
+   */
+  public final EventExecutorGroup getHttpPipelineExecutor() {
+<span class="fc" id="L1804">    return httpExecutor;</span>
+  }
+
+  /**
+   * @return the httpChannelGroup
+   */
+  public final ChannelGroup getHttpChannelGroup() {
+<span class="fc" id="L1811">    return httpChannelGroup;</span>
+  }
+
+  /**
+   * Finalize resources attached to handlers
+   */
+  private static class GgChannelGroupFutureListener
+      implements ChannelGroupFutureListener {
+    final EventExecutorGroup executorWorker;
+    final String name;
+
+    private GgChannelGroupFutureListener(final String name,
+<span class="fc" id="L1823">                                         final EventExecutorGroup executorWorker) {</span>
+<span class="fc" id="L1824">      this.name = name;</span>
+<span class="fc" id="L1825">      this.executorWorker = executorWorker;</span>
+<span class="fc" id="L1826">    }</span>
+
+    @Override
+    public final void operationComplete(final ChannelGroupFuture future) {
+<span class="pc bpc" id="L1830" title="1 of 2 branches missed.">      if (executorWorker != null) {</span>
+<span class="fc" id="L1831">        executorWorker.shutdownGracefully();</span>
+      }
+<span class="fc" id="L1833">      logger.info(&quot;Done with shutdown {}&quot;, name);</span>
+<span class="fc" id="L1834">    }</span>
+  }
+
+  @Override
+  public final void releaseResources() {
+<span class="fc" id="L1839">    logger.debug(&quot;Release resources&quot;);</span>
+<span class="fc" id="L1840">    super.releaseResources();</span>
+<span class="pc bpc" id="L1841" title="1 of 2 branches missed.">    if (httpChannelGroup != null) {</span>
+<span class="fc" id="L1842">      final int result = httpChannelGroup.size();</span>
+<span class="fc" id="L1843">      logger.debug(&quot;HttpChannelGroup: {}&quot;, result);</span>
+<span class="fc" id="L1844">      httpChannelGroup.close().addListener(</span>
+          new GgChannelGroupFutureListener(&quot;HttpChannelGroup&quot;, workerGroup));
+    }
+<span class="pc bpc" id="L1847" title="1 of 2 branches missed.">    if (httpExecutor != null) {</span>
+<span class="fc" id="L1848">      httpExecutor.shutdownGracefully();</span>
+    }
+<span class="pc bpc" id="L1850" title="1 of 2 branches missed.">    if (isUseLocalExec()) {</span>
+<span class="nc" id="L1851">      LocalExecClient.releaseResources();</span>
+    }
+<span class="pc bpc" id="L1853" title="1 of 2 branches missed.">    if (getConstraintLimitHandler() != null) {</span>
+<span class="fc" id="L1854">      getConstraintLimitHandler().release();</span>
+    }
+<span class="pc bpc" id="L1856" title="1 of 2 branches missed.">    if (getAgentSnmp() != null) {</span>
+<span class="fc" id="L1857">      getAgentSnmp().stop();</span>
+    }
+<span class="pc bpc" id="L1859" title="1 of 2 branches missed.">    if (workerGroup != null) {</span>
+<span class="fc" id="L1860">      workerGroup.shutdownGracefully();</span>
+    }
+<span class="pc bpc" id="L1862" title="1 of 2 branches missed.">    if (serverGroup != null) {</span>
+<span class="fc" id="L1863">      serverGroup.shutdownGracefully();</span>
+    }
+<span class="fc" id="L1865">    DbAdmin.closeAllConnection();</span>
+<span class="fc" id="L1866">  }</span>
+
+  @Override
+  public final void inShutdownProcess() {
+<span class="pc bpc" id="L1870" title="1 of 2 branches missed.">    if (getFtpMib() != null) {</span>
+<span class="fc" id="L1871">      getFtpMib().notifyStartStop(&quot;Shutdown in progress for &quot; + getHostId(),</span>
+<span class="fc" id="L1872">                                  &quot;Gives extra seconds: &quot; + getTimeoutCon());</span>
+    }
+<span class="fc" id="L1874">  }</span>
+
+  /**
+   * @return the authenticationFile
+   */
+  public final String getAuthenticationFile() {
+<span class="fc" id="L1880">    return authenticationFile;</span>
+  }
+
+  /**
+   * @param authenticationFile the authenticationFile to set
+   */
+  public final void setAuthenticationFile(final String authenticationFile) {
+<span class="fc" id="L1887">    this.authenticationFile = authenticationFile;</span>
+<span class="fc" id="L1888">  }</span>
+
+  /**
+   * @return the httpBasePath
+   */
+  public final String getHttpBasePath() {
+<span class="fc" id="L1894">    return httpBasePath;</span>
+  }
+
+  /**
+   * @param httpBasePath the httpBasePath to set
+   */
+  public final void setHttpBasePath(final String httpBasePath) {
+<span class="fc" id="L1901">    this.httpBasePath = httpBasePath;</span>
+<span class="fc" id="L1902">  }</span>
+
+  /**
+   * @return the useHttpCompression
+   */
+  public final boolean isUseHttpCompression() {
+<span class="fc" id="L1908">    return useHttpCompression;</span>
+  }
+
+  /**
+   * @param useHttpCompression the useHttpCompression to set
+   */
+  public final void setUseHttpCompression(final boolean useHttpCompression) {
+<span class="fc" id="L1915">    this.useHttpCompression = useHttpCompression;</span>
+<span class="fc" id="L1916">  }</span>
+
+  /**
+   * @return the useLocalExec
+   */
+  public final boolean isUseLocalExec() {
+<span class="fc" id="L1922">    return useLocalExec;</span>
+  }
+
+  /**
+   * @param useLocalExec the useLocalExec to set
+   */
+  public final void setUseLocalExec(final boolean useLocalExec) {
+<span class="fc" id="L1929">    this.useLocalExec = useLocalExec;</span>
+<span class="fc" id="L1930">  }</span>
+
+  /**
+   * @return the cryptoKey
+   */
+  public final Des getCryptoKey() {
+<span class="fc" id="L1936">    return cryptoKey;</span>
+  }
+
+  /**
+   * @param cryptoKey the cryptoKey to set
+   */
+  public final void setCryptoKey(final Des cryptoKey) {
+<span class="nc" id="L1943">    this.cryptoKey = cryptoKey;</span>
+<span class="nc" id="L1944">  }</span>
+
+  /**
+   * @return the hostId
+   */
+  public final String getHostId() {
+<span class="fc" id="L1950">    return hostId;</span>
+  }
+
+  /**
+   * @param hostId the hostId to set
+   */
+  public final void setHostId(final String hostId) {
+<span class="fc" id="L1957">    this.hostId = hostId;</span>
+<span class="fc" id="L1958">  }</span>
+
+  /**
+   * @return the adminName
+   */
+  public final String getAdminName() {
+<span class="fc" id="L1964">    return adminName;</span>
+  }
+
+  /**
+   * @param adminName the adminName to set
+   */
+  public final void setAdminName(final String adminName) {
+<span class="fc" id="L1971">    this.adminName = adminName;</span>
+<span class="fc" id="L1972">  }</span>
+
+  /**
+   * @return the constraintLimitHandler
+   */
+  public final FtpConstraintLimitHandler getConstraintLimitHandler() {
+<span class="fc" id="L1978">    return constraintLimitHandler;</span>
+  }
+
+  /**
+   * @param constraintLimitHandler the constraintLimitHandler to set
+   */
+  public final void setConstraintLimitHandler(
+      final FtpConstraintLimitHandler constraintLimitHandler) {
+<span class="fc" id="L1986">    this.constraintLimitHandler = constraintLimitHandler;</span>
+<span class="fc" id="L1987">  }</span>
+
+  /**
+   * @return the snmpConfig
+   */
+  public final String getSnmpConfig() {
+<span class="fc" id="L1993">    return snmpConfig;</span>
+  }
+
+  /**
+   * @param snmpConfig the snmpConfig to set
+   */
+  public final void setSnmpConfig(final String snmpConfig) {
+<span class="fc" id="L2000">    this.snmpConfig = snmpConfig;</span>
+<span class="fc" id="L2001">  }</span>
+
+  /**
+   * @return the agentSnmp
+   */
+  public final WaarpSnmpAgent getAgentSnmp() {
+<span class="fc" id="L2007">    return agentSnmp;</span>
+  }
+
+  /**
+   * @param agentSnmp the agentSnmp to set
+   */
+  public final void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
+<span class="fc" id="L2014">    this.agentSnmp = agentSnmp;</span>
+<span class="fc" id="L2015">  }</span>
+
+  /**
+   * @return the ftpMib
+   */
+  public final FtpPrivateMib getFtpMib() {
+<span class="fc" id="L2021">    return ftpMib;</span>
+  }
+
+  /**
+   * @param ftpMib the ftpMib to set
+   */
+  public final void setFtpMib(final FtpPrivateMib ftpMib) {
+<span class="fc" id="L2028">    this.ftpMib = ftpMib;</span>
+<span class="fc" id="L2029">  }</span>
+
+  /**
+   * @return the monitoring
+   */
+  public final FtpMonitoring getMonitoring() {
+<span class="fc" id="L2035">    return monitoring;</span>
+  }
+
+  /**
+   * @param monitoring the monitoring to set
+   */
+  public final void setMonitoring(final FtpMonitoring monitoring) {
+<span class="fc" id="L2042">    this.monitoring = monitoring;</span>
+<span class="fc" id="L2043">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

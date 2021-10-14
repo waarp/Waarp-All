@@ -20,194 +20,90 @@
 
 package org.waarp.openr66.dao.xml;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.LimitDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Limit;
-import org.xml.sax.SAXException;
 
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.waarp.openr66.dao.DAOFactory.*;
-
-//TODO
 public class XMLLimitDAO implements LimitDAO {
 
   /**
    * HashTable in case of lack of database
    */
   private static final ConcurrentHashMap&lt;String, Limit&gt;
-<span class="nc" id="L56">      dbR66ConfigurationHashMap = new ConcurrentHashMap&lt;String, Limit&gt;();</span>
+<span class="nc" id="L39">      dbR66ConfigurationHashMap = new ConcurrentHashMap&lt;String, Limit&gt;();</span>
 
-  public static final String HOSTID_FIELD = &quot;hostid&quot;;
-  public static final String SESSION_LIMIT_FILED = &quot;sessionlimit&quot;;
-  public static final String GOLBAL_LIMIT_FILED = &quot;globallimit&quot;;
-  public static final String DELAY_LIMIT_FILED = &quot;delaylimit&quot;;
-  public static final String RUN_LIMIT_FILED = &quot;runlimit&quot;;
-  public static final String DELAY_COMMAND_LIMIT_FILED = &quot;delaycommand&quot;;
-  public static final String DELAY_RETRY_LIMIT_FILED = &quot;delayretry&quot;;
-
-  private static final String XML_SELECT = &quot;/config/identity[hostid=$hostid]&quot;;
-
-  private final File file;
-
-<span class="nc" id="L70">  public XMLLimitDAO(final String filePath) {</span>
-<span class="nc" id="L71">    file = new File(filePath);</span>
-<span class="nc" id="L72">  }</span>
+<span class="nc" id="L41">  public XMLLimitDAO() {</span>
+    // Empty
+<span class="nc" id="L43">  }</span>
 
   @Override
   public void close() {
     // ignore
-<span class="nc" id="L77">  }</span>
+<span class="nc" id="L48">  }</span>
 
   @Override
   public void delete(final Limit limit) {
-<span class="nc" id="L81">    dbR66ConfigurationHashMap.remove(limit.getHostid());</span>
-<span class="nc" id="L82">  }</span>
+<span class="nc" id="L52">    dbR66ConfigurationHashMap.remove(limit.getHostid());</span>
+<span class="nc" id="L53">  }</span>
 
   @Override
   public void deleteAll() {
-<span class="nc" id="L86">    dbR66ConfigurationHashMap.clear();</span>
-<span class="nc" id="L87">  }</span>
+<span class="nc" id="L57">    dbR66ConfigurationHashMap.clear();</span>
+<span class="nc" id="L58">  }</span>
 
   @Override
   public List&lt;Limit&gt; getAll() throws DAOConnectionException {
-<span class="nc bnc" id="L91" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L92">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
-    }
-    try {
-<span class="nc" id="L95">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L96">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
-      // File contains only 1 entry
-<span class="nc" id="L98">      final List&lt;Limit&gt; res = new ArrayList&lt;Limit&gt;(1);</span>
-<span class="nc" id="L99">      final Limit limit = getFromNode(document.getDocumentElement());</span>
-<span class="nc" id="L100">      res.add(limit);</span>
-<span class="nc" id="L101">      dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
-      // Iterate through all found nodes
-<span class="nc" id="L103">      return res;</span>
-<span class="nc" id="L104">    } catch (final SAXException e) {</span>
-<span class="nc" id="L105">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L106">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L107">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L108">    } catch (final IOException e) {</span>
-<span class="nc" id="L109">      throw new DAOConnectionException(e);</span>
-    }
+<span class="nc" id="L62">    return new ArrayList&lt;Limit&gt;(dbR66ConfigurationHashMap.values());</span>
   }
 
   @Override
   public boolean exist(final String hostid) throws DAOConnectionException {
-<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (dbR66ConfigurationHashMap.containsKey(hostid)) {</span>
-<span class="nc" id="L116">      return true;</span>
-    }
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L119">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
-    }
-    try {
-<span class="nc" id="L122">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L123">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
-      // Setup XPath variable
-<span class="nc" id="L125">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
-<span class="nc" id="L126">      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);</span>
-      // Setup XPath query
-<span class="nc" id="L128">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L129">      xPath.setXPathVariableResolver(resolver);</span>
-<span class="nc" id="L130">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
-      // Query will return &quot;&quot; if nothing is found
-<span class="nc bnc" id="L132" title="All 2 branches missed.">      return xpe.evaluate(document) != null &amp;&amp;</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">             !xpe.evaluate(document).isEmpty();</span>
-<span class="nc" id="L134">    } catch (final SAXException e) {</span>
-<span class="nc" id="L135">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L136">    } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L137">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L138">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L139">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L140">    } catch (final IOException e) {</span>
-<span class="nc" id="L141">      throw new DAOConnectionException(e);</span>
-    }
+<span class="nc" id="L67">    return dbR66ConfigurationHashMap.containsKey(hostid);</span>
   }
 
   @Override
   public List&lt;Limit&gt; find(final List&lt;Filter&gt; fitlers)
       throws DAOConnectionException {
-<span class="nc" id="L148">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L73">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return count only if filters is empty or null
+   */
+  @Override
+  public long count(final List&lt;Filter&gt; fitlers) throws DAOConnectionException {
+<span class="nc bnc" id="L83" title="All 4 branches missed.">    if (fitlers == null || fitlers.isEmpty()) {</span>
+<span class="nc" id="L84">      return dbR66ConfigurationHashMap.size();</span>
+    }
+<span class="nc" id="L86">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
   public void insert(final Limit limit) {
-<span class="nc" id="L153">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
-<span class="nc" id="L154">  }</span>
+<span class="nc" id="L91">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
+<span class="nc" id="L92">  }</span>
 
   @Override
   public Limit select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc" id="L159">    Limit limit = dbR66ConfigurationHashMap.get(hostid);</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (limit != null) {</span>
-<span class="nc" id="L161">      return limit;</span>
+<span class="nc" id="L97">    final Limit limit = dbR66ConfigurationHashMap.get(hostid);</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (limit != null) {</span>
+<span class="nc" id="L99">      return limit;</span>
     }
-<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L164">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
-    }
-    try {
-<span class="nc" id="L167">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L168">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
-      // Setup XPath variable
-<span class="nc" id="L170">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
-<span class="nc" id="L171">      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);</span>
-      // Setup XPath query
-<span class="nc" id="L173">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L174">      xPath.setXPathVariableResolver(resolver);</span>
-<span class="nc" id="L175">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
-      // Retrieve node and instantiate object
-<span class="nc" id="L177">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
-<span class="nc bnc" id="L178" title="All 2 branches missed.">      if (node != null) {</span>
-<span class="nc" id="L179">        limit = getFromNode(document.getDocumentElement());</span>
-<span class="nc" id="L180">        dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
-<span class="nc" id="L181">        return limit;</span>
-      }
-<span class="nc" id="L183">      throw new DAONoDataException(&quot;Limit not found&quot;);</span>
-<span class="nc" id="L184">    } catch (final SAXException e) {</span>
-<span class="nc" id="L185">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L186">    } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L187">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L188">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L189">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L190">    } catch (final IOException e) {</span>
-<span class="nc" id="L191">      throw new DAOConnectionException(e);</span>
-    }
+<span class="nc" id="L101">    throw new DAONoDataException(&quot;Limit not found&quot;);</span>
   }
 
   @Override
   public void update(final Limit limit) {
-<span class="nc" id="L197">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
-<span class="nc" id="L198">  }</span>
-
-  private Limit getFromNode(final Node parent) {
-<span class="nc" id="L201">    final Limit res = new Limit();</span>
-
-<span class="nc" id="L203">    final NodeList children = parent.getChildNodes();</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
-<span class="nc" id="L205">      final Node node = children.item(j);</span>
-<span class="nc bnc" id="L206" title="All 2 branches missed.">      if (node.getNodeName().equals(HOSTID_FIELD)) {</span>
-<span class="nc" id="L207">        res.setHostid(node.getTextContent());</span>
-      }
-    }
-<span class="nc" id="L210">    return res;</span>
-  }
+<span class="nc" id="L106">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
+<span class="nc" id="L107">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

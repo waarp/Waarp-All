@@ -436,8 +436,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       }
 <span class="nc" id="L437">      logger.debug(&quot;Activate Throttle bandwidth according to CPU usage&quot;);</span>
 <span class="nc" id="L438">      executor = new ScheduledThreadPoolExecutor(1);</span>
-<span class="nc" id="L439">      executor</span>
-<span class="nc" id="L440">          .scheduleWithFixedDelay(this, delay, delay, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L439">      executor.scheduleWithFixedDelay(this, delay, delay,</span>
+                                      TimeUnit.MILLISECONDS);
     } else {
 <span class="nc bnc" id="L442" title="All 2 branches missed.">      if (executor != null) {</span>
 <span class="nc" id="L443">        executor.shutdownNow();</span>
@@ -448,91 +448,89 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
 
   /**
    * Check every delay if the current cpu usage needs to relax or to
-   * constraint
-   * the bandwidth
+   * constraint the bandwidth
    */
   @Override
   public void run() {
-<span class="pc bpc" id="L456" title="1 of 2 branches missed.">    if (constraintInactive) {</span>
-<span class="nc" id="L457">      return;</span>
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">    if (constraintInactive) {</span>
+<span class="nc" id="L456">      return;</span>
     }
-<span class="fc" id="L459">    final double curLA = getLastLA();</span>
-<span class="pc bpc" id="L460" title="1 of 2 branches missed.">    if (!useBandwidthLimit) {</span>
-<span class="nc" id="L461">      return;</span>
+<span class="fc" id="L458">    final double curLA = getLastLA();</span>
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">    if (!useBandwidthLimit) {</span>
+<span class="nc" id="L460">      return;</span>
     }
-<span class="pc bpc" id="L463" title="1 of 2 branches missed.">    if (curLA &gt; highCpuLimit) {</span>
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">    if (curLA &gt; highCpuLimit) {</span>
       final CurLimits curlimit;
-<span class="nc bnc" id="L465" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
         // get current limit setting
-<span class="nc" id="L467">        curlimit = new CurLimits(getReadLimit(), getWriteLimit());</span>
-<span class="nc bnc" id="L468" title="All 2 branches missed.">        if (curlimit.read == 0) {</span>
+<span class="nc" id="L466">        curlimit = new CurLimits(getReadLimit(), getWriteLimit());</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        if (curlimit.read == 0) {</span>
           // take the current bandwidth
-<span class="nc" id="L470">          curlimit.read = handler.trafficCounter().lastReadThroughput();</span>
-<span class="nc bnc" id="L471" title="All 2 branches missed.">          if (curlimit.read &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L472">            curlimit.read = 0;</span>
+<span class="nc" id="L469">          curlimit.read = handler.trafficCounter().lastReadThroughput();</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">          if (curlimit.read &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L471">            curlimit.read = 0;</span>
           }
         }
-<span class="nc bnc" id="L475" title="All 2 branches missed.">        if (curlimit.write == 0) {</span>
+<span class="nc bnc" id="L474" title="All 2 branches missed.">        if (curlimit.write == 0) {</span>
           // take the current bandwidth
-<span class="nc" id="L477">          curlimit.write = handler.trafficCounter().lastWriteThroughput();</span>
-<span class="nc bnc" id="L478" title="All 2 branches missed.">          if (curlimit.write &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L479">            curlimit.write = 0;</span>
+<span class="nc" id="L476">          curlimit.write = handler.trafficCounter().lastWriteThroughput();</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">          if (curlimit.write &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L478">            curlimit.write = 0;</span>
           }
         }
       } else {
-<span class="nc" id="L483">        curlimit = curLimits.getLast();</span>
+<span class="nc" id="L482">        curlimit = curLimits.getLast();</span>
       }
-<span class="nc" id="L485">      long newread = (long) (curlimit.read * (1 - percentageDecreaseRatio));</span>
-<span class="nc bnc" id="L486" title="All 2 branches missed.">      if (newread &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L487">        newread = limitLowBandwidth;</span>
+<span class="nc" id="L484">      long newread = (long) (curlimit.read * (1 - percentageDecreaseRatio));</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">      if (newread &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L486">        newread = limitLowBandwidth;</span>
       }
-<span class="nc" id="L489">      long newwrite = (long) (curlimit.write * (1 - percentageDecreaseRatio));</span>
-<span class="nc bnc" id="L490" title="All 2 branches missed.">      if (newwrite &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L491">        newwrite = limitLowBandwidth;</span>
+<span class="nc" id="L488">      long newwrite = (long) (curlimit.write * (1 - percentageDecreaseRatio));</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">      if (newwrite &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L490">        newwrite = limitLowBandwidth;</span>
       }
-<span class="nc" id="L493">      final CurLimits newlimit = new CurLimits(newread, newwrite);</span>
-<span class="nc bnc" id="L494" title="All 6 branches missed.">      if (curLimits.isEmpty() || curlimit.read != newread ||</span>
+<span class="nc" id="L492">      final CurLimits newlimit = new CurLimits(newread, newwrite);</span>
+<span class="nc bnc" id="L493" title="All 6 branches missed.">      if (curLimits.isEmpty() || curlimit.read != newread ||</span>
           curlimit.write != newwrite) {
         // Not same limit so add this limit
-<span class="nc" id="L497">        curLimits.add(newlimit);</span>
-<span class="nc" id="L498">        logger.info(&quot;Set new low limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
-<span class="nc" id="L499">                    newread);</span>
-<span class="nc" id="L500">        handler.configure(newlimit.write, newlimit.read);</span>
-<span class="nc" id="L501">        nbSinceLastDecrease += PAYLOAD;</span>
+<span class="nc" id="L496">        curLimits.add(newlimit);</span>
+<span class="nc" id="L497">        logger.info(&quot;Set new low limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
+<span class="nc" id="L498">                    newread);</span>
+<span class="nc" id="L499">        handler.configure(newlimit.write, newlimit.read);</span>
+<span class="nc" id="L500">        nbSinceLastDecrease += PAYLOAD;</span>
       }
-<span class="pc bpc" id="L503" title="1 of 2 branches missed.">    } else if (curLA &lt; lowCpuLimit) {</span>
-<span class="pc bpc" id="L504" title="1 of 2 branches missed.">      if (curLimits.isEmpty()) {</span>
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">    } else if (curLA &lt; lowCpuLimit) {</span>
+<span class="pc bpc" id="L503" title="1 of 2 branches missed.">      if (curLimits.isEmpty()) {</span>
         // nothing to do
-<span class="fc" id="L506">        return;</span>
+<span class="fc" id="L505">        return;</span>
       }
-<span class="nc bnc" id="L508" title="All 2 branches missed.">      if (nbSinceLastDecrease &gt; 0) {</span>
-<span class="nc" id="L509">        nbSinceLastDecrease--;</span>
+<span class="nc bnc" id="L507" title="All 2 branches missed.">      if (nbSinceLastDecrease &gt; 0) {</span>
+<span class="nc" id="L508">        nbSinceLastDecrease--;</span>
         // wait a bit more in case
-<span class="nc" id="L511">        return;</span>
+<span class="nc" id="L510">        return;</span>
       }
-<span class="nc" id="L513">      nbSinceLastDecrease = 0;</span>
-<span class="nc" id="L514">      curLimits.pollLast();</span>
+<span class="nc" id="L512">      nbSinceLastDecrease = 0;</span>
+<span class="nc" id="L513">      curLimits.pollLast();</span>
       final CurLimits newlimit;
-<span class="nc bnc" id="L516" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
+<span class="nc bnc" id="L515" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
         // reset to default limits
-<span class="nc" id="L518">        final long newread = getReadLimit();</span>
-<span class="nc" id="L519">        final long newwrite = getWriteLimit();</span>
-<span class="nc" id="L520">        logger.info(&quot;restore limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
-<span class="nc" id="L521">                    newread);</span>
-<span class="nc" id="L522">        handler.configure(newwrite, newread);</span>
-<span class="nc" id="L523">      } else {</span>
+<span class="nc" id="L517">        final long newread = getReadLimit();</span>
+<span class="nc" id="L518">        final long newwrite = getWriteLimit();</span>
+<span class="nc" id="L519">        logger.info(&quot;Restore limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
+<span class="nc" id="L520">                    newread);</span>
+<span class="nc" id="L521">        handler.configure(newwrite, newread);</span>
+<span class="nc" id="L522">      } else {</span>
         // set next upper values
-<span class="nc" id="L525">        newlimit = curLimits.getLast();</span>
-<span class="nc" id="L526">        final long newread = newlimit.read;</span>
-<span class="nc" id="L527">        final long newwrite = newlimit.write;</span>
-<span class="nc" id="L528">        logger</span>
-<span class="nc" id="L529">            .info(&quot;Set new upper limit since CPU = {} {}:{}&quot;, +curLA, newwrite,</span>
-<span class="nc" id="L530">                  newread);</span>
-<span class="nc" id="L531">        handler.configure(newwrite, newread);</span>
+<span class="nc" id="L524">        newlimit = curLimits.getLast();</span>
+<span class="nc" id="L525">        final long newread = newlimit.read;</span>
+<span class="nc" id="L526">        final long newwrite = newlimit.write;</span>
+<span class="nc" id="L527">        logger.info(&quot;Set new upper limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
+<span class="nc" id="L528">                    newread);</span>
+<span class="nc" id="L529">        handler.configure(newwrite, newread);</span>
         // give extra payload to prevent a brutal return to normal
-<span class="nc" id="L533">        nbSinceLastDecrease = PAYLOAD;</span>
+<span class="nc" id="L531">        nbSinceLastDecrease = PAYLOAD;</span>
       }
     }
-<span class="nc" id="L536">  }</span>
+<span class="nc" id="L534">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

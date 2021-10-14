@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.openr66.dao.MultipleMonitorDAO;
 import org.waarp.openr66.pojo.MultipleMonitor;
 
@@ -44,6 +45,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor&lt;MultipleMonitor&g
   protected static final String SQL_DELETE =
       &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
   protected static final String SQL_EXIST =
       &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
@@ -60,73 +62,94 @@ public class DBMultipleMonitorDAO extends StatementExecutor&lt;MultipleMonitor&g
 
 
   public DBMultipleMonitorDAO(final Connection con) {
-<span class="fc" id="L63">    super(con);</span>
-<span class="fc" id="L64">  }</span>
+<span class="fc" id="L65">    super(con);</span>
+<span class="fc" id="L66">  }</span>
 
   @Override
-  protected String getId(final MultipleMonitor e1) {
-<span class="nc" id="L68">    return e1.getHostid();</span>
+  protected final boolean isCachedEnable() {
+<span class="fc" id="L70">    return false;</span>
   }
 
   @Override
-  protected String getSelectRequest() {
-<span class="nc" id="L73">    return SQL_SELECT;</span>
+  protected final String getId(final MultipleMonitor e1) {
+<span class="nc" id="L75">    return e1.getHostid();</span>
   }
 
   @Override
-  protected String getGetAllRequest() {
-<span class="nc" id="L78">    return SQL_GET_ALL;</span>
+  protected final String getSelectRequest() {
+<span class="nc" id="L80">    return SQL_SELECT;</span>
   }
 
   @Override
-  protected String getExistRequest() {
-<span class="fc" id="L83">    return SQL_EXIST;</span>
+  protected final String getGetAllRequest() {
+<span class="nc" id="L85">    return SQL_GET_ALL;</span>
   }
 
   @Override
-  protected Object[] getInsertValues(final MultipleMonitor multipleMonitor) {
-<span class="nc" id="L88">    return new Object[] {</span>
-<span class="nc" id="L89">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
-<span class="nc" id="L90">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule()</span>
-    };
+  protected final String getCountRequest() {
+<span class="nc" id="L90">    return SQL_COUNT_ALL;</span>
   }
 
   @Override
-  protected String getInsertRequest() {
-<span class="nc" id="L96">    return SQL_INSERT;</span>
+  protected final String getExistRequest() {
+<span class="fc" id="L95">    return SQL_EXIST;</span>
   }
 
   @Override
-  protected Object[] getUpdateValues(final MultipleMonitor multipleMonitor) {
+  protected final Object[] getInsertValues(
+      final MultipleMonitor multipleMonitor) {
 <span class="nc" id="L101">    return new Object[] {</span>
 <span class="nc" id="L102">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
-<span class="nc" id="L103">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule(),</span>
-<span class="nc" id="L104">        multipleMonitor.getHostid()</span>
+<span class="nc" id="L103">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule()</span>
     };
   }
 
   @Override
-  protected String getUpdateRequest() {
-<span class="nc" id="L110">    return SQL_UPDATE;</span>
+  protected final String getInsertRequest() {
+<span class="nc" id="L109">    return SQL_INSERT;</span>
   }
 
   @Override
-  protected String getDeleteRequest() {
-<span class="nc" id="L115">    return SQL_DELETE;</span>
+  protected final Object[] getUpdateValues(
+      final MultipleMonitor multipleMonitor) {
+<span class="nc" id="L115">    return new Object[] {</span>
+<span class="nc" id="L116">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
+<span class="nc" id="L117">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule(),</span>
+<span class="nc" id="L118">        multipleMonitor.getHostid()</span>
+    };
   }
 
   @Override
-  protected String getDeleteAllRequest() {
-<span class="nc" id="L120">    return SQL_DELETE_ALL;</span>
+  protected final String getUpdateRequest() {
+<span class="nc" id="L124">    return SQL_UPDATE;</span>
   }
 
   @Override
-  public MultipleMonitor getFromResultSet(final ResultSet set)
+  protected final String getDeleteRequest() {
+<span class="nc" id="L129">    return SQL_DELETE;</span>
+  }
+
+  @Override
+  protected final String getDeleteAllRequest() {
+<span class="nc" id="L134">    return SQL_DELETE_ALL;</span>
+  }
+
+  @Override
+  public final MultipleMonitor getFromResultSet(final ResultSet set)
       throws SQLException {
-<span class="nc" id="L126">    return new MultipleMonitor(set.getString(HOSTID_FIELD),</span>
-<span class="nc" id="L127">                               set.getInt(COUNT_CONFIG_FIELD),</span>
-<span class="nc" id="L128">                               set.getInt(COUNT_HOST_FIELD),</span>
-<span class="nc" id="L129">                               set.getInt(COUNT_RULE_FIELD));</span>
+    try {
+<span class="nc" id="L141">      return new MultipleMonitor(set.getString(HOSTID_FIELD),</span>
+<span class="nc" id="L142">                                 set.getInt(COUNT_CONFIG_FIELD),</span>
+<span class="nc" id="L143">                                 set.getInt(COUNT_HOST_FIELD),</span>
+<span class="nc" id="L144">                                 set.getInt(COUNT_RULE_FIELD));</span>
+<span class="nc" id="L145">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L146">      throw new SQLException(e);</span>
+    }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+<span class="fc" id="L152">    return false;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

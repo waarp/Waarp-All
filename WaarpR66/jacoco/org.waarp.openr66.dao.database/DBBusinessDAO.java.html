@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.pojo.Business;
@@ -49,6 +50,7 @@ public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
   protected static final String SQL_DELETE =
       &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
   protected static final String SQL_EXIST =
       &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
@@ -67,89 +69,108 @@ public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
    * Hashmap for Business
    */
   private static final SynchronizedLruCache&lt;String, Business&gt;
-<span class="fc" id="L70">      reentrantConcurrentHashMap =</span>
+<span class="fc" id="L72">      reentrantConcurrentHashMap =</span>
       new SynchronizedLruCache&lt;String, Business&gt;(500, 180000);
 
   public DBBusinessDAO(final Connection con) {
-<span class="fc" id="L74">    super(con);</span>
-<span class="fc" id="L75">  }</span>
+<span class="fc" id="L76">    super(con);</span>
+<span class="fc" id="L77">  }</span>
 
   @Override
-  protected boolean isCachedEnable() {
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
+  protected final boolean isCachedEnable() {
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">    return Configuration.configuration.getMultipleMonitors() &lt;= 1;</span>
   }
 
   @Override
-  protected SynchronizedLruCache&lt;String, Business&gt; getCache() {
-<span class="fc" id="L84">    return reentrantConcurrentHashMap;</span>
+  protected final SynchronizedLruCache&lt;String, Business&gt; getCache() {
+<span class="fc" id="L86">    return reentrantConcurrentHashMap;</span>
   }
 
   @Override
-  protected String getId(final Business e1) {
-<span class="fc" id="L89">    return e1.getHostid();</span>
+  protected final String getId(final Business e1) {
+<span class="fc" id="L91">    return e1.getHostid();</span>
   }
 
   @Override
-  protected String getSelectRequest() {
-<span class="fc" id="L94">    return SQL_SELECT;</span>
+  protected final String getSelectRequest() {
+<span class="fc" id="L96">    return SQL_SELECT;</span>
   }
 
   @Override
-  protected String getGetAllRequest() {
-<span class="fc" id="L99">    return SQL_GET_ALL;</span>
+  protected final String getGetAllRequest() {
+<span class="fc" id="L101">    return SQL_GET_ALL;</span>
   }
 
   @Override
-  protected String getExistRequest() {
-<span class="fc" id="L104">    return SQL_EXIST;</span>
+  protected final String getCountRequest() {
+<span class="nc" id="L106">    return SQL_COUNT_ALL;</span>
   }
 
   @Override
-  protected Object[] getInsertValues(final Business business) {
-<span class="fc" id="L109">    return new Object[] {</span>
-<span class="fc" id="L110">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
-<span class="fc" id="L111">        business.getAliases(), business.getOthers(),</span>
-<span class="fc" id="L112">        business.getUpdatedInfo().ordinal()</span>
+  protected final String getExistRequest() {
+<span class="fc" id="L111">    return SQL_EXIST;</span>
+  }
+
+  @Override
+  protected final Object[] getInsertValues(final Business business)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L117">    business.checkValues();</span>
+<span class="fc" id="L118">    return new Object[] {</span>
+<span class="fc" id="L119">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
+<span class="fc" id="L120">        business.getAliases(), business.getOthers(),</span>
+<span class="fc" id="L121">        business.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
-  protected String getInsertRequest() {
-<span class="fc" id="L118">    return SQL_INSERT;</span>
+  protected final String getInsertRequest() {
+<span class="fc" id="L127">    return SQL_INSERT;</span>
   }
 
   @Override
-  protected Object[] getUpdateValues(final Business business) {
-<span class="fc" id="L123">    return new Object[] {</span>
-<span class="fc" id="L124">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
-<span class="fc" id="L125">        business.getAliases(), business.getOthers(),</span>
-<span class="fc" id="L126">        business.getUpdatedInfo().ordinal(), business.getHostid()</span>
+  protected final Object[] getUpdateValues(final Business business)
+      throws WaarpDatabaseSqlException {
+<span class="fc" id="L133">    business.checkValues();</span>
+<span class="fc" id="L134">    return new Object[] {</span>
+<span class="fc" id="L135">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
+<span class="fc" id="L136">        business.getAliases(), business.getOthers(),</span>
+<span class="fc" id="L137">        business.getUpdatedInfo().ordinal(), business.getHostid()</span>
     };
   }
 
   @Override
-  protected String getUpdateRequest() {
-<span class="fc" id="L132">    return SQL_UPDATE;</span>
+  protected final String getUpdateRequest() {
+<span class="fc" id="L143">    return SQL_UPDATE;</span>
   }
 
   @Override
-  protected String getDeleteRequest() {
-<span class="fc" id="L137">    return SQL_DELETE;</span>
+  protected final String getDeleteRequest() {
+<span class="fc" id="L148">    return SQL_DELETE;</span>
   }
 
   @Override
-  protected String getDeleteAllRequest() {
-<span class="fc" id="L142">    return SQL_DELETE_ALL;</span>
+  protected final String getDeleteAllRequest() {
+<span class="fc" id="L153">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
-  public Business getFromResultSet(final ResultSet set) throws SQLException {
-<span class="fc" id="L147">    return new Business(set.getString(HOSTID_FIELD),</span>
-<span class="fc" id="L148">                        set.getString(BUSINESS_FIELD),</span>
-<span class="fc" id="L149">                        set.getString(ROLES_FIELD),</span>
-<span class="fc" id="L150">                        set.getString(ALIASES_FIELD),</span>
-<span class="fc" id="L151">                        set.getString(OTHERS_FIELD),</span>
-<span class="fc" id="L152">                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+  public final Business getFromResultSet(final ResultSet set)
+      throws SQLException {
+    try {
+<span class="fc" id="L160">      return new Business(set.getString(HOSTID_FIELD),</span>
+<span class="fc" id="L161">                          set.getString(BUSINESS_FIELD),</span>
+<span class="fc" id="L162">                          set.getString(ROLES_FIELD),</span>
+<span class="fc" id="L163">                          set.getString(ALIASES_FIELD),</span>
+<span class="fc" id="L164">                          set.getString(OTHERS_FIELD),</span>
+<span class="fc" id="L165">                          UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="nc" id="L166">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L167">      throw new SQLException(e);</span>
+    }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+<span class="fc" id="L173">    return false;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -35,6 +35,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
@@ -71,25 +72,29 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
   /**
    * Internal Logger
    */
-<span class="fc" id="L74">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L75">      WaarpLoggerFactory.getLogger(DbRule.class);</span>
-<span class="fc" id="L76">  private static final String[] STRING_0_LENGTH = new String[0];</span>
-<span class="fc" id="L77">  private static final String[][] STRINGS_0_0_LENGTH = new String[0][0];</span>
+<span class="fc" id="L75">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L76">      WaarpLoggerFactory.getLogger(DbRule.class);</span>
+<span class="fc" id="L77">  private static final String[] STRING_0_LENGTH = new String[0];</span>
+<span class="fc" id="L78">  private static final String[][] STRINGS_0_0_LENGTH = new String[0][0];</span>
 
-<span class="fc" id="L79">  public enum Columns {</span>
-<span class="fc" id="L80">    HOSTIDS, MODETRANS, RECVPATH, SENDPATH, ARCHIVEPATH, WORKPATH, RPRETASKS,</span>
-<span class="fc" id="L81">    RPOSTTASKS, RERRORTASKS, SPRETASKS, SPOSTTASKS, SERRORTASKS, UPDATEDINFO,</span>
-<span class="fc" id="L82">    IDRULE</span>
+<span class="fc" id="L80">  public enum Columns {</span>
+<span class="fc" id="L81">    HOSTIDS, MODETRANS, RECVPATH, SENDPATH, ARCHIVEPATH, WORKPATH, RPRETASKS,</span>
+<span class="fc" id="L82">    RPOSTTASKS, RERRORTASKS, SPRETASKS, SPOSTTASKS, SERRORTASKS, UPDATEDINFO,</span>
+<span class="fc" id="L83">    IDRULE</span>
   }
 
-<span class="fc" id="L85">  public static final int[] dbTypes = {</span>
-      Types.LONGVARCHAR, Types.INTEGER, Types.NVARCHAR, Types.NVARCHAR,
-      Types.NVARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
+<span class="fc" id="L86">  public static final int[] dbTypes = {</span>
+      Types.LONGVARCHAR, Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
+      Types.VARCHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
       Types.LONGVARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
       Types.LONGVARCHAR, Types.INTEGER, Types.NVARCHAR
   };
 
   public static final String table = &quot; RULES &quot;;
+
+<span class="fc" id="L95">  public static final Columns[] indexes = {</span>
+      Columns.UPDATEDINFO
+  };
 
   /**
    * Internal context XML fields
@@ -108,63 +113,68 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
   /**
    * Internal context XML fields
    */
+  public static final String TASK_RANK = &quot;rank&quot;;
+  /**
+   * Internal context XML fields
+   */
   public static final String TASK_COMMENT = &quot;comment&quot;;
 
-<span class="fc" id="L113">  protected static final String selectAllFields =</span>
-<span class="fc" id="L114">      Columns.HOSTIDS.name() + ',' + Columns.MODETRANS.name() + ',' +</span>
-<span class="fc" id="L115">      Columns.RECVPATH.name() + ',' + Columns.SENDPATH.name() + ',' +</span>
-<span class="fc" id="L116">      Columns.ARCHIVEPATH.name() + ',' + Columns.WORKPATH.name() + ',' +</span>
-<span class="fc" id="L117">      Columns.RPRETASKS.name() + ',' + Columns.RPOSTTASKS.name() + ',' +</span>
-<span class="fc" id="L118">      Columns.RERRORTASKS.name() + ',' + Columns.SPRETASKS.name() + ',' +</span>
-<span class="fc" id="L119">      Columns.SPOSTTASKS.name() + ',' + Columns.SERRORTASKS.name() + ',' +</span>
-<span class="fc" id="L120">      Columns.UPDATEDINFO.name() + ',' + Columns.IDRULE.name();</span>
+<span class="fc" id="L122">  protected static final String selectAllFields =</span>
+<span class="fc" id="L123">      Columns.HOSTIDS.name() + ',' + Columns.MODETRANS.name() + ',' +</span>
+<span class="fc" id="L124">      Columns.RECVPATH.name() + ',' + Columns.SENDPATH.name() + ',' +</span>
+<span class="fc" id="L125">      Columns.ARCHIVEPATH.name() + ',' + Columns.WORKPATH.name() + ',' +</span>
+<span class="fc" id="L126">      Columns.RPRETASKS.name() + ',' + Columns.RPOSTTASKS.name() + ',' +</span>
+<span class="fc" id="L127">      Columns.RERRORTASKS.name() + ',' + Columns.SPRETASKS.name() + ',' +</span>
+<span class="fc" id="L128">      Columns.SPOSTTASKS.name() + ',' + Columns.SERRORTASKS.name() + ',' +</span>
+<span class="fc" id="L129">      Columns.UPDATEDINFO.name() + ',' + Columns.IDRULE.name();</span>
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     // Nothing
-<span class="fc" id="L125">  }</span>
+<span class="fc" id="L134">  }</span>
 
   @Override
-  protected String getTable() {
-<span class="nc" id="L129">    return table;</span>
+  protected final String getTable() {
+<span class="nc" id="L138">    return table;</span>
   }
 
   @Override
-  protected AbstractDAO&lt;Rule&gt; getDao() throws DAOConnectionException {
-<span class="fc" id="L134">    return DAOFactory.getInstance().getRuleDAO();</span>
+  protected final AbstractDAO&lt;Rule&gt; getDao(final boolean isCacheable)
+      throws DAOConnectionException {
+<span class="fc" id="L144">    return DAOFactory.getInstance().getRuleDAO(isCacheable);</span>
   }
 
   @Override
-  protected String getPrimaryKey() {
-<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (pojo != null) {</span>
-<span class="fc" id="L140">      return pojo.getName();</span>
+  protected final String getPrimaryKey() {
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">    if (pojo != null) {</span>
+<span class="fc" id="L150">      return pojo.getName();</span>
     }
-<span class="nc" id="L142">    throw new IllegalArgumentException(&quot;pojo is null&quot;);</span>
+<span class="nc" id="L152">    throw new IllegalArgumentException(&quot;pojo is null&quot;);</span>
   }
 
   @Override
-  protected String getPrimaryField() {
-<span class="fc" id="L147">    return Columns.IDRULE.name();</span>
+  protected final String getPrimaryField() {
+<span class="fc" id="L157">    return Columns.IDRULE.name();</span>
   }
 
-  protected final void checkPath() {
-<span class="pc bpc" id="L151" title="2 of 4 branches missed.">    if (getRecvPath() != null &amp;&amp; !getRecvPath().isEmpty() &amp;&amp;</span>
-<span class="fc bfc" id="L152" title="All 2 branches covered.">        getRecvPath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
-<span class="fc" id="L153">      pojo.setRecvPath(DirInterface.SEPARATOR + getRecvPath());</span>
+  protected final void checkPathes() throws WaarpDatabaseSqlException {
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(getRecvPath()) &amp;&amp;</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        getRecvPath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
+<span class="fc" id="L163">      pojo.setRecvPath(DirInterface.SEPARATOR + getRecvPath());</span>
     }
-<span class="pc bpc" id="L155" title="2 of 4 branches missed.">    if (getSendPath() != null &amp;&amp; !getSendPath().isEmpty() &amp;&amp;</span>
-<span class="fc bfc" id="L156" title="All 2 branches covered.">        getSendPath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
-<span class="fc" id="L157">      pojo.setSendPath(DirInterface.SEPARATOR + getSendPath());</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(getSendPath()) &amp;&amp;</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        getSendPath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
+<span class="fc" id="L167">      pojo.setSendPath(DirInterface.SEPARATOR + getSendPath());</span>
     }
-<span class="pc bpc" id="L159" title="2 of 4 branches missed.">    if (getArchivePath() != null &amp;&amp; !getArchivePath().isEmpty() &amp;&amp;</span>
-<span class="fc bfc" id="L160" title="All 2 branches covered.">        getArchivePath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
-<span class="fc" id="L161">      pojo.setArchivePath(DirInterface.SEPARATOR + getArchivePath());</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(getArchivePath()) &amp;&amp;</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        getArchivePath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
+<span class="fc" id="L171">      pojo.setArchivePath(DirInterface.SEPARATOR + getArchivePath());</span>
     }
-<span class="pc bpc" id="L163" title="2 of 4 branches missed.">    if (getWorkPath() != null &amp;&amp; !getWorkPath().isEmpty() &amp;&amp;</span>
-<span class="fc bfc" id="L164" title="All 2 branches covered.">        getWorkPath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
-<span class="fc" id="L165">      pojo.setWorkPath(DirInterface.SEPARATOR + getWorkPath());</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(getWorkPath()) &amp;&amp;</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        getWorkPath().charAt(0) != DirInterface.SEPARATORCHAR) {</span>
+<span class="fc" id="L175">      pojo.setWorkPath(DirInterface.SEPARATOR + getWorkPath());</span>
     }
-<span class="fc" id="L167">  }</span>
+<span class="fc" id="L177">  }</span>
 
   /**
    * @param idRule
@@ -186,46 +196,51 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
                 final String archivePath, final String workPath,
                 final String rpreTasks, final String rpostTasks,
                 final String rerrorTasks, final String spreTasks,
-<span class="fc" id="L189">                final String spostTasks, final String serrorTasks) {</span>
-<span class="fc" id="L190">    pojo = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,</span>
+                final String spostTasks, final String serrorTasks)
+<span class="fc" id="L200">      throws WaarpDatabaseSqlException {</span>
+<span class="fc" id="L201">    pojo = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,</span>
                     sendPath, archivePath, workPath,
-<span class="fc" id="L192">                    fromLegacyTasks(getTasksRule(rpreTasks)),</span>
-<span class="fc" id="L193">                    fromLegacyTasks(getTasksRule(rpostTasks)),</span>
-<span class="fc" id="L194">                    fromLegacyTasks(getTasksRule(rerrorTasks)),</span>
-<span class="fc" id="L195">                    fromLegacyTasks(getTasksRule(spreTasks)),</span>
-<span class="fc" id="L196">                    fromLegacyTasks(getTasksRule(spostTasks)),</span>
-<span class="fc" id="L197">                    fromLegacyTasks(getTasksRule(serrorTasks)));</span>
-<span class="fc" id="L198">    checkPath();</span>
-<span class="fc" id="L199">  }</span>
+<span class="fc" id="L203">                    fromLegacyTasks(getTasksRule(rpreTasks)),</span>
+<span class="fc" id="L204">                    fromLegacyTasks(getTasksRule(rpostTasks)),</span>
+<span class="fc" id="L205">                    fromLegacyTasks(getTasksRule(rerrorTasks)),</span>
+<span class="fc" id="L206">                    fromLegacyTasks(getTasksRule(spreTasks)),</span>
+<span class="fc" id="L207">                    fromLegacyTasks(getTasksRule(spostTasks)),</span>
+<span class="fc" id="L208">                    fromLegacyTasks(getTasksRule(serrorTasks)));</span>
+<span class="fc" id="L209">    checkPathes();</span>
+<span class="fc" id="L210">  }</span>
 
   /**
    * @param idRule
    *
    * @throws WaarpDatabaseException
    */
-<span class="fc" id="L206">  public DbRule(final String idRule) throws WaarpDatabaseException {</span>
-<span class="fc" id="L207">    RuleDAO ruleAccess = null;</span>
+<span class="fc" id="L217">  public DbRule(final String idRule) throws WaarpDatabaseException {</span>
+<span class="fc" id="L218">    RuleDAO ruleAccess = null;</span>
     try {
-<span class="fc" id="L209">      ruleAccess = DAOFactory.getInstance().getRuleDAO();</span>
-<span class="fc" id="L210">      pojo = ruleAccess.select(idRule);</span>
-<span class="nc" id="L211">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L212">      throw new WaarpDatabaseException(e);</span>
-<span class="fc" id="L213">    } catch (final DAONoDataException e) {</span>
-<span class="fc" id="L214">      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND + &quot; &quot; + idRule, e);</span>
+<span class="fc" id="L220">      ruleAccess = DAOFactory.getInstance().getRuleDAO(true);</span>
+<span class="fc" id="L221">      pojo = ruleAccess.select(idRule);</span>
+<span class="nc" id="L222">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L223">      throw new WaarpDatabaseException(e);</span>
+<span class="fc" id="L224">    } catch (final DAONoDataException e) {</span>
+<span class="fc" id="L225">      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND + &quot; &quot; + idRule, e);</span>
     } finally {
-<span class="fc" id="L216">      DAOFactory.closeDAO(ruleAccess);</span>
+<span class="fc" id="L227">      DAOFactory.closeDAO(ruleAccess);</span>
     }
-<span class="fc" id="L218">    checkPath();</span>
-<span class="fc" id="L219">  }</span>
+<span class="fc" id="L229">    checkPathes();</span>
+<span class="fc" id="L230">  }</span>
 
-<span class="fc" id="L221">  public DbRule(final Rule rule) {</span>
-<span class="pc bpc" id="L222" title="1 of 2 branches missed.">    if (rule == null) {</span>
-<span class="nc" id="L223">      throw new IllegalArgumentException(</span>
+<span class="fc" id="L232">  public DbRule(final Rule rule) {</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    if (rule == null) {</span>
+<span class="nc" id="L234">      throw new IllegalArgumentException(</span>
           &quot;Argument in constructor cannot be null&quot;);
     }
-<span class="fc" id="L226">    this.pojo = rule;</span>
-<span class="fc" id="L227">    checkPath();</span>
-<span class="fc" id="L228">  }</span>
+<span class="fc" id="L237">    this.pojo = rule;</span>
+    try {
+<span class="fc" id="L239">      checkPathes();</span>
+<span class="nc" id="L240">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L241">      throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L242">    }</span>
+<span class="fc" id="L243">  }</span>
 
   /**
    * Constructor used from XML file
@@ -251,20 +266,21 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
                 final String[][] rerrortasksArray,
                 final String[][] spretasksArray,
                 final String[][] sposttasksArray,
-<span class="fc" id="L254">                final String[][] serrortasksArray) {</span>
-<span class="pc bpc" id="L255" title="1 of 2 branches missed.">    if (idsArrayRef == null) {</span>
-<span class="nc" id="L256">      idsArrayRef = STRING_0_LENGTH;</span>
+                final String[][] serrortasksArray)
+<span class="fc" id="L270">      throws WaarpDatabaseSqlException {</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">    if (idsArrayRef == null) {</span>
+<span class="nc" id="L272">      idsArrayRef = STRING_0_LENGTH;</span>
     }
-<span class="fc" id="L258">    pojo =</span>
-<span class="fc" id="L259">        new Rule(idrule, mode, Arrays.asList(idsArrayRef), recvpath, sendpath,</span>
-<span class="fc" id="L260">                 archivepath, workpath, fromLegacyTasks(rpretasksArray),</span>
-<span class="fc" id="L261">                 fromLegacyTasks(rposttasksArray),</span>
-<span class="fc" id="L262">                 fromLegacyTasks(rerrortasksArray),</span>
-<span class="fc" id="L263">                 fromLegacyTasks(spretasksArray),</span>
-<span class="fc" id="L264">                 fromLegacyTasks(sposttasksArray),</span>
-<span class="fc" id="L265">                 fromLegacyTasks(serrortasksArray));</span>
-<span class="fc" id="L266">    checkPath();</span>
-<span class="fc" id="L267">  }</span>
+<span class="fc" id="L274">    pojo =</span>
+<span class="fc" id="L275">        new Rule(idrule, mode, Arrays.asList(idsArrayRef), recvpath, sendpath,</span>
+<span class="fc" id="L276">                 archivepath, workpath, fromLegacyTasks(rpretasksArray),</span>
+<span class="fc" id="L277">                 fromLegacyTasks(rposttasksArray),</span>
+<span class="fc" id="L278">                 fromLegacyTasks(rerrortasksArray),</span>
+<span class="fc" id="L279">                 fromLegacyTasks(spretasksArray),</span>
+<span class="fc" id="L280">                 fromLegacyTasks(sposttasksArray),</span>
+<span class="fc" id="L281">                 fromLegacyTasks(serrortasksArray));</span>
+<span class="fc" id="L282">    checkPathes();</span>
+<span class="fc" id="L283">  }</span>
 
   /**
    * Constructor from Json
@@ -273,86 +289,93 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @throws WaarpDatabaseSqlException
    */
-<span class="fc" id="L276">  public DbRule(final ObjectNode source) throws WaarpDatabaseSqlException {</span>
-<span class="fc" id="L277">    pojo = new Rule();</span>
-<span class="fc" id="L278">    setFromJson(source, false);</span>
-<span class="pc bpc" id="L279" title="2 of 4 branches missed.">    if (getIdRule() == null || getIdRule().isEmpty()) {</span>
-<span class="nc" id="L280">      throw new WaarpDatabaseSqlException(</span>
+<span class="fc" id="L292">  public DbRule(final ObjectNode source) throws WaarpDatabaseSqlException {</span>
+<span class="fc" id="L293">    pojo = new Rule();</span>
+<span class="fc" id="L294">    setFromJson(source, false);</span>
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">    if (ParametersChecker.isEmpty(getIdRule())) {</span>
+<span class="nc" id="L296">      throw new WaarpDatabaseSqlException(</span>
           &quot;Not enough argument to create the object&quot;);
     }
-<span class="fc" id="L283">    checkPath();</span>
-<span class="fc" id="L284">  }</span>
+<span class="fc" id="L299">    checkPathes();</span>
+<span class="fc" id="L300">  }</span>
 
   @Override
-  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
+  protected final void checkValues() throws WaarpDatabaseSqlException {
+<span class="fc" id="L304">    pojo.checkValues();</span>
+<span class="fc" id="L305">  }</span>
+
+  @Override
+  public final void setFromJson(final ObjectNode node,
+                                final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
-<span class="fc" id="L289">    super.setFromJson(node, ignorePrimaryKey);</span>
-<span class="fc" id="L290">    checkPath();</span>
-<span class="fc" id="L291">  }</span>
+<span class="fc" id="L311">    super.setFromJson(node, ignorePrimaryKey);</span>
+<span class="fc" id="L312">    checkPathes();</span>
+<span class="fc" id="L313">  }</span>
 
   @Override
-  protected void setFromJson(final String field, final JsonNode value) {
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L296">      return;</span>
+  protected final void setFromJson(final String field, final JsonNode value)
+      throws WaarpDatabaseSqlException {
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L319">      return;</span>
     }
-<span class="fc bfc" id="L298" title="All 2 branches covered.">    for (final Columns column : Columns.values()) {</span>
-<span class="fc bfc" id="L299" title="All 2 branches covered.">      if (column.name().equalsIgnoreCase(field)) {</span>
-<span class="pc bpc" id="L300" title="2 of 15 branches missed.">        switch (column) {</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">    for (final Columns column : Columns.values()) {</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">      if (column.name().equalsIgnoreCase(field)) {</span>
+<span class="pc bpc" id="L323" title="2 of 15 branches missed.">        switch (column) {</span>
           case ARCHIVEPATH:
-<span class="fc" id="L302">            pojo.setArchivePath(value.asText());</span>
-<span class="fc" id="L303">            break;</span>
+<span class="fc" id="L325">            pojo.setArchivePath(value.asText());</span>
+<span class="fc" id="L326">            break;</span>
           case HOSTIDS:
-<span class="fc" id="L305">            pojo.setHostids(Arrays.asList(getIdsRule(value.asText())));</span>
-<span class="fc" id="L306">            break;</span>
+<span class="fc" id="L328">            pojo.setHostids(Arrays.asList(getIdsRule(value.asText())));</span>
+<span class="fc" id="L329">            break;</span>
           case IDRULE:
-<span class="fc" id="L308">            pojo.setName(value.asText());</span>
-<span class="fc" id="L309">            break;</span>
+<span class="fc" id="L331">            pojo.setName(value.asText());</span>
+<span class="fc" id="L332">            break;</span>
           case MODETRANS:
-<span class="fc" id="L311">            pojo.setMode(value.asInt());</span>
-<span class="fc" id="L312">            break;</span>
+<span class="fc" id="L334">            pojo.setMode(value.asInt());</span>
+<span class="fc" id="L335">            break;</span>
           case RECVPATH:
-<span class="fc" id="L314">            pojo.setRecvPath(value.asText());</span>
-<span class="fc" id="L315">            break;</span>
+<span class="fc" id="L337">            pojo.setRecvPath(value.asText());</span>
+<span class="fc" id="L338">            break;</span>
           case RERRORTASKS:
-<span class="fc" id="L317">            pojo.setRErrorTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
-<span class="fc" id="L318">            break;</span>
+<span class="fc" id="L340">            pojo.setRErrorTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
+<span class="fc" id="L341">            break;</span>
           case RPOSTTASKS:
-<span class="fc" id="L320">            pojo.setRPostTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
-<span class="fc" id="L321">            break;</span>
+<span class="fc" id="L343">            pojo.setRPostTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
+<span class="fc" id="L344">            break;</span>
           case RPRETASKS:
-<span class="fc" id="L323">            pojo.setRPreTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
-<span class="fc" id="L324">            break;</span>
+<span class="fc" id="L346">            pojo.setRPreTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
+<span class="fc" id="L347">            break;</span>
           case SENDPATH:
-<span class="fc" id="L326">            pojo.setSendPath(value.asText());</span>
-<span class="fc" id="L327">            break;</span>
+<span class="fc" id="L349">            pojo.setSendPath(value.asText());</span>
+<span class="fc" id="L350">            break;</span>
           case SERRORTASKS:
-<span class="fc" id="L329">            pojo.setSErrorTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
-<span class="fc" id="L330">            break;</span>
+<span class="fc" id="L352">            pojo.setSErrorTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
+<span class="fc" id="L353">            break;</span>
           case SPOSTTASKS:
-<span class="fc" id="L332">            pojo.setSPostTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
-<span class="fc" id="L333">            break;</span>
+<span class="fc" id="L355">            pojo.setSPostTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
+<span class="fc" id="L356">            break;</span>
           case SPRETASKS:
-<span class="fc" id="L335">            pojo.setSPreTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
-<span class="fc" id="L336">            break;</span>
+<span class="fc" id="L358">            pojo.setSPreTasks(fromLegacyTasks(getTasksRule(value.asText())));</span>
+<span class="fc" id="L359">            break;</span>
           case WORKPATH:
-<span class="fc" id="L338">            pojo.setWorkPath(value.asText());</span>
-<span class="fc" id="L339">            break;</span>
+<span class="fc" id="L361">            pojo.setWorkPath(value.asText());</span>
+<span class="fc" id="L362">            break;</span>
           case UPDATEDINFO:
-<span class="nc" id="L341">            pojo.setUpdatedInfo(</span>
-<span class="nc" id="L342">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
+<span class="nc" id="L364">            pojo.setUpdatedInfo(</span>
+<span class="nc" id="L365">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
             break;
         }
       }
     }
-<span class="fc" id="L347">    checkPath();</span>
-<span class="fc" id="L348">  }</span>
+<span class="fc" id="L370">    checkPathes();</span>
+<span class="fc" id="L371">  }</span>
 
   /**
    * Private constructor for Commander only
    */
-<span class="fc" id="L353">  private DbRule() {</span>
-<span class="fc" id="L354">    pojo = new Rule();</span>
-<span class="fc" id="L355">  }</span>
+<span class="fc" id="L376">  private DbRule() {</span>
+<span class="fc" id="L377">    pojo = new Rule();</span>
+<span class="fc" id="L378">  }</span>
 
   /**
    * Delete object from table DbRule only if no DbTaskRunner is using it.
@@ -360,29 +383,26 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    * @throws WaarpDatabaseException
    */
   @Override
-  public void delete() throws WaarpDatabaseException {
-<span class="fc" id="L364">    AbstractDAO&lt;Transfer&gt; transferDAO = null;</span>
+  public final void delete() throws WaarpDatabaseException {
+<span class="fc" id="L387">    AbstractDAO&lt;Transfer&gt; transferDAO = null;</span>
     try {
-<span class="fc" id="L366">      transferDAO = DAOFactory.getInstance().getTransferDAO();</span>
-<span class="fc" id="L367">      final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="fc" id="L368">      final Filter filter =</span>
-<span class="fc" id="L369">          new Filter(DbTaskRunner.Columns.IDRULE.name(), &quot;=&quot;, this.getIdRule());</span>
-<span class="fc" id="L370">      filters.add(filter);</span>
-<span class="fc" id="L371">      final List&lt;Transfer&gt; transfers = transferDAO.find(filters);</span>
-<span class="fc bfc" id="L372" title="All 2 branches covered.">      if (!transfers.isEmpty()) {</span>
-<span class="fc" id="L373">        transfers.clear();</span>
-<span class="fc" id="L374">        throw new WaarpDatabaseNoDataException(&quot;Rule &quot; + this.getIdRule() +</span>
+<span class="fc" id="L389">      transferDAO = DAOFactory.getInstance().getTransferDAO();</span>
+<span class="fc" id="L390">      final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="fc" id="L391">      final Filter filter =</span>
+<span class="fc" id="L392">          new Filter(DbTaskRunner.Columns.IDRULE.name(), &quot;=&quot;, this.getIdRule());</span>
+<span class="fc" id="L393">      filters.add(filter);</span>
+<span class="fc" id="L394">      final long nb = transferDAO.count(filters);</span>
+<span class="fc bfc" id="L395" title="All 2 branches covered.">      if (nb &gt; 0) {</span>
+<span class="fc" id="L396">        throw new WaarpDatabaseNoDataException(&quot;Rule &quot; + this.getIdRule() +</span>
                                                &quot; is still used by TaskRunner therefore it cannot be deleted.&quot;);
       }
-<span class="nc" id="L377">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L378">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="nc" id="L399">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L400">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="pc bpc" id="L380" title="1 of 2 branches missed.">      if (transferDAO != null) {</span>
-<span class="fc" id="L381">        transferDAO.close();</span>
-      }
+<span class="fc" id="L402">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="fc" id="L384">    super.delete();</span>
-<span class="fc" id="L385">  }</span>
+<span class="fc" id="L404">    super.delete();</span>
+<span class="fc" id="L405">  }</span>
 
   /**
    * Delete all Rules but returns original one, therefore not checking if
@@ -393,24 +413,24 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    * @throws WaarpDatabaseException
    */
   public static DbRule[] deleteAll() throws WaarpDatabaseException {
-<span class="nc" id="L396">    RuleDAO ruleAccess = null;</span>
+<span class="nc" id="L416">    RuleDAO ruleAccess = null;</span>
     List&lt;Rule&gt; rules;
     try {
-<span class="nc" id="L399">      ruleAccess = DAOFactory.getInstance().getRuleDAO();</span>
-<span class="nc" id="L400">      rules = ruleAccess.getAll();</span>
-<span class="nc" id="L401">      ruleAccess.deleteAll();</span>
-<span class="nc" id="L402">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L403">      throw new WaarpDatabaseException(e);</span>
+<span class="nc" id="L419">      ruleAccess = DAOFactory.getInstance().getRuleDAO(false);</span>
+<span class="nc" id="L420">      rules = ruleAccess.getAll();</span>
+<span class="nc" id="L421">      ruleAccess.deleteAll();</span>
+<span class="nc" id="L422">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L423">      throw new WaarpDatabaseException(e);</span>
     } finally {
-<span class="nc" id="L405">      DAOFactory.closeDAO(ruleAccess);</span>
+<span class="nc" id="L425">      DAOFactory.closeDAO(ruleAccess);</span>
     }
-<span class="nc" id="L407">    final DbRule[] res = new DbRule[rules.size()];</span>
-<span class="nc" id="L408">    int i = 0;</span>
-<span class="nc bnc" id="L409" title="All 2 branches missed.">    for (final Rule rule : rules) {</span>
-<span class="nc" id="L410">      res[i] = new DbRule(rule);</span>
-<span class="nc" id="L411">      i++;</span>
-<span class="nc" id="L412">    }</span>
-<span class="nc" id="L413">    return res;</span>
+<span class="nc" id="L427">    final DbRule[] res = new DbRule[rules.size()];</span>
+<span class="nc" id="L428">    int i = 0;</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    for (final Rule rule : rules) {</span>
+<span class="nc" id="L430">      res[i] = new DbRule(rule);</span>
+<span class="nc" id="L431">      i++;</span>
+<span class="nc" id="L432">    }</span>
+<span class="nc" id="L433">    return res;</span>
   }
 
   /**
@@ -424,23 +444,23 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    */
   public static DbRule[] getAllRules()
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L427">    RuleDAO ruleAccess = null;</span>
+<span class="fc" id="L447">    RuleDAO ruleAccess = null;</span>
     List&lt;Rule&gt; rules;
     try {
-<span class="fc" id="L430">      ruleAccess = DAOFactory.getInstance().getRuleDAO();</span>
-<span class="fc" id="L431">      rules = ruleAccess.getAll();</span>
-<span class="nc" id="L432">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L433">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="fc" id="L450">      ruleAccess = DAOFactory.getInstance().getRuleDAO(false);</span>
+<span class="fc" id="L451">      rules = ruleAccess.getAll();</span>
+<span class="nc" id="L452">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L453">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="fc" id="L435">      DAOFactory.closeDAO(ruleAccess);</span>
+<span class="fc" id="L455">      DAOFactory.closeDAO(ruleAccess);</span>
     }
-<span class="fc" id="L437">    final DbRule[] res = new DbRule[rules.size()];</span>
-<span class="fc" id="L438">    int i = 0;</span>
-<span class="fc bfc" id="L439" title="All 2 branches covered.">    for (final Rule rule : rules) {</span>
-<span class="fc" id="L440">      res[i] = new DbRule(rule);</span>
-<span class="fc" id="L441">      i++;</span>
-<span class="fc" id="L442">    }</span>
-<span class="fc" id="L443">    return res;</span>
+<span class="fc" id="L457">    final DbRule[] res = new DbRule[rules.size()];</span>
+<span class="fc" id="L458">    int i = 0;</span>
+<span class="fc bfc" id="L459" title="All 2 branches covered.">    for (final Rule rule : rules) {</span>
+<span class="fc" id="L460">      res[i] = new DbRule(rule);</span>
+<span class="fc" id="L461">      i++;</span>
+<span class="fc" id="L462">    }</span>
+<span class="fc" id="L463">    return res;</span>
   }
 
   /**
@@ -456,20 +476,20 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
   public static DbRule getFromStatement(
       final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L459">    final DbRule dbRule = new DbRule();</span>
-<span class="fc" id="L460">    AbstractDAO&lt;Rule&gt; ruleDAO = null;</span>
+<span class="fc" id="L479">    final DbRule dbRule = new DbRule();</span>
+<span class="fc" id="L480">    AbstractDAO&lt;Rule&gt; ruleDAO = null;</span>
     try {
-<span class="fc" id="L462">      ruleDAO = dbRule.getDao();</span>
-<span class="fc" id="L463">      dbRule.pojo = ((StatementExecutor&lt;Rule&gt;) ruleDAO)</span>
-<span class="fc" id="L464">          .getFromResultSet(preparedStatement.getResultSet());</span>
-<span class="fc" id="L465">      return dbRule;</span>
-<span class="nc" id="L466">    } catch (final SQLException e) {</span>
-<span class="nc" id="L467">      DbSession.error(e);</span>
-<span class="nc" id="L468">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
-<span class="nc" id="L469">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L470">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="fc" id="L482">      ruleDAO = dbRule.getDao(false);</span>
+<span class="fc" id="L483">      dbRule.pojo = ((StatementExecutor&lt;Rule&gt;) ruleDAO).getFromResultSet(</span>
+<span class="fc" id="L484">          preparedStatement.getResultSet());</span>
+<span class="fc" id="L485">      return dbRule;</span>
+<span class="nc" id="L486">    } catch (final SQLException e) {</span>
+<span class="nc" id="L487">      DbSession.error(e);</span>
+<span class="nc" id="L488">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L489">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L490">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
     } finally {
-<span class="fc" id="L472">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="fc" id="L492">      DAOFactory.closeDAO(ruleDAO);</span>
     }
   }
 
@@ -480,33 +500,34 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    */
   public static DbRule[] getUpdatedPrepareStament()
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L483">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(1);</span>
-<span class="fc" id="L484">    filters.add(new Filter(DBRuleDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
-<span class="fc" id="L485">                           org.waarp.openr66.pojo.UpdatedInfo</span>
-<span class="fc" id="L486">                               .fromLegacy(UpdatedInfo.TOSUBMIT).ordinal()));</span>
-<span class="fc" id="L487">    RuleDAO ruleAccess = null;</span>
+<span class="fc" id="L503">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;(1);</span>
+<span class="fc" id="L504">    filters.add(new Filter(DBRuleDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="fc" id="L505">                           org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(</span>
+<span class="fc" id="L506">                               UpdatedInfo.TOSUBMIT).ordinal()));</span>
+<span class="fc" id="L507">    RuleDAO ruleAccess = null;</span>
     List&lt;Rule&gt; rules;
     try {
-<span class="fc" id="L490">      ruleAccess = DAOFactory.getInstance().getRuleDAO();</span>
-<span class="fc" id="L491">      rules = ruleAccess.find(filters);</span>
-<span class="nc" id="L492">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L493">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="fc" id="L510">      ruleAccess = DAOFactory.getInstance().getRuleDAO(false);</span>
+<span class="fc" id="L511">      rules = ruleAccess.find(filters);</span>
+<span class="nc" id="L512">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L513">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="fc" id="L495">      DAOFactory.closeDAO(ruleAccess);</span>
+<span class="fc" id="L515">      DAOFactory.closeDAO(ruleAccess);</span>
     }
-<span class="fc" id="L497">    final DbRule[] res = new DbRule[rules.size()];</span>
-<span class="fc" id="L498">    int i = 0;</span>
-<span class="pc bpc" id="L499" title="1 of 2 branches missed.">    for (final Rule rule : rules) {</span>
-<span class="nc" id="L500">      res[i] = new DbRule(rule);</span>
-<span class="nc" id="L501">      i++;</span>
-<span class="nc" id="L502">    }</span>
-<span class="fc" id="L503">    return res;</span>
+<span class="fc" id="L517">    final DbRule[] res = new DbRule[rules.size()];</span>
+<span class="fc" id="L518">    int i = 0;</span>
+<span class="pc bpc" id="L519" title="1 of 2 branches missed.">    for (final Rule rule : rules) {</span>
+<span class="nc" id="L520">      res[i] = new DbRule(rule);</span>
+<span class="nc" id="L521">      i++;</span>
+<span class="nc" id="L522">    }</span>
+<span class="fc" id="L523">    return res;</span>
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
-<span class="fc" id="L508">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
-<span class="fc" id="L509">  }</span>
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
+<span class="fc" id="L528">    isSaved = false;</span>
+<span class="fc" id="L529">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
+<span class="fc" id="L530">  }</span>
 
   /**
    * Get Ids from String. If it is not ok, then it sets the default values and
@@ -517,23 +538,24 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    * @return True if ok, else False (default values).
    */
   private String[] getIdsRule(final String idsref) {
-<span class="fc bfc" id="L520" title="All 2 branches covered.">    if (idsref == null) {</span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(idsref)) {</span>
       // No ids so setting to the default!
-<span class="fc" id="L522">      return STRING_0_LENGTH;</span>
+<span class="fc" id="L543">      return STRING_0_LENGTH;</span>
     }
-<span class="fc" id="L524">    final StringReader reader = new StringReader(idsref);</span>
+<span class="fc" id="L545">    final StringReader reader = new StringReader(idsref);</span>
     final Document document;
     try {
-<span class="fc" id="L527">      document = XmlUtil.getNewSaxReader().read(reader);</span>
-<span class="fc" id="L528">      final XmlValue[] values =</span>
-<span class="fc" id="L529">          XmlUtil.read(document, RuleFileBasedConfiguration.hostsDecls);</span>
-<span class="fc" id="L530">      return RuleFileBasedConfiguration.getHostIds(values[0]);</span>
-<span class="nc" id="L531">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L532">      logger.warn(&quot;Unable to read the ids for Rule: &quot; + idsref, e);</span>
+<span class="fc" id="L548">      document = XmlUtil.getNewSaxReader().read(reader);</span>
+<span class="fc" id="L549">      final XmlValue[] values =</span>
+<span class="fc" id="L550">          XmlUtil.read(document, RuleFileBasedConfiguration.hostsDecls);</span>
+<span class="fc" id="L551">      return RuleFileBasedConfiguration.getHostIds(values[0]);</span>
+<span class="nc" id="L552">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L553">      logger.warn(&quot;Unable to read the ids for Rule: &quot; + idsref + &quot; : {}&quot;,</span>
+<span class="nc" id="L554">                  e.getMessage());</span>
       // No ids so setting to the default!
-<span class="nc" id="L534">      return STRING_0_LENGTH;</span>
+<span class="nc" id="L556">      return STRING_0_LENGTH;</span>
     } finally {
-<span class="fc" id="L536">      FileUtils.close(reader);</span>
+<span class="fc" id="L558">      FileUtils.close(reader);</span>
     }
   }
 
@@ -548,26 +570,25 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    * @return Array of tasks or empty array if in error.
    */
   private String[][] getTasksRule(final String tasks) {
-<span class="fc bfc" id="L551" title="All 2 branches covered.">    if (tasks == null) {</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(tasks)) {</span>
       // No tasks so setting to the default!
-<span class="fc" id="L553">      return STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L575">      return STRINGS_0_0_LENGTH;</span>
     }
-<span class="fc" id="L555">    final StringReader reader = new StringReader(tasks);</span>
+<span class="fc" id="L577">    final StringReader reader = new StringReader(tasks);</span>
     final Document document;
     try {
-<span class="fc" id="L558">      document = XmlUtil.getNewSaxReader().read(reader);</span>
-<span class="fc" id="L559">    } catch (final DocumentException e) {</span>
-<span class="fc" id="L560">      logger.info(&quot;Unable to read the tasks for Rule: &quot; + tasks, e);</span>
+<span class="fc" id="L580">      document = XmlUtil.getNewSaxReader().read(reader);</span>
+<span class="nc" id="L581">    } catch (final DocumentException e) {</span>
       // No tasks so setting to the default!
-<span class="fc" id="L562">      FileUtils.close(reader);</span>
-<span class="fc" id="L563">      return STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L564">    }</span>
-<span class="fc" id="L565">    final XmlValue[] values =</span>
-<span class="fc" id="L566">        XmlUtil.read(document, RuleFileBasedConfiguration.tasksDecl);</span>
-<span class="fc" id="L567">    final String[][] result =</span>
-<span class="fc" id="L568">        RuleFileBasedConfiguration.getTasksRule(values[0]);</span>
-<span class="fc" id="L569">    FileUtils.close(reader);</span>
-<span class="fc" id="L570">    return result;</span>
+<span class="nc" id="L583">      FileUtils.close(reader);</span>
+<span class="nc" id="L584">      return STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L585">    }</span>
+<span class="fc" id="L586">    final XmlValue[] values =</span>
+<span class="fc" id="L587">        XmlUtil.read(document, RuleFileBasedConfiguration.tasksDecl);</span>
+<span class="fc" id="L588">    final String[][] result =</span>
+<span class="fc" id="L589">        RuleFileBasedConfiguration.getTasksRule(values[0]);</span>
+<span class="fc" id="L590">    FileUtils.close(reader);</span>
+<span class="fc" id="L591">    return result;</span>
   }
 
   /**
@@ -577,11 +598,11 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @return the full String path
    */
-  public String setRecvPath(final String filename) {
-<span class="pc bpc" id="L581" title="1 of 4 branches missed.">    if (pojo.getRecvPath() != null &amp;&amp; !pojo.getRecvPath().isEmpty()) {</span>
-<span class="fc" id="L582">      return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;</span>
+  public final String setRecvPath(final String filename) {
+<span class="fc bfc" id="L602" title="All 2 branches covered.">    if (ParametersChecker.isNotEmpty(pojo.getRecvPath())) {</span>
+<span class="fc" id="L603">      return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;</span>
     }
-<span class="fc" id="L584">    return Configuration.configuration.getInPath() + DirInterface.SEPARATOR +</span>
+<span class="fc" id="L605">    return Configuration.configuration.getInPath() + DirInterface.SEPARATOR +</span>
            filename;
   }
 
@@ -592,13 +613,13 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @return the full String path
    */
-  public String setSendPath(final String filename) {
-<span class="nc bnc" id="L596" title="All 2 branches missed.">    if (pojo.getSendPath() != null) {</span>
-<span class="nc" id="L597">      final File file = new File(filename);</span>
-<span class="nc" id="L598">      final String basename = file.getName();</span>
-<span class="nc" id="L599">      return pojo.getSendPath() + DirInterface.SEPARATOR + basename;</span>
+  public final String setSendPath(final String filename) {
+<span class="nc bnc" id="L617" title="All 2 branches missed.">    if (pojo.getSendPath() != null) {</span>
+<span class="nc" id="L618">      final File file = new File(filename);</span>
+<span class="nc" id="L619">      final String basename = file.getName();</span>
+<span class="nc" id="L620">      return pojo.getSendPath() + DirInterface.SEPARATOR + basename;</span>
     }
-<span class="nc" id="L601">    return Configuration.configuration.getOutPath() + DirInterface.SEPARATOR +</span>
+<span class="nc" id="L622">    return Configuration.configuration.getOutPath() + DirInterface.SEPARATOR +</span>
            filename;
   }
 
@@ -609,11 +630,11 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @return the full String path
    */
-  public String setArchivePath(final String filename) {
-<span class="nc bnc" id="L613" title="All 2 branches missed.">    if (pojo.getArchivePath() != null) {</span>
-<span class="nc" id="L614">      return pojo.getArchivePath() + DirInterface.SEPARATOR + filename;</span>
+  public final String setArchivePath(final String filename) {
+<span class="nc bnc" id="L634" title="All 2 branches missed.">    if (pojo.getArchivePath() != null) {</span>
+<span class="nc" id="L635">      return pojo.getArchivePath() + DirInterface.SEPARATOR + filename;</span>
     }
-<span class="nc" id="L616">    return Configuration.configuration.getArchivePath() +</span>
+<span class="nc" id="L637">    return Configuration.configuration.getArchivePath() +</span>
            DirInterface.SEPARATOR + filename;
   }
 
@@ -624,12 +645,12 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @return the full String path
    */
-  public String setWorkingPath(final String filename) {
-<span class="nc bnc" id="L628" title="All 2 branches missed.">    if (pojo.getWorkPath() != null) {</span>
-<span class="nc" id="L629">      return pojo.getWorkPath() + DirInterface.SEPARATOR + filename +</span>
+  public final String setWorkingPath(final String filename) {
+<span class="nc bnc" id="L649" title="All 2 branches missed.">    if (pojo.getWorkPath() != null) {</span>
+<span class="nc" id="L650">      return pojo.getWorkPath() + DirInterface.SEPARATOR + filename +</span>
              Configuration.EXT_R66;
     }
-<span class="nc" id="L632">    return Configuration.configuration.getWorkingPath() +</span>
+<span class="nc" id="L653">    return Configuration.configuration.getWorkingPath() +</span>
            DirInterface.SEPARATOR + filename;
   }
 
@@ -640,30 +661,30 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @return True if allow, else False
    */
-  public boolean checkHostAllow(final String hostId) {
-<span class="pc bpc" id="L644" title="2 of 4 branches missed.">    if (getIdsArray() == null || getIdsArray().length == 0) {</span>
-<span class="fc" id="L645">      return true; // always true in this case</span>
+  public final boolean checkHostAllow(final String hostId) {
+<span class="pc bpc" id="L665" title="2 of 4 branches missed.">    if (getIdsArray() == null || getIdsArray().length == 0) {</span>
+<span class="fc" id="L666">      return true; // always true in this case</span>
     }
-<span class="nc bnc" id="L647" title="All 2 branches missed.">    for (final String element : getIdsArray()) {</span>
-<span class="nc bnc" id="L648" title="All 2 branches missed.">      if (element.equalsIgnoreCase(hostId)) {</span>
-<span class="nc" id="L649">        return true;</span>
+<span class="nc bnc" id="L668" title="All 2 branches missed.">    for (final String element : getIdsArray()) {</span>
+<span class="nc bnc" id="L669" title="All 2 branches missed.">      if (element.equalsIgnoreCase(hostId)) {</span>
+<span class="nc" id="L670">        return true;</span>
       }
     }
-<span class="nc" id="L652">    return false;</span>
+<span class="nc" id="L673">    return false;</span>
   }
 
   /**
    * @return True if this rule is adapted for SENDMODE
    */
-  public boolean isSendMode() {
-<span class="fc bfc" id="L659" title="All 2 branches covered.">    return !RequestPacket.isRecvMode(getMode());</span>
+  public final boolean isSendMode() {
+<span class="fc bfc" id="L680" title="All 2 branches covered.">    return !RequestPacket.isRecvMode(getMode());</span>
   }
 
   /**
    * @return True if this rule is adapted for RECVMODE
    */
-  public boolean isRecvMode() {
-<span class="fc" id="L666">    return RequestPacket.isRecvMode(getMode());</span>
+  public final boolean isRecvMode() {
+<span class="fc" id="L687">    return RequestPacket.isRecvMode(getMode());</span>
   }
 
   /**
@@ -674,17 +695,17 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    * @see Object#toString()
    */
   @Override
-  public String toString() {
-<span class="fc" id="L678">    return &quot;Rule Name:&quot; + getIdRule() + &quot; IDS:&quot; + pojo.getXMLHostids() +</span>
-<span class="fc" id="L679">           &quot; MODETRANS: &quot; + RequestPacket.TRANSFERMODE.values()[getMode()] +</span>
-<span class="fc" id="L680">           &quot; RECV:&quot; + getRecvPath() + &quot; SEND:&quot; + getSendPath() + &quot; ARCHIVE:&quot; +</span>
-<span class="fc" id="L681">           getArchivePath() + &quot; WORK:&quot; + getWorkPath() + &quot; RPRET:{&quot; +</span>
-<span class="fc" id="L682">           pojo.getXMLRPreTasks().replace('\n', ' ') + &quot;} RPOST:{&quot; +</span>
-<span class="fc" id="L683">           pojo.getXMLRPostTasks().replace('\n', ' ') + &quot;} RERROR:{&quot; +</span>
-<span class="fc" id="L684">           pojo.getXMLRErrorTasks().replace('\n', ' ') + &quot;} SPRET:{&quot; +</span>
-<span class="fc" id="L685">           pojo.getXMLSPreTasks().replace('\n', ' ') + &quot;} SPOST:{&quot; +</span>
-<span class="fc" id="L686">           pojo.getXMLSPostTasks().replace('\n', ' ') + &quot;} SERROR:{&quot; +</span>
-<span class="fc" id="L687">           pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';</span>
+  public final String toString() {
+<span class="fc" id="L699">    return &quot;Rule Name:&quot; + getIdRule() + &quot; IDS:&quot; + pojo.getXMLHostids() +</span>
+<span class="fc" id="L700">           &quot; MODETRANS: &quot; + RequestPacket.TRANSFERMODE.values()[getMode()] +</span>
+<span class="fc" id="L701">           &quot; RECV:&quot; + getRecvPath() + &quot; SEND:&quot; + getSendPath() + &quot; ARCHIVE:&quot; +</span>
+<span class="fc" id="L702">           getArchivePath() + &quot; WORK:&quot; + getWorkPath() + &quot; RPRET:{&quot; +</span>
+<span class="fc" id="L703">           pojo.getXMLRPreTasks().replace('\n', ' ') + &quot;} RPOST:{&quot; +</span>
+<span class="fc" id="L704">           pojo.getXMLRPostTasks().replace('\n', ' ') + &quot;} RERROR:{&quot; +</span>
+<span class="fc" id="L705">           pojo.getXMLRErrorTasks().replace('\n', ' ') + &quot;} SPRET:{&quot; +</span>
+<span class="fc" id="L706">           pojo.getXMLSPreTasks().replace('\n', ' ') + &quot;} SPOST:{&quot; +</span>
+<span class="fc" id="L707">           pojo.getXMLSPostTasks().replace('\n', ' ') + &quot;} SERROR:{&quot; +</span>
+<span class="fc" id="L708">           pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';</span>
   }
 
   /**
@@ -693,28 +714,28 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @return a string that prints (debug) the tasks to execute
    */
-  public String printTasks(final boolean isSender, final TASKSTEP step) {
-<span class="nc bnc" id="L697" title="All 2 branches missed.">    if (isSender) {</span>
-<span class="nc bnc" id="L698" title="All 4 branches missed.">      switch (step) {</span>
+  public final String printTasks(final boolean isSender, final TASKSTEP step) {
+<span class="nc bnc" id="L718" title="All 2 branches missed.">    if (isSender) {</span>
+<span class="nc bnc" id="L719" title="All 4 branches missed.">      switch (step) {</span>
         case PRETASK:
-<span class="nc" id="L700">          return &quot;S:{&quot; + pojo.getXMLRPreTasks().replace('\n', ' ') + '}';</span>
+<span class="nc" id="L721">          return &quot;S:{&quot; + pojo.getXMLSPreTasks().replace('\n', ' ') + '}';</span>
         case POSTTASK:
-<span class="nc" id="L702">          return &quot;S:{&quot; + pojo.getXMLRPostTasks().replace('\n', ' ') + '}';</span>
+<span class="nc" id="L723">          return &quot;S:{&quot; + pojo.getXMLSPostTasks().replace('\n', ' ') + '}';</span>
         case ERRORTASK:
-<span class="nc" id="L704">          return &quot;S:{&quot; + pojo.getXMLRErrorTasks().replace('\n', ' ') + '}';</span>
+<span class="nc" id="L725">          return &quot;S:{&quot; + pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';</span>
         default:
-<span class="nc" id="L706">          return &quot;S:{no task}&quot;;</span>
+<span class="nc" id="L727">          return &quot;S:{no task}&quot;;</span>
       }
     } else {
-<span class="nc bnc" id="L709" title="All 4 branches missed.">      switch (step) {</span>
+<span class="nc bnc" id="L730" title="All 4 branches missed.">      switch (step) {</span>
         case PRETASK:
-<span class="nc" id="L711">          return &quot;R:{&quot; + pojo.getXMLSPreTasks().replace('\n', ' ') + '}';</span>
+<span class="nc" id="L732">          return &quot;R:{&quot; + pojo.getXMLRPreTasks().replace('\n', ' ') + '}';</span>
         case POSTTASK:
-<span class="nc" id="L713">          return &quot;R:{&quot; + pojo.getXMLSPostTasks().replace('\n', ' ') + '}';</span>
+<span class="nc" id="L734">          return &quot;R:{&quot; + pojo.getXMLRPostTasks().replace('\n', ' ') + '}';</span>
         case ERRORTASK:
-<span class="nc" id="L715">          return &quot;R:{&quot; + pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';</span>
+<span class="nc" id="L736">          return &quot;R:{&quot; + pojo.getXMLRErrorTasks().replace('\n', ' ') + '}';</span>
         default:
-<span class="nc" id="L717">          return &quot;R:{no task}&quot;;</span>
+<span class="nc" id="L738">          return &quot;R:{no task}&quot;;</span>
       }
     }
   }
@@ -726,9 +747,9 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    *
    * @see Object#toString()
    */
-  public String toShortString() {
-<span class="nc" id="L730">    return &quot;Rule Name:&quot; + getIdRule() + &quot; MODETRANS: &quot; +</span>
-<span class="nc" id="L731">           RequestPacket.TRANSFERMODE.values()[getMode()];</span>
+  public final String toShortString() {
+<span class="nc" id="L751">    return &quot;Rule Name:&quot; + getIdRule() + &quot; MODETRANS: &quot; +</span>
+<span class="nc" id="L752">           RequestPacket.TRANSFERMODE.values()[getMode()];</span>
   }
 
   /**
@@ -744,34 +765,34 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
   public static DbPreparedStatement getFilterPrepareStament(
       final DbSession session, final String rule, final int mode)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L747">    final DbPreparedStatement preparedStatement =</span>
+<span class="fc" id="L768">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(session);
-<span class="fc" id="L749">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
-<span class="fc" id="L750">    String condition = null;</span>
-<span class="pc bpc" id="L751" title="1 of 2 branches missed.">    if (rule != null) {</span>
-<span class="nc" id="L752">      condition = &quot; WHERE &quot; + Columns.IDRULE.name() + &quot; LIKE '%&quot; + rule + &quot;%' &quot;;</span>
+<span class="fc" id="L770">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="fc" id="L771">    String condition = null;</span>
+<span class="pc bpc" id="L772" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(rule)) {</span>
+<span class="nc" id="L773">      condition = &quot; WHERE &quot; + Columns.IDRULE.name() + &quot; = '&quot; + rule + &quot;' &quot;;</span>
     }
-<span class="fc bfc" id="L754" title="All 2 branches covered.">    if (mode &gt;= 0) {</span>
-<span class="pc bpc" id="L755" title="1 of 2 branches missed.">      if (condition != null) {</span>
-<span class="nc" id="L756">        condition += &quot; AND &quot;;</span>
+<span class="fc bfc" id="L775" title="All 2 branches covered.">    if (mode &gt;= 0) {</span>
+<span class="pc bpc" id="L776" title="1 of 2 branches missed.">      if (condition != null) {</span>
+<span class="nc" id="L777">        condition += &quot; AND &quot;;</span>
       } else {
-<span class="fc" id="L758">        condition = &quot; WHERE &quot;;</span>
+<span class="fc" id="L779">        condition = &quot; WHERE &quot;;</span>
       }
-<span class="fc" id="L760">      condition += Columns.MODETRANS.name() + &quot; = ?&quot;;</span>
+<span class="fc" id="L781">      condition += Columns.MODETRANS.name() + &quot; = ?&quot;;</span>
     } else {
-<span class="fc" id="L762">      condition = &quot;&quot;;</span>
+<span class="fc" id="L783">      condition = &quot;&quot;;</span>
     }
-<span class="fc" id="L764">    preparedStatement.createPrepareStatement(</span>
-<span class="fc" id="L765">        request + condition + &quot; ORDER BY &quot; + Columns.IDRULE.name());</span>
-<span class="fc bfc" id="L766" title="All 2 branches covered.">    if (mode &gt;= 0) {</span>
+<span class="fc" id="L785">    preparedStatement.createPrepareStatement(</span>
+<span class="fc" id="L786">        request + condition + &quot; ORDER BY &quot; + Columns.IDRULE.name());</span>
+<span class="fc bfc" id="L787" title="All 2 branches covered.">    if (mode &gt;= 0) {</span>
       try {
-<span class="fc" id="L768">        preparedStatement.getPreparedStatement().setInt(1, mode);</span>
-<span class="nc" id="L769">      } catch (final SQLException e) {</span>
-<span class="nc" id="L770">        preparedStatement.realClose();</span>
-<span class="nc" id="L771">        throw new WaarpDatabaseSqlException(e);</span>
-<span class="fc" id="L772">      }</span>
+<span class="fc" id="L789">        preparedStatement.getPreparedStatement().setInt(1, mode);</span>
+<span class="nc" id="L790">      } catch (final SQLException e) {</span>
+<span class="nc" id="L791">        preparedStatement.realClose();</span>
+<span class="nc" id="L792">        throw new WaarpDatabaseSqlException(e);</span>
+<span class="fc" id="L793">      }</span>
     }
-<span class="fc" id="L774">    return preparedStatement;</span>
+<span class="fc" id="L795">    return preparedStatement;</span>
   }
 
   /**
@@ -787,71 +808,71 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
   public static String getJson(final DbPreparedStatement preparedStatement,
                                final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L790">    final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L811">    final ArrayNode arrayNode = JsonHandler.createArrayNode();</span>
     try {
-<span class="fc" id="L792">      preparedStatement.executeQuery();</span>
-<span class="fc" id="L793">      int nb = 0;</span>
-<span class="fc bfc" id="L794" title="All 2 branches covered.">      while (preparedStatement.getNext()) {</span>
-<span class="fc" id="L795">        final DbRule rule = getFromStatement(preparedStatement);</span>
-<span class="fc" id="L796">        final ObjectNode node = rule.getInternalJson();</span>
-<span class="fc" id="L797">        arrayNode.add(node);</span>
-<span class="fc" id="L798">        nb++;</span>
-<span class="fc bfc" id="L799" title="All 2 branches covered.">        if (nb &gt;= limit) {</span>
-<span class="fc" id="L800">          break;</span>
+<span class="fc" id="L813">      preparedStatement.executeQuery();</span>
+<span class="fc" id="L814">      int nb = 0;</span>
+<span class="fc bfc" id="L815" title="All 2 branches covered.">      while (preparedStatement.getNext()) {</span>
+<span class="fc" id="L816">        final DbRule rule = getFromStatement(preparedStatement);</span>
+<span class="fc" id="L817">        final ObjectNode node = rule.getInternalJson();</span>
+<span class="fc" id="L818">        arrayNode.add(node);</span>
+<span class="fc" id="L819">        nb++;</span>
+<span class="fc bfc" id="L820" title="All 2 branches covered.">        if (nb &gt;= limit) {</span>
+<span class="fc" id="L821">          break;</span>
         }
-<span class="fc" id="L802">      }</span>
+<span class="fc" id="L823">      }</span>
     } finally {
-<span class="fc" id="L804">      preparedStatement.realClose();</span>
+<span class="fc" id="L825">      preparedStatement.realClose();</span>
     }
     // \n is not correctly parsed within HTML so put double \\n in fine
-<span class="fc" id="L807">    return WaarpStringUtils</span>
-<span class="fc" id="L808">        .cleanJsonForHtml(JsonHandler.writeAsString(arrayNode));</span>
+<span class="fc" id="L828">    return WaarpStringUtils.cleanJsonForHtml(</span>
+<span class="fc" id="L829">        JsonHandler.writeAsString(arrayNode));</span>
   }
 
   private ObjectNode getInternalJson() {
-<span class="fc" id="L812">    final ObjectNode node = getJson();</span>
-<span class="fc bfc" id="L813" title="All 2 branches covered.">    if (pojo.getHostids().isEmpty()) {</span>
-<span class="fc" id="L814">      node.put(Columns.HOSTIDS.name(), &quot;&quot;);</span>
+<span class="fc" id="L833">    final ObjectNode node = getJson();</span>
+<span class="fc bfc" id="L834" title="All 2 branches covered.">    if (pojo.getHostids().isEmpty()) {</span>
+<span class="fc" id="L835">      node.put(Columns.HOSTIDS.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L816" title="1 of 2 branches missed.">    if (pojo.getRecvPath() == null) {</span>
-<span class="nc" id="L817">      node.put(Columns.RECVPATH.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L837" title="1 of 2 branches missed.">    if (pojo.getRecvPath() == null) {</span>
+<span class="nc" id="L838">      node.put(Columns.RECVPATH.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L819" title="1 of 2 branches missed.">    if (pojo.getSendPath() == null) {</span>
-<span class="nc" id="L820">      node.put(Columns.SENDPATH.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L840" title="1 of 2 branches missed.">    if (pojo.getSendPath() == null) {</span>
+<span class="nc" id="L841">      node.put(Columns.SENDPATH.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L822" title="1 of 2 branches missed.">    if (pojo.getArchivePath() == null) {</span>
-<span class="nc" id="L823">      node.put(Columns.ARCHIVEPATH.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L843" title="1 of 2 branches missed.">    if (pojo.getArchivePath() == null) {</span>
+<span class="nc" id="L844">      node.put(Columns.ARCHIVEPATH.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L825" title="1 of 2 branches missed.">    if (pojo.getWorkPath() == null) {</span>
-<span class="nc" id="L826">      node.put(Columns.WORKPATH.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L846" title="1 of 2 branches missed.">    if (pojo.getWorkPath() == null) {</span>
+<span class="nc" id="L847">      node.put(Columns.WORKPATH.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L828" title="1 of 2 branches missed.">    if (pojo.getRPreTasks().isEmpty()) {</span>
-<span class="nc" id="L829">      node.put(Columns.RPRETASKS.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L849" title="1 of 2 branches missed.">    if (pojo.getRPreTasks().isEmpty()) {</span>
+<span class="nc" id="L850">      node.put(Columns.RPRETASKS.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L831" title="1 of 2 branches missed.">    if (pojo.getRPostTasks().isEmpty()) {</span>
-<span class="nc" id="L832">      node.put(Columns.RPOSTTASKS.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L852" title="1 of 2 branches missed.">    if (pojo.getRPostTasks().isEmpty()) {</span>
+<span class="nc" id="L853">      node.put(Columns.RPOSTTASKS.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L834" title="1 of 2 branches missed.">    if (pojo.getRErrorTasks().isEmpty()) {</span>
-<span class="nc" id="L835">      node.put(Columns.RERRORTASKS.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L855" title="1 of 2 branches missed.">    if (pojo.getRErrorTasks().isEmpty()) {</span>
+<span class="nc" id="L856">      node.put(Columns.RERRORTASKS.name(), &quot;&quot;);</span>
     }
-<span class="fc bfc" id="L837" title="All 2 branches covered.">    if (pojo.getSPreTasks().isEmpty()) {</span>
-<span class="fc" id="L838">      node.put(Columns.SPRETASKS.name(), &quot;&quot;);</span>
+<span class="fc bfc" id="L858" title="All 2 branches covered.">    if (pojo.getSPreTasks().isEmpty()) {</span>
+<span class="fc" id="L859">      node.put(Columns.SPRETASKS.name(), &quot;&quot;);</span>
     }
-<span class="fc bfc" id="L840" title="All 2 branches covered.">    if (pojo.getSPostTasks().isEmpty()) {</span>
-<span class="fc" id="L841">      node.put(Columns.SPOSTTASKS.name(), &quot;&quot;);</span>
+<span class="fc bfc" id="L861" title="All 2 branches covered.">    if (pojo.getSPostTasks().isEmpty()) {</span>
+<span class="fc" id="L862">      node.put(Columns.SPOSTTASKS.name(), &quot;&quot;);</span>
     }
-<span class="pc bpc" id="L843" title="1 of 2 branches missed.">    if (pojo.getSErrorTasks().isEmpty()) {</span>
-<span class="nc" id="L844">      node.put(Columns.SERRORTASKS.name(), &quot;&quot;);</span>
+<span class="pc bpc" id="L864" title="1 of 2 branches missed.">    if (pojo.getSErrorTasks().isEmpty()) {</span>
+<span class="nc" id="L865">      node.put(Columns.SERRORTASKS.name(), &quot;&quot;);</span>
     }
-<span class="fc" id="L846">    return node;</span>
+<span class="fc" id="L867">    return node;</span>
   }
 
   /**
    * @return the Json string for this
    */
-  public String getJsonAsString() {
-<span class="fc" id="L853">    final ObjectNode node = getInternalJson();</span>
-<span class="fc" id="L854">    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(node));</span>
+  public final String getJsonAsString() {
+<span class="fc" id="L874">    final ObjectNode node = getInternalJson();</span>
+<span class="fc" id="L875">    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(node));</span>
   }
 
   /**
@@ -861,218 +882,221 @@ public class DbRule extends AbstractDbDataDao&lt;Rule&gt; {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(final R66Session session, final String body) {
-<span class="fc" id="L865">    final StringBuilder builder = new StringBuilder(body);</span>
-<span class="fc" id="L866">    WaarpStringUtils.replace(builder, &quot;XXXRULEXXX&quot;, getIdRule());</span>
-<span class="fc" id="L867">    WaarpStringUtils.replace(builder, &quot;XXXIDSXXX&quot;,</span>
-<span class="pc bpc" id="L868" title="1 of 2 branches missed.">                             pojo.getXMLHostids() == null? &quot;&quot; :</span>
-<span class="fc" id="L869">                                 pojo.getXMLHostids());</span>
-<span class="fc bfc" id="L870" title="All 2 branches covered.">    if (getMode() == RequestPacket.TRANSFERMODE.RECVMODE.ordinal()) {</span>
-<span class="fc" id="L871">      WaarpStringUtils.replace(builder, &quot;XXXRECVXXX&quot;, &quot;checked&quot;);</span>
-<span class="fc bfc" id="L872" title="All 2 branches covered.">    } else if (getMode() == RequestPacket.TRANSFERMODE.SENDMODE.ordinal()) {</span>
-<span class="fc" id="L873">      WaarpStringUtils.replace(builder, &quot;XXXSENDXXX&quot;, &quot;checked&quot;);</span>
-<span class="fc bfc" id="L874" title="All 2 branches covered.">    } else if (getMode() == RequestPacket.TRANSFERMODE.RECVMD5MODE.ordinal()) {</span>
-<span class="fc" id="L875">      WaarpStringUtils.replace(builder, &quot;XXXRECVMXXX&quot;, &quot;checked&quot;);</span>
-<span class="fc bfc" id="L876" title="All 2 branches covered.">    } else if (getMode() == RequestPacket.TRANSFERMODE.SENDMD5MODE.ordinal()) {</span>
-<span class="fc" id="L877">      WaarpStringUtils.replace(builder, &quot;XXXSENDMXXX&quot;, &quot;checked&quot;);</span>
-<span class="fc" id="L878">    } else if (getMode() ==</span>
-<span class="fc bfc" id="L879" title="All 2 branches covered.">               RequestPacket.TRANSFERMODE.RECVTHROUGHMODE.ordinal()) {</span>
-<span class="fc" id="L880">      WaarpStringUtils.replace(builder, &quot;XXXRECVTXXX&quot;, &quot;checked&quot;);</span>
-<span class="fc" id="L881">    } else if (getMode() ==</span>
-<span class="pc bpc" id="L882" title="1 of 2 branches missed.">               RequestPacket.TRANSFERMODE.SENDTHROUGHMODE.ordinal()) {</span>
-<span class="fc" id="L883">      WaarpStringUtils.replace(builder, &quot;XXXSENDTXXX&quot;, &quot;checked&quot;);</span>
-<span class="nc" id="L884">    } else if (getMode() ==</span>
-<span class="nc bnc" id="L885" title="All 2 branches missed.">               RequestPacket.TRANSFERMODE.RECVMD5THROUGHMODE.ordinal()) {</span>
-<span class="nc" id="L886">      WaarpStringUtils.replace(builder, &quot;XXXRECVMTXXX&quot;, &quot;checked&quot;);</span>
-<span class="nc" id="L887">    } else if (getMode() ==</span>
-<span class="nc bnc" id="L888" title="All 2 branches missed.">               RequestPacket.TRANSFERMODE.SENDMD5THROUGHMODE.ordinal()) {</span>
-<span class="nc" id="L889">      WaarpStringUtils.replace(builder, &quot;XXXSENDMTXXX&quot;, &quot;checked&quot;);</span>
+  public final String toSpecializedHtml(final R66Session session,
+                                        final String body) {
+<span class="fc" id="L887">    final StringBuilder builder = new StringBuilder(body);</span>
+<span class="fc" id="L888">    WaarpStringUtils.replace(builder, &quot;XXXRULEXXX&quot;, getIdRule());</span>
+<span class="fc" id="L889">    WaarpStringUtils.replace(builder, &quot;XXXIDSXXX&quot;,</span>
+<span class="pc bpc" id="L890" title="1 of 2 branches missed.">                             pojo.getXMLHostids() == null? &quot;&quot; :</span>
+<span class="fc" id="L891">                                 pojo.getXMLHostids());</span>
+<span class="fc bfc" id="L892" title="All 2 branches covered.">    if (getMode() == RequestPacket.TRANSFERMODE.RECVMODE.ordinal()) {</span>
+<span class="fc" id="L893">      WaarpStringUtils.replace(builder, &quot;XXXRECVXXX&quot;, &quot;checked&quot;);</span>
+<span class="fc bfc" id="L894" title="All 2 branches covered.">    } else if (getMode() == RequestPacket.TRANSFERMODE.SENDMODE.ordinal()) {</span>
+<span class="fc" id="L895">      WaarpStringUtils.replace(builder, &quot;XXXSENDXXX&quot;, &quot;checked&quot;);</span>
+<span class="fc bfc" id="L896" title="All 2 branches covered.">    } else if (getMode() == RequestPacket.TRANSFERMODE.RECVMD5MODE.ordinal()) {</span>
+<span class="fc" id="L897">      WaarpStringUtils.replace(builder, &quot;XXXRECVMXXX&quot;, &quot;checked&quot;);</span>
+<span class="fc bfc" id="L898" title="All 2 branches covered.">    } else if (getMode() == RequestPacket.TRANSFERMODE.SENDMD5MODE.ordinal()) {</span>
+<span class="fc" id="L899">      WaarpStringUtils.replace(builder, &quot;XXXSENDMXXX&quot;, &quot;checked&quot;);</span>
+<span class="fc" id="L900">    } else if (getMode() ==</span>
+<span class="fc bfc" id="L901" title="All 2 branches covered.">               RequestPacket.TRANSFERMODE.RECVTHROUGHMODE.ordinal()) {</span>
+<span class="fc" id="L902">      WaarpStringUtils.replace(builder, &quot;XXXRECVTXXX&quot;, &quot;checked&quot;);</span>
+<span class="fc" id="L903">    } else if (getMode() ==</span>
+<span class="pc bpc" id="L904" title="1 of 2 branches missed.">               RequestPacket.TRANSFERMODE.SENDTHROUGHMODE.ordinal()) {</span>
+<span class="fc" id="L905">      WaarpStringUtils.replace(builder, &quot;XXXSENDTXXX&quot;, &quot;checked&quot;);</span>
+<span class="nc" id="L906">    } else if (getMode() ==</span>
+<span class="nc bnc" id="L907" title="All 2 branches missed.">               RequestPacket.TRANSFERMODE.RECVMD5THROUGHMODE.ordinal()) {</span>
+<span class="nc" id="L908">      WaarpStringUtils.replace(builder, &quot;XXXRECVMTXXX&quot;, &quot;checked&quot;);</span>
+<span class="nc" id="L909">    } else if (getMode() ==</span>
+<span class="nc bnc" id="L910" title="All 2 branches missed.">               RequestPacket.TRANSFERMODE.SENDMD5THROUGHMODE.ordinal()) {</span>
+<span class="nc" id="L911">      WaarpStringUtils.replace(builder, &quot;XXXSENDMTXXX&quot;, &quot;checked&quot;);</span>
     }
-<span class="fc" id="L891">    WaarpStringUtils.replace(builder, &quot;XXXRPXXX&quot;,</span>
-<span class="pc bpc" id="L892" title="1 of 2 branches missed.">                             pojo.getRecvPath() == null? &quot;&quot; :</span>
-<span class="fc" id="L893">                                 pojo.getRecvPath());</span>
-<span class="fc" id="L894">    WaarpStringUtils.replace(builder, &quot;XXXSPXXX&quot;,</span>
-<span class="pc bpc" id="L895" title="1 of 2 branches missed.">                             pojo.getSendPath() == null? &quot;&quot; :</span>
-<span class="fc" id="L896">                                 pojo.getSendPath());</span>
-<span class="fc" id="L897">    WaarpStringUtils.replace(builder, &quot;XXXAPXXX&quot;,</span>
-<span class="pc bpc" id="L898" title="1 of 2 branches missed.">                             pojo.getArchivePath() == null? &quot;&quot; :</span>
-<span class="fc" id="L899">                                 pojo.getArchivePath());</span>
-<span class="fc" id="L900">    WaarpStringUtils.replace(builder, &quot;XXXWPXXX&quot;,</span>
-<span class="pc bpc" id="L901" title="1 of 2 branches missed.">                             pojo.getWorkPath() == null? &quot;&quot; :</span>
-<span class="fc" id="L902">                                 pojo.getWorkPath());</span>
-<span class="fc" id="L903">    WaarpStringUtils.replace(builder, &quot;XXXRPTXXX&quot;,</span>
-<span class="pc bpc" id="L904" title="1 of 2 branches missed.">                             pojo.getXMLRPreTasks() == null? &quot;&quot; :</span>
-<span class="fc" id="L905">                                 pojo.getXMLRPreTasks());</span>
-<span class="fc" id="L906">    WaarpStringUtils.replace(builder, &quot;XXXRSTXXX&quot;,</span>
-<span class="pc bpc" id="L907" title="1 of 2 branches missed.">                             pojo.getXMLRPostTasks() == null? &quot;&quot; :</span>
-<span class="fc" id="L908">                                 pojo.getXMLRPostTasks());</span>
-<span class="fc" id="L909">    WaarpStringUtils.replace(builder, &quot;XXXRETXXX&quot;,</span>
-<span class="pc bpc" id="L910" title="1 of 2 branches missed.">                             pojo.getXMLRErrorTasks() == null? &quot;&quot; :</span>
-<span class="fc" id="L911">                                 pojo.getXMLRErrorTasks());</span>
-<span class="fc" id="L912">    WaarpStringUtils.replace(builder, &quot;XXXSPTXXX&quot;,</span>
-<span class="pc bpc" id="L913" title="1 of 2 branches missed.">                             pojo.getXMLSPreTasks() == null? &quot;&quot; :</span>
-<span class="fc" id="L914">                                 pojo.getXMLSPreTasks());</span>
-<span class="fc" id="L915">    WaarpStringUtils.replace(builder, &quot;XXXSSTXXX&quot;,</span>
-<span class="pc bpc" id="L916" title="1 of 2 branches missed.">                             pojo.getXMLSPostTasks() == null? &quot;&quot; :</span>
-<span class="fc" id="L917">                                 pojo.getXMLSPostTasks());</span>
-<span class="fc" id="L918">    WaarpStringUtils.replace(builder, &quot;XXXSETXXX&quot;,</span>
-<span class="pc bpc" id="L919" title="1 of 2 branches missed.">                             pojo.getXMLSErrorTasks() == null? &quot;&quot; :</span>
-<span class="fc" id="L920">                                 pojo.getXMLSErrorTasks());</span>
-<span class="fc" id="L921">    return builder.toString();</span>
+<span class="fc" id="L913">    WaarpStringUtils.replace(builder, &quot;XXXRPXXX&quot;,</span>
+<span class="pc bpc" id="L914" title="1 of 2 branches missed.">                             pojo.getRecvPath() == null? &quot;&quot; :</span>
+<span class="fc" id="L915">                                 pojo.getRecvPath());</span>
+<span class="fc" id="L916">    WaarpStringUtils.replace(builder, &quot;XXXSPXXX&quot;,</span>
+<span class="pc bpc" id="L917" title="1 of 2 branches missed.">                             pojo.getSendPath() == null? &quot;&quot; :</span>
+<span class="fc" id="L918">                                 pojo.getSendPath());</span>
+<span class="fc" id="L919">    WaarpStringUtils.replace(builder, &quot;XXXAPXXX&quot;,</span>
+<span class="pc bpc" id="L920" title="1 of 2 branches missed.">                             pojo.getArchivePath() == null? &quot;&quot; :</span>
+<span class="fc" id="L921">                                 pojo.getArchivePath());</span>
+<span class="fc" id="L922">    WaarpStringUtils.replace(builder, &quot;XXXWPXXX&quot;,</span>
+<span class="pc bpc" id="L923" title="1 of 2 branches missed.">                             pojo.getWorkPath() == null? &quot;&quot; :</span>
+<span class="fc" id="L924">                                 pojo.getWorkPath());</span>
+<span class="fc" id="L925">    WaarpStringUtils.replace(builder, &quot;XXXRPTXXX&quot;,</span>
+<span class="pc bpc" id="L926" title="1 of 2 branches missed.">                             pojo.getXMLRPreTasks() == null? &quot;&quot; :</span>
+<span class="fc" id="L927">                                 pojo.getXMLRPreTasks());</span>
+<span class="fc" id="L928">    WaarpStringUtils.replace(builder, &quot;XXXRSTXXX&quot;,</span>
+<span class="pc bpc" id="L929" title="1 of 2 branches missed.">                             pojo.getXMLRPostTasks() == null? &quot;&quot; :</span>
+<span class="fc" id="L930">                                 pojo.getXMLRPostTasks());</span>
+<span class="fc" id="L931">    WaarpStringUtils.replace(builder, &quot;XXXRETXXX&quot;,</span>
+<span class="pc bpc" id="L932" title="1 of 2 branches missed.">                             pojo.getXMLRErrorTasks() == null? &quot;&quot; :</span>
+<span class="fc" id="L933">                                 pojo.getXMLRErrorTasks());</span>
+<span class="fc" id="L934">    WaarpStringUtils.replace(builder, &quot;XXXSPTXXX&quot;,</span>
+<span class="pc bpc" id="L935" title="1 of 2 branches missed.">                             pojo.getXMLSPreTasks() == null? &quot;&quot; :</span>
+<span class="fc" id="L936">                                 pojo.getXMLSPreTasks());</span>
+<span class="fc" id="L937">    WaarpStringUtils.replace(builder, &quot;XXXSSTXXX&quot;,</span>
+<span class="pc bpc" id="L938" title="1 of 2 branches missed.">                             pojo.getXMLSPostTasks() == null? &quot;&quot; :</span>
+<span class="fc" id="L939">                                 pojo.getXMLSPostTasks());</span>
+<span class="fc" id="L940">    WaarpStringUtils.replace(builder, &quot;XXXSETXXX&quot;,</span>
+<span class="pc bpc" id="L941" title="1 of 2 branches missed.">                             pojo.getXMLSErrorTasks() == null? &quot;&quot; :</span>
+<span class="fc" id="L942">                                 pojo.getXMLSErrorTasks());</span>
+<span class="fc" id="L943">    return builder.toString();</span>
   }
 
   /**
    * @return the recvPath
    */
-  public String getRecvPath() {
-<span class="fc bfc" id="L928" title="All 4 branches covered.">    if (getRuleRecvPath() == null || getRuleRecvPath().trim().isEmpty()) {</span>
-<span class="fc" id="L929">      return Configuration.configuration.getInPath();</span>
+  public final String getRecvPath() {
+<span class="fc bfc" id="L950" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(getRuleRecvPath())) {</span>
+<span class="fc" id="L951">      return Configuration.configuration.getInPath();</span>
     }
-<span class="fc" id="L931">    return getRuleRecvPath();</span>
+<span class="fc" id="L953">    return getRuleRecvPath();</span>
   }
 
   /**
    * @return the sendPath
    */
-  public String getSendPath() {
-<span class="fc bfc" id="L938" title="All 4 branches covered.">    if (getRuleSendPath() == null || getRuleSendPath().trim().isEmpty()) {</span>
-<span class="fc" id="L939">      return Configuration.configuration.getOutPath();</span>
+  public final String getSendPath() {
+<span class="fc bfc" id="L960" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(getRuleSendPath())) {</span>
+<span class="fc" id="L961">      return Configuration.configuration.getOutPath();</span>
     }
-<span class="fc" id="L941">    return getRuleSendPath();</span>
+<span class="fc" id="L963">    return getRuleSendPath();</span>
   }
 
   /**
    * @return the archivePath
    */
-  public String getArchivePath() {
-<span class="fc bfc" id="L948" title="All 4 branches covered.">    if (getRuleArchivePath() == null || getRuleArchivePath().trim().isEmpty()) {</span>
-<span class="fc" id="L949">      return Configuration.configuration.getArchivePath();</span>
+  public final String getArchivePath() {
+<span class="fc bfc" id="L970" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(getRuleArchivePath())) {</span>
+<span class="fc" id="L971">      return Configuration.configuration.getArchivePath();</span>
     }
-<span class="fc" id="L951">    return getRuleArchivePath();</span>
+<span class="fc" id="L973">    return getRuleArchivePath();</span>
   }
 
   /**
    * @return the workPath
    */
-  public String getWorkPath() {
-<span class="fc bfc" id="L958" title="All 4 branches covered.">    if (getRuleWorkPath() == null || getRuleWorkPath().trim().isEmpty()) {</span>
-<span class="fc" id="L959">      return Configuration.configuration.getWorkingPath();</span>
+  public final String getWorkPath() {
+<span class="fc bfc" id="L980" title="All 2 branches covered.">    if (ParametersChecker.isEmpty(getRuleWorkPath())) {</span>
+<span class="fc" id="L981">      return Configuration.configuration.getWorkingPath();</span>
     }
-<span class="fc" id="L961">    return getRuleWorkPath();</span>
+<span class="fc" id="L983">    return getRuleWorkPath();</span>
   }
 
   /**
    * @return the Rule recvPath
    */
-  public String getRuleRecvPath() {
-<span class="fc" id="L968">    return pojo.getRecvPath();</span>
+  public final String getRuleRecvPath() {
+<span class="fc" id="L990">    return pojo.getRecvPath();</span>
   }
 
   /**
    * @return the Rule sendPath
    */
-  public String getRuleSendPath() {
-<span class="fc" id="L975">    return pojo.getSendPath();</span>
+  public final String getRuleSendPath() {
+<span class="fc" id="L997">    return pojo.getSendPath();</span>
   }
 
   /**
    * @return the Rule archivePath
    */
-  public String getRuleArchivePath() {
-<span class="fc" id="L982">    return pojo.getArchivePath();</span>
+  public final String getRuleArchivePath() {
+<span class="fc" id="L1004">    return pojo.getArchivePath();</span>
   }
 
   /**
    * @return the Rule workPath
    */
-  public String getRuleWorkPath() {
-<span class="fc" id="L989">    return pojo.getWorkPath();</span>
+  public final String getRuleWorkPath() {
+<span class="fc" id="L1011">    return pojo.getWorkPath();</span>
   }
 
   /**
    * @return the idRule
    */
-  public String getIdRule() {
-<span class="fc" id="L996">    return pojo.getName();</span>
+  public final String getIdRule() {
+<span class="fc" id="L1018">    return pojo.getName();</span>
   }
 
   /**
    * @return the mode
    */
-  public int getMode() {
-<span class="fc" id="L1003">    return pojo.getMode();</span>
+  public final int getMode() {
+<span class="fc" id="L1025">    return pojo.getMode();</span>
   }
 
   /**
    * @return the idsArray
    */
-  public String[] getIdsArray() {
-<span class="fc" id="L1010">    return pojo.getHostids().toArray(STRING_0_LENGTH);</span>
+  public final String[] getIdsArray() {
+<span class="fc" id="L1032">    return pojo.getHostids().toArray(STRING_0_LENGTH);</span>
   }
 
   /**
    * @return the rpreTasksArray
    */
-  public String[][] getRpreTasksArray() {
-<span class="fc" id="L1017">    return toLegacyTasks(pojo.getRPreTasks());</span>
+  public final String[][] getRpreTasksArray() {
+<span class="fc" id="L1039">    return toLegacyTasks(pojo.getRPreTasks());</span>
   }
 
   /**
    * @return the rpostTasksArray
    */
-  public String[][] getRpostTasksArray() {
-<span class="fc" id="L1024">    return toLegacyTasks(pojo.getRPostTasks());</span>
+  public final String[][] getRpostTasksArray() {
+<span class="fc" id="L1046">    return toLegacyTasks(pojo.getRPostTasks());</span>
   }
 
   /**
    * @return the rerrorTasksArray
    */
-  public String[][] getRerrorTasksArray() {
-<span class="fc" id="L1031">    return toLegacyTasks(pojo.getRErrorTasks());</span>
+  public final String[][] getRerrorTasksArray() {
+<span class="fc" id="L1053">    return toLegacyTasks(pojo.getRErrorTasks());</span>
   }
 
   /**
    * @return the spreTasksArray
    */
-  public String[][] getSpreTasksArray() {
-<span class="fc" id="L1038">    return toLegacyTasks(pojo.getSPreTasks());</span>
+  public final String[][] getSpreTasksArray() {
+<span class="fc" id="L1060">    return toLegacyTasks(pojo.getSPreTasks());</span>
   }
 
   /**
    * @return the spostTasksArray
    */
-  public String[][] getSpostTasksArray() {
-<span class="fc" id="L1045">    return toLegacyTasks(pojo.getSPostTasks());</span>
+  public final String[][] getSpostTasksArray() {
+<span class="fc" id="L1067">    return toLegacyTasks(pojo.getSPostTasks());</span>
   }
 
   /**
    * @return the serrorTasksArray
    */
-  public String[][] getSerrorTasksArray() {
-<span class="fc" id="L1052">    return toLegacyTasks(pojo.getSErrorTasks());</span>
+  public final String[][] getSerrorTasksArray() {
+<span class="fc" id="L1074">    return toLegacyTasks(pojo.getSErrorTasks());</span>
   }
 
   private List&lt;RuleTask&gt; fromLegacyTasks(final String[][] tasks) {
-<span class="fc" id="L1056">    final int size = tasks.length;</span>
-<span class="fc" id="L1057">    final List&lt;RuleTask&gt; res = new ArrayList&lt;RuleTask&gt;(size);</span>
-<span class="fc bfc" id="L1058" title="All 2 branches covered.">    for (final String[] task : tasks) {</span>
-<span class="fc" id="L1059">      res.add(new RuleTask(task[0], task[1], Integer.parseInt(task[2])));</span>
+<span class="fc" id="L1078">    final int size = tasks.length;</span>
+<span class="fc" id="L1079">    final List&lt;RuleTask&gt; res = new ArrayList&lt;RuleTask&gt;(size);</span>
+<span class="fc bfc" id="L1080" title="All 2 branches covered.">    for (final String[] task : tasks) {</span>
+<span class="pc bpc" id="L1081" title="1 of 2 branches missed.">      if (task.length &gt;= 3) {</span>
+<span class="fc" id="L1082">        res.add(new RuleTask(task[0], task[1], Integer.parseInt(task[2])));</span>
+      }
     }
-<span class="fc" id="L1061">    return res;</span>
+<span class="fc" id="L1085">    return res;</span>
   }
 
   private String[][] toLegacyTasks(final List&lt;RuleTask&gt; tasks) {
-<span class="fc" id="L1065">    final int size = tasks.size();</span>
-<span class="fc" id="L1066">    final String[][] res = new String[size][];</span>
-<span class="fc" id="L1067">    int i = 0;</span>
-<span class="fc bfc" id="L1068" title="All 2 branches covered.">    for (final RuleTask task : tasks) {</span>
-<span class="fc" id="L1069">      res[i] = new String[3];</span>
-<span class="fc" id="L1070">      res[i][0] = task.getType();</span>
-<span class="fc" id="L1071">      res[i][1] = task.getPath();</span>
-<span class="fc" id="L1072">      res[i][2] = String.valueOf(task.getDelay());</span>
-<span class="fc" id="L1073">      i++;</span>
-<span class="fc" id="L1074">    }</span>
-<span class="fc" id="L1075">    return res;</span>
+<span class="fc" id="L1089">    final int size = tasks.size();</span>
+<span class="fc" id="L1090">    final String[][] res = new String[size][];</span>
+<span class="fc" id="L1091">    int i = 0;</span>
+<span class="fc bfc" id="L1092" title="All 2 branches covered.">    for (final RuleTask task : tasks) {</span>
+<span class="fc" id="L1093">      res[i] = new String[3];</span>
+<span class="fc" id="L1094">      res[i][0] = task.getType();</span>
+<span class="fc" id="L1095">      res[i][1] = task.getPath();</span>
+<span class="fc" id="L1096">      res[i][2] = String.valueOf(task.getDelay());</span>
+<span class="fc" id="L1097">      i++;</span>
+<span class="fc" id="L1098">    }</span>
+<span class="fc" id="L1099">    return res;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

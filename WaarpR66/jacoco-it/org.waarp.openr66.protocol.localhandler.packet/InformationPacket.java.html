@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -34,8 +35,8 @@ public class InformationPacket extends AbstractLocalPacket {
 
   private static final String NOT_ENOUGH_DATA = &quot;Not enough data&quot;;
 
-<span class="nc" id="L37">  public enum ASKENUM {</span>
-<span class="nc" id="L38">    ASKEXIST, ASKMLSDETAIL, ASKLIST, ASKMLSLIST</span>
+<span class="nc" id="L38">  public enum ASKENUM {</span>
+<span class="nc" id="L39">    ASKEXIST, ASKMLSDETAIL, ASKLIST, ASKMLSLIST</span>
   }
 
   private final String rulename;
@@ -59,22 +60,22 @@ public class InformationPacket extends AbstractLocalPacket {
                                                    final int endLength,
                                                    final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
-<span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L64">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (middleLength != 1) {</span>
-<span class="nc" id="L66">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="nc" id="L67">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="nc" id="L68">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="nc" id="L69">    final byte[] bend = new byte[endLength];</span>
-<span class="nc" id="L70">    buf.readBytes(bheader);</span>
-<span class="nc" id="L71">    final byte request = buf.readByte();</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (endLength &gt; 0) {</span>
-<span class="nc" id="L73">      buf.readBytes(bend);</span>
+<span class="nc" id="L69">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="nc" id="L70">    final byte[] bend = new byte[endLength];</span>
+<span class="nc" id="L71">    buf.readBytes(bheader);</span>
+<span class="nc" id="L72">    final byte request = buf.readByte();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="nc" id="L74">      buf.readBytes(bend);</span>
     }
-<span class="nc" id="L75">    final String sheader = new String(bheader);</span>
-<span class="nc" id="L76">    final String send = new String(bend);</span>
-<span class="nc" id="L77">    return new InformationPacket(sheader, request, send);</span>
+<span class="nc" id="L76">    final String sheader = new String(bheader, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L77">    final String send = new String(bend, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L78">    return new InformationPacket(sheader, request, send);</span>
   }
 
   /**
@@ -83,79 +84,81 @@ public class InformationPacket extends AbstractLocalPacket {
    * @param filename
    */
   public InformationPacket(final String rulename, final byte request,
-<span class="nc" id="L86">                           final String filename) {</span>
-<span class="nc" id="L87">    this.rulename = rulename;</span>
-<span class="nc" id="L88">    requestedInfo = request;</span>
-<span class="nc" id="L89">    this.filename = filename;</span>
-<span class="nc" id="L90">  }</span>
+<span class="nc" id="L87">                           final String filename) {</span>
+<span class="nc" id="L88">    this.rulename = rulename;</span>
+<span class="nc" id="L89">    requestedInfo = request;</span>
+<span class="nc" id="L90">    this.filename = filename;</span>
+<span class="nc" id="L91">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
-<span class="nc" id="L94">    return true;</span>
+  public final boolean hasGlobalBuffer() {
+<span class="nc" id="L95">    return true;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (rulename == null) {</span>
-<span class="nc" id="L102">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (rulename == null) {</span>
+<span class="nc" id="L103">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="nc" id="L104">    final byte[] headerBytes = rulename.getBytes();</span>
-<span class="nc" id="L105">    final int headerSize = headerBytes.length;</span>
-<span class="nc" id="L106">    final int middleSize = 1;</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">    final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;</span>
-<span class="nc" id="L108">    final int endSize = endBytes.length;</span>
-<span class="nc" id="L109">    final int globalSize =</span>
+<span class="nc" id="L105">    final byte[] headerBytes = rulename.getBytes(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L106">    final int headerSize = headerBytes.length;</span>
+<span class="nc" id="L107">    final int middleSize = 1;</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">    final byte[] endBytes =</span>
+<span class="nc" id="L109">        filename != null? filename.getBytes(WaarpStringUtils.UTF8) :</span>
+            EMPTY_ARRAY;
+<span class="nc" id="L111">    final int endSize = endBytes.length;</span>
+<span class="nc" id="L112">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="nc" id="L111">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L112">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="nc" id="L113">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="nc" id="L114">    header.writeBytes(headerBytes);</span>
-<span class="nc" id="L115">    offset += headerSize;</span>
-<span class="nc" id="L116">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="nc" id="L117">    middle.writeByte(requestedInfo);</span>
-<span class="nc" id="L118">    offset += middleSize;</span>
-<span class="nc" id="L119">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (filename != null) {</span>
-<span class="nc" id="L121">      end.writeBytes(endBytes);</span>
+<span class="nc" id="L114">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L115">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
+<span class="nc" id="L116">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="nc" id="L117">    header.writeBytes(headerBytes);</span>
+<span class="nc" id="L118">    offset += headerSize;</span>
+<span class="nc" id="L119">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="nc" id="L120">    middle.writeByte(requestedInfo);</span>
+<span class="nc" id="L121">    offset += middleSize;</span>
+<span class="nc" id="L122">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    if (filename != null) {</span>
+<span class="nc" id="L124">      end.writeBytes(endBytes);</span>
     }
-<span class="nc" id="L123">  }</span>
+<span class="nc" id="L126">  }</span>
 
   @Override
-  public byte getType() {
-<span class="nc" id="L127">    return LocalPacketFactory.INFORMATIONPACKET;</span>
+  public final byte getType() {
+<span class="nc" id="L130">    return LocalPacketFactory.INFORMATIONPACKET;</span>
   }
 
   @Override
-  public String toString() {
-<span class="nc" id="L132">    return &quot;InformationPacket: &quot; + requestedInfo + ' ' + rulename + ' ' +</span>
+  public final String toString() {
+<span class="nc" id="L135">    return &quot;InformationPacket: &quot; + requestedInfo + ' ' + rulename + ' ' +</span>
            filename;
   }
 
   /**
    * @return the requestId
    */
-  public byte getRequest() {
-<span class="nc" id="L140">    return requestedInfo;</span>
+  public final byte getRequest() {
+<span class="nc" id="L143">    return requestedInfo;</span>
   }
 
   /**
    * @return the rulename
    */
-  public String getRulename() {
-<span class="nc" id="L147">    return rulename;</span>
+  public final String getRulename() {
+<span class="nc" id="L150">    return rulename;</span>
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
-<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (filename != null) {</span>
-<span class="nc" id="L155">      return filename;</span>
+  public final String getFilename() {
+<span class="nc bnc" id="L157" title="All 2 branches missed.">    if (filename != null) {</span>
+<span class="nc" id="L158">      return filename;</span>
     } else {
-<span class="nc" id="L157">      return &quot;&quot;;</span>
+<span class="nc" id="L160">      return &quot;&quot;;</span>
     }
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

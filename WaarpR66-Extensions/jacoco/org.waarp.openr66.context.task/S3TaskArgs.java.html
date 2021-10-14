@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>S3TaskArgs.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Extensions for JRE 8 and greater</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">S3TaskArgs.java</span></div><h1>S3TaskArgs.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.s3.taskfactory.S3TaskFactory;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * S3 GET Task&lt;br&gt;
+ * &lt;p&gt;
+ * Result of arguments will be as a S3 GET command.&lt;br&gt;
+ * Format is the following:&lt;br&gt;
+ * &quot;-URL url of S3 service &lt;br&gt;
+ * -accessKey access Key for S3 service &lt;br&gt;
+ * -secretKey secret Key for S3 service &lt;br&gt;
+ * -bucketName bucket Name where to retrieve the object &lt;br&gt;
+ * -sourceName source Name from the bucket to select the final Object &lt;br&gt;
+ * -file final File path (absolute or relative from IN path) &lt;br&gt;
+ * [-getTags [* or list of tag names comma separated without space]]&quot; &lt;br&gt;
+ * -targetName source Name from the bucket to select the final Object &lt;br&gt;
+ * [-setTags 'name:value,...' without space]&quot; &lt;br&gt;
+ */
+public class S3TaskArgs {
+<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(S3TaskArgs.class);</span>
+
+  public static final String ARG_URL = &quot;URL&quot;;
+  public static final String ARG_ACCESS_KEY = &quot;accessKey&quot;;
+  public static final String ARG_SECRET_KEY = &quot;secretKey&quot;;
+  public static final String ARG_BUCKET_NAME = &quot;bucketName&quot;;
+  public static final String ARG_SOURCE_NAME = &quot;sourceName&quot;;
+  public static final String ARG_TARGET_NAME = &quot;targetName&quot;;
+  public static final String ARG_FILE = &quot;file&quot;;
+  public static final String ARG_GET_TAGS = &quot;getTags&quot;;
+  public static final String ARG_SET_TAGS = &quot;setTags&quot;;
+
+<span class="fc" id="L72">  private static final Option OPTION_URL =</span>
+<span class="fc" id="L73">      Option.builder(ARG_URL).required(true).hasArg(true)</span>
+<span class="fc" id="L74">            .desc(&quot;Specify the URL to operate on&quot;).build();</span>
+<span class="fc" id="L75">  private static final Option OPTION_ACCESS_KEY =</span>
+<span class="fc" id="L76">      Option.builder(ARG_ACCESS_KEY).required(true).hasArg(true)</span>
+<span class="fc" id="L77">            .desc(&quot;Specify the Access Key to operate with&quot;).build();</span>
+<span class="fc" id="L78">  private static final Option OPTION_SECRET_KEY =</span>
+<span class="fc" id="L79">      Option.builder(ARG_SECRET_KEY).required(true).hasArg(true)</span>
+<span class="fc" id="L80">            .desc(&quot;Specify the Secret Key to operate with&quot;).build();</span>
+<span class="fc" id="L81">  private static final Option OPTION_BUCKET_NAME =</span>
+<span class="fc" id="L82">      Option.builder(ARG_BUCKET_NAME).required(true).hasArg(true)</span>
+<span class="fc" id="L83">            .desc(&quot;Specify the Bucket Name to operate with&quot;).build();</span>
+<span class="fc" id="L84">  private static final Option OPTION_SOURCE_NAME =</span>
+<span class="fc" id="L85">      Option.builder(ARG_SOURCE_NAME).required(true).hasArg(true)</span>
+<span class="fc" id="L86">            .desc(&quot;Specify the Source Name to operate on&quot;).build();</span>
+<span class="fc" id="L87">  private static final Option OPTION_TARGET_NAME =</span>
+<span class="fc" id="L88">      Option.builder(ARG_TARGET_NAME).required(true).hasArg(true)</span>
+<span class="fc" id="L89">            .desc(&quot;Specify the Target Name to operate on&quot;).build();</span>
+<span class="fc" id="L90">  private static final Option OPTION_FILE =</span>
+<span class="fc" id="L91">      Option.builder(ARG_FILE).required(true).hasArg(true)</span>
+<span class="fc" id="L92">            .desc(&quot;Specify the File to operate on&quot;).build();</span>
+<span class="fc" id="L93">  private static final Option OPTION_GET_TAGS =</span>
+<span class="fc" id="L94">      Option.builder(ARG_GET_TAGS).required(false).hasArg(true).desc(</span>
+                &quot;Specify the Tags to retrieve: * or comma separated list without space&quot;)
+<span class="fc" id="L96">            .build();</span>
+<span class="fc" id="L97">  private static final Option OPTION_SET_TAGS =</span>
+<span class="fc" id="L98">      Option.builder(ARG_SET_TAGS).required(false).hasArg(true).desc(</span>
+                &quot;Specify the Tags to set: key1:value1,key2:value2 comma separated list without space&quot;)
+<span class="fc" id="L100">            .build();</span>
+
+<span class="fc" id="L102">  private static final Options S3_GET_OPTIONS =</span>
+<span class="fc" id="L103">      new Options().addOption(OPTION_URL).addOption(OPTION_ACCESS_KEY)</span>
+<span class="fc" id="L104">                   .addOption(OPTION_SECRET_KEY).addOption(OPTION_BUCKET_NAME)</span>
+<span class="fc" id="L105">                   .addOption(OPTION_SOURCE_NAME).addOption(OPTION_FILE)</span>
+<span class="fc" id="L106">                   .addOption(OPTION_GET_TAGS);</span>
+<span class="fc" id="L107">  private static final Options S3_PUT_OPTIONS =</span>
+<span class="fc" id="L108">      new Options().addOption(OPTION_URL).addOption(OPTION_ACCESS_KEY)</span>
+<span class="fc" id="L109">                   .addOption(OPTION_SECRET_KEY).addOption(OPTION_BUCKET_NAME)</span>
+<span class="fc" id="L110">                   .addOption(OPTION_TARGET_NAME).addOption(OPTION_SET_TAGS);</span>
+<span class="fc" id="L111">  private static final Options S3_DELETE_OPTIONS =</span>
+<span class="fc" id="L112">      new Options().addOption(OPTION_URL).addOption(OPTION_ACCESS_KEY)</span>
+<span class="fc" id="L113">                   .addOption(OPTION_SECRET_KEY).addOption(OPTION_BUCKET_NAME)</span>
+<span class="fc" id="L114">                   .addOption(OPTION_SOURCE_NAME);</span>
+  protected static final String EMPTY_STRING_NOT_ALLOWED =
+      &quot;Empty String not allowed&quot;;
+
+  /**
+   * Print to standard output the help of this command
+   */
+  public static void printHelp(final S3TaskFactory.S3TaskType type,
+                               final Options options) {
+<span class="fc" id="L123">    final HelpFormatter formatter = new HelpFormatter();</span>
+<span class="fc" id="L124">    formatter.printHelp(type.name(), options);</span>
+<span class="fc" id="L125">  }</span>
+
+  public static S3TaskArgs getS3Params(final S3TaskFactory.S3TaskType type,
+                                       final int rank, final String[] args) {
+<span class="pc bpc" id="L129" title="2 of 4 branches missed.">    if (args == null || args.length == 0) {</span>
+<span class="nc" id="L130">      logger.error(&quot;Arguments cannot be empty or null&quot;);</span>
+<span class="nc" id="L131">      return null;</span>
+    }
+<span class="fc" id="L133">    final String[] realArgs = getRealArgs(rank, args);</span>
+<span class="fc" id="L134">    final CommandLineParser parser = new DefaultParser();</span>
+    final Options options;
+<span class="pc bpc" id="L136" title="1 of 4 branches missed.">    switch (type) {</span>
+      case S3GET:
+      case S3GETDELETE:
+<span class="fc" id="L139">        options = S3_GET_OPTIONS;</span>
+<span class="fc" id="L140">        break;</span>
+      case S3PUT:
+      case S3PUTR66DELETE:
+<span class="fc" id="L143">        options = S3_PUT_OPTIONS;</span>
+<span class="fc" id="L144">        break;</span>
+      case S3DELETE:
+<span class="fc" id="L146">        options = S3_DELETE_OPTIONS;</span>
+<span class="fc" id="L147">        break;</span>
+      default:
+<span class="nc" id="L149">        logger.error(&quot;Unknown Task {}&quot;, type);</span>
+<span class="nc" id="L150">        return null;</span>
+    }
+    try {
+<span class="fc" id="L153">      final CommandLine cmd = parser.parse(options, realArgs, true);</span>
+<span class="fc" id="L154">      final String surl = cmd.getOptionValue(ARG_URL);</span>
+<span class="fc" id="L155">      final URL url = new URL(surl);</span>
+<span class="fc" id="L156">      final String accessKey = cmd.getOptionValue(ARG_ACCESS_KEY);</span>
+<span class="fc" id="L157">      final String secretKey = cmd.getOptionValue(ARG_SECRET_KEY);</span>
+<span class="fc" id="L158">      final String bucketName =</span>
+<span class="fc" id="L159">          cmd.getOptionValue(ARG_BUCKET_NAME).toLowerCase();</span>
+<span class="fc" id="L160">      final String sourceName =</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">          cmd.hasOption(ARG_SOURCE_NAME)? cmd.getOptionValue(ARG_SOURCE_NAME) :</span>
+              null;
+<span class="fc" id="L163">      final String targetName =</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">          cmd.hasOption(ARG_TARGET_NAME)? cmd.getOptionValue(ARG_TARGET_NAME) :</span>
+              null;
+<span class="fc" id="L166">      final String sfile =</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">          cmd.hasOption(ARG_FILE)? cmd.getOptionValue(ARG_FILE) : null;</span>
+      final File file;
+<span class="fc bfc" id="L169" title="All 2 branches covered.">      if (sfile != null) {</span>
+<span class="fc" id="L170">        file = new File(sfile);</span>
+      } else {
+<span class="fc" id="L172">        file = null;</span>
+      }
+<span class="fc" id="L174">      final String sgetTags =</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">          cmd.hasOption(ARG_GET_TAGS)? cmd.getOptionValue(ARG_GET_TAGS) : null;</span>
+<span class="fc" id="L176">      Set&lt;String&gt; getTags = null;</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">      if (ParametersChecker.isNotEmpty(sgetTags)) {</span>
+<span class="fc" id="L178">        getTags = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L179">        final String[] keys = sgetTags.split(&quot;,&quot;); // NOSONAR</span>
+<span class="fc" id="L180">        boolean star = false;</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        for (final String key : keys) {</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">          if (key.equalsIgnoreCase(&quot;*&quot;)) {</span>
+<span class="fc" id="L183">            star = true;</span>
+<span class="fc" id="L184">            break;</span>
+          }
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">          if (key.isEmpty()) {</span>
+<span class="nc" id="L187">            printHelp(type, options);</span>
+<span class="nc" id="L188">            logger.error(&quot;Arguments GetTags are incorrect: {}&quot;, sgetTags);</span>
+<span class="nc" id="L189">            return null;</span>
+          }
+<span class="fc" id="L191">          getTags.add(key);</span>
+        }
+<span class="fc bfc" id="L193" title="All 2 branches covered.">        if (star) {</span>
+<span class="fc" id="L194">          getTags.clear();</span>
+        }
+      }
+<span class="fc" id="L197">      final String ssetTags =</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">          cmd.hasOption(ARG_SET_TAGS)? cmd.getOptionValue(ARG_SET_TAGS) : null;</span>
+<span class="fc" id="L199">      Map&lt;String, String&gt; setTags = null;</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">      if (ParametersChecker.isNotEmpty(ssetTags)) {</span>
+<span class="fc" id="L201">        setTags = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L202">        final String[] keyvalues = ssetTags.split(&quot;,&quot;); // NOSONAR</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        for (final String key : keyvalues) {</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">          if (key.isEmpty()) {</span>
+<span class="nc" id="L205">            printHelp(type, options);</span>
+<span class="nc" id="L206">            logger.error(&quot;Arguments SetTags are incorrect: {}&quot;, ssetTags);</span>
+<span class="nc" id="L207">            return null;</span>
+          }
+<span class="fc" id="L209">          final String[] dual = key.split(&quot;:&quot;);</span>
+<span class="pc bpc" id="L210" title="3 of 6 branches missed.">          if (dual.length != 2 || dual[0].isEmpty() || dual[1].isEmpty()) {</span>
+<span class="nc" id="L211">            printHelp(type, options);</span>
+<span class="nc" id="L212">            logger.error(&quot;Arguments SetTags are incorrect: {}&quot;, ssetTags);</span>
+<span class="nc" id="L213">            return null;</span>
+          }
+<span class="fc" id="L215">          setTags.put(dual[0], dual[1]);</span>
+        }
+      }
+<span class="fc" id="L218">      return new S3TaskArgs(type, url, accessKey, secretKey, bucketName,</span>
+                            sourceName, targetName, file, getTags, setTags);
+<span class="fc" id="L220">    } catch (final ParseException | MalformedURLException e) {</span>
+<span class="fc" id="L221">      printHelp(type, options);</span>
+<span class="fc" id="L222">      logger.error(&quot;Arguments are incorrect: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L223">      return null;</span>
+    }
+  }
+
+  /**
+   * Finalize the real arguments to parse
+   *
+   * @param rank
+   * @param args
+   *
+   * @return the real arguments
+   */
+  private static String[] getRealArgs(final int rank, final String[] args) {
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">    return rank == 0? args : Arrays.copyOfRange(args, rank, args.length);</span>
+  }
+
+  private final URL url;
+  private final String accessKey;
+  private final String secretKey;
+  private final String bucketName;
+  private final String sourceName;
+  private final String targetName;
+  private final File file;
+  private final Set&lt;String&gt; getTags;
+  private final boolean getTag;
+  private final Map&lt;String, String&gt; setTags;
+
+
+  public S3TaskArgs(final S3TaskFactory.S3TaskType type, final URL url,
+                    final String accessKey, final String secretKey,
+                    final String bucketName, final String sourceName,
+                    final String targetName, final File file,
+                    final Set&lt;String&gt; getTags,
+<span class="fc" id="L256">                    final Map&lt;String, String&gt; setTags) {</span>
+<span class="fc" id="L257">    ParametersChecker.checkParameter(EMPTY_STRING_NOT_ALLOWED, accessKey,</span>
+                                     secretKey, bucketName);
+<span class="fc bfc" id="L259" title="All 6 branches covered.">    if ((type == S3TaskFactory.S3TaskType.S3GET ||</span>
+         type == S3TaskFactory.S3TaskType.S3GETDELETE ||
+         type == S3TaskFactory.S3TaskType.S3DELETE) &amp;&amp;
+<span class="pc bpc" id="L262" title="3 of 4 branches missed.">        ParametersChecker.isEmpty(sourceName) &amp;&amp; file == null) {</span>
+<span class="nc" id="L263">      throw new IllegalArgumentException(EMPTY_STRING_NOT_ALLOWED);</span>
+    }
+<span class="fc bfc" id="L265" title="All 4 branches covered.">    if ((type == S3TaskFactory.S3TaskType.S3PUT ||</span>
+         type == S3TaskFactory.S3TaskType.S3PUTR66DELETE) &amp;&amp;
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">        ParametersChecker.isEmpty(targetName)) {</span>
+<span class="nc" id="L268">      throw new IllegalArgumentException(EMPTY_STRING_NOT_ALLOWED);</span>
+    }
+<span class="fc" id="L270">    this.url = url;</span>
+<span class="fc" id="L271">    this.accessKey = accessKey;</span>
+<span class="fc" id="L272">    this.secretKey = secretKey;</span>
+<span class="fc" id="L273">    this.bucketName = bucketName;</span>
+<span class="fc" id="L274">    this.sourceName = sourceName;</span>
+<span class="fc" id="L275">    this.targetName = targetName;</span>
+<span class="fc" id="L276">    this.file = file;</span>
+<span class="fc" id="L277">    this.getTags = getTags;</span>
+<span class="fc" id="L278">    this.setTags = setTags;</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">    this.getTag = getTags != null;</span>
+<span class="fc" id="L280">  }</span>
+
+  public final URL getUrl() {
+<span class="fc" id="L283">    return url;</span>
+  }
+
+  public final String getAccessKey() {
+<span class="fc" id="L287">    return accessKey;</span>
+  }
+
+  public final String getSecretKey() {
+<span class="fc" id="L291">    return secretKey;</span>
+  }
+
+  public final String getBucketName() {
+<span class="fc" id="L295">    return bucketName;</span>
+  }
+
+  public final String getSourceName() {
+<span class="fc" id="L299">    return sourceName;</span>
+  }
+
+  public final String getTargetName() {
+<span class="fc" id="L303">    return targetName;</span>
+  }
+
+  public final File getFile() {
+<span class="fc" id="L307">    return file;</span>
+  }
+
+  public final Set&lt;String&gt; getGetTags() {
+<span class="fc" id="L311">    return getTags;</span>
+  }
+
+  public final boolean getGetTag() {
+<span class="fc" id="L315">    return getTag;</span>
+  }
+
+  public final Map&lt;String, String&gt; getSetTags() {
+<span class="fc" id="L319">    return setTags;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

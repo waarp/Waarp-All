@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FtpMonitoring.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.ftp.snmp</a> &gt; <span class="el_source">FtpMonitoring.java</span></div><h1>FtpMonitoring.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.ftp.snmp;
+
+import io.netty.handler.traffic.TrafficCounter;
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.ftp.config.FileBasedConfiguration;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
+import org.waarp.gateway.ftp.database.data.DbTransferLog;
+import org.waarp.gateway.ftp.snmp.FtpPrivateMib.MibLevel;
+import org.waarp.gateway.ftp.snmp.FtpPrivateMib.WaarpDetailedValuesIndex;
+import org.waarp.gateway.ftp.snmp.FtpPrivateMib.WaarpErrorValuesIndex;
+import org.waarp.gateway.ftp.snmp.FtpPrivateMib.WaarpGlobalValuesIndex;
+import org.waarp.snmp.WaarpSnmpAgent;
+import org.waarp.snmp.interf.WaarpInterfaceMonitor;
+
+/**
+ * SNMP Monitoring class for FTP Exec
+ */
+public class FtpMonitoring implements WaarpInterfaceMonitor {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L50">      WaarpLoggerFactory.getLogger(FtpMonitoring.class);</span>
+
+  public WaarpSnmpAgent agent;
+
+  // global informations
+  public long nbNetworkConnection;
+  public long nbThread;
+
+  // Internal data
+  private final DbSession dbSession;
+<span class="fc" id="L60">  private final TrafficCounter trafficCounter =</span>
+<span class="fc" id="L61">      FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()</span>
+<span class="fc" id="L62">                                                   .getGlobalTrafficShapingHandler()</span>
+<span class="fc" id="L63">                                                   .trafficCounter();</span>
+
+  public long nbCountInfoUnknown;
+  public long nbCountInfoNotUpdated;
+  public long nbCountInfoInterrupted;
+  public long nbCountInfoToSubmit;
+  public long nbCountInfoError;
+  public long nbCountInfoRunning;
+  public long nbCountInfoDone;
+
+  public long nbInActiveTransfer;
+  public long nbOutActiveTransfer;
+<span class="fc" id="L75">  public long lastInActiveTransfer = System.currentTimeMillis();</span>
+<span class="fc" id="L76">  public long lastOutActiveTransfer = System.currentTimeMillis();</span>
+  public long nbInTotalTransfer;
+  public long nbOutTotalTransfer;
+  public long nbInErrorTransfer;
+  public long nbOutErrorTransfer;
+
+  public long nbCountAllTransfer;
+
+  // Info for other reasons than transfers
+<span class="fc" id="L85">  private final long[] replyInfoNotransfers =</span>
+<span class="fc" id="L86">      new long[WaarpDetailedValuesIndex.reply_350.ordinal() + 1];</span>
+  // Error for other reasons than transfers
+<span class="fc" id="L88">  private final long[] replyErrorNotransfers =</span>
+<span class="fc" id="L89">      new long[WaarpErrorValuesIndex.reply_553.ordinal() + 1];</span>
+
+  {
+<span class="fc bfc" id="L92" title="All 2 branches covered.">    for (int i = 0; i &lt;= WaarpDetailedValuesIndex.reply_350.ordinal(); i++) {</span>
+<span class="fc" id="L93">      replyInfoNotransfers[i] = 0;</span>
+    }
+<span class="fc bfc" id="L95" title="All 2 branches covered.">    for (int i = 0; i &lt;= WaarpErrorValuesIndex.reply_553.ordinal(); i++) {</span>
+<span class="fc" id="L96">      replyErrorNotransfers[i] = 0;</span>
+    }
+  }
+
+  // Overall status including past, future and current transfers
+  private DbPreparedStatement countInfo;
+
+  // Current situation of all transfers, running or not
+  private DbPreparedStatement countInActiveTransfer;
+  private DbPreparedStatement countOutActiveTransfer;
+  private DbPreparedStatement countInTotalTransfer;
+  private DbPreparedStatement countOutTotalTransfer;
+  private DbPreparedStatement countInErrorTransfer;
+  private DbPreparedStatement countOutErrorTransfer;
+  private DbPreparedStatement countAllTransfer;
+  // Error Status on all transfers
+  private DbPreparedStatement countStatus;
+
+  /**
+   * @param session
+   */
+<span class="fc" id="L117">  public FtpMonitoring(final DbSession session) {</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (session != null) {</span>
+<span class="nc" id="L119">      dbSession = session;</span>
+    } else {
+<span class="fc" id="L121">      dbSession = DbConstantFtp.gatewayAdmin.getSession();</span>
+    }
+<span class="fc" id="L123">    initialize();</span>
+<span class="fc" id="L124">  }</span>
+
+  @Override
+  public final void setAgent(final WaarpSnmpAgent agent) {
+<span class="fc" id="L128">    this.agent = agent;</span>
+<span class="fc" id="L129">    lastInActiveTransfer = this.agent.getUptimeSystemTime();</span>
+<span class="fc" id="L130">    lastOutActiveTransfer = this.agent.getUptimeSystemTime();</span>
+<span class="fc" id="L131">  }</span>
+
+  @Override
+  public final void initialize() {
+<span class="fc" id="L135">    logger.debug(&quot;Initialize monitoring&quot;);</span>
+    try {
+      // Overall status including past, future and current transfers
+<span class="fc" id="L138">      countInfo = DbTransferLog.getCountInfoPrepareStatement(dbSession);</span>
+      // Count of Active/All In/Out transfers
+<span class="fc" id="L140">      countInActiveTransfer =</span>
+<span class="fc" id="L141">          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, true,</span>
+                                                             true);
+<span class="fc" id="L143">      countOutActiveTransfer =</span>
+<span class="fc" id="L144">          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, false,</span>
+                                                             true);
+<span class="fc" id="L146">      countInTotalTransfer =</span>
+<span class="fc" id="L147">          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, true,</span>
+                                                             false);
+<span class="fc" id="L149">      countOutTotalTransfer =</span>
+<span class="fc" id="L150">          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, false,</span>
+                                                             false);
+
+<span class="fc" id="L153">      countInErrorTransfer =</span>
+<span class="fc" id="L154">          DbTransferLog.getCountInOutErrorPrepareStatement(dbSession, true);</span>
+<span class="fc" id="L155">      countOutErrorTransfer =</span>
+<span class="fc" id="L156">          DbTransferLog.getCountInOutErrorPrepareStatement(dbSession, false);</span>
+      // All
+<span class="fc" id="L158">      countAllTransfer = DbTransferLog.getCountAllPrepareStatement(dbSession);</span>
+      // Error Status on all transfers
+<span class="fc" id="L160">      countStatus = DbTransferLog.getCountStatusPrepareStatement(dbSession);</span>
+<span class="nc" id="L161">    } catch (final WaarpDatabaseException ignored) {</span>
+      // nothing
+<span class="fc" id="L163">    }</span>
+<span class="fc" id="L164">  }</span>
+
+  @Override
+  public final void releaseResources() {
+    try {
+<span class="fc" id="L169">      logger.debug(&quot;Release monitoring&quot;);</span>
+      // Overall status including past, future and current transfers
+<span class="fc" id="L171">      countInfo.realClose();</span>
+
+<span class="fc" id="L173">      countInActiveTransfer.realClose();</span>
+<span class="fc" id="L174">      countOutActiveTransfer.realClose();</span>
+<span class="fc" id="L175">      countInTotalTransfer.realClose();</span>
+<span class="fc" id="L176">      countOutTotalTransfer.realClose();</span>
+<span class="fc" id="L177">      countInErrorTransfer.realClose();</span>
+<span class="fc" id="L178">      countOutErrorTransfer.realClose();</span>
+
+<span class="fc" id="L180">      countAllTransfer.realClose();</span>
+      // Error Status on all transfers
+<span class="fc" id="L182">      countStatus.realClose();</span>
+<span class="nc" id="L183">    } catch (final NullPointerException ignored) {</span>
+      // nothing
+<span class="fc" id="L185">    }</span>
+<span class="fc" id="L186">  }</span>
+
+<span class="fc" id="L188">  private static final int REF421 =</span>
+<span class="fc" id="L189">      ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION.ordinal();</span>
+
+  /**
+   * Update the reply code counter for other operations than a transfer
+   *
+   * @param code
+   */
+  public final void updateCodeNoTransfer(final ReplyCode code) {
+<span class="nc" id="L197">    int i = code.ordinal();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">    if (i &gt;= REF421) {</span>
+<span class="nc" id="L199">      i -= REF421;</span>
+<span class="nc" id="L200">      replyErrorNotransfers[i]++;</span>
+    } else {
+<span class="nc" id="L202">      replyInfoNotransfers[i]++;</span>
+    }
+<span class="nc" id="L204">  }</span>
+
+  /**
+   * Update the last InBound connection time
+   */
+  public final void updateLastInBound() {
+<span class="nc" id="L210">    lastInActiveTransfer = System.currentTimeMillis();</span>
+<span class="nc" id="L211">  }</span>
+
+  /**
+   * Update the last OutBound connection time
+   */
+  public final void updateLastOutBand() {
+<span class="nc" id="L217">    lastOutActiveTransfer = System.currentTimeMillis();</span>
+<span class="nc" id="L218">  }</span>
+
+  /**
+   * Update the value for one particular MIB entry
+   *
+   * @param type
+   * @param entry
+   */
+  public final void run(final int type, final int entry) {
+<span class="fc" id="L227">    final long nbMs =</span>
+<span class="fc" id="L228">        FileBasedConfiguration.fileBasedConfiguration.getAgentSnmp()</span>
+<span class="fc" id="L229">                                                     .getUptime() + 100;</span>
+<span class="fc" id="L230">    final MibLevel level = MibLevel.values()[type];</span>
+<span class="fc bfc" id="L231" title="All 4 branches covered.">    switch (level) {</span>
+      case globalInfo:// Global
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (((FtpPrivateMib) agent.getMib()).rowGlobal != null) {</span>
+<span class="nc" id="L234">          run(nbMs, WaarpGlobalValuesIndex.values()[entry]);</span>
+        }
+<span class="fc" id="L236">        return;</span>
+      case detailedInfo:// Detailed
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">        if (((FtpPrivateMib) agent.getMib()).rowDetailed != null) {</span>
+<span class="nc" id="L239">          run(nbMs, WaarpDetailedValuesIndex.values()[entry]);</span>
+        }
+<span class="fc" id="L241">        return;</span>
+      case errorInfo:// Error
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (((FtpPrivateMib) agent.getMib()).rowError != null) {</span>
+<span class="nc" id="L244">          run(nbMs, WaarpErrorValuesIndex.values()[entry]);</span>
+        }
+<span class="fc" id="L246">        return;</span>
+      default:
+        break;
+    }
+<span class="fc" id="L250">  }</span>
+
+  /**
+   * Update a value in Global MIB part
+   *
+   * @param rank
+   * @param value
+   */
+  protected final void updateGlobalValue(final int rank, final long value) {
+<span class="nc" id="L259">    ((FtpPrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);</span>
+<span class="nc" id="L260">  }</span>
+
+  /**
+   * Update a value in Detailed MIB part
+   *
+   * @param rank
+   * @param value
+   */
+  protected final void updateDetailedValue(final int rank, final long value) {
+<span class="nc" id="L269">    ((FtpPrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);</span>
+<span class="nc" id="L270">  }</span>
+
+  /**
+   * Update a value in Error MIB part
+   *
+   * @param rank
+   * @param value
+   */
+  protected final void updateErrorValue(final int rank, final long value) {
+<span class="nc" id="L279">    ((FtpPrivateMib) agent.getMib()).rowError.setValue(rank, value);</span>
+<span class="nc" id="L280">  }</span>
+
+  /**
+   * Update a value in Global MIB part
+   *
+   * @param nbMs
+   * @param entry
+   */
+  protected final void run(final long nbMs,
+                           final WaarpGlobalValuesIndex entry) {
+<span class="nc" id="L290">    synchronized (trafficCounter) {</span>
+      long val;
+<span class="nc" id="L292">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
+      // Global
+      try {
+<span class="nc bnc" id="L295" title="All 22 branches missed.">        switch (entry) {</span>
+          case applUptime:
+          case applOperStatus:
+          case applLastChange:
+          case memoryTotal:
+          case memoryFree:
+          case memoryUsed:
+<span class="nc" id="L302">            return;</span>
+          case applInboundAssociations:
+<span class="nc" id="L304">            DbTransferLog.finishSelectOrCountPrepareStatement(</span>
+                countInActiveTransfer, limitDate);
+<span class="nc" id="L306">            nbInActiveTransfer = DbTransferLog.getResultCountPrepareStatement(</span>
+                countInActiveTransfer);
+<span class="nc" id="L308">            updateGlobalValue(entry.ordinal(), nbInActiveTransfer);</span>
+<span class="nc" id="L309">            return;</span>
+          case applOutboundAssociations:
+<span class="nc" id="L311">            DbTransferLog.finishSelectOrCountPrepareStatement(</span>
+                countOutActiveTransfer, limitDate);
+<span class="nc" id="L313">            nbOutActiveTransfer = DbTransferLog.getResultCountPrepareStatement(</span>
+                countOutActiveTransfer);
+<span class="nc" id="L315">            updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);</span>
+<span class="nc" id="L316">            return;</span>
+          case applAccumInboundAssociations:
+<span class="nc" id="L318">            DbTransferLog.finishSelectOrCountPrepareStatement(</span>
+                countInTotalTransfer, limitDate);
+<span class="nc" id="L320">            nbInTotalTransfer = DbTransferLog.getResultCountPrepareStatement(</span>
+                countInTotalTransfer);
+<span class="nc" id="L322">            updateGlobalValue(entry.ordinal(), nbInTotalTransfer);</span>
+<span class="nc" id="L323">            return;</span>
+          case applAccumOutboundAssociations:
+<span class="nc" id="L325">            DbTransferLog.finishSelectOrCountPrepareStatement(</span>
+                countOutTotalTransfer, limitDate);
+<span class="nc" id="L327">            nbOutTotalTransfer = DbTransferLog.getResultCountPrepareStatement(</span>
+                countOutTotalTransfer);
+<span class="nc" id="L329">            updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);</span>
+<span class="nc" id="L330">            return;</span>
+          case applLastInboundActivity:
+<span class="nc" id="L332">            val = (lastInActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">            if (val &lt; 0) {</span>
+<span class="nc" id="L334">              val = 0;</span>
+            }
+<span class="nc" id="L336">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L337">            return;</span>
+          case applLastOutboundActivity:
+<span class="nc" id="L339">            val = (lastOutActiveTransfer - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">            if (val &lt; 0) {</span>
+<span class="nc" id="L341">              val = 0;</span>
+            }
+<span class="nc" id="L343">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L344">            return;</span>
+          case applRejectedInboundAssociations:
+<span class="nc" id="L346">            DbTransferLog.finishSelectOrCountPrepareStatement(</span>
+                countInErrorTransfer, limitDate);
+<span class="nc" id="L348">            nbInErrorTransfer = DbTransferLog.getResultCountPrepareStatement(</span>
+                countInErrorTransfer);
+<span class="nc" id="L350">            updateGlobalValue(entry.ordinal(), nbInErrorTransfer);</span>
+<span class="nc" id="L351">            return;</span>
+          case applFailedOutboundAssociations:
+<span class="nc" id="L353">            DbTransferLog.finishSelectOrCountPrepareStatement(</span>
+                countOutErrorTransfer, limitDate);
+<span class="nc" id="L355">            nbOutErrorTransfer = DbTransferLog.getResultCountPrepareStatement(</span>
+                countOutErrorTransfer);
+<span class="nc" id="L357">            updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);</span>
+<span class="nc" id="L358">            return;</span>
+          case applInboundBandwidthKBS:
+<span class="nc" id="L360">            val = trafficCounter.lastReadThroughput() &gt;&gt; 10;// B/s -&gt; KB/s</span>
+<span class="nc" id="L361">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L362">            return;</span>
+          case applOutboundBandwidthKBS:
+<span class="nc" id="L364">            val = trafficCounter.lastWriteThroughput() &gt;&gt; 10;</span>
+<span class="nc" id="L365">            updateGlobalValue(entry.ordinal(), val);</span>
+<span class="nc" id="L366">            return;</span>
+          case nbInfoUnknown:
+<span class="nc" id="L368">            nbCountInfoUnknown =</span>
+<span class="nc" id="L369">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.UNKNOWN,
+                                                             limitDate);
+<span class="nc" id="L372">            updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);</span>
+<span class="nc" id="L373">            return;</span>
+          case nbInfoNotUpdated:
+<span class="nc" id="L375">            nbCountInfoNotUpdated =</span>
+<span class="nc" id="L376">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.NOTUPDATED,
+                                                             limitDate);
+<span class="nc" id="L379">            updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);</span>
+<span class="nc" id="L380">            return;</span>
+          case nbInfoInterrupted:
+<span class="nc" id="L382">            nbCountInfoInterrupted =</span>
+<span class="nc" id="L383">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.INTERRUPTED,
+                                                             limitDate);
+<span class="nc" id="L386">            updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);</span>
+<span class="nc" id="L387">            return;</span>
+          case nbInfoToSubmit:
+<span class="nc" id="L389">            nbCountInfoToSubmit =</span>
+<span class="nc" id="L390">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.TOSUBMIT,
+                                                             limitDate);
+<span class="nc" id="L393">            updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);</span>
+<span class="nc" id="L394">            return;</span>
+          case nbInfoError:
+<span class="nc" id="L396">            nbCountInfoError =</span>
+<span class="nc" id="L397">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.INERROR,
+                                                             limitDate);
+<span class="nc" id="L400">            updateGlobalValue(entry.ordinal(), nbCountInfoError);</span>
+<span class="nc" id="L401">            return;</span>
+          case nbInfoRunning:
+<span class="nc" id="L403">            nbCountInfoRunning =</span>
+<span class="nc" id="L404">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.RUNNING,
+                                                             limitDate);
+<span class="nc" id="L407">            updateGlobalValue(entry.ordinal(), nbCountInfoRunning);</span>
+<span class="nc" id="L408">            return;</span>
+          case nbInfoDone:
+<span class="nc" id="L410">            nbCountInfoDone =</span>
+<span class="nc" id="L411">                DbTransferLog.getResultCountPrepareStatement(countInfo,</span>
+                                                             UpdatedInfo.DONE,
+                                                             limitDate);
+<span class="nc" id="L414">            updateGlobalValue(entry.ordinal(), nbCountInfoDone);</span>
+<span class="nc" id="L415">            return;</span>
+          case nbAllTransfer:
+<span class="nc" id="L417">            DbTransferLog.finishSelectOrCountPrepareStatement(countAllTransfer,</span>
+                                                              limitDate);
+<span class="nc" id="L419">            nbCountAllTransfer =</span>
+<span class="nc" id="L420">                DbTransferLog.getResultCountPrepareStatement(countAllTransfer);</span>
+<span class="nc" id="L421">            updateGlobalValue(entry.ordinal(), nbCountAllTransfer);</span>
+<span class="nc" id="L422">            return;</span>
+          case nbThreads:
+<span class="nc" id="L424">            nbThread = Thread.activeCount();</span>
+<span class="nc" id="L425">            updateGlobalValue(entry.ordinal(), nbThread);</span>
+<span class="nc" id="L426">            return;</span>
+          case nbNetworkConnection:
+<span class="nc" id="L428">            nbNetworkConnection =</span>
+<span class="nc" id="L429">                FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()</span>
+<span class="nc" id="L430">                                                             .getNumberSessions();</span>
+<span class="nc" id="L431">            updateGlobalValue(entry.ordinal(), nbNetworkConnection);</span>
+        }
+<span class="nc" id="L433">      } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+        // nothing
+<span class="nc" id="L435">      } catch (final WaarpDatabaseSqlException ignored) {</span>
+        // nothing
+<span class="nc" id="L437">      }</span>
+<span class="nc" id="L438">    }</span>
+<span class="nc" id="L439">  }</span>
+
+  /**
+   * Update a value in Detailed MIB part
+   *
+   * @param nbMs
+   * @param entry
+   */
+  protected final void run(final long nbMs,
+                           final WaarpDetailedValuesIndex entry) {
+<span class="nc" id="L449">    synchronized (trafficCounter) {</span>
+<span class="nc" id="L450">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
+      // Detailed
+<span class="nc" id="L452">      final long value =</span>
+<span class="nc" id="L453">          DbTransferLog.getResultCountPrepareStatement(countStatus, entry.code,</span>
+                                                       limitDate);
+<span class="nc" id="L455">      updateDetailedValue(entry.ordinal(),</span>
+<span class="nc" id="L456">                          value + replyInfoNotransfers[entry.ordinal()]);</span>
+<span class="nc" id="L457">    }</span>
+<span class="nc" id="L458">  }</span>
+
+  /**
+   * Update a value in Error MIB part
+   *
+   * @param nbMs
+   * @param entry
+   */
+  protected final void run(final long nbMs, final WaarpErrorValuesIndex entry) {
+<span class="nc" id="L467">    synchronized (trafficCounter) {</span>
+<span class="nc" id="L468">      final long limitDate = System.currentTimeMillis() - nbMs;</span>
+      // Error
+<span class="nc" id="L470">      final long value =</span>
+<span class="nc" id="L471">          DbTransferLog.getResultCountPrepareStatement(countStatus, entry.code,</span>
+                                                       limitDate);
+<span class="nc" id="L473">      updateErrorValue(entry.ordinal(),</span>
+<span class="nc" id="L474">                       value + replyErrorNotransfers[entry.ordinal()]);</span>
+<span class="nc" id="L475">    }</span>
+<span class="nc" id="L476">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

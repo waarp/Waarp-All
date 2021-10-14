@@ -20,12 +20,22 @@
 
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.AbstractHttpHandler;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.netty.handler.codec.http.HttpMethod.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
 
 /**
  * This abstract class represents a handler for the WaarpR66 REST API. A handler
@@ -77,9 +87,9 @@ public abstract class AbstractRestDbHandler extends AbstractHttpHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-<span class="fc" id="L80">  protected AbstractRestDbHandler(final byte crud) {</span>
-<span class="fc" id="L81">    this.crud = crud;</span>
-<span class="fc" id="L82">  }</span>
+<span class="fc" id="L90">  protected AbstractRestDbHandler(final byte crud) {</span>
+<span class="fc" id="L91">    this.crud = crud;</span>
+<span class="fc" id="L92">  }</span>
 
   /**
    * Checks whether the {@link HttpRequest} given can be made on the handler
@@ -91,18 +101,39 @@ public abstract class AbstractRestDbHandler extends AbstractHttpHandler {
    * @return {@code true} if the request is active, {@code false} otherwise.
    */
   public boolean checkCRUD(final HttpRequest request) {
-<span class="fc" id="L94">    final HttpMethod method = request.method();</span>
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    if (method.equals(GET)) {</span>
-<span class="fc" id="L96">      return CRUD.READ.isValid(crud);</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    } else if (method.equals(POST)) {</span>
-<span class="nc" id="L98">      return CRUD.CREATE.isValid(crud);</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">    } else if (method.equals(DELETE)) {</span>
-<span class="nc" id="L100">      return CRUD.DELETE.isValid(crud);</span>
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    } else if (method.equals(PUT)) {</span>
-<span class="nc" id="L102">      return CRUD.UPDATE.isValid(crud);</span>
+<span class="fc" id="L104">    final HttpMethod method = request.method();</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    if (method.equals(GET)) {</span>
+<span class="fc" id="L106">      return CRUD.READ.isValid(crud);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    } else if (method.equals(POST)) {</span>
+<span class="nc" id="L108">      return CRUD.CREATE.isValid(crud);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    } else if (method.equals(DELETE)) {</span>
+<span class="nc" id="L110">      return CRUD.DELETE.isValid(crud);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    } else if (method.equals(PUT)) {</span>
+<span class="nc" id="L112">      return CRUD.UPDATE.isValid(crud);</span>
     } else {
-<span class="nc" id="L104">      return method.equals(OPTIONS);</span>
+<span class="nc" id="L114">      return method.equals(OPTIONS);</span>
     }
   }
+
+  protected final void checkSanity(final String... strings) {
+    try {
+<span class="fc" id="L120">      ParametersChecker.checkSanityString(strings);</span>
+<span class="nc" id="L121">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L122">      final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;(1);</span>
+<span class="nc" id="L123">      errors.add(ILLEGAL_FIELD_VALUE(&quot;argument&quot;, &quot;Content Not Allowed&quot;));</span>
+<span class="nc" id="L124">      throw new RestErrorException(errors);</span>
+<span class="fc" id="L125">    }</span>
+<span class="fc" id="L126">  }</span>
+
+  protected final void checkSanity(final ObjectNode objectNode) {
+    try {
+<span class="nc" id="L130">      ParametersChecker.checkSanityString(</span>
+<span class="nc" id="L131">          JsonHandler.writeAsString(objectNode));</span>
+<span class="nc" id="L132">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L133">      final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;(1);</span>
+<span class="nc" id="L134">      errors.add(ILLEGAL_FIELD_VALUE(&quot;argument&quot;, &quot;Content Not Allowed&quot;));</span>
+<span class="nc" id="L135">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L136">    }</span>
+<span class="nc" id="L137">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

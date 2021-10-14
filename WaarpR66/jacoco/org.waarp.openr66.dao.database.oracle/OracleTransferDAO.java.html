@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.database.oracle;
 
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,37 +31,38 @@ import java.sql.SQLException;
 
 public class OracleTransferDAO extends DBTransferDAO {
 
-  protected static final String SQL_GET_ID = &quot;SELECT runseq.nextval FROM DUAL&quot;;
+  protected static final String SQL_GET_ID =
+      &quot;SELECT &quot; + DbTaskRunner.fieldseq + &quot;.nextval FROM DUAL&quot;;
 
   public OracleTransferDAO(final Connection con) throws DAOConnectionException {
-<span class="fc" id="L36">    super(con);</span>
-<span class="fc" id="L37">  }</span>
+<span class="fc" id="L38">    super(con);</span>
+<span class="fc" id="L39">  }</span>
 
   @Override
-  protected long getNextId() throws DAOConnectionException {
-<span class="fc" id="L41">    PreparedStatement ps = null;</span>
-<span class="fc" id="L42">    ResultSet rs = null;</span>
+  protected final long getNextId() throws DAOConnectionException {
+<span class="fc" id="L43">    PreparedStatement ps = null;</span>
+<span class="fc" id="L44">    ResultSet rs = null;</span>
     try {
-<span class="fc" id="L44">      ps = connection.prepareStatement(SQL_GET_ID);</span>
-<span class="fc" id="L45">      rs = ps.executeQuery();</span>
-<span class="pc bpc" id="L46" title="1 of 2 branches missed.">      if (rs.next()) {</span>
-<span class="fc" id="L47">        return rs.getLong(1);</span>
+<span class="fc" id="L46">      ps = connection.prepareStatement(SQL_GET_ID);</span>
+<span class="fc" id="L47">      rs = ps.executeQuery();</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">      if (rs.next()) {</span>
+<span class="fc" id="L49">        return rs.getLong(1);</span>
       } else {
-<span class="nc" id="L49">        throw new DAOConnectionException(</span>
+<span class="nc" id="L51">        throw new DAOConnectionException(</span>
             &quot;Error no id available, you should purge the database.&quot;);
       }
-<span class="nc" id="L52">    } catch (final SQLException e) {</span>
-<span class="nc" id="L53">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L54">    } catch (final SQLException e) {</span>
+<span class="nc" id="L55">      throw new DAOConnectionException(e);</span>
     } finally {
       try {
-<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (rs != null) {</span>
-<span class="fc" id="L57">          rs.close();</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (rs != null) {</span>
+<span class="fc" id="L59">          rs.close();</span>
         }
-<span class="nc" id="L59">      } catch (final SQLException e) {</span>
+<span class="nc" id="L61">      } catch (final SQLException e) {</span>
         // ignore
-<span class="fc" id="L61">      }</span>
-<span class="fc" id="L62">      closeStatement(ps);</span>
+<span class="fc" id="L63">      }</span>
+<span class="fc" id="L64">      closeStatement(ps);</span>
     }
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

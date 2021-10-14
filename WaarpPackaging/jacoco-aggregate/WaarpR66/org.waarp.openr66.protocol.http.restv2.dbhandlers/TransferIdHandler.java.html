@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TransferIdHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.dbhandlers</a> &gt; <span class="el_source">TransferIdHandler.java</span></div><h1>TransferIdHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.dbhandlers;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.cdap.http.HttpResponder;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.TransferDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.pojo.Transfer.TASKSTEP;
+import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.localhandler.ServerActions;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+import static javax.ws.rs.core.MediaType.*;
+import static org.waarp.common.role.RoleDefault.ROLE.*;
+import static org.waarp.openr66.pojo.UpdatedInfo.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * This is the {@link AbstractRestDbHandler} handling all requests made on the
+ * single transfer REST entry
+ * point.
+ */
+@Path(TRANSFER_ID_HANDLER_URI)
+public class TransferIdHandler extends AbstractRestDbHandler {
+  /**
+   * The content of the 'Allow' header sent when an 'OPTIONS' request is made
+   * on the handler.
+   */
+  private static final HttpHeaders OPTIONS_HEADERS;
+
+  static {
+<span class="fc" id="L76">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L77">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L78">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L79">    allow.add(HttpMethod.DELETE);</span>
+<span class="fc" id="L80">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L81">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L82">  }</span>
+
+  /**
+   * Initializes the handler with the given CRUD mask.
+   *
+   * @param crud the CRUD mask for this handler
+   */
+  public TransferIdHandler(final byte crud) {
+<span class="fc" id="L90">    super(crud);</span>
+<span class="fc" id="L91">  }</span>
+
+  /**
+   * Method called to obtain the information on the transfer whose id was
+   * given in the request's URI. The
+   * requested transfer is sent back in JSON format, unless an unexpected
+   * error prevents it or if the request id
+   * does not exist.
+   * &lt;p&gt;
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.&lt;/p&gt;
+   *
+   * @param request the HttpRequest made to the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @GET
+  @Consumes(WILDCARD)
+  @RequiredRole(READONLY)
+  public final void getTransfer(final HttpRequest request,
+                                final HttpResponder responder,
+                                @PathParam(URI_ID) final String uri)
+      throws UnsupportedEncodingException {
+<span class="fc" id="L117">    checkSanity(uri);</span>
+<span class="fc" id="L118">    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());</span>
+<span class="fc" id="L119">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="fc" id="L120">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L122">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L123">      return;</span>
+    }
+<span class="fc" id="L125">    final String id = matcher.group(1);</span>
+<span class="fc" id="L126">    final String requested = matcher.group(2);</span>
+
+<span class="fc" id="L128">    TransferDAO transferDAO = null;</span>
+    try {
+<span class="fc" id="L130">      final long transID = Long.parseLong(id);</span>
+<span class="fc" id="L131">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
+<span class="fc" id="L133">                             serverName())) {</span>
+<span class="nc" id="L134">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="fc" id="L136">        final Transfer transfer =</span>
+<span class="fc" id="L137">            transferDAO.select(transID, serverName(requested), requested,</span>
+<span class="fc" id="L138">                               serverName());</span>
+<span class="fc" id="L139">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="fc" id="L140">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="fc" id="L141">        responder.sendJson(OK, responseText);</span>
+      }
+<span class="nc" id="L143">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L144">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L145">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L146">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L147">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L148">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="fc" id="L150">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="fc" id="L152">  }</span>
+
+  /**
+   * Method called to restart a paused transfer.
+   * &lt;p&gt;
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.&lt;/p&gt;
+   *
+   * @param request the HttpRequest made to the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @Path(TransferCommandsURI.RESTART_URI)
+  @PUT
+  @Consumes(WILDCARD)
+  @RequiredRole(SYSTEM)
+  public final void restartTransfer(final HttpRequest request,
+                                    final HttpResponder responder,
+                                    @PathParam(URI_ID) final String uri)
+      throws UnsupportedEncodingException {
+<span class="nc" id="L175">    checkSanity(uri);</span>
+<span class="nc" id="L176">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);</span>
+<span class="nc" id="L177">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L178">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L180">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L181">      return;</span>
+    }
+<span class="nc" id="L183">    final String id = matcher.group(1);</span>
+<span class="nc" id="L184">    final String requested = matcher.group(2);</span>
+
+<span class="nc" id="L186">    TransferDAO transferDAO = null;</span>
+    try {
+<span class="nc" id="L188">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L189">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
+<span class="nc" id="L191">                             serverName())) {</span>
+<span class="nc" id="L192">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="nc" id="L194">        final Transfer transfer =</span>
+<span class="nc" id="L195">            transferDAO.select(transID, serverName(requested), requested,</span>
+<span class="nc" id="L196">                               serverName());</span>
+<span class="nc" id="L197">        final ServerActions actions = new ServerActions();</span>
+<span class="nc" id="L198">        actions.newSession();</span>
+<span class="nc" id="L199">        actions.stopTransfer(transfer);</span>
+<span class="nc" id="L200">        transfer.setUpdatedInfo(TOSUBMIT);</span>
+<span class="nc" id="L201">        transfer.setGlobalStep(transfer.getLastGlobalStep());</span>
+<span class="nc" id="L202">        transferDAO.update(transfer);</span>
+
+<span class="nc" id="L204">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L205">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L206">        responder.sendJson(OK, responseText);</span>
+      }
+<span class="nc" id="L208">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L209">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L210">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L211">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L212">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L213">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L215">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="nc" id="L217">  }</span>
+
+  /**
+   * Method called to pause a staged or running transfer.
+   * &lt;p&gt;
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.&lt;/p&gt;
+   *
+   * @param request the HttpRequest made to the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @Path(TransferCommandsURI.STOP_URI)
+  @PUT
+  @Consumes(WILDCARD)
+  @RequiredRole(SYSTEM)
+  public final void stopTransfer(final HttpRequest request,
+                                 final HttpResponder responder,
+                                 @PathParam(URI_ID) final String uri)
+      throws UnsupportedEncodingException {
+<span class="nc" id="L240">    checkSanity(uri);</span>
+<span class="nc" id="L241">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L242">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L243">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L245">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L246">      return;</span>
+    }
+<span class="nc" id="L248">    final String id = matcher.group(1);</span>
+<span class="nc" id="L249">    final String requested = matcher.group(2);</span>
+
+<span class="nc" id="L251">    TransferDAO transferDAO = null;</span>
+    try {
+<span class="nc" id="L253">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L254">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
+<span class="nc" id="L256">                             serverName())) {</span>
+<span class="nc" id="L257">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="nc" id="L259">        final Transfer transfer =</span>
+<span class="nc" id="L260">            transferDAO.select(transID, serverName(requested), requested,</span>
+<span class="nc" id="L261">                               serverName());</span>
+<span class="nc" id="L262">        final ServerActions actions = new ServerActions();</span>
+<span class="nc" id="L263">        actions.newSession();</span>
+<span class="nc" id="L264">        actions.stopTransfer(transfer);</span>
+<span class="nc" id="L265">        transferDAO.update(transfer);</span>
+
+<span class="nc" id="L267">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L268">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L269">        responder.sendJson(OK, responseText);</span>
+      }
+<span class="nc" id="L271">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L272">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L273">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L274">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L275">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L276">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L278">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="nc" id="L280">  }</span>
+
+  /**
+   * Method called to cancel a staged or running transfer.
+   * &lt;p&gt;
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.&lt;/p&gt;
+   *
+   * @param request the HttpRequest made to the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @Path(TransferCommandsURI.CANCEL_URI)
+  @PUT
+  @Consumes(WILDCARD)
+  @RequiredRole(SYSTEM)
+  public final void cancelTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @PathParam(URI_ID) final String uri)
+      throws UnsupportedEncodingException {
+<span class="nc" id="L303">    checkSanity(uri);</span>
+<span class="nc" id="L304">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L305">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L306">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L308">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L309">      return;</span>
+    }
+<span class="nc" id="L311">    final String id = matcher.group(1);</span>
+<span class="nc" id="L312">    final String requested = matcher.group(2);</span>
+
+<span class="nc" id="L314">    TransferDAO transferDAO = null;</span>
+    try {
+<span class="nc" id="L316">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L317">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
+<span class="nc" id="L319">                             serverName())) {</span>
+<span class="nc" id="L320">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="nc" id="L322">        final Transfer transfer =</span>
+<span class="nc" id="L323">            transferDAO.select(transID, serverName(requested), requested,</span>
+<span class="nc" id="L324">                               serverName());</span>
+<span class="nc" id="L325">        final ServerActions actions = new ServerActions();</span>
+<span class="nc" id="L326">        actions.newSession();</span>
+<span class="nc" id="L327">        actions.cancelTransfer(transfer);</span>
+<span class="nc" id="L328">        transferDAO.update(transfer);</span>
+
+<span class="nc" id="L330">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L331">        final String responseBody = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L332">        responder.sendJson(OK, responseBody);</span>
+      }
+<span class="nc" id="L334">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L335">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L336">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L337">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L338">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L339">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L341">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="nc" id="L343">  }</span>
+
+  /**
+   * Method called to delete a Transfer entry from the database.
+   * Note that if the Transfer were already started, the delete
+   * cannot be achieved and NOT_FOUND will be returned.
+   * &lt;p&gt;
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.&lt;/p&gt;
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @DELETE
+  @Consumes(WILDCARD)
+  @RequiredRole(SYSTEM)
+  public final void deleteTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @PathParam(URI_ID) final String uri)
+      throws UnsupportedEncodingException {
+<span class="nc" id="L367">    checkSanity(uri);</span>
+<span class="nc" id="L368">    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());</span>
+<span class="nc" id="L369">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L370">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L372">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L373">      return;</span>
+    }
+<span class="nc" id="L375">    final String id = matcher.group(1);</span>
+<span class="nc" id="L376">    final String requested = matcher.group(2);</span>
+<span class="nc" id="L377">    TransferDAO transferDAO = null;</span>
+    try {
+<span class="nc" id="L379">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L380">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">      if (!transferDAO.exist(transID, serverName(requested), requested,</span>
+<span class="nc" id="L382">                             serverName())) {</span>
+<span class="nc" id="L383">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="nc" id="L385">        final Transfer transfer =</span>
+<span class="nc" id="L386">            transferDAO.select(transID, serverName(requested), requested,</span>
+<span class="nc" id="L387">                               serverName());</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">        if (transfer.getGlobalStep() == TASKSTEP.NOTASK &amp;&amp;</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">            transfer.getLastGlobalStep() == TASKSTEP.NOTASK) {</span>
+<span class="nc" id="L390">          responder.sendStatus(NOT_FOUND);</span>
+        } else {
+<span class="nc" id="L392">          transferDAO.delete(transfer);</span>
+<span class="nc" id="L393">          responder.sendStatus(NO_CONTENT);</span>
+        }
+      }
+<span class="nc" id="L396">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L397">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L398">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L399">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L401">      DAOFactory.closeDAO(transferDAO);</span>
+    }
+<span class="nc" id="L403">  }</span>
+
+  /**
+   * Method called to get a list of all allowed HTTP methods on this entry
+   * point. The HTTP methods are sent as
+   * an array in the reply's headers.
+   * &lt;p&gt;
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.&lt;/p&gt;
+   *
+   * @param request the HttpRequest made to the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder,
+                            @PathParam(URI_ID) final String uri) {
+<span class="nc" id="L426">    checkSanity(uri);</span>
+<span class="nc" id="L427">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L428">  }</span>
+
+  @Path(&quot;{ep}&quot;)
+  @OPTIONS
+  @Consumes(WILDCARD)
+  @RequiredRole(NOACCESS)
+  public final void subOptions(final HttpRequest request,
+                               final HttpResponder responder,
+                               @PathParam(URI_ID) final String uri,
+                               @PathParam(&quot;ep&quot;) final String ep) {
+<span class="nc" id="L438">    checkSanity(uri, ep);</span>
+<span class="nc" id="L439">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L440">    final List&lt;HttpMethod&gt; methods = new ArrayList&lt;HttpMethod&gt;();</span>
+
+<span class="nc bnc" id="L442" title="All 2 branches missed.">    if (ep.equals(TransferCommandsURI.RESTART_URI)) {</span>
+<span class="nc" id="L443">      methods.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    } else if (ep.equals(TransferCommandsURI.STOP_URI)) {</span>
+<span class="nc" id="L445">      methods.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    } else if (ep.equals(TransferCommandsURI.CANCEL_URI)) {</span>
+<span class="nc" id="L447">      methods.add(HttpMethod.PUT);</span>
+    } else {
+<span class="nc" id="L449">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L450">      return;</span>
+    }
+<span class="nc" id="L452">    methods.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L453">    allow.add(ALLOW, methods);</span>
+<span class="nc" id="L454">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L455">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

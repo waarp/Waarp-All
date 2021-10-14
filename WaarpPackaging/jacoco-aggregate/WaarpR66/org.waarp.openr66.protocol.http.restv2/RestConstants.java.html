@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestConstants.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2</a> &gt; <span class="el_source">RestConstants.java</span></div><h1>RestConstants.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2;
+
+import io.netty.util.AsciiString;
+import org.waarp.common.database.ConnectionFactory;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.ServerHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.TransferIdHandler;
+
+import java.nio.charset.Charset;
+
+/**
+ * A list of all constants of the RESTv2 API.
+ * &lt;p&gt;
+ * This includes the URI of all the entry points, the name of HTTP headers
+ * specific to the API, the name of
+ * the JSON objects' fields, and a {@link DAOFactory} to create DAOs for access
+ * to the database.
+ */
+public final class RestConstants {
+
+  static {
+    try {
+<span class="fc" id="L47">      DAOFactory.initialize(ConnectionFactory.getInstance());</span>
+<span class="nc" id="L48">    } catch (final Throwable ignored) {//NOSONAR</span>
+<span class="nc" id="L49">      SysErrLogger.FAKE_LOGGER //NOSONAR</span>
+<span class="nc" id="L50">                               .syserr(&quot;Error during static execution&quot;,//NOSONAR</span>
+                                       ignored);//NOSONAR
+<span class="fc" id="L52">    }</span>
+<span class="fc" id="L53">    DAO_FACTORY = DAOFactory.getInstance();</span>
+  }
+
+  /**
+   * Makes the default constructor of this utility class inaccessible.
+   */
+<span class="nc" id="L59">  private RestConstants() throws InstantiationException {</span>
+<span class="nc" id="L60">    throw new InstantiationException(</span>
+<span class="nc" id="L61">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ########################## SERVER CONSTANTS ##############################
+
+  /**
+   * The name of this R66 server instance.
+   *
+   * @return The name of this R66 Server
+   */
+  public static String serverName() {
+<span class="fc" id="L72">    return Configuration.configuration.getHostId();</span>
+  }
+
+  /**
+   * The name of this R66 server instance according to SSL or not of remote one.
+   *
+   * @param requested
+   *
+   * @return the name of this R66 server according to SSL
+   */
+  public static String serverName(final String requested) {
+<span class="fc" id="L83">    String requester = serverName();</span>
+    try {
+<span class="fc" id="L85">      requester = Configuration.configuration.getHostId(requested);</span>
+<span class="nc" id="L86">    } catch (final WaarpDatabaseException e) {</span>
+      // Ignore !!
+<span class="fc" id="L88">    }</span>
+<span class="fc" id="L89">    return requester;</span>
+  }
+
+  /**
+   * The DAO_FACTORY to generate connections to the underlying database.
+   */
+  public static final DAOFactory DAO_FACTORY;
+
+  /**
+   * The UTF-8 {@link Charset} constant.
+   */
+<span class="fc" id="L100">  public static final Charset UTF8_CHARSET = WaarpStringUtils.UTF8;</span>
+
+  // ######################### HTTP HEADER NAMES ##############################
+
+  /**
+   * Name of the HTTP header used to store the user who made a request.
+   */
+<span class="fc" id="L107">  public static final AsciiString AUTH_USER = AsciiString.cached(&quot;X-Auth-User&quot;);</span>
+
+  /**
+   * Name of the HTTP header used to store the timestamp of the request.
+   */
+<span class="fc" id="L112">  public static final AsciiString AUTH_TIMESTAMP =</span>
+<span class="fc" id="L113">      AsciiString.cached(&quot;X-Auth-Timestamp&quot;);</span>
+
+  /**
+   * Name of the HTTP header used to store the signature key of a request.
+   */
+<span class="fc" id="L118">  public static final AsciiString AUTH_SIGNATURE =</span>
+<span class="fc" id="L119">      AsciiString.cached(&quot;X-Auth-Signature&quot;);</span>
+
+  // ########################## ENTRY POINTS URI ##############################
+
+  /**
+   * Root directory of the API.
+   */
+  public static final String VERSION_PREFIX = &quot;/v2/&quot;;
+
+  /**
+   * Name of the URI parameter containing the id of an entry in a collection.
+   */
+  public static final String URI_ID = &quot;id&quot;;
+
+  /**
+   * Regex corresponding to the id URI parameter of an entry in a collection.
+   */
+  private static final String ID_PARAMETER = &quot;/{&quot; + URI_ID + '}';
+
+  /**
+   * Access point of the transfers collection.
+   */
+  public static final String FILE_MONITOR_HANDLER_URI =
+      VERSION_PREFIX + &quot;filemonitors&quot;;
+
+  /**
+   * Access point of the transfers collection.
+   */
+  public static final String TRANSFERS_HANDLER_URI =
+      VERSION_PREFIX + &quot;transfers/&quot;;
+
+  /**
+   * Access point of a single transfer entry.
+   */
+  public static final String TRANSFER_ID_HANDLER_URI =
+      TRANSFERS_HANDLER_URI + ID_PARAMETER;
+
+  /**
+   * Access point of the server commands.
+   */
+  public static final String SERVER_HANDLER_URI = VERSION_PREFIX + &quot;server/&quot;;
+
+  /**
+   * Access point of the transfer rules collection.
+   */
+  public static final String RULES_HANDLER_URI = VERSION_PREFIX + &quot;rules/&quot;;
+
+  /**
+   * Access point of a single transfer rules entry.
+   */
+  public static final String RULE_ID_HANDLER_URI =
+      RULES_HANDLER_URI + ID_PARAMETER;
+
+  /**
+   * Access point of the bandwidth limits.
+   */
+  public static final String LIMITS_HANDLER_URI = VERSION_PREFIX + &quot;limits/&quot;;
+
+  /**
+   * Access point of the hosts collection.
+   */
+  public static final String HOSTS_HANDLER_URI = VERSION_PREFIX + &quot;hosts/&quot;;
+
+  /**
+   * Access point of a single host entry.
+   */
+  public static final String HOST_ID_HANDLER_URI =
+      HOSTS_HANDLER_URI + ID_PARAMETER;
+
+  /**
+   * Access point of the host configuration.
+   */
+  public static final String CONFIG_HANDLER_URI =
+      VERSION_PREFIX + &quot;hostconfig/&quot;;
+
+  /**
+   * The names of all the sub-paths of the {@link ServerHandler} corresponding
+   * to the server commands.
+   */
+  public static final class ServerCommandsURI {
+    public static final String STATUS_URI = &quot;status&quot;;
+    public static final String DEACTIVATE_URI = &quot;deactivate&quot;;
+    public static final String SHUTDOWN_URI = &quot;shutdown&quot;;
+    public static final String RESTART_URI = &quot;restart&quot;;
+    public static final String LOGS_URI = &quot;logs&quot;;
+    public static final String CONFIG_URI = &quot;config&quot;;
+
+    private ServerCommandsURI() {
+    }
+  }
+
+  /**
+   * The names of the sub-paths of the {@link TransferIdHandler} corresponding
+   * to the transfer commands.
+   */
+  public static final class TransferCommandsURI {
+    public static final String RESTART_URI = &quot;restart&quot;;
+    public static final String STOP_URI = &quot;stop&quot;;
+    public static final String CANCEL_URI = &quot;cancel&quot;;
+
+    private TransferCommandsURI() {
+    }
+  }
+
+  // ######################### JSON FIELDS NAMES ##############################
+
+  /**
+   * The names of the fields of a HostConfig JSON object.
+   */
+  public static final class HostConfigFields {
+    public static final String BUSINESS = &quot;business&quot;;
+    public static final String ROLES = &quot;roles&quot;;
+    public static final String ALIASES = &quot;aliases&quot;;
+    public static final String OTHERS = &quot;others&quot;;
+    public static final String HOST_NAME = &quot;hostName&quot;;
+    public static final String ROLE_LIST = &quot;roleList&quot;;
+    public static final String ALIAS_LIST = &quot;aliasList&quot;;
+
+    private HostConfigFields() {
+    }
+  }
+
+  /**
+   * The names of the fields of a Host JSON object.
+   */
+  public static final class HostFields {
+    public static final String HOST_NAME = &quot;name&quot;;
+    public static final String ADDRESS = &quot;address&quot;;
+    public static final String PORT = &quot;port&quot;;
+    public static final String PASSWORD = &quot;password&quot;;//NOSONAR
+    public static final String IS_SSL = &quot;isSSL&quot;;
+    public static final String IS_CLIENT = &quot;isClient&quot;;
+    public static final String IS_ADMIN = &quot;isAdmin&quot;;
+    public static final String IS_ACTIVE = &quot;isActive&quot;;
+    public static final String IS_PROXY = &quot;isProxy&quot;;
+
+    private HostFields() {
+    }
+  }
+
+  /**
+   * The names of the fields of a Limits JSON object.
+   */
+  public static final class LimitsFields {
+    public static final String WRITE_GLOBAL_LIMIT = &quot;upGlobalLimit&quot;;
+    public static final String READ_GLOBAL_LIMIT = &quot;downGlobalLimit&quot;;
+    public static final String WRITE_SESSION_LIMIT = &quot;upSessionLimit&quot;;
+    public static final String READ_SESSION_LIMIT = &quot;downSessionLimit&quot;;
+    public static final String DELAY_LIMIT = &quot;delayLimit&quot;;
+
+    private LimitsFields() {
+    }
+  }
+
+  /**
+   * The names of the fields of a Rule JSON object.
+   */
+  public static final class RuleFields {
+    public static final String RULE_NAME = &quot;name&quot;;
+    public static final String HOST_IDS = &quot;hostIds&quot;;
+    public static final String MODE_TRANS = &quot;mode&quot;;
+    public static final String RECV_PATH = &quot;recvPath&quot;;
+    public static final String SEND_PATH = &quot;sendPath&quot;;
+    public static final String ARCHIVE_PATH = &quot;archivePath&quot;;
+    public static final String WORK_PATH = &quot;workPath&quot;;
+    public static final String R_PRE_TASKS = &quot;rPreTasks&quot;;
+    public static final String R_POST_TASKS = &quot;rPostTasks&quot;;
+    public static final String R_ERROR_TASKS = &quot;sPreTasks&quot;;
+    public static final String S_PRE_TASKS = &quot;rPreTasks&quot;;
+    public static final String S_POST_TASKS = &quot;rPostTasks&quot;;
+    public static final String S_ERROR_TASKS = &quot;sErrorTasks&quot;;
+    public static final String TASK_TYPE = &quot;type&quot;;
+    public static final String TASK_ARGUMENTS = &quot;arguments&quot;;
+    public static final String TASK_DELAY = &quot;delay&quot;;
+
+    private RuleFields() {
+    }
+  }
+
+  /**
+   * The names of the fields of a Transfer JSON object.
+   */
+  public static final class TransferFields {
+    public static final String TRANSFER_ID = &quot;id&quot;;
+    public static final String GLOBAL_STEP = &quot;globalStep&quot;;
+    public static final String GLOBAL_LAST_STEP = &quot;globalLastStep&quot;;
+    public static final String STEP = &quot;step&quot;;
+    public static final String RANK = &quot;rank&quot;;
+    public static final String UPDATED_INFO = &quot;status&quot;;
+    public static final String STEP_STATUS = &quot;stepStatus&quot;;
+    public static final String ORIGINAL_FILENAME = &quot;originalFilename&quot;;
+    public static final String FILENAME = &quot;filename&quot;;
+    public static final String RULE = &quot;ruleName&quot;;
+    public static final String BLOCK_SIZE = &quot;blockSize&quot;;
+    public static final String FILE_INFO = &quot;fileInfo&quot;;
+    public static final String TRANSFER_INFO = &quot;transferInfo&quot;;
+    public static final String START = &quot;start&quot;;
+    public static final String STOP = &quot;stop&quot;;
+    public static final String REQUESTED = &quot;requested&quot;;
+    public static final String REQUESTER = &quot;requester&quot;;
+    public static final String RETRIEVE = &quot;retrieve&quot;;
+    public static final String ERROR_CODE = &quot;errorCode&quot;;
+    public static final String ERROR_MESSAGE = &quot;errorMessage&quot;;
+
+    private TransferFields() {
+    }
+  }
+
+  // ######################### QUERY PARAM NAMES ##############################
+
+  /**
+   * The names of the query parameters of the {@code GET} method on the host
+   * collection entry point.
+   */
+  public static final class GetHostsParams {
+    public static final String LIMIT = &quot;limit&quot;;
+    public static final String OFFSET = &quot;offset&quot;;
+    public static final String ORDER = &quot;order&quot;;
+    public static final String ADDRESS = &quot;address&quot;;
+    public static final String IS_SSL = &quot;isSSL&quot;;
+    public static final String IS_ACTIVE = &quot;isActive&quot;;
+    public static final String COUNT_ORDER = &quot;countOrder&quot;;
+
+    private GetHostsParams() {
+    }
+  }
+
+  /**
+   * The names of the query parameters of the {@code GET} method on the rule
+   * collection entry point.
+   */
+  public static final class GetRulesParams {
+    public static final String LIMIT = &quot;limit&quot;;
+    public static final String OFFSET = &quot;offset&quot;;
+    public static final String ORDER = &quot;order&quot;;
+    public static final String MODE_TRANS = &quot;modeTrans&quot;;
+    public static final String COUNT_ORDER = &quot;countOrder&quot;;
+
+    private GetRulesParams() {
+    }
+  }
+
+  /**
+   * The names of the query parameters of the {@code GET} method on the server
+   * status entry point.
+   */
+  public static final class GetStatusParams {
+    public static final String PERIOD = &quot;period&quot;;
+
+    private GetStatusParams() {
+    }
+  }
+
+  /**
+   * The names of the query parameters of the {@code GET} method on the
+   * transfer logs entry point.
+   */
+  public static final class GetLogsParams {
+    public static final String PURGE = &quot;purge&quot;;
+    public static final String CLEAN = &quot;clean&quot;;
+    public static final String STATUS = &quot;status&quot;;
+    public static final String RULE_NAME = &quot;ruleName&quot;;
+    public static final String START = &quot;start&quot;;
+    public static final String STOP = &quot;stop&quot;;
+    public static final String START_ID = &quot;startID&quot;;
+    public static final String STOP_ID = &quot;stopID&quot;;
+    public static final String REQUESTED = &quot;requester&quot;;
+
+    private GetLogsParams() {
+    }
+  }
+
+  /**
+   * The names of the query parameters of the {@code GET} method on the server
+   * configuration entry point.
+   */
+  public static final class ExportConfigParams {
+    public static final String EXPORT_HOSTS = &quot;exportHosts&quot;;
+    public static final String EXPORT_RULES = &quot;exportRules&quot;;
+    public static final String EXPORT_BUSINESS = &quot;exportBusiness&quot;;
+    public static final String EXPORT_ALIASES = &quot;exportAliases&quot;;
+    public static final String EXPORT_ROLES = &quot;exportRoles&quot;;
+
+    private ExportConfigParams() {
+    }
+  }
+
+  /**
+   * The names of the query parameters of the {@code PUT} method on the server
+   * configuration entry point.
+   */
+  public static final class ImportConfigParams {
+    public static final String PURGE_HOST = &quot;purgeHosts&quot;;
+    public static final String PURGE_RULE = &quot;purgeRules&quot;;
+    public static final String PURGE_BUSINESS = &quot;purgeBusiness&quot;;
+    public static final String PURGE_ALIASES = &quot;purgeAliases&quot;;
+    public static final String PURGE_ROLES = &quot;purgeRoles&quot;;
+    public static final String HOST_FILE = &quot;hostsFile&quot;;
+    public static final String RULE_FILE = &quot;rulesFile&quot;;
+    public static final String BUSINESS_FILE = &quot;businessFile&quot;;
+    public static final String ALIAS_FILE = &quot;aliasesFile&quot;;
+    public static final String ROLE_FILE = &quot;rolesFile&quot;;
+
+    private ImportConfigParams() {
+    }
+  }
+
+  /**
+   * The names of the query parameters of the {@code GET} method on the
+   * transfer collection entry point.
+   */
+  public static final class GetTransfersParams {
+    public static final String LIMIT = &quot;limit&quot;;
+    public static final String OFFSET = &quot;offset&quot;;
+    public static final String ORDER = &quot;order&quot;;
+    public static final String RULE_ID = &quot;ruleID&quot;;
+    public static final String PARTNER = &quot;partner&quot;;
+    public static final String STATUS = &quot;status&quot;;
+    public static final String FILENAME = &quot;filename&quot;;
+    public static final String START_TRANS = &quot;startTrans&quot;;
+    public static final String STOP_TRANS = &quot;stopTrans&quot;;
+    public static final String FOLLOW_ID = &quot;followId&quot;;
+    public static final String COUNT_ORDER = &quot;countOrder&quot;;
+
+    private GetTransfersParams() {
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

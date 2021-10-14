@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AuthentPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">AuthentPacket.java</span></div><h1>AuthentPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.utils.R66Versions;
+
+/**
+ * Request Authentication class
+ * &lt;p&gt;
+ * header = &quot;hostId&quot; middle = &quot;key bytes&quot; end = localId + way + (optional
+ * version: could be a JSON on the form
+ * version.{})
+ */
+public class AuthentPacket extends AbstractLocalPacket {
+<span class="fc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L46">      WaarpLoggerFactory.getLogger(AuthentPacket.class);</span>
+
+  private static final String NOT_ENOUGH_DATA = &quot;Not enough data&quot;;
+
+  private static final byte ASKVALIDATE = 0;
+
+  private static final byte ANSWERVALIDATE = 1;
+
+  private final Integer localId;
+
+  private byte way;
+
+  private String version;
+
+  private String hostId;
+
+  private byte[] key;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new AuthentPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static AuthentPacket createFromBuffer(final int headerLength,
+                                               final int middleLength,
+                                               final int endLength,
+                                               final ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L80">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">    if (middleLength &lt;= 0) {</span>
+<span class="nc" id="L83">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">    if (endLength &lt; 5) {</span>
+<span class="nc" id="L86">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="fc" id="L88">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L89">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="fc" id="L90">    buf.readBytes(bheader);</span>
+<span class="fc" id="L91">    buf.readBytes(bmiddle);</span>
+    // end part
+<span class="fc" id="L93">    final Integer newId = buf.readInt();</span>
+<span class="fc" id="L94">    final byte valid = buf.readByte();</span>
+<span class="fc" id="L95">    String version =</span>
+<span class="fc" id="L96">        R66Versions.V2_4_12.getVersion(); // first base reference where it is unacceptable</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">    if (endLength &gt; 5) {</span>
+      // version
+<span class="fc" id="L99">      final byte[] bversion = new byte[endLength - 5];</span>
+<span class="fc" id="L100">      buf.readBytes(bversion);</span>
+<span class="fc" id="L101">      version = new String(bversion, WaarpStringUtils.UTF8);</span>
+    }
+<span class="fc" id="L103">    final String sheader = new String(bheader, WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L104">    return new AuthentPacket(sheader, bmiddle, newId, valid, version);</span>
+  }
+
+  /**
+   * @param hostId
+   * @param key
+   * @param newId
+   * @param valid
+   * @param version
+   */
+  private AuthentPacket(final String hostId, final byte[] key,
+                        final Integer newId, final byte valid,
+<span class="fc" id="L116">                        final String version) {</span>
+<span class="fc" id="L117">    this.hostId = hostId;</span>
+<span class="fc" id="L118">    this.key = key;</span>
+<span class="fc" id="L119">    localId = newId;</span>
+<span class="fc" id="L120">    way = valid;</span>
+<span class="fc" id="L121">    Configuration.configuration.getVersions().put(hostId,</span>
+                                                  new PartnerConfiguration(
+                                                      hostId, version));
+<span class="fc" id="L124">    logger.debug(&quot;Receive version {}&quot;, version);</span>
+<span class="fc" id="L125">    this.version = version;</span>
+<span class="fc" id="L126">  }</span>
+
+  /**
+   * @param hostId
+   * @param key
+   * @param newId
+   */
+  public AuthentPacket(final String hostId, final byte[] key,
+<span class="fc" id="L134">                       final Integer newId) {</span>
+<span class="fc" id="L135">    this.hostId = hostId;</span>
+<span class="fc" id="L136">    this.key = key;</span>
+<span class="fc" id="L137">    localId = newId;</span>
+<span class="fc" id="L138">    way = ASKVALIDATE;</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (!Configuration.configuration.getVersions().containsKey(hostId)) {</span>
+<span class="nc" id="L140">      Configuration.configuration.getVersions().putIfAbsent(hostId,</span>
+                                                            new PartnerConfiguration(
+                                                                hostId));
+    }
+<span class="fc" id="L144">    version = Configuration.configuration.getVersions().get(hostId).toString();</span>
+<span class="fc" id="L145">    logger.debug(&quot;Will send version {}&quot;, version);</span>
+<span class="fc" id="L146">  }</span>
+
+  @Override
+  public final boolean hasGlobalBuffer() {
+<span class="fc" id="L150">    return true;</span>
+  }
+
+  @Override
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L157" title="2 of 4 branches missed.">    if (hostId == null || key == null) {</span>
+<span class="nc" id="L158">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="fc" id="L160">    final byte[] hostIdByte = hostId.getBytes(WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L161">    final int hostIdSize = hostIdByte.length;</span>
+<span class="fc" id="L162">    final int keySize = key.length;</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    final byte[] bversion =</span>
+<span class="pc" id="L164">        version != null? version.getBytes(WaarpStringUtils.UTF8) : null;</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    final int endSize = 5 + (version != null? bversion.length : 0);</span>
+<span class="fc" id="L166">    final int globalSize =</span>
+        networkHeader + hostIdSize + keySize + endSize + LOCAL_HEADER_SIZE;
+<span class="fc" id="L168">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L169">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
+<span class="fc" id="L170">    header = WaarpNettyUtil.slice(global, offset, hostIdSize);</span>
+<span class="fc" id="L171">    header.writeBytes(hostIdByte);</span>
+<span class="fc" id="L172">    offset += hostIdSize;</span>
+<span class="fc" id="L173">    middle = WaarpNettyUtil.slice(global, offset, keySize);</span>
+<span class="fc" id="L174">    middle.writeBytes(key);</span>
+<span class="fc" id="L175">    offset += keySize;</span>
+<span class="fc" id="L176">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="fc" id="L177">    end.writeInt(localId);</span>
+<span class="fc" id="L178">    end.writeByte(way);</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (version != null) {</span>
+<span class="fc" id="L180">      end.writeBytes(bversion);</span>
+    }
+<span class="fc" id="L182">  }</span>
+
+  @Override
+  public final byte getType() {
+<span class="fc" id="L186">    return LocalPacketFactory.AUTHENTPACKET;</span>
+  }
+
+  @Override
+  public final String toString() {
+<span class="nc" id="L191">    return &quot;AuthentPacket: &quot; + hostId + ' ' + localId + ' ' + way + ' ' +</span>
+           version;
+  }
+
+  /**
+   * @return the hostId
+   */
+  public final String getHostId() {
+<span class="fc" id="L199">    return hostId;</span>
+  }
+
+  /**
+   * @return the key
+   */
+  public final byte[] getKey() {
+<span class="fc" id="L206">    return key;</span>
+  }
+
+  /**
+   * @return the localId
+   */
+  public final Integer getLocalId() {
+<span class="nc" id="L213">    return localId;</span>
+  }
+
+  /**
+   * @return True if this packet is to be validated
+   */
+  public final boolean isToValidate() {
+<span class="fc bfc" id="L220" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
+  }
+
+  /**
+   * Validate the connection
+   */
+  public final void validate(final boolean isSSL) {
+<span class="fc" id="L227">    way = ANSWERVALIDATE;</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">    DbHostAuth auth = isSSL? Configuration.configuration.getHostSslAuth() :</span>
+<span class="fc" id="L229">        Configuration.configuration.getHostAuth();</span>
+    try {
+<span class="fc" id="L231">      hostId = Configuration.configuration.getHostId(isSSL);</span>
+<span class="nc" id="L232">    } catch (final OpenR66ProtocolNoSslException e) {</span>
+<span class="nc" id="L233">      hostId = Configuration.configuration.getHostId();</span>
+<span class="nc" id="L234">      auth = Configuration.configuration.getHostAuth();</span>
+<span class="fc" id="L235">    }</span>
+<span class="fc" id="L236">    key = FilesystemBasedDigest.passwdCrypt(auth.getHostkey());</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (!Configuration.configuration.getVersions().containsKey(hostId)) {</span>
+<span class="nc" id="L238">      Configuration.configuration.getVersions().putIfAbsent(hostId,</span>
+                                                            new PartnerConfiguration(
+                                                                hostId));
+    }
+<span class="fc" id="L242">    version = Configuration.configuration.getVersions().get(hostId).toString();</span>
+<span class="fc" id="L243">    logger.debug(&quot;Validate version {}&quot;, version);</span>
+<span class="fc" id="L244">    clear();</span>
+<span class="fc" id="L245">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

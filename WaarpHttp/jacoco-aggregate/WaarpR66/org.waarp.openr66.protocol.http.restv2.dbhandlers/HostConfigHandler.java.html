@@ -69,15 +69,15 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   private static final HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="nc" id="L72">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="nc" id="L73">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="nc" id="L74">    allow.add(HttpMethod.GET);</span>
-<span class="nc" id="L75">    allow.add(HttpMethod.POST);</span>
-<span class="nc" id="L76">    allow.add(HttpMethod.PUT);</span>
-<span class="nc" id="L77">    allow.add(HttpMethod.DELETE);</span>
-<span class="nc" id="L78">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="nc" id="L79">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="nc" id="L80">  }</span>
+<span class="fc" id="L72">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L73">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L74">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L75">    allow.add(HttpMethod.POST);</span>
+<span class="fc" id="L76">    allow.add(HttpMethod.PUT);</span>
+<span class="fc" id="L77">    allow.add(HttpMethod.DELETE);</span>
+<span class="fc" id="L78">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L79">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L80">  }</span>
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -85,8 +85,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
    * @param crud the CRUD mask for this handler
    */
   public HostConfigHandler(final byte crud) {
-<span class="nc" id="L88">    super(crud);</span>
-<span class="nc" id="L89">  }</span>
+<span class="fc" id="L88">    super(crud);</span>
+<span class="fc" id="L89">  }</span>
 
   /**
    * Method called to retrieve a host's configuration entry in the database.
@@ -100,20 +100,20 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @RequiredRole(READONLY)
   public final void getConfig(final HttpRequest request,
                               final HttpResponder responder) {
-<span class="nc" id="L103">    BusinessDAO businessDAO = null;</span>
+<span class="fc" id="L103">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L105">      businessDAO = DAO_FACTORY.getBusinessDAO(true);</span>
-<span class="nc" id="L106">      final String host = serverName();</span>
-<span class="nc" id="L107">      final Business business = businessDAO.select(host);</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (business != null) {</span>
-<span class="nc" id="L109">        final ObjectNode responseObject =</span>
-<span class="nc" id="L110">            HostConfigConverter.businessToNode(business);</span>
-<span class="nc" id="L111">        responseObject.put(&quot;versionR66&quot;, Version.ID);</span>
-<span class="nc" id="L112">        responseObject.put(&quot;versionBin&quot;,</span>
-<span class="nc" id="L113">                           org.waarp.common.utility.Version.fullIdentifier());</span>
-<span class="nc" id="L114">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L115">        responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L116">      } else {</span>
+<span class="fc" id="L105">      businessDAO = DAO_FACTORY.getBusinessDAO(true);</span>
+<span class="fc" id="L106">      final String host = serverName();</span>
+<span class="fc" id="L107">      final Business business = businessDAO.select(host);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">      if (business != null) {</span>
+<span class="fc" id="L109">        final ObjectNode responseObject =</span>
+<span class="fc" id="L110">            HostConfigConverter.businessToNode(business);</span>
+<span class="fc" id="L111">        responseObject.put(&quot;versionR66&quot;, Version.ID);</span>
+<span class="fc" id="L112">        responseObject.put(&quot;versionBin&quot;,</span>
+<span class="fc" id="L113">                           org.waarp.common.utility.Version.fullIdentifier());</span>
+<span class="fc" id="L114">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="fc" id="L115">        responder.sendJson(OK, responseText);</span>
+<span class="fc" id="L116">      } else {</span>
 <span class="nc" id="L117">        responder.sendStatus(NOT_FOUND);</span>
       }
 <span class="nc" id="L119">    } catch (final DAOConnectionException e) {</span>
@@ -121,9 +121,9 @@ public class HostConfigHandler extends AbstractRestDbHandler {
 <span class="nc" id="L121">    } catch (final DAONoDataException e) {</span>
 <span class="nc" id="L122">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L124">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="fc" id="L124">      DAOFactory.closeDAO(businessDAO);</span>
     }
-<span class="nc" id="L126">  }</span>
+<span class="fc" id="L126">  }</span>
 
   /**
    * Method called to initialize a host's configuration database entry if none

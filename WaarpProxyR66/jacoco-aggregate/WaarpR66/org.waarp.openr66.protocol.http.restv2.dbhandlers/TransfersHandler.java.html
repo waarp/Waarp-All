@@ -79,13 +79,13 @@ public class TransfersHandler extends AbstractRestDbHandler {
   private static final io.netty.handler.codec.http.HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="nc" id="L82">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="nc" id="L83">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="nc" id="L84">    allow.add(HttpMethod.GET);</span>
-<span class="nc" id="L85">    allow.add(HttpMethod.POST);</span>
-<span class="nc" id="L86">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="nc" id="L87">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="nc" id="L88">  }</span>
+<span class="fc" id="L82">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L83">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L84">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L85">    allow.add(HttpMethod.POST);</span>
+<span class="fc" id="L86">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L87">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L88">  }</span>
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -93,8 +93,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
    * @param crud the CRUD mask for this handler
    */
   public TransfersHandler(final byte crud) {
-<span class="nc" id="L96">    super(crud);</span>
-<span class="nc" id="L97">  }</span>
+<span class="fc" id="L96">    super(crud);</span>
+<span class="fc" id="L97">  }</span>
 
   /**
    * Method called to obtain a list of transfer entry matching the different
@@ -151,40 +151,40 @@ public class TransfersHandler extends AbstractRestDbHandler {
                                    final String followId,
                                    @QueryParam(COUNT_ORDER) @DefaultValue(&quot;&quot;)
                                    final String countOrder) {
-<span class="nc" id="L154">    checkSanity(limitStr, offsetStr, orderStr, ruleID, partner, statusStr,</span>
+<span class="fc" id="L154">    checkSanity(limitStr, offsetStr, orderStr, ruleID, partner, statusStr,</span>
                 filename, startTrans, stopTrans, followId, countOrder);
-<span class="nc" id="L156">    final ArrayList&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="fc" id="L156">    final ArrayList&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc" id="L158">    boolean count = false;</span>
+<span class="fc" id="L158">    boolean count = false;</span>
     try {
-<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (ParametersChecker.isNotEmpty(countOrder) &amp;&amp;</span>
-<span class="nc bnc" id="L161" title="All 2 branches missed.">          RestUtils.stringToBoolean(countOrder)) {</span>
-<span class="nc" id="L162">        count = true;</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">      if (ParametersChecker.isNotEmpty(countOrder) &amp;&amp;</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">          RestUtils.stringToBoolean(countOrder)) {</span>
+<span class="fc" id="L162">        count = true;</span>
       }
 <span class="nc" id="L164">    } catch (final Exception ignore) {</span>
       // Ignore
-<span class="nc" id="L166">    }</span>
-<span class="nc" id="L167">    int limit = 20;</span>
+<span class="fc" id="L166">    }</span>
+<span class="fc" id="L167">    int limit = 20;</span>
     try {
-<span class="nc" id="L169">      limit = Integer.parseInt(limitStr);</span>
+<span class="fc" id="L169">      limit = Integer.parseInt(limitStr);</span>
 <span class="nc" id="L170">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L171">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
-<span class="nc" id="L172">    }</span>
-<span class="nc" id="L173">    int offset = 0;</span>
+<span class="fc" id="L172">    }</span>
+<span class="fc" id="L173">    int offset = 0;</span>
     try {
-<span class="nc" id="L175">      offset = Integer.parseInt(offsetStr);</span>
+<span class="fc" id="L175">      offset = Integer.parseInt(offsetStr);</span>
 <span class="nc" id="L176">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L177">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
-<span class="nc" id="L178">    }</span>
-<span class="nc" id="L179">    TransferConverter.Order order = TransferConverter.Order.ascId;</span>
+<span class="fc" id="L178">    }</span>
+<span class="fc" id="L179">    TransferConverter.Order order = TransferConverter.Order.ascId;</span>
     try {
-<span class="nc" id="L181">      order = TransferConverter.Order.valueOf(orderStr);</span>
+<span class="fc" id="L181">      order = TransferConverter.Order.valueOf(orderStr);</span>
 <span class="nc" id="L182">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L183">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, orderStr));</span>
-<span class="nc" id="L184">    }</span>
+<span class="fc" id="L184">    }</span>
 
-<span class="nc" id="L186">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(startTrans, stopTrans)) {</span>
+<span class="fc" id="L186">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(startTrans, stopTrans)) {</span>
       try {
 <span class="nc" id="L189">        filters.add(new Filter(TRANSFER_START_FIELD, Filter.BETWEEN,</span>
 <span class="nc" id="L190">                               DateTime.parse(startTrans),</span>
@@ -193,14 +193,14 @@ public class TransfersHandler extends AbstractRestDbHandler {
 <span class="nc" id="L193">        errors.add(ILLEGAL_PARAMETER_VALUE(START, startTrans));</span>
 <span class="nc" id="L194">        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stopTrans));</span>
 <span class="nc" id="L195">      }</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(startTrans)) {</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(startTrans)) {</span>
       try {
 <span class="nc" id="L198">        final DateTime lowerDate = DateTime.parse(startTrans);</span>
 <span class="nc" id="L199">        filters.add(new Filter(TRANSFER_START_FIELD, &quot;&gt;=&quot;, lowerDate));</span>
 <span class="nc" id="L200">      } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L201">        errors.add(ILLEGAL_PARAMETER_VALUE(START, startTrans));</span>
 <span class="nc" id="L202">      }</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(stopTrans)) {</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(stopTrans)) {</span>
       try {
 <span class="nc" id="L205">        final DateTime upperDate = DateTime.parse(stopTrans);</span>
 <span class="nc" id="L206">        filters.add(new Filter(TRANSFER_START_FIELD, &quot;&lt;=&quot;, upperDate));</span>
@@ -208,16 +208,16 @@ public class TransfersHandler extends AbstractRestDbHandler {
 <span class="nc" id="L208">        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stopTrans));</span>
 <span class="nc" id="L209">      }</span>
     }
-<span class="nc bnc" id="L211" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(ruleID)) {</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(ruleID)) {</span>
 <span class="nc" id="L212">      filters.add(new Filter(ID_RULE_FIELD, &quot;=&quot;, ruleID));</span>
     }
-<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(partner)) {</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(partner)) {</span>
 <span class="nc" id="L215">      filters.add(new Filter(REQUESTED_FIELD, &quot;=&quot;, partner));</span>
     }
-<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(filename)) {</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(filename)) {</span>
 <span class="nc" id="L218">      filters.add(new Filter(FILENAME_FIELD, &quot;=&quot;, filename));</span>
     }
-<span class="nc bnc" id="L220" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(statusStr)) {</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(statusStr)) {</span>
       try {
 <span class="nc" id="L222">        final int status_nbr =</span>
 <span class="nc" id="L223">            AbstractDbData.UpdatedInfo.valueOf(statusStr).ordinal();</span>
@@ -226,48 +226,48 @@ public class TransfersHandler extends AbstractRestDbHandler {
 <span class="nc" id="L226">        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));</span>
 <span class="nc" id="L227">      }</span>
     }
-<span class="nc bnc" id="L229" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(followId)) {</span>
-<span class="nc" id="L230">      filters.add(DbTaskRunner.getFollowIdFilter(followId));</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">    if (ParametersChecker.isNotEmpty(followId)) {</span>
+<span class="fc" id="L230">      filters.add(DbTaskRunner.getFollowIdFilter(followId));</span>
     }
 
-<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    if (!errors.isEmpty()) {</span>
 <span class="nc" id="L234">      throw new RestErrorException(errors);</span>
     }
 
-<span class="nc" id="L237">    TransferDAO transferDAO = null;</span>
-<span class="nc" id="L238">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (count) {</span>
-<span class="nc" id="L240">      long nbCount = -1;</span>
+<span class="fc" id="L237">    TransferDAO transferDAO = null;</span>
+<span class="fc" id="L238">    final ObjectNode responseObject = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">    if (count) {</span>
+<span class="fc" id="L240">      long nbCount = -1;</span>
       try {
-<span class="nc" id="L242">        transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L243">        nbCount = transferDAO.count(filters);</span>
+<span class="fc" id="L242">        transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="fc" id="L243">        nbCount = transferDAO.count(filters);</span>
 <span class="nc" id="L244">      } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L245">        throw new InternalServerErrorException(e);</span>
       } finally {
-<span class="nc" id="L247">        DAOFactory.closeDAO(transferDAO);</span>
+<span class="fc" id="L247">        DAOFactory.closeDAO(transferDAO);</span>
       }
-<span class="nc" id="L249">      responseObject.put(&quot;totalResults&quot;, nbCount);</span>
-<span class="nc" id="L250">    } else {</span>
+<span class="fc" id="L249">      responseObject.put(&quot;totalResults&quot;, nbCount);</span>
+<span class="fc" id="L250">    } else {</span>
       List&lt;Transfer&gt; transferList;
       try {
-<span class="nc" id="L253">        transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L254">        transferList =</span>
-<span class="nc" id="L255">            transferDAO.find(filters, order.column, order.ascend, limit,</span>
+<span class="fc" id="L253">        transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="fc" id="L254">        transferList =</span>
+<span class="fc" id="L255">            transferDAO.find(filters, order.column, order.ascend, limit,</span>
                              offset);
 <span class="nc" id="L257">      } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L258">        throw new InternalServerErrorException(e);</span>
       } finally {
-<span class="nc" id="L260">        DAOFactory.closeDAO(transferDAO);</span>
+<span class="fc" id="L260">        DAOFactory.closeDAO(transferDAO);</span>
       }
-<span class="nc" id="L262">      final ArrayNode resultList = responseObject.putArray(&quot;results&quot;);</span>
-<span class="nc bnc" id="L263" title="All 2 branches missed.">      for (final Transfer transfer : transferList) {</span>
-<span class="nc" id="L264">        resultList.add(TransferConverter.transferToNode(transfer));</span>
-<span class="nc" id="L265">      }</span>
-<span class="nc" id="L266">      responseObject.put(&quot;totalResults&quot;, transferList.size());</span>
+<span class="fc" id="L262">      final ArrayNode resultList = responseObject.putArray(&quot;results&quot;);</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">      for (final Transfer transfer : transferList) {</span>
+<span class="fc" id="L264">        resultList.add(TransferConverter.transferToNode(transfer));</span>
+<span class="fc" id="L265">      }</span>
+<span class="fc" id="L266">      responseObject.put(&quot;totalResults&quot;, transferList.size());</span>
     }
-<span class="nc" id="L268">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L269">    responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L270">  }</span>
+<span class="fc" id="L268">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="fc" id="L269">    responder.sendJson(OK, responseText);</span>
+<span class="fc" id="L270">  }</span>
 
   /**
    * Method called to create a new transfer on the server. The reply will

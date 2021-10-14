@@ -93,11 +93,11 @@ public class RecvThroughClient extends AbstractTransfer {
                            final long id,
                            final NetworkTransaction networkTransaction) {
     // timestart since immediate
-<span class="nc" id="L96">    super(RecvThroughClient.class, future, filename, rulename, fileinfo, isMD5,</span>
+<span class="fc" id="L96">    super(RecvThroughClient.class, future, filename, rulename, fileinfo, isMD5,</span>
           remoteHost, blocksize, id, null);
-<span class="nc" id="L98">    this.networkTransaction = networkTransaction;</span>
-<span class="nc" id="L99">    this.handler = handler;</span>
-<span class="nc" id="L100">  }</span>
+<span class="fc" id="L98">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L99">    this.handler = handler;</span>
+<span class="fc" id="L100">  }</span>
 
   /**
    * Prior to call this method, the pipeline and NetworkTransaction must have
@@ -106,24 +106,24 @@ public class RecvThroughClient extends AbstractTransfer {
    */
   @Override
   public void run() {
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L110">      logger = WaarpLoggerFactory.getLogger(RecvThroughClient.class);</span>
     }
-<span class="nc" id="L112">    final DbTaskRunner taskRunner = initRequest();</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (taskRunner == null) {</span>
+<span class="fc" id="L112">    final DbTaskRunner taskRunner = initRequest();</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    if (taskRunner == null) {</span>
       // already an error from there
 <span class="nc" id="L115">      return;</span>
     }
     try {
-<span class="nc" id="L118">      final ClientRunner runner =</span>
+<span class="fc" id="L118">      final ClientRunner runner =</span>
           new ClientRunner(networkTransaction, taskRunner, future);
-<span class="nc" id="L120">      runner.setRecvThroughHandler(handler);</span>
-<span class="nc" id="L121">      OpenR66ProtocolNotYetConnectionException exc = null;</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">      for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="fc" id="L120">      runner.setRecvThroughHandler(handler);</span>
+<span class="fc" id="L121">      OpenR66ProtocolNotYetConnectionException exc = null;</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">      for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
         try {
-<span class="nc" id="L124">          runner.runTransfer();</span>
-<span class="nc" id="L125">          exc = null;</span>
-<span class="nc" id="L126">          break;</span>
+<span class="fc" id="L124">          runner.runTransfer();</span>
+<span class="fc" id="L125">          exc = null;</span>
+<span class="fc" id="L126">          break;</span>
 <span class="nc" id="L127">        } catch (final OpenR66RunnerErrorException e) {</span>
 <span class="nc" id="L128">          logger.error(&quot;Cannot Transfer&quot;, e);</span>
 <span class="nc" id="L129">          future.setResult(</span>
@@ -150,7 +150,7 @@ public class RecvThroughClient extends AbstractTransfer {
 <span class="nc" id="L150">          exc = e;</span>
         }
       }
-<span class="nc bnc" id="L153" title="All 2 branches missed.">      if (exc != null) {</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">      if (exc != null) {</span>
 <span class="nc" id="L154">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
 <span class="nc" id="L155">        logger.error(&quot;Cannot Connect&quot;, exc);</span>
 <span class="nc" id="L156">        future.setResult(</span>
@@ -159,8 +159,8 @@ public class RecvThroughClient extends AbstractTransfer {
 <span class="nc" id="L159">        future.setFailure(exc);</span>
       }
     } finally {
-<span class="nc bnc" id="L162" title="All 2 branches missed.">      if (taskRunner != null) {</span>
-<span class="nc bnc" id="L163" title="All 4 branches missed.">        if (future.isFailed() || nolog) {</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">      if (taskRunner != null) {</span>
+<span class="pc bpc" id="L163" title="2 of 4 branches missed.">        if (future.isFailed() || nolog) {</span>
           try {
 <span class="nc" id="L165">            taskRunner.delete();</span>
 <span class="nc" id="L166">          } catch (final WaarpDatabaseException ignored) {</span>
@@ -169,7 +169,7 @@ public class RecvThroughClient extends AbstractTransfer {
         }
       }
     }
-<span class="nc" id="L172">  }</span>
+<span class="fc" id="L172">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

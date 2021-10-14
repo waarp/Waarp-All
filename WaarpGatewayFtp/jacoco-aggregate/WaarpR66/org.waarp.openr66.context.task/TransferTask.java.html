@@ -76,8 +76,8 @@ public class TransferTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L79">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L80">      WaarpLoggerFactory.getLogger(TransferTask.class);</span>
+<span class="fc" id="L79">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L80">      WaarpLoggerFactory.getLogger(TransferTask.class);</span>
 
   /**
    * @param argRule
@@ -87,78 +87,78 @@ public class TransferTask extends AbstractTask {
    */
   public TransferTask(final String argRule, final int delay,
                       final String argTransfer, final R66Session session) {
-<span class="nc" id="L90">    super(TaskType.TRANSFER, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L91">  }</span>
+<span class="fc" id="L90">    super(TaskType.TRANSFER, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L91">  }</span>
 
   @Override
   public final void run() {
-<span class="nc" id="L95">    logger.info(&quot;Transfer with {}}:{} and {}&quot;, argRule, argTransfer, session);</span>
-<span class="nc" id="L96">    String finalname = applyTransferSubstitutions(argRule);</span>
+<span class="fc" id="L95">    logger.info(&quot;Transfer with {}}:{} and {}&quot;, argRule, argTransfer, session);</span>
+<span class="fc" id="L96">    String finalname = applyTransferSubstitutions(argRule);</span>
 
-<span class="nc" id="L98">    finalname = finalname.replaceAll(&quot;#([A-Z]+)#&quot;, &quot;\\${$1}&quot;);</span>
-<span class="nc" id="L99">    final CommandLine commandLine = new CommandLine(&quot;dummy&quot;);</span>
-<span class="nc" id="L100">    commandLine.setSubstitutionMap(getSubstitutionMap());</span>
-<span class="nc" id="L101">    commandLine.addArguments(finalname, false);</span>
-<span class="nc" id="L102">    final String[] args = commandLine.getArguments();</span>
+<span class="fc" id="L98">    finalname = finalname.replaceAll(&quot;#([A-Z]+)#&quot;, &quot;\\${$1}&quot;);</span>
+<span class="fc" id="L99">    final CommandLine commandLine = new CommandLine(&quot;dummy&quot;);</span>
+<span class="fc" id="L100">    commandLine.setSubstitutionMap(getSubstitutionMap());</span>
+<span class="fc" id="L101">    commandLine.addArguments(finalname, false);</span>
+<span class="fc" id="L102">    final String[] args = commandLine.getArguments();</span>
 
-<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (args.length &lt; 6) {</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">    if (args.length &lt; 6) {</span>
 <span class="nc" id="L105">      futureCompletion.setFailure(</span>
           new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;));
 <span class="nc" id="L107">      return;</span>
     }
-<span class="nc" id="L109">    final TransferArgs transferArgs =</span>
-<span class="nc" id="L110">        TransferArgs.getParamsInternal(0, args, false);</span>
-<span class="nc" id="L111">    final DbTaskRunner taskRunner = session.getRunner();</span>
-<span class="nc bnc" id="L112" title="All 2 branches missed.">    if (transferArgs != null) {</span>
-<span class="nc" id="L113">      String copied = null;</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">      for (final String arg : args) {</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (&quot;-copyinfo&quot;.equalsIgnoreCase(arg)) {</span>
+<span class="fc" id="L109">    final TransferArgs transferArgs =</span>
+<span class="fc" id="L110">        TransferArgs.getParamsInternal(0, args, false);</span>
+<span class="fc" id="L111">    final DbTaskRunner taskRunner = session.getRunner();</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">    if (transferArgs != null) {</span>
+<span class="fc" id="L113">      String copied = null;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">      for (final String arg : args) {</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (&quot;-copyinfo&quot;.equalsIgnoreCase(arg)) {</span>
 <span class="nc" id="L116">          copied = taskRunner.getFileInformation();</span>
 <span class="nc" id="L117">          break;</span>
         }
       }
       // Force to get follow Id if present (and other elements from map) if
       // not already copied
-<span class="nc" id="L122">      final String follow = taskRunner.getFollowId();</span>
-<span class="nc bnc" id="L123" title="All 4 branches missed.">      if (copied == null &amp;&amp; ParametersChecker.isNotEmpty(follow) &amp;&amp;</span>
-<span class="nc" id="L124">          !transferArgs.getTransferInfo()</span>
-<span class="nc bnc" id="L125" title="All 2 branches missed.">                       .contains(TransferArgs.FOLLOW_JSON_KEY)) {</span>
-<span class="nc" id="L126">        transferArgs.setFollowId(follow);</span>
-<span class="nc" id="L127">        final Map&lt;String, Long&gt; map = new HashMap&lt;String, Long&gt;();</span>
-<span class="nc" id="L128">        map.put(TransferArgs.FOLLOW_JSON_KEY, Long.parseLong(follow));</span>
-<span class="nc" id="L129">        copied = JsonHandler.writeAsStringEscaped(map);</span>
+<span class="fc" id="L122">      final String follow = taskRunner.getFollowId();</span>
+<span class="pc bpc" id="L123" title="1 of 4 branches missed.">      if (copied == null &amp;&amp; ParametersChecker.isNotEmpty(follow) &amp;&amp;</span>
+<span class="fc" id="L124">          !transferArgs.getTransferInfo()</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                       .contains(TransferArgs.FOLLOW_JSON_KEY)) {</span>
+<span class="fc" id="L126">        transferArgs.setFollowId(follow);</span>
+<span class="fc" id="L127">        final Map&lt;String, Long&gt; map = new HashMap&lt;String, Long&gt;();</span>
+<span class="fc" id="L128">        map.put(TransferArgs.FOLLOW_JSON_KEY, Long.parseLong(follow));</span>
+<span class="fc" id="L129">        copied = JsonHandler.writeAsStringEscaped(map);</span>
       }
-<span class="nc" id="L131">      TransferArgs.getAllInfo(transferArgs, 0, args, copied);</span>
-<span class="nc" id="L132">    } else {</span>
+<span class="fc" id="L131">      TransferArgs.getAllInfo(transferArgs, 0, args, copied);</span>
+<span class="fc" id="L132">    } else {</span>
 <span class="nc" id="L133">      logger.error(&quot;Not enough argument in Transfer&quot;);</span>
 <span class="nc" id="L134">      futureCompletion.setFailure(</span>
           new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;));
 <span class="nc" id="L136">      return;</span>
     }
-<span class="nc" id="L138">    logger.debug(&quot;TransferArgs: {} Rule: {} Filename: {}&quot;,</span>
-<span class="nc" id="L139">                 transferArgs.getTransferInfo(), transferArgs.getRulename(),</span>
-<span class="nc" id="L140">                 transferArgs.getFilename());</span>
-<span class="nc" id="L141">    final R66Future future = new R66Future(true);</span>
-<span class="nc" id="L142">    final SubmitTransfer transaction =</span>
-<span class="nc" id="L143">        new SubmitTransfer(future, transferArgs.getRemoteHost(),</span>
-<span class="nc" id="L144">                           transferArgs.getFilename(),</span>
-<span class="nc" id="L145">                           transferArgs.getRulename(),</span>
-<span class="nc" id="L146">                           transferArgs.getTransferInfo(), transferArgs.isMD5(),</span>
-<span class="nc" id="L147">                           transferArgs.getBlockSize(),</span>
+<span class="fc" id="L138">    logger.debug(&quot;TransferArgs: {} Rule: {} Filename: {}&quot;,</span>
+<span class="fc" id="L139">                 transferArgs.getTransferInfo(), transferArgs.getRulename(),</span>
+<span class="fc" id="L140">                 transferArgs.getFilename());</span>
+<span class="fc" id="L141">    final R66Future future = new R66Future(true);</span>
+<span class="fc" id="L142">    final SubmitTransfer transaction =</span>
+<span class="fc" id="L143">        new SubmitTransfer(future, transferArgs.getRemoteHost(),</span>
+<span class="fc" id="L144">                           transferArgs.getFilename(),</span>
+<span class="fc" id="L145">                           transferArgs.getRulename(),</span>
+<span class="fc" id="L146">                           transferArgs.getTransferInfo(), transferArgs.isMD5(),</span>
+<span class="fc" id="L147">                           transferArgs.getBlockSize(),</span>
                            DbConstantR66.ILLEGALVALUE,
-<span class="nc" id="L149">                           transferArgs.getStartTime());</span>
-<span class="nc" id="L150">    transaction.run();</span>
-<span class="nc" id="L151">    future.awaitOrInterruptible();</span>
+<span class="fc" id="L149">                           transferArgs.getStartTime());</span>
+<span class="fc" id="L150">    transaction.run();</span>
+<span class="fc" id="L151">    future.awaitOrInterruptible();</span>
     final DbTaskRunner runner;
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="nc" id="L154">      futureCompletion.setResult(future.getResult());</span>
-<span class="nc" id="L155">      runner = future.getResult().getRunner();</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (logger.isInfoEnabled()) {</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="fc" id="L154">      futureCompletion.setResult(future.getResult());</span>
+<span class="fc" id="L155">      runner = future.getResult().getRunner();</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">      if (logger.isInfoEnabled()) {</span>
 <span class="nc" id="L157">        logger.info(</span>
 <span class="nc" id="L158">            &quot;Prepare transfer in     SUCCESS     &quot; + runner.toShortString() +</span>
 <span class="nc" id="L159">            &quot;     &lt;REMOTE&gt;&quot; + transferArgs.getRemoteHost() + &quot;&lt;/REMOTE&gt;&quot;);</span>
       }
-<span class="nc" id="L161">      futureCompletion.setSuccess();</span>
+<span class="fc" id="L161">      futureCompletion.setSuccess();</span>
     } else {
 <span class="nc bnc" id="L163" title="All 2 branches missed.">      if (future.getResult() != null) {</span>
 <span class="nc" id="L164">        futureCompletion.setResult(future.getResult());</span>
@@ -186,7 +186,7 @@ public class TransferTask extends AbstractTask {
 <span class="nc" id="L186">                     future.getCause());</span>
       }
     }
-<span class="nc" id="L189">  }</span>
+<span class="fc" id="L189">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -80,20 +80,20 @@ public class ShutdownPacket extends AbstractLocalPacket {
 <span class="nc" id="L80">  }</span>
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
 <span class="nc" id="L84">    return true;</span>
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
 <span class="nc" id="L90">    end = Unpooled.EMPTY_BUFFER;</span>
 <span class="nc bnc" id="L91" title="All 2 branches missed.">    final int sizeKey = key != null? key.length : 0;</span>
 <span class="nc bnc" id="L92" title="All 2 branches missed.">    final int sizeMiddle = restart != 0? 1 : 0;</span>
 <span class="nc" id="L93">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + sizeKey + sizeMiddle;
 <span class="nc" id="L95">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L96">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc" id="L96">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
 <span class="nc bnc" id="L97" title="All 2 branches missed.">    if (key != null) {</span>
 <span class="nc" id="L98">      header = WaarpNettyUtil.slice(global, offset, sizeKey);</span>
 <span class="nc" id="L99">      header.writeBytes(key);</span>
@@ -110,24 +110,24 @@ public class ShutdownPacket extends AbstractLocalPacket {
 <span class="nc" id="L110">  }</span>
 
   @Override
-  public String toString() {
+  public final String toString() {
 <span class="nc bnc" id="L114" title="All 2 branches missed.">    return &quot;ShutdownPacket&quot; + (restart != 0? &quot; and restart&quot; : &quot;&quot;);</span>
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
 <span class="nc" id="L119">    return LocalPacketFactory.SHUTDOWNPACKET;</span>
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
+  public final byte[] getKey() {
 <span class="nc" id="L126">    return key;</span>
   }
 
-  public boolean isRestart() {
+  public final boolean isRestart() {
 <span class="nc bnc" id="L130" title="All 2 branches missed.">    return restart != 0;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

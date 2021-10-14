@@ -23,7 +23,6 @@ import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
-import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.FileParameterInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
@@ -48,8 +47,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * Internal Logger
    */
-<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);</span>
+<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);</span>
 
   /**
    * SERVER PASSWORD (shutdown)
@@ -164,7 +163,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * All authentications
    */
-<span class="fc" id="L167">  private final ConcurrentHashMap&lt;String, SimpleAuth&gt; authentications =</span>
+<span class="fc" id="L166">  private final ConcurrentHashMap&lt;String, SimpleAuth&gt; authentications =</span>
       new ConcurrentHashMap&lt;String, SimpleAuth&gt;();
 
   /**
@@ -179,9 +178,9 @@ public class FileBasedConfiguration extends FtpConfiguration {
                                 final Class&lt;? extends BusinessHandler&gt; businessHandler,
                                 final Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler,
                                 final FileParameterInterface fileParameter) {
-<span class="fc" id="L182">    super(classtype, businessHandler, dataBusinessHandler, fileParameter);</span>
-<span class="fc" id="L183">    computeNbThreads();</span>
-<span class="fc" id="L184">  }</span>
+<span class="fc" id="L181">    super(classtype, businessHandler, dataBusinessHandler, fileParameter);</span>
+<span class="fc" id="L182">    computeNbThreads();</span>
+<span class="fc" id="L183">  }</span>
 
   /**
    * Initiate the configuration from the xml file
@@ -190,13 +189,14 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if OK
    */
-  public boolean setConfigurationFromXml(final String filename) {
+  public final boolean setConfigurationFromXml(final String filename) {
     Document document;
     // Open config file
     try {
-<span class="fc" id="L197">      document = XmlUtil.getNewSaxReader().read(filename);</span>
-<span class="nc" id="L198">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L199">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
+<span class="fc" id="L196">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L197">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L198">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L199">                   e.getMessage());</span>
 <span class="nc" id="L200">      return false;</span>
 <span class="fc" id="L201">    }</span>
 <span class="pc bpc" id="L202" title="1 of 2 branches missed.">    if (document == null) {</span>
@@ -284,87 +284,81 @@ public class FileBasedConfiguration extends FtpConfiguration {
 <span class="fc" id="L284">      FilesystemBasedFileParameterImpl.useNio =</span>
 <span class="pc bpc" id="L285" title="1 of 2 branches missed.">          Integer.parseInt(node.getText()) == 1;</span>
     }
-<span class="fc" id="L287">    node = document.selectSingleNode(XML_USEFASTMD5);</span>
+<span class="fc" id="L287">    node = document.selectSingleNode(XML_BLOCKSIZE);</span>
 <span class="pc bpc" id="L288" title="1 of 2 branches missed.">    if (node != null) {</span>
-<span class="fc" id="L289">      FilesystemBasedDigest</span>
-<span class="pc bpc" id="L290" title="1 of 2 branches missed.">          .setUseFastMd5(Integer.parseInt(node.getText()) == 1);</span>
-    } else {
-<span class="nc" id="L292">      FilesystemBasedDigest.setUseFastMd5(false);</span>
+<span class="fc" id="L289">      setBlocksize(Integer.parseInt(node.getText()));</span>
     }
-<span class="fc" id="L294">    node = document.selectSingleNode(XML_BLOCKSIZE);</span>
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">    if (node != null) {</span>
-<span class="fc" id="L296">      setBlocksize(Integer.parseInt(node.getText()));</span>
+<span class="fc" id="L291">    node = document.selectSingleNode(XML_RANGE_PORT_MIN);</span>
+<span class="fc" id="L292">    int min = 100;</span>
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L294">      min = Integer.parseInt(node.getText());</span>
     }
-<span class="fc" id="L298">    node = document.selectSingleNode(XML_RANGE_PORT_MIN);</span>
-<span class="fc" id="L299">    int min = 100;</span>
-<span class="pc bpc" id="L300" title="1 of 2 branches missed.">    if (node != null) {</span>
-<span class="fc" id="L301">      min = Integer.parseInt(node.getText());</span>
+<span class="fc" id="L296">    node = document.selectSingleNode(XML_RANGE_PORT_MAX);</span>
+<span class="fc" id="L297">    int max = 65535;</span>
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L299">      max = Integer.parseInt(node.getText());</span>
     }
-<span class="fc" id="L303">    node = document.selectSingleNode(XML_RANGE_PORT_MAX);</span>
-<span class="fc" id="L304">    int max = 65535;</span>
-<span class="pc bpc" id="L305" title="1 of 2 branches missed.">    if (node != null) {</span>
-<span class="fc" id="L306">      max = Integer.parseInt(node.getText());</span>
-    }
-<span class="fc" id="L308">    final CircularIntValue circularIntValue = new CircularIntValue(min, max);</span>
-<span class="fc" id="L309">    setRangePort(circularIntValue);</span>
+<span class="fc" id="L301">    final CircularIntValue circularIntValue = new CircularIntValue(min, max);</span>
+<span class="fc" id="L302">    setRangePort(circularIntValue);</span>
     // We use Apache Commons IO
-<span class="fc" id="L311">    FilesystemBasedDirJdkAbstract.ueApacheCommonsIo = true;</span>
-<span class="fc" id="L312">    node = document.selectSingleNode(XML_AUTHENTIFICATION_FILE);</span>
-<span class="pc bpc" id="L313" title="1 of 2 branches missed.">    if (node == null) {</span>
-<span class="nc" id="L314">      logger.error(</span>
+<span class="fc" id="L304">    FilesystemBasedDirJdkAbstract.ueApacheCommonsIo = true;</span>
+<span class="fc" id="L305">    node = document.selectSingleNode(XML_AUTHENTIFICATION_FILE);</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L307">      logger.error(</span>
           &quot;Unable to find Authentication file in Config file: &quot; + filename);
-<span class="nc" id="L316">      return false;</span>
+<span class="nc" id="L309">      return false;</span>
     }
-<span class="fc" id="L318">    final String fileauthent = node.getText();</span>
-<span class="fc" id="L319">    document = null;</span>
+<span class="fc" id="L311">    final String fileauthent = node.getText();</span>
+<span class="fc" id="L312">    document = null;</span>
     try {
-<span class="fc" id="L321">      document = XmlUtil.getNewSaxReader().read(fileauthent);</span>
-<span class="nc" id="L322">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L323">      logger.error(&quot;Unable to read the XML Authentication file: &quot; + fileauthent,</span>
-                   e);
-<span class="nc" id="L325">      return false;</span>
-<span class="fc" id="L326">    }</span>
-<span class="pc bpc" id="L327" title="1 of 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L328">      logger</span>
-<span class="nc" id="L329">          .error(&quot;Unable to read the XML Authentication file: &quot; + fileauthent);</span>
-<span class="nc" id="L330">      return false;</span>
+<span class="fc" id="L314">      document = XmlUtil.getNewSaxReader().read(fileauthent);</span>
+<span class="nc" id="L315">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L316">      logger.error(</span>
+          &quot;Unable to read the XML Authentication file: &quot; + fileauthent + &quot;: {}&quot;,
+<span class="nc" id="L318">          e.getMessage());</span>
+<span class="nc" id="L319">      return false;</span>
+<span class="fc" id="L320">    }</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L322">      logger.error(</span>
+          &quot;Unable to read the XML Authentication file: &quot; + fileauthent);
+<span class="nc" id="L324">      return false;</span>
     }
-<span class="fc" id="L332">    final List&lt;Node&gt; list = document.selectNodes(XML_AUTHENTIFICATION_BASED);</span>
-<span class="fc bfc" id="L333" title="All 2 branches covered.">    for (final Node value : list) {</span>
-<span class="fc" id="L334">      nodebase = value;</span>
-<span class="fc" id="L335">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_USER);</span>
-<span class="pc bpc" id="L336" title="1 of 2 branches missed.">      if (node == null) {</span>
-<span class="nc" id="L337">        continue;</span>
+<span class="fc" id="L326">    final List&lt;Node&gt; list = document.selectNodes(XML_AUTHENTIFICATION_BASED);</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">    for (final Node value : list) {</span>
+<span class="fc" id="L328">      nodebase = value;</span>
+<span class="fc" id="L329">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_USER);</span>
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L331">        continue;</span>
       }
-<span class="fc" id="L339">      final String user = node.getText();</span>
-<span class="fc" id="L340">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_PSSWD);</span>
-<span class="pc bpc" id="L341" title="1 of 2 branches missed.">      if (node == null) {</span>
-<span class="nc" id="L342">        continue;</span>
+<span class="fc" id="L333">      final String user = node.getText();</span>
+<span class="fc" id="L334">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_PSSWD);</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L336">        continue;</span>
       }
-<span class="fc" id="L344">      final String userpasswd = node.getText();</span>
-<span class="fc" id="L345">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_ADMIN);</span>
-<span class="fc" id="L346">      boolean isAdmin = false;</span>
-<span class="fc bfc" id="L347" title="All 2 branches covered.">      if (node != null) {</span>
-<span class="fc" id="L348">        isAdmin = &quot;1&quot;.equals(node.getText());</span>
+<span class="fc" id="L338">      final String userpasswd = node.getText();</span>
+<span class="fc" id="L339">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_ADMIN);</span>
+<span class="fc" id="L340">      boolean isAdmin = false;</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">      if (node != null) {</span>
+<span class="fc" id="L342">        isAdmin = &quot;1&quot;.equals(node.getText());</span>
       }
-<span class="fc" id="L350">      final List&lt;Node&gt; listaccount =</span>
-<span class="fc" id="L351">          nodebase.selectNodes(XML_AUTHENTIFICATION_ACCOUNT);</span>
-<span class="fc" id="L352">      String[] account = null;</span>
-<span class="fc bfc" id="L353" title="All 2 branches covered.">      if (!listaccount.isEmpty()) {</span>
-<span class="fc" id="L354">        account = new String[listaccount.size()];</span>
-<span class="fc" id="L355">        int i = 0;</span>
-<span class="fc bfc" id="L356" title="All 2 branches covered.">        for (final Node item : listaccount) {</span>
-<span class="fc" id="L357">          node = item;</span>
-<span class="fc" id="L358">          account[i] = node.getText();</span>
+<span class="fc" id="L344">      final List&lt;Node&gt; listaccount =</span>
+<span class="fc" id="L345">          nodebase.selectNodes(XML_AUTHENTIFICATION_ACCOUNT);</span>
+<span class="fc" id="L346">      String[] account = null;</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">      if (!listaccount.isEmpty()) {</span>
+<span class="fc" id="L348">        account = new String[listaccount.size()];</span>
+<span class="fc" id="L349">        int i = 0;</span>
+<span class="fc bfc" id="L350" title="All 2 branches covered.">        for (final Node item : listaccount) {</span>
+<span class="fc" id="L351">          node = item;</span>
+<span class="fc" id="L352">          account[i] = node.getText();</span>
           // logger.debug(&quot;User: {} Acct: {}&quot;, user, account[i])
-<span class="fc" id="L360">          i++;</span>
-<span class="fc" id="L361">        }</span>
+<span class="fc" id="L354">          i++;</span>
+<span class="fc" id="L355">        }</span>
       }
-<span class="fc" id="L363">      final SimpleAuth auth = new SimpleAuth(user, userpasswd, account);</span>
-<span class="fc" id="L364">      auth.setAdmin(isAdmin);</span>
-<span class="fc" id="L365">      authentications.put(user, auth);</span>
-<span class="fc" id="L366">    }</span>
-<span class="fc" id="L367">    return true;</span>
+<span class="fc" id="L357">      final SimpleAuth auth = new SimpleAuth(user, userpasswd, account);</span>
+<span class="fc" id="L358">      auth.setAdmin(isAdmin);</span>
+<span class="fc" id="L359">      authentications.put(user, auth);</span>
+<span class="fc" id="L360">    }</span>
+<span class="fc" id="L361">    return true;</span>
   }
 
   /**
@@ -372,16 +366,16 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the SimpleAuth if any for this user
    */
-  public SimpleAuth getSimpleAuth(final String user) {
-<span class="fc" id="L376">    return authentications.get(user);</span>
+  public final SimpleAuth getSimpleAuth(final String user) {
+<span class="fc" id="L370">    return authentications.get(user);</span>
   }
 
   /**
    * @see FtpConfiguration#getNextRangePort()
    */
   @Override
-  public int getNextRangePort() {
-<span class="fc" id="L384">    return rangePort.getNext();</span>
+  public final int getNextRangePort() {
+<span class="fc" id="L378">    return rangePort.getNext();</span>
   }
 
   /**
@@ -389,12 +383,12 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *     connections
    */
   private void setRangePort(final CircularIntValue rangePort) {
-<span class="fc" id="L392">    this.rangePort = rangePort;</span>
-<span class="fc" id="L393">  }</span>
+<span class="fc" id="L386">    this.rangePort = rangePort;</span>
+<span class="fc" id="L387">  }</span>
 
   @Override
-  public void inShutdownProcess() {
+  public final void inShutdownProcess() {
     // nothing to do
-<span class="fc" id="L398">  }</span>
+<span class="fc" id="L392">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

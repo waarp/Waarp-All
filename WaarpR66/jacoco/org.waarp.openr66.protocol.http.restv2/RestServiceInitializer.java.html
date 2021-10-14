@@ -174,96 +174,89 @@ public final class RestServiceInitializer {
 <span class="fc" id="L174">        NettyHttpService.builder(&quot;R66_RESTv2&quot;).setPort(config.getRestPort())</span>
 <span class="fc" id="L175">                        .setHost(config.getRestAddress())</span>
 <span class="fc" id="L176">                        .setExecThreadPoolSize(20).setHttpChunkLimit(</span>
-<span class="fc" id="L177">            Configuration.configuration.getMaxGlobalMemory())</span>
+<span class="fc" id="L177">                            Configuration.configuration.getMaxGlobalMemory())</span>
 <span class="fc" id="L178">                        .setChannelConfig(ChannelOption.SO_REUSEADDR, true)</span>
 <span class="fc" id="L179">                        .setChildChannelConfig(ChannelOption.TCP_NODELAY, false)</span>
 <span class="fc" id="L180">                        .setChildChannelConfig(ChannelOption.SO_REUSEADDR, true)</span>
-<span class="fc" id="L181">                        .setHttpHandlers(handlers).setHandlerHooks(Collections</span>
-<span class="fc" id="L182">                                                                       .singleton(</span>
-                                                                           new RestHandlerHook(
-                                                                               config
-<span class="fc" id="L185">                                                                                   .isRestAuthenticated(),</span>
-                                                                               config
-<span class="fc" id="L187">                                                                                   .getHmacSha256(),</span>
-                                                                               config
-<span class="fc" id="L189">                                                                                   .getRestTimeLimit())))</span>
-<span class="fc" id="L190">                        .setExceptionHandler(new RestExceptionHandler())</span>
-<span class="fc" id="L191">                        .setExecThreadKeepAliveSeconds(-1L)</span>
-<span class="fc" id="L192">                        .setChannelPipelineModifier(</span>
-<span class="fc" id="L193">                            new ChannelPipelineModifier() {</span>
+<span class="fc" id="L181">                        .setHttpHandlers(handlers).setHandlerHooks(</span>
+<span class="fc" id="L182">                            Collections.singleton(</span>
+<span class="fc" id="L183">                                new RestHandlerHook(config.isRestAuthenticated(),</span>
+<span class="fc" id="L184">                                                    config.getHmacSha256(),</span>
+<span class="fc" id="L185">                                                    config.getRestTimeLimit())))</span>
+<span class="fc" id="L186">                        .setExceptionHandler(new RestExceptionHandler())</span>
+<span class="fc" id="L187">                        .setExecThreadKeepAliveSeconds(-1L)</span>
+<span class="fc" id="L188">                        .setChannelPipelineModifier(</span>
+<span class="fc" id="L189">                            new ChannelPipelineModifier() {</span>
                               @Override
-                              public void modify(
+                              public final void modify(
                                   final ChannelPipeline channelPipeline) {
-<span class="fc" id="L197">                                channelPipeline.addBefore(ROUTER, &quot;aggregator&quot;,</span>
+<span class="fc" id="L193">                                channelPipeline.addBefore(ROUTER, &quot;aggregator&quot;,</span>
                                                           new HttpObjectAggregator(
-                                                              Configuration.configuration
-<span class="fc" id="L200">                                                                  .getMaxGlobalMemory()));</span>
-<span class="fc" id="L201">                                channelPipeline.addBefore(ROUTER,</span>
+<span class="fc" id="L195">                                                              Configuration.configuration.getMaxGlobalMemory()));</span>
+<span class="fc" id="L196">                                channelPipeline.addBefore(ROUTER,</span>
                                                           RestVersionHandler.HANDLER_NAME,
                                                           new RestVersionHandler(
                                                               config));
-<span class="fc" id="L205">                                channelPipeline</span>
-<span class="fc" id="L206">                                    .addBefore(RestVersionHandler.HANDLER_NAME,</span>
-                                               &quot;cors&quot;,
-<span class="fc" id="L208">                                               new CorsHandler(corsConfig()));</span>
-<span class="fc bfc" id="L209" title="All 2 branches covered.">                                if (config.isRestAuthenticated() &amp;&amp;</span>
-<span class="pc bpc" id="L210" title="1 of 2 branches missed.">                                    config.isRestSignature()) {</span>
-<span class="nc" id="L211">                                  channelPipeline.addAfter(ROUTER, &quot;signature&quot;,</span>
+<span class="fc" id="L200">                                channelPipeline.addBefore(</span>
+                                    RestVersionHandler.HANDLER_NAME, &quot;cors&quot;,
+<span class="fc" id="L202">                                    new CorsHandler(corsConfig()));</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">                                if (config.isRestAuthenticated() &amp;&amp;</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">                                    config.isRestSignature()) {</span>
+<span class="nc" id="L205">                                  channelPipeline.addAfter(ROUTER, &quot;signature&quot;,</span>
                                                            new RestSignatureHandler(
-                                                               config
-<span class="nc" id="L214">                                                                   .getHmacSha256()));</span>
+<span class="nc" id="L207">                                                               config.getHmacSha256()));</span>
                                 }
 
                                 // Removes the HTTP compressor which causes problems
                                 // on systems running java6 or earlier
-<span class="fc" id="L219">                                final double JRE_version = Double.parseDouble(</span>
-<span class="fc" id="L220">                                    System.getProperty(</span>
+<span class="fc" id="L212">                                final double JRE_version = Double.parseDouble(</span>
+<span class="fc" id="L213">                                    System.getProperty(</span>
                                         &quot;java.specification.version&quot;));
-<span class="pc bpc" id="L222" title="1 of 2 branches missed.">                                if (JRE_version &lt;= 1.6) {</span>
-<span class="nc" id="L223">                                  logger.info(</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">                                if (JRE_version &lt;= 1.6) {</span>
+<span class="nc" id="L216">                                  logger.info(</span>
                                       &quot;Removed REST HTTP compressor due to incompatibility &quot; +
                                       &quot;with the Java Runtime version&quot;);
-<span class="nc" id="L226">                                  channelPipeline.remove(&quot;compressor&quot;);</span>
+<span class="nc" id="L219">                                  channelPipeline.remove(&quot;compressor&quot;);</span>
                                 }
-<span class="fc" id="L228">                              }</span>
+<span class="fc" id="L221">                              }</span>
                             });
 
-<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    if (config.isRestSsl()) {</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">    if (config.isRestSsl()) {</span>
       final WaarpSecureKeyStore keyStore =
-<span class="nc" id="L233">          NetworkSslServerInitializer.getWaarpSecureKeyStore();</span>
-<span class="nc" id="L234">      final String keyStoreFilename = keyStore.getKeyStoreFilename();</span>
-<span class="nc" id="L235">      final String keyStorePass = new String(keyStore.getKeyStorePassword());</span>
-<span class="nc" id="L236">      final String certificatePassword =</span>
-<span class="nc" id="L237">          new String(keyStore.getCertificatePassword());</span>
+<span class="nc" id="L226">          NetworkSslServerInitializer.getWaarpSecureKeyStore();</span>
+<span class="nc" id="L227">      final String keyStoreFilename = keyStore.getKeyStoreFilename();</span>
+<span class="nc" id="L228">      final String keyStorePass = new String(keyStore.getKeyStorePassword());</span>
+<span class="nc" id="L229">      final String certificatePassword =</span>
+<span class="nc" id="L230">          new String(keyStore.getCertificatePassword());</span>
 
-<span class="nc" id="L239">      restServiceBuilder.enableSSL(</span>
-<span class="nc" id="L240">          SSLConfig.builder(new File(keyStoreFilename), keyStorePass)</span>
-<span class="nc" id="L241">                   .setCertificatePassword(certificatePassword).build());</span>
+<span class="nc" id="L232">      restServiceBuilder.enableSSL(</span>
+<span class="nc" id="L233">          SSLConfig.builder(new File(keyStoreFilename), keyStorePass)</span>
+<span class="nc" id="L234">                   .setCertificatePassword(certificatePassword).build());</span>
     }
 
-<span class="fc" id="L244">    restService = restServiceBuilder.build();</span>
+<span class="fc" id="L237">    restService = restServiceBuilder.build();</span>
     try {
-<span class="fc" id="L246">      restService.start();</span>
-<span class="nc" id="L247">    } catch (final Throwable t) {</span>
-<span class="nc" id="L248">      logger.error(t);</span>
-<span class="nc" id="L249">      throw new ExceptionInInitializerError(</span>
+<span class="fc" id="L239">      restService.start();</span>
+<span class="nc" id="L240">    } catch (final Throwable t) {</span>
+<span class="nc" id="L241">      logger.error(t);</span>
+<span class="nc" id="L242">      throw new ExceptionInInitializerError(</span>
           &quot;FATAL ERROR_TASK : Failed to initialize RESTv2 service&quot;);
-<span class="fc" id="L251">    }</span>
-<span class="fc" id="L252">  }</span>
+<span class="fc" id="L244">    }</span>
+<span class="fc" id="L245">  }</span>
 
   /**
    * Stops the REST service.
    */
   public static void stopRestService() {
-<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (restService != null) {</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">    if (restService != null) {</span>
       try {
-<span class="nc" id="L260">        restService.stop();</span>
-<span class="nc" id="L261">      } catch (final Throwable e) {</span>
-<span class="nc" id="L262">        logger.error(&quot;Exception caught during RESTv2 service shutdown&quot;, e);</span>
-<span class="nc" id="L263">      }</span>
+<span class="nc" id="L253">        restService.stop();</span>
+<span class="nc" id="L254">      } catch (final Throwable e) {</span>
+<span class="nc" id="L255">        logger.error(&quot;Exception caught during RESTv2 service shutdown&quot;, e);</span>
+<span class="nc" id="L256">      }</span>
     } else {
-<span class="nc" id="L265">      logger.warn(&quot;Error RESTv2 service is not running, cannot stop&quot;);</span>
+<span class="nc" id="L258">      logger.warn(&quot;Error RESTv2 service is not running, cannot stop&quot;);</span>
     }
-<span class="nc" id="L267">  }</span>
+<span class="nc" id="L260">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

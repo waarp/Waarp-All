@@ -40,20 +40,20 @@ class FseCompressionTable {
 
   private int log2Size;
 
-<span class="nc" id="L43">  public FseCompressionTable(final int maxTableLog, final int maxSymbol) {</span>
-<span class="nc" id="L44">    nextState = new short[1 &lt;&lt; maxTableLog];</span>
-<span class="nc" id="L45">    deltaNumberOfBits = new int[maxSymbol + 1];</span>
-<span class="nc" id="L46">    deltaFindState = new int[maxSymbol + 1];</span>
-<span class="nc" id="L47">  }</span>
+<span class="fc" id="L43">  public FseCompressionTable(final int maxTableLog, final int maxSymbol) {</span>
+<span class="fc" id="L44">    nextState = new short[1 &lt;&lt; maxTableLog];</span>
+<span class="fc" id="L45">    deltaNumberOfBits = new int[maxSymbol + 1];</span>
+<span class="fc" id="L46">    deltaFindState = new int[maxSymbol + 1];</span>
+<span class="fc" id="L47">  }</span>
 
   public static FseCompressionTable newInstance(final short[] normalizedCounts,
                                                 final int maxSymbol,
                                                 final int tableLog) {
-<span class="nc" id="L52">    final FseCompressionTable result =</span>
+<span class="fc" id="L52">    final FseCompressionTable result =</span>
         new FseCompressionTable(tableLog, maxSymbol);
-<span class="nc" id="L54">    result.initialize(normalizedCounts, maxSymbol, tableLog);</span>
+<span class="fc" id="L54">    result.initialize(normalizedCounts, maxSymbol, tableLog);</span>
 
-<span class="nc" id="L56">    return result;</span>
+<span class="fc" id="L56">    return result;</span>
   }
 
   public void initializeRleTable(final int symbol) {
@@ -68,112 +68,112 @@ class FseCompressionTable {
 
   public void initialize(final short[] normalizedCounts, final int maxSymbol,
                          final int tableLog) {
-<span class="nc" id="L71">    final int tableSize = 1 &lt;&lt; tableLog;</span>
+<span class="fc" id="L71">    final int tableSize = 1 &lt;&lt; tableLog;</span>
 
-<span class="nc" id="L73">    final byte[] table = new byte[tableSize]; // TODO: allocate in workspace</span>
-<span class="nc" id="L74">    int highThreshold = tableSize - 1;</span>
+<span class="fc" id="L73">    final byte[] table = new byte[tableSize]; // TODO: allocate in workspace</span>
+<span class="fc" id="L74">    int highThreshold = tableSize - 1;</span>
 
     // TODO: make sure FseCompressionTable has enough size
-<span class="nc" id="L77">    log2Size = tableLog;</span>
+<span class="fc" id="L77">    log2Size = tableLog;</span>
 
     // For explanations on how to distribute symbol values over the table:
     // http://fastcompression.blogspot.fr/2014/02/fse-distributing-symbol-values.html
 
     // symbol start positions
-<span class="nc" id="L83">    final int[] cumulative = new int[FiniteStateEntropy.MAX_SYMBOL +</span>
+<span class="fc" id="L83">    final int[] cumulative = new int[FiniteStateEntropy.MAX_SYMBOL +</span>
                                      2]; // TODO: allocate in workspace
-<span class="nc" id="L85">    cumulative[0] = 0;</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">    for (int i = 1; i &lt;= maxSymbol + 1; i++) {</span>
-<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (normalizedCounts[i - 1] == -1) {  // Low probability symbol</span>
-<span class="nc" id="L88">        cumulative[i] = cumulative[i - 1] + 1;</span>
-<span class="nc" id="L89">        table[highThreshold--] = (byte) (i - 1);</span>
+<span class="fc" id="L85">    cumulative[0] = 0;</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">    for (int i = 1; i &lt;= maxSymbol + 1; i++) {</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">      if (normalizedCounts[i - 1] == -1) {  // Low probability symbol</span>
+<span class="fc" id="L88">        cumulative[i] = cumulative[i - 1] + 1;</span>
+<span class="fc" id="L89">        table[highThreshold--] = (byte) (i - 1);</span>
       } else {
-<span class="nc" id="L91">        cumulative[i] = cumulative[i - 1] + normalizedCounts[i - 1];</span>
+<span class="fc" id="L91">        cumulative[i] = cumulative[i - 1] + normalizedCounts[i - 1];</span>
       }
     }
-<span class="nc" id="L94">    cumulative[maxSymbol + 1] = tableSize + 1;</span>
+<span class="fc" id="L94">    cumulative[maxSymbol + 1] = tableSize + 1;</span>
 
     // Spread symbols
-<span class="nc" id="L97">    final int position =</span>
-<span class="nc" id="L98">        spreadSymbols(normalizedCounts, maxSymbol, tableSize, highThreshold,</span>
+<span class="fc" id="L97">    final int position =</span>
+<span class="fc" id="L98">        spreadSymbols(normalizedCounts, maxSymbol, tableSize, highThreshold,</span>
                       table);
 
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (position != 0) {</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">    if (position != 0) {</span>
 <span class="nc" id="L102">      throw new AssertionError(&quot;Spread symbols failed&quot;);</span>
     }
 
     // Build table
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    for (int i = 0; i &lt; tableSize; i++) {</span>
-<span class="nc" id="L107">      final byte symbol = table[i];</span>
-<span class="nc" id="L108">      nextState[cumulative[symbol]++] = (short) (tableSize +</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    for (int i = 0; i &lt; tableSize; i++) {</span>
+<span class="fc" id="L107">      final byte symbol = table[i];</span>
+<span class="fc" id="L108">      nextState[cumulative[symbol]++] = (short) (tableSize +</span>
                                                  i);  /* TableU16 : sorted by symbol order; gives next state value */
     }
 
     // Build symbol transformation table
-<span class="nc" id="L113">    int total = 0;</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">    for (int symbol = 0; symbol &lt;= maxSymbol; symbol++) {</span>
-<span class="nc bnc" id="L115" title="All 3 branches missed.">      switch (normalizedCounts[symbol]) {</span>
+<span class="fc" id="L113">    int total = 0;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    for (int symbol = 0; symbol &lt;= maxSymbol; symbol++) {</span>
+<span class="fc bfc" id="L115" title="All 3 branches covered.">      switch (normalizedCounts[symbol]) {</span>
         case 0:
-<span class="nc" id="L117">          deltaNumberOfBits[symbol] = ((tableLog + 1) &lt;&lt; 16) - tableSize;</span>
-<span class="nc" id="L118">          break;</span>
+<span class="fc" id="L117">          deltaNumberOfBits[symbol] = ((tableLog + 1) &lt;&lt; 16) - tableSize;</span>
+<span class="fc" id="L118">          break;</span>
         case -1:
         case 1:
-<span class="nc" id="L121">          deltaNumberOfBits[symbol] = (tableLog &lt;&lt; 16) - tableSize;</span>
-<span class="nc" id="L122">          deltaFindState[symbol] = total - 1;</span>
-<span class="nc" id="L123">          total++;</span>
-<span class="nc" id="L124">          break;</span>
+<span class="fc" id="L121">          deltaNumberOfBits[symbol] = (tableLog &lt;&lt; 16) - tableSize;</span>
+<span class="fc" id="L122">          deltaFindState[symbol] = total - 1;</span>
+<span class="fc" id="L123">          total++;</span>
+<span class="fc" id="L124">          break;</span>
         default:
-<span class="nc" id="L126">          final int maxBitsOut =</span>
-<span class="nc" id="L127">              tableLog - Util.highestBit(normalizedCounts[symbol] - 1);</span>
-<span class="nc" id="L128">          final int minStatePlus = normalizedCounts[symbol] &lt;&lt; maxBitsOut;</span>
-<span class="nc" id="L129">          deltaNumberOfBits[symbol] = (maxBitsOut &lt;&lt; 16) - minStatePlus;</span>
-<span class="nc" id="L130">          deltaFindState[symbol] = total - normalizedCounts[symbol];</span>
-<span class="nc" id="L131">          total += normalizedCounts[symbol];</span>
+<span class="fc" id="L126">          final int maxBitsOut =</span>
+<span class="fc" id="L127">              tableLog - Util.highestBit(normalizedCounts[symbol] - 1);</span>
+<span class="fc" id="L128">          final int minStatePlus = normalizedCounts[symbol] &lt;&lt; maxBitsOut;</span>
+<span class="fc" id="L129">          deltaNumberOfBits[symbol] = (maxBitsOut &lt;&lt; 16) - minStatePlus;</span>
+<span class="fc" id="L130">          deltaFindState[symbol] = total - normalizedCounts[symbol];</span>
+<span class="fc" id="L131">          total += normalizedCounts[symbol];</span>
           break;
       }
     }
-<span class="nc" id="L135">  }</span>
+<span class="fc" id="L135">  }</span>
 
   public int begin(final byte symbol) {
-<span class="nc" id="L138">    final int outputBits = (deltaNumberOfBits[symbol] + (1 &lt;&lt; 15)) &gt;&gt;&gt; 16;</span>
-<span class="nc" id="L139">    final int base =</span>
+<span class="fc" id="L138">    final int outputBits = (deltaNumberOfBits[symbol] + (1 &lt;&lt; 15)) &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L139">    final int base =</span>
         ((outputBits &lt;&lt; 16) - deltaNumberOfBits[symbol]) &gt;&gt;&gt; outputBits;
-<span class="nc" id="L141">    return nextState[base + deltaFindState[symbol]];</span>
+<span class="fc" id="L141">    return nextState[base + deltaFindState[symbol]];</span>
   }
 
   public int encode(final BitOutputStream stream, final int state,
                     final int symbol) {
-<span class="nc" id="L146">    final int outputBits = (state + deltaNumberOfBits[symbol]) &gt;&gt;&gt; 16;</span>
-<span class="nc" id="L147">    stream.addBits(state, outputBits);</span>
-<span class="nc" id="L148">    return nextState[(state &gt;&gt;&gt; outputBits) + deltaFindState[symbol]];</span>
+<span class="fc" id="L146">    final int outputBits = (state + deltaNumberOfBits[symbol]) &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L147">    stream.addBits(state, outputBits);</span>
+<span class="fc" id="L148">    return nextState[(state &gt;&gt;&gt; outputBits) + deltaFindState[symbol]];</span>
   }
 
   public void finish(final BitOutputStream stream, final int state) {
-<span class="nc" id="L152">    stream.addBits(state, log2Size);</span>
-<span class="nc" id="L153">    stream.flush();</span>
-<span class="nc" id="L154">  }</span>
+<span class="fc" id="L152">    stream.addBits(state, log2Size);</span>
+<span class="fc" id="L153">    stream.flush();</span>
+<span class="fc" id="L154">  }</span>
 
   private static int calculateStep(final int tableSize) {
-<span class="nc" id="L157">    return (tableSize &gt;&gt;&gt; 1) + (tableSize &gt;&gt;&gt; 3) + 3;</span>
+<span class="fc" id="L157">    return (tableSize &gt;&gt;&gt; 1) + (tableSize &gt;&gt;&gt; 3) + 3;</span>
   }
 
   public static int spreadSymbols(final short[] normalizedCounters,
                                   final int maxSymbolValue, final int tableSize,
                                   final int highThreshold,
                                   final byte[] symbols) {
-<span class="nc" id="L164">    final int mask = tableSize - 1;</span>
-<span class="nc" id="L165">    final int step = calculateStep(tableSize);</span>
+<span class="fc" id="L164">    final int mask = tableSize - 1;</span>
+<span class="fc" id="L165">    final int step = calculateStep(tableSize);</span>
 
-<span class="nc" id="L167">    int position = 0;</span>
-<span class="nc bnc" id="L168" title="All 2 branches missed.">    for (byte symbol = 0; symbol &lt;= maxSymbolValue; symbol++) {</span>
-<span class="nc bnc" id="L169" title="All 2 branches missed.">      for (int i = 0; i &lt; normalizedCounters[symbol]; i++) {</span>
-<span class="nc" id="L170">        symbols[position] = symbol;</span>
+<span class="fc" id="L167">    int position = 0;</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">    for (byte symbol = 0; symbol &lt;= maxSymbolValue; symbol++) {</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">      for (int i = 0; i &lt; normalizedCounters[symbol]; i++) {</span>
+<span class="fc" id="L170">        symbols[position] = symbol;</span>
         do {
-<span class="nc" id="L172">          position = (position + step) &amp; mask;</span>
-<span class="nc bnc" id="L173" title="All 2 branches missed.">        } while (position &gt; highThreshold);</span>
+<span class="fc" id="L172">          position = (position + step) &amp; mask;</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        } while (position &gt; highThreshold);</span>
       }
     }
-<span class="nc" id="L176">    return position;</span>
+<span class="fc" id="L176">    return position;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -66,7 +66,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
   private int doneMultiple;
   protected boolean submit;
   protected final NetworkTransaction networkTransaction;
-<span class="nc" id="L69">  private final List&lt;OutputFormat&gt; results = new ArrayList&lt;OutputFormat&gt;();</span>
+<span class="fc" id="L69">  private final List&lt;OutputFormat&gt; results = new ArrayList&lt;OutputFormat&gt;();</span>
 
   public MultipleSubmitTransfer(final R66Future future, final String remoteHost,
                                 final String filename, final String rulename,
@@ -74,75 +74,75 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
                                 final int blocksize, final long id,
                                 final Timestamp starttime,
                                 final NetworkTransaction networkTransaction) {
-<span class="nc" id="L77">    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,</span>
+<span class="fc" id="L77">    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,</span>
           id, starttime);
-<span class="nc" id="L79">    this.networkTransaction = networkTransaction;</span>
-<span class="nc" id="L80">  }</span>
+<span class="fc" id="L79">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L80">  }</span>
 
   @Override
   public void run() {
-<span class="nc" id="L84">    final String[] localfilenames = transferArgs.getFilename().split(&quot;,&quot;);</span>
-<span class="nc" id="L85">    final String[] rhosts = transferArgs.getRemoteHost().split(&quot;,&quot;);</span>
-<span class="nc" id="L86">    R66Result resultError = null;</span>
+<span class="fc" id="L84">    final String[] localfilenames = transferArgs.getFilename().split(&quot;,&quot;);</span>
+<span class="fc" id="L85">    final String[] rhosts = transferArgs.getRemoteHost().split(&quot;,&quot;);</span>
+<span class="fc" id="L86">    R66Result resultError = null;</span>
 
     // first check if filenames contains wildcards
-<span class="nc" id="L89">    DbRule dbrule = null;</span>
+<span class="fc" id="L89">    DbRule dbrule = null;</span>
     try {
-<span class="nc" id="L91">      dbrule = new DbRule(transferArgs.getRulename());</span>
+<span class="fc" id="L91">      dbrule = new DbRule(transferArgs.getRulename());</span>
 <span class="nc" id="L92">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L93">      logger.error(Messages.getString(&quot;SubmitTransfer.2&quot;) +</span>
 <span class="nc" id="L94">                   transferArgs.getRulename()); //$NON-NLS-1$</span>
 <span class="nc" id="L95">      WaarpSystemUtil.systemExit(2);</span>
 <span class="nc" id="L96">      return;</span>
-<span class="nc" id="L97">    }</span>
-<span class="nc bnc" id="L98" title="All 6 branches missed.">    if (!submit &amp;&amp; dbrule.isRecvMode() &amp;&amp; networkTransaction == null) {</span>
+<span class="fc" id="L97">    }</span>
+<span class="pc bpc" id="L98" title="4 of 6 branches missed.">    if (!submit &amp;&amp; dbrule.isRecvMode() &amp;&amp; networkTransaction == null) {</span>
 <span class="nc" id="L99">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;) +</span>
                    &quot; =&gt; -client argument is missing&quot;); //$NON-NLS-1$
 <span class="nc" id="L101">      WaarpSystemUtil.systemExit(2);</span>
 <span class="nc" id="L102">      return;</span>
     }
-<span class="nc" id="L104">    List&lt;String&gt; files = null;</span>
-<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (dbrule.isSendMode()) {</span>
-<span class="nc" id="L106">      files = getLocalFiles(dbrule, localfilenames);</span>
+<span class="fc" id="L104">    List&lt;String&gt; files = null;</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    if (dbrule.isSendMode()) {</span>
+<span class="fc" id="L106">      files = getLocalFiles(dbrule, localfilenames);</span>
 <span class="nc bnc" id="L107" title="All 2 branches missed.">    } else if (submit) {</span>
 <span class="nc" id="L108">      files = new ArrayList&lt;String&gt;();</span>
 <span class="nc" id="L109">      Collections.addAll(files, localfilenames);</span>
     }
-<span class="nc bnc" id="L111" title="All 2 branches missed.">    for (String host : rhosts) {</span>
-<span class="nc" id="L112">      host = host.trim();</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">      if (!host.isEmpty()) {</span>
-<span class="nc bnc" id="L114" title="All 4 branches missed.">        if (!submit &amp;&amp; dbrule.isRecvMode()) {</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">    for (String host : rhosts) {</span>
+<span class="fc" id="L112">      host = host.trim();</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">      if (!host.isEmpty()) {</span>
+<span class="pc bpc" id="L114" title="2 of 4 branches missed.">        if (!submit &amp;&amp; dbrule.isRecvMode()) {</span>
 <span class="nc" id="L115">          files = getRemoteFiles(localfilenames, host, networkTransaction);</span>
         }
-<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (String filename : files) {</span>
-<span class="nc" id="L118">          filename = filename.trim();</span>
-<span class="nc bnc" id="L119" title="All 2 branches missed.">          if (!filename.isEmpty()) {</span>
-<span class="nc" id="L120">            final R66Future future = new R66Future(true);</span>
-<span class="nc" id="L121">            final SubmitTransfer transaction =</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (String filename : files) {</span>
+<span class="fc" id="L118">          filename = filename.trim();</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">          if (!filename.isEmpty()) {</span>
+<span class="fc" id="L120">            final R66Future future = new R66Future(true);</span>
+<span class="fc" id="L121">            final SubmitTransfer transaction =</span>
                 new SubmitTransfer(future, host, filename,
-<span class="nc" id="L123">                                   transferArgs.getRulename(),</span>
-<span class="nc" id="L124">                                   transferArgs.getTransferInfo(),</span>
-<span class="nc" id="L125">                                   transferArgs.isMD5(),</span>
-<span class="nc" id="L126">                                   transferArgs.getBlockSize(),</span>
-<span class="nc" id="L127">                                   transferArgs.getId(),</span>
-<span class="nc" id="L128">                                   transferArgs.getStartTime());</span>
-<span class="nc" id="L129">            transaction.transferArgs.setFollowId(transferArgs.getFollowId());</span>
-<span class="nc" id="L130">            transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
-<span class="nc" id="L131">            transaction.run();</span>
-<span class="nc" id="L132">            future.awaitOrInterruptible();</span>
-<span class="nc" id="L133">            final DbTaskRunner runner = future.getResult().getRunner();</span>
-<span class="nc" id="L134">            final OutputFormat outputFormat =</span>
-<span class="nc" id="L135">                new OutputFormat(MultipleSubmitTransfer.class.getSimpleName(),</span>
+<span class="fc" id="L123">                                   transferArgs.getRulename(),</span>
+<span class="fc" id="L124">                                   transferArgs.getTransferInfo(),</span>
+<span class="fc" id="L125">                                   transferArgs.isMD5(),</span>
+<span class="fc" id="L126">                                   transferArgs.getBlockSize(),</span>
+<span class="fc" id="L127">                                   transferArgs.getId(),</span>
+<span class="fc" id="L128">                                   transferArgs.getStartTime());</span>
+<span class="fc" id="L129">            transaction.transferArgs.setFollowId(transferArgs.getFollowId());</span>
+<span class="fc" id="L130">            transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="fc" id="L131">            transaction.run();</span>
+<span class="fc" id="L132">            future.awaitOrInterruptible();</span>
+<span class="fc" id="L133">            final DbTaskRunner runner = future.getResult().getRunner();</span>
+<span class="fc" id="L134">            final OutputFormat outputFormat =</span>
+<span class="fc" id="L135">                new OutputFormat(MultipleSubmitTransfer.class.getSimpleName(),</span>
                                  null);
-<span class="nc bnc" id="L137" title="All 2 branches missed.">            if (future.isSuccess()) {</span>
-<span class="nc" id="L138">              prepareSubmitOkOutputFormat(runner, outputFormat);</span>
-<span class="nc" id="L139">              getResults().add(outputFormat);</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">              if (transaction.normalInfoAsWarn) {</span>
-<span class="nc" id="L141">                logger.warn(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">              } else if (logger.isInfoEnabled()) {</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">            if (future.isSuccess()) {</span>
+<span class="fc" id="L138">              prepareSubmitOkOutputFormat(runner, outputFormat);</span>
+<span class="fc" id="L139">              getResults().add(outputFormat);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">              if (transaction.normalInfoAsWarn) {</span>
+<span class="fc" id="L141">                logger.warn(outputFormat.loggerOut());</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">              } else if (logger.isInfoEnabled()) {</span>
 <span class="nc" id="L143">                logger.info(outputFormat.loggerOut());</span>
               }
-<span class="nc" id="L145">              setDoneMultiple(getDoneMultiple() + 1);</span>
+<span class="fc" id="L145">              setDoneMultiple(getDoneMultiple() + 1);</span>
             } else {
 <span class="nc" id="L147">              prepareSubmitKoOutputFormat(future, runner, outputFormat);</span>
 <span class="nc" id="L148">              getResults().add(outputFormat);</span>
@@ -150,18 +150,18 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
 <span class="nc" id="L150">              resultError = future.getResult();</span>
             }
           }
-<span class="nc" id="L153">        }</span>
+<span class="fc" id="L153">        }</span>
       }
     }
-<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (getErrorMultiple() &gt; 0) {</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">    if (getErrorMultiple() &gt; 0) {</span>
 <span class="nc bnc" id="L157" title="All 2 branches missed.">      if (resultError != null) {</span>
 <span class="nc" id="L158">        future.setResult(resultError);</span>
       }
 <span class="nc" id="L160">      future.cancel();</span>
     } else {
-<span class="nc" id="L162">      future.setSuccess();</span>
+<span class="fc" id="L162">      future.setSuccess();</span>
     }
-<span class="nc" id="L164">  }</span>
+<span class="fc" id="L164">  }</span>
 
   /**
    * @param args configuration file, the remoteHost Id, the file to
@@ -274,7 +274,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
    * @return the errorMultiple
    */
   public int getErrorMultiple() {
-<span class="nc" id="L277">    return errorMultiple;</span>
+<span class="fc" id="L277">    return errorMultiple;</span>
   }
 
   /**
@@ -288,21 +288,21 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
    * @return the doneMultiple
    */
   public int getDoneMultiple() {
-<span class="nc" id="L291">    return doneMultiple;</span>
+<span class="fc" id="L291">    return doneMultiple;</span>
   }
 
   /**
    * @param doneMultiple the doneMultiple to set
    */
   private void setDoneMultiple(final int doneMultiple) {
-<span class="nc" id="L298">    this.doneMultiple = doneMultiple;</span>
-<span class="nc" id="L299">  }</span>
+<span class="fc" id="L298">    this.doneMultiple = doneMultiple;</span>
+<span class="fc" id="L299">  }</span>
 
   /**
    * @return the results
    */
   public List&lt;OutputFormat&gt; getResults() {
-<span class="nc" id="L305">    return results;</span>
+<span class="fc" id="L305">    return results;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpActionLogger.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.database</a> &gt; <span class="el_source">WaarpActionLogger.java</span></div><h1>WaarpActionLogger.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.gateway.kernel.database;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.HttpPage.PageRole;
+import org.waarp.gateway.kernel.database.data.DbTransferLog;
+import org.waarp.gateway.kernel.session.HttpSession;
+
+/**
+ * Class to help to log any actions through the interface of Waarp
+ */
+public final class WaarpActionLogger {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L40">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L41">      WaarpLoggerFactory.getLogger(WaarpActionLogger.class);</span>
+
+  private WaarpActionLogger() {
+  }
+
+  /**
+   * Log the action
+   *
+   * @param dbSession
+   * @param message
+   * @param session
+   */
+  public static void logCreate(final DbSession dbSession, final String message,
+                               final HttpSession session) {
+<span class="fc" id="L55">    final String sessionContexte = session.toString();</span>
+<span class="fc" id="L56">    logger.info(&quot;{} {}&quot;, message, sessionContexte);</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (dbSession != null) {</span>
+<span class="nc" id="L58">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc" id="L59">      boolean isSender = false;</span>
+<span class="nc bnc" id="L60" title="All 4 branches missed.">      switch (code) {</span>
+        case ERROR:
+        case HTML:
+        case MENU:
+<span class="nc" id="L64">          session.setLogid(DbConstantGateway.ILLEGALVALUE);</span>
+<span class="nc" id="L65">          return;</span>
+        case DELETE:
+        case GETDOWNLOAD:
+<span class="nc" id="L68">          isSender = false;</span>
+<span class="nc" id="L69">          break;</span>
+        case POST:
+        case POSTUPLOAD:
+        case PUT:
+<span class="nc" id="L73">          isSender = true;</span>
+<span class="nc" id="L74">          break;</span>
+        default:
+          break;
+      }
+      // Insert new one
+      try {
+<span class="nc" id="L80">        final DbTransferLog log =</span>
+<span class="nc" id="L81">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L82">                              session.getAuth().getAccount(),</span>
+                              DbConstantGateway.ILLEGALVALUE, isSender,
+<span class="nc" id="L84">                              session.getFilename(), code.name(),</span>
+                              HttpResponseStatus.OK, message,
+                              UpdatedInfo.TOSUBMIT);
+<span class="nc" id="L87">        logger.debug(&quot;Create FS: {}&quot;, log);</span>
+<span class="nc" id="L88">        session.setLogid(log.getSpecialId());</span>
+<span class="nc" id="L89">        return;</span>
+<span class="nc" id="L90">      } catch (final WaarpDatabaseException e1) {</span>
+        // Do nothing
+      }
+    }
+<span class="fc" id="L94">    session.setLogid(DbConstantGateway.ILLEGALVALUE);</span>
+<span class="fc" id="L95">  }</span>
+
+  /**
+   * Log the action
+   *
+   * @param dbSession
+   * @param session
+   * @param message
+   * @param rcode
+   * @param info
+   */
+  public static void logAction(final DbSession dbSession,
+                               final HttpSession session, final String message,
+                               final HttpResponseStatus rcode,
+                               final UpdatedInfo info) {
+<span class="fc" id="L110">    final String sessionContexte = session.toString();</span>
+<span class="fc" id="L111">    final long specialId = session.getLogid();</span>
+<span class="fc" id="L112">    logger.info(&quot;{} {}&quot;, message, sessionContexte);</span>
+<span class="pc bpc" id="L113" title="3 of 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstantGateway.ILLEGALVALUE) {</span>
+<span class="nc" id="L114">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      switch (code) {</span>
+        case DELETE:
+        case GETDOWNLOAD:
+        case POST:
+        case POSTUPLOAD:
+        case PUT:
+<span class="nc" id="L121">          break;</span>
+        case ERROR:
+        case HTML:
+        case MENU:
+        default:
+<span class="nc" id="L126">          return;</span>
+      }
+      try {
+        // Try load
+<span class="nc" id="L130">        final DbTransferLog log =</span>
+<span class="nc" id="L131">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L132">                              session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L133">        log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L134">        log.setInfotransf(message);</span>
+<span class="nc" id="L135">        log.setReplyCodeExecutionStatus(rcode);</span>
+<span class="nc" id="L136">        log.update();</span>
+<span class="nc" id="L137">        logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L138">        session.setLogid(log.getSpecialId());</span>
+<span class="nc" id="L139">      } catch (final WaarpDatabaseException e) {</span>
+        // Do nothing
+<span class="nc" id="L141">      }</span>
+    }
+<span class="fc" id="L143">  }</span>
+
+  /**
+   * Log the action in error
+   *
+   * @param dbSession
+   * @param session
+   * @param message
+   * @param rcode
+   */
+  public static void logErrorAction(final DbSession dbSession,
+                                    final HttpSession session,
+                                    final String message,
+                                    final HttpResponseStatus rcode) {
+<span class="fc" id="L157">    final String sessionContexte = session.toString();</span>
+<span class="fc" id="L158">    final long specialId = session.getLogid();</span>
+<span class="fc" id="L159">    logger.error(rcode.code() + &quot;:&quot; + message + ' ' + sessionContexte);</span>
+<span class="pc bpc" id="L160" title="3 of 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstantGateway.ILLEGALVALUE) {</span>
+<span class="nc" id="L161">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      switch (code) {</span>
+        case DELETE:
+        case GETDOWNLOAD:
+        case POST:
+        case POSTUPLOAD:
+        case PUT:
+<span class="nc" id="L168">          break;</span>
+        case ERROR:
+        case HTML:
+        case MENU:
+        default:
+<span class="nc" id="L173">          return;</span>
+      }
+<span class="nc" id="L175">      final UpdatedInfo info = UpdatedInfo.INERROR;</span>
+      try {
+        // Try load
+<span class="nc" id="L178">        final DbTransferLog log =</span>
+<span class="nc" id="L179">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L180">                              session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L181">        log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L182">        log.setInfotransf(message);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (rcode.code() &lt; 400) {</span>
+<span class="nc" id="L184">          log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);</span>
+        } else {
+<span class="nc" id="L186">          log.setReplyCodeExecutionStatus(rcode);</span>
+        }
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (session.getFilename() != null) {</span>
+<span class="nc" id="L189">          log.setFilename(session.getFilename());</span>
+        }
+<span class="nc" id="L191">        log.update();</span>
+<span class="nc" id="L192">        logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L193">      } catch (final WaarpDatabaseException e) {</span>
+        // Do nothing
+<span class="nc" id="L195">      }</span>
+    }
+<span class="fc" id="L197">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

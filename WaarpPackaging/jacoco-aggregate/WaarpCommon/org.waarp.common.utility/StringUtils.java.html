@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>StringUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">StringUtils.java</span></div><h1>StringUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+/**
+ * String utils
+ */
+public final class StringUtils {
+  /**
+   * Random Generator
+   */
+<span class="fc" id="L29">  public static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();</span>
+
+  public static final String LINE_SEP;
+
+  static {
+<span class="fc" id="L34">    LINE_SEP = SystemPropertyUtil.get(&quot;line.separator&quot;);</span>
+<span class="fc" id="L35">  }</span>
+
+  private StringUtils() {
+    // empty
+  }
+
+  /**
+   * @param length the length of rray
+   *
+   * @return a byte array with random values
+   */
+  public static byte[] getRandom(final int length) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">    if (length &lt;= 0) {</span>
+<span class="fc" id="L48">      return SingletonUtils.getSingletonByteArray();</span>
+    }
+<span class="fc" id="L50">    final byte[] result = new byte[length];</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">    for (int i = 0; i &lt; result.length; i++) {</span>
+<span class="fc" id="L52">      result[i] = (byte) (RANDOM.nextInt(95) + 32);</span>
+    }
+<span class="fc" id="L54">    return result;</span>
+  }
+
+  /**
+   * Revert Arrays.toString for bytes
+   *
+   * @param bytesString the string to transform
+   *
+   * @return the array of bytes
+   *
+   * @throws IllegalArgumentException if bytesString is null or empty
+   */
+  public static byte[] getBytesFromArraysToString(final String bytesString) {
+<span class="fc" id="L67">    ParametersChecker.checkParameter(&quot;Should not be null or empty&quot;,</span>
+                                     bytesString);
+<span class="fc" id="L69">    final String[] strings =</span>
+<span class="fc" id="L70">        bytesString.replace(&quot;[&quot;, &quot;&quot;).replace(&quot;]&quot;, &quot;&quot;).split(&quot;, &quot;);</span>
+<span class="fc" id="L71">    final byte[] result = new byte[strings.length];</span>
+    try {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">      for (int i = 0; i &lt; result.length; i++) {</span>
+<span class="fc" id="L74">        result[i] = (byte) (Integer.parseInt(strings[i]) &amp; 0xFF);</span>
+      }
+<span class="fc" id="L76">    } catch (final NumberFormatException e) {</span>
+<span class="fc" id="L77">      throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L78">    }</span>
+<span class="fc" id="L79">    return result;</span>
+  }
+
+  /**
+   * @param object to get its class name
+   *
+   * @return the short name of the Class of this object
+   */
+  public static String getClassName(final Object object) {
+<span class="fc" id="L88">    final Class&lt;?&gt; clasz = object.getClass();</span>
+<span class="fc" id="L89">    String name = clasz.getSimpleName();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">    if (ParametersChecker.isNotEmpty(name)) {</span>
+<span class="fc" id="L91">      return name;</span>
+    } else {
+<span class="nc" id="L93">      name = clasz.getName();</span>
+<span class="nc" id="L94">      final int pos = name.lastIndexOf('.');</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (pos &lt; 0) {</span>
+<span class="nc" id="L96">        return name;</span>
+      }
+<span class="nc" id="L98">      return name.substring(pos + 1);</span>
+    }
+  }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

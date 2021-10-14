@@ -608,5 +608,45 @@ public final class FileUtils {
 <span class="fc" id="L608">    }</span>
 <span class="fc" id="L609">    return total;</span>
   }
+
+  /**
+   * Helper method to write from InputStream to OutputStream,
+   * closing streams
+   *
+   * @param blockSize
+   * @param inputStream
+   * @param out
+   *
+   * @throws IOException
+   */
+  public static void copy(final int blockSize, final InputStream inputStream,
+                          final OutputStream out) throws IOException {
+<span class="nc" id="L624">    final byte[] buffer = new byte[blockSize];</span>
+    while (true) {
+<span class="nc" id="L626">      final int r = inputStream.read(buffer);</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">      if (r == -1) {</span>
+<span class="nc" id="L628">        break;</span>
+      }
+<span class="nc" id="L630">      out.write(buffer, 0, r);</span>
+<span class="nc" id="L631">    }</span>
+<span class="nc" id="L632">    out.flush();</span>
+<span class="nc" id="L633">    close(out);</span>
+<span class="nc" id="L634">  }</span>
+
+  /**
+   * Check if the file (directory or file) is in directory dir or in sub
+   * directories of dir
+   *
+   * @param dir
+   * @param file
+   *
+   * @return True if in (sub) directory (of) dir
+   */
+  public static boolean isInSubdirectory(final File dir, final File file) {
+<span class="nc bnc" id="L646" title="All 4 branches missed.">    if (file == null || dir == null) {</span>
+<span class="nc" id="L647">      return false;</span>
+    }
+<span class="nc bnc" id="L649" title="All 4 branches missed.">    return file.equals(dir) || isInSubdirectory(dir, file.getParentFile());</span>
+  }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

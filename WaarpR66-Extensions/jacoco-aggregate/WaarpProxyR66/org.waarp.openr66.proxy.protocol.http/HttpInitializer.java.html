@@ -34,21 +34,21 @@ import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 public class HttpInitializer extends ChannelInitializer&lt;SocketChannel&gt; {
   public final boolean useHttpCompression;
 
-<span class="nc" id="L37">  public HttpInitializer(final boolean useHttpCompression) {</span>
-<span class="nc" id="L38">    this.useHttpCompression = useHttpCompression;</span>
-<span class="nc" id="L39">  }</span>
+<span class="fc" id="L37">  public HttpInitializer(final boolean useHttpCompression) {</span>
+<span class="fc" id="L38">    this.useHttpCompression = useHttpCompression;</span>
+<span class="fc" id="L39">  }</span>
 
   @Override
   protected void initChannel(final SocketChannel ch) {
-<span class="nc" id="L43">    final ChannelPipeline pipeline = ch.pipeline();</span>
-<span class="nc" id="L44">    pipeline.addLast(&quot;decoder&quot;, new HttpServerCodec());</span>
-<span class="nc" id="L45">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
-<span class="nc" id="L46">        ConfigurationProxyR66.configuration.getMaxGlobalMemory()));</span>
-<span class="nc" id="L47">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
-<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (useHttpCompression) {</span>
+<span class="fc" id="L43">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="fc" id="L44">    pipeline.addLast(&quot;decoder&quot;, new HttpServerCodec());</span>
+<span class="fc" id="L45">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
+<span class="fc" id="L46">        ConfigurationProxyR66.configuration.getMaxGlobalMemory()));</span>
+<span class="fc" id="L47">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    if (useHttpCompression) {</span>
 <span class="nc" id="L49">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
     }
-<span class="nc" id="L51">    pipeline.addLast(&quot;handler&quot;, new HttpFormattedHandlerProxyR66());</span>
-<span class="nc" id="L52">  }</span>
+<span class="fc" id="L51">    pipeline.addLast(&quot;handler&quot;, new HttpFormattedHandlerProxyR66());</span>
+<span class="fc" id="L52">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

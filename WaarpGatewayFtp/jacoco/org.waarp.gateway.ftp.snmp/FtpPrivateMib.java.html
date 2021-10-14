@@ -201,153 +201,155 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    *
    * @throws DuplicateRegistrationException
    */
-  protected void agentRegisterSystem() throws DuplicateRegistrationException {
+  protected final void agentRegisterSystem()
+      throws DuplicateRegistrationException {
     // Since BaseAgent registers some mibs by default we need to unregister
     // one before we register our own sysDescr. Normally you would
     // override that method and register the mibs that you need
 
-<span class="fc" id="L209">    agent.unregisterManagedObject(agent.getSnmpv2MIB());</span>
+<span class="fc" id="L210">    agent.unregisterManagedObject(agent.getSnmpv2MIB());</span>
 
     // Register a system description, use one from you product environment
     // to test with
-<span class="fc" id="L213">    snmpv2 = new SNMPv2MIB(new OctetString(SnmpName), ggObjectId,</span>
+<span class="fc" id="L214">    snmpv2 = new SNMPv2MIB(new OctetString(SnmpName), ggObjectId,</span>
                            new Integer32(SnmpService));
-<span class="fc" id="L215">    snmpv2.setContact(new OctetString(SnmpDefaultAuthor));</span>
-<span class="fc" id="L216">    snmpv2.setLocation(new OctetString(SnmpDefaultLocalization));</span>
-<span class="fc" id="L217">    snmpv2.setName(new OctetString(SnmpVersion));</span>
-<span class="fc" id="L218">    snmpv2.registerMOs(agent.getServer(), null);</span>
-<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L220">      logger.debug(</span>
-<span class="nc" id="L221">          &quot;SNMPV2: &quot; + snmpv2.getContact() + ':' + snmpv2.getDescr() + ':' +</span>
-<span class="nc" id="L222">          snmpv2.getLocation() + ':' + snmpv2.getName() + ':' +</span>
-<span class="nc" id="L223">          snmpv2.getObjectID() + ':' + snmpv2.getServices() + ':' +</span>
-<span class="nc" id="L224">          snmpv2.getUpTime());</span>
+<span class="fc" id="L216">    snmpv2.setContact(new OctetString(SnmpDefaultAuthor));</span>
+<span class="fc" id="L217">    snmpv2.setLocation(new OctetString(SnmpDefaultLocalization));</span>
+<span class="fc" id="L218">    snmpv2.setName(new OctetString(SnmpVersion));</span>
+<span class="fc" id="L219">    snmpv2.registerMOs(agent.getServer(), null);</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L221">      logger.debug(</span>
+<span class="nc" id="L222">          &quot;SNMPV2: &quot; + snmpv2.getContact() + ':' + snmpv2.getDescr() + ':' +</span>
+<span class="nc" id="L223">          snmpv2.getLocation() + ':' + snmpv2.getName() + ':' +</span>
+<span class="nc" id="L224">          snmpv2.getObjectID() + ':' + snmpv2.getServices() + ':' +</span>
+<span class="nc" id="L225">          snmpv2.getUpTime());</span>
     }
     // Save UpTime reference since used everywhere
-<span class="fc" id="L227">    upTime = snmpv2.getSysUpTime();</span>
-<span class="fc" id="L228">  }</span>
+<span class="fc" id="L228">    upTime = snmpv2.getSysUpTime();</span>
+<span class="fc" id="L229">  }</span>
 
   /**
    * Register this MIB
    *
    * @throws DuplicateRegistrationException
    */
-  protected void agentRegisterWaarpMib() throws DuplicateRegistrationException {
-<span class="fc" id="L236">    logger.debug(&quot;registerGGMib&quot;);</span>
+  protected final void agentRegisterWaarpMib()
+      throws DuplicateRegistrationException {
+<span class="fc" id="L238">    logger.debug(&quot;registerGGMib&quot;);</span>
     // register Static info
-<span class="fc" id="L238">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
-<span class="fc" id="L239">                             MibLevel.staticInfo.ordinal());</span>
-<span class="fc" id="L240">    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(),</span>
+<span class="fc" id="L240">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
+<span class="fc" id="L241">                             MibLevel.staticInfo.ordinal());</span>
+<span class="fc" id="L242">    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(),</span>
                      &quot;Waarp &quot; + &quot;GatewayFtp&quot;);
-<span class="fc" id="L242">    rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),</span>
-<span class="fc" id="L243">                     FileBasedConfiguration.fileBasedConfiguration.getHostId());</span>
-<span class="fc" id="L244">    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(),</span>
-<span class="fc" id="L245">                     Version.fullIdentifier());</span>
-<span class="fc" id="L246">    rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),</span>
+<span class="fc" id="L244">    rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),</span>
+<span class="fc" id="L245">                     FileBasedConfiguration.fileBasedConfiguration.getHostId());</span>
+<span class="fc" id="L246">    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(),</span>
+<span class="fc" id="L247">                     Version.fullIdentifier());</span>
+<span class="fc" id="L248">    rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),</span>
                      &quot;Waarp Gateway Ftp: FTP Gateway&quot;);
-<span class="fc" id="L248">    rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),</span>
+<span class="fc" id="L250">    rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),</span>
                      &quot;http://waarp.github.com/Waarp&quot;);
-<span class="fc" id="L250">    rowInfo.setValue(WaarpDefinitionIndex.applApplicationProtocol.ordinal(),</span>
+<span class="fc" id="L252">    rowInfo.setValue(WaarpDefinitionIndex.applApplicationProtocol.ordinal(),</span>
                      applicationProtocol);
 
-<span class="fc" id="L253">    rowInfo.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L255">    rowInfo.registerMOs(agent.getServer(), null);</span>
     // register General info
-<span class="fc" id="L255">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
-<span class="fc" id="L256">                               MibLevel.globalInfo.ordinal());</span>
-<span class="fc" id="L257">    WaarpMOScalar memoryScalar =</span>
-<span class="fc" id="L258">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
-<span class="fc" id="L259">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
-<span class="fc" id="L260">    memoryScalar =</span>
-<span class="fc" id="L261">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
-<span class="fc" id="L262">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
-<span class="fc" id="L263">    memoryScalar =</span>
-<span class="fc" id="L264">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
-<span class="fc" id="L265">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
-<span class="fc" id="L266">    rowGlobal.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L257">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
+<span class="fc" id="L258">                               MibLevel.globalInfo.ordinal());</span>
+<span class="fc" id="L259">    WaarpMOScalar memoryScalar =</span>
+<span class="fc" id="L260">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
+<span class="fc" id="L261">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
+<span class="fc" id="L262">    memoryScalar =</span>
+<span class="fc" id="L263">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
+<span class="fc" id="L264">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
+<span class="fc" id="L265">    memoryScalar =</span>
+<span class="fc" id="L266">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
+<span class="fc" id="L267">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
+<span class="fc" id="L268">    rowGlobal.registerMOs(agent.getServer(), null);</span>
     // setup UpTime to SysUpTime and change status
-<span class="fc" id="L268">    scalarUptime =</span>
-<span class="fc" id="L269">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
-<span class="fc" id="L270">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
-<span class="fc" id="L271">    changeStatus(OperStatus.restarting);</span>
-<span class="fc" id="L272">    changeStatus(OperStatus.up);</span>
+<span class="fc" id="L270">    scalarUptime =</span>
+<span class="fc" id="L271">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
+<span class="fc" id="L272">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
+<span class="fc" id="L273">    changeStatus(OperStatus.restarting);</span>
+<span class="fc" id="L274">    changeStatus(OperStatus.up);</span>
     // register Detailed info
-<span class="fc" id="L274">    rowDetailed =</span>
+<span class="fc" id="L276">    rowDetailed =</span>
         new WaarpMORow(this, rootOIDWaarpDetailed, WaarpDetailedValues,
-<span class="fc" id="L276">                       MibLevel.detailedInfo.ordinal());</span>
-<span class="fc" id="L277">    rowDetailed.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L278">                       MibLevel.detailedInfo.ordinal());</span>
+<span class="fc" id="L279">    rowDetailed.registerMOs(agent.getServer(), null);</span>
     // register Error info
-<span class="fc" id="L279">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
-<span class="fc" id="L280">                              MibLevel.errorInfo.ordinal());</span>
-<span class="fc" id="L281">    rowError.registerMOs(agent.getServer(), null);</span>
-<span class="fc" id="L282">  }</span>
+<span class="fc" id="L281">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
+<span class="fc" id="L282">                              MibLevel.errorInfo.ordinal());</span>
+<span class="fc" id="L283">    rowError.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L284">  }</span>
 
   /**
    * Unregister this MIB
    */
-  protected void agentUnregisterMibs() {
-<span class="nc" id="L288">    logger.debug(&quot;UnRegisterWaarp&quot;);</span>
-<span class="nc" id="L289">    rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L290">    rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L291">    rowDetailed.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L292">    rowError.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
-<span class="nc" id="L293">  }</span>
+  protected final void agentUnregisterMibs() {
+<span class="nc" id="L290">    logger.debug(&quot;UnRegisterWaarp&quot;);</span>
+<span class="nc" id="L291">    rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L292">    rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L293">    rowDetailed.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L294">    rowError.unregisterMOs(agent.getServer(), agent.getDefaultContext());</span>
+<span class="nc" id="L295">  }</span>
 
   @Override
-  public void registerMOs(final MOServer moServer,
-                          final OctetString octetString)
+  public final void registerMOs(final MOServer moServer,
+                                final OctetString octetString)
       throws DuplicateRegistrationException {
-<span class="fc" id="L299">    agentRegisterSystem();</span>
-<span class="fc" id="L300">    agentRegisterWaarpMib();</span>
-<span class="fc" id="L301">  }</span>
+<span class="fc" id="L301">    agentRegisterSystem();</span>
+<span class="fc" id="L302">    agentRegisterWaarpMib();</span>
+<span class="fc" id="L303">  }</span>
 
   @Override
-  public void unregisterMOs(final MOServer moServer,
-                            final OctetString octetString) {
-<span class="nc" id="L306">    agentUnregisterMibs();</span>
-<span class="nc" id="L307">  }</span>
+  public final void unregisterMOs(final MOServer moServer,
+                                  final OctetString octetString) {
+<span class="nc" id="L308">    agentUnregisterMibs();</span>
+<span class="nc" id="L309">  }</span>
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
-<span class="fc" id="L311">    this.agent = agent;</span>
-<span class="fc" id="L312">  }</span>
+  public final void setAgent(final WaarpSnmpAgent agent) {
+<span class="fc" id="L313">    this.agent = agent;</span>
+<span class="fc" id="L314">  }</span>
 
   @Override
-  public OID getBaseOidStartOrShutdown() {
-<span class="nc" id="L316">    return rootOIDWaarpNotifStartOrShutdown;</span>
+  public final OID getBaseOidStartOrShutdown() {
+<span class="nc" id="L318">    return rootOIDWaarpNotifStartOrShutdown;</span>
   }
 
   @Override
-  public SNMPv2MIB getSNMPv2MIB() {
-<span class="nc" id="L321">    return snmpv2;</span>
+  public final SNMPv2MIB getSNMPv2MIB() {
+<span class="nc" id="L323">    return snmpv2;</span>
   }
 
   @Override
-  public void updateServices(final WaarpMOScalar scalar) {
+  public final void updateServices(final WaarpMOScalar scalar) {
     // Nothing
-<span class="fc" id="L327">  }</span>
+<span class="fc" id="L329">  }</span>
 
   @Override
-  public void updateServices(final MOScope range) {
+  public final void updateServices(final MOScope range) {
     // Nothing
-<span class="nc" id="L332">  }</span>
+<span class="nc" id="L334">  }</span>
 
   /**
    * Change the status and the LastChange Timeticks
    *
    * @param status
    */
-  public void changeStatus(final OperStatus status) {
-<span class="fc" id="L340">    final WaarpMOScalar statusScalar =</span>
-<span class="fc" id="L341">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];</span>
-<span class="fc" id="L342">    final Integer32 var = (Integer32) statusScalar.getValue();</span>
-<span class="pc bpc" id="L343" title="1 of 2 branches missed.">    if (var.getValue() != status.status) {</span>
-<span class="fc" id="L344">      var.setValue(status.status);</span>
-<span class="fc" id="L345">      final WaarpMOScalar lastTimeScalar =</span>
-<span class="fc" id="L346">          rowGlobal.getRow()[WaarpGlobalValuesIndex.applLastChange.ordinal()];</span>
-<span class="fc" id="L347">      final TimeTicks time = (TimeTicks) lastTimeScalar.getValue();</span>
-<span class="fc" id="L348">      time.setValue(upTime.get().getValue());</span>
+  public final void changeStatus(final OperStatus status) {
+<span class="fc" id="L342">    final WaarpMOScalar statusScalar =</span>
+<span class="fc" id="L343">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];</span>
+<span class="fc" id="L344">    final Integer32 var = (Integer32) statusScalar.getValue();</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">    if (var.getValue() != status.status) {</span>
+<span class="fc" id="L346">      var.setValue(status.status);</span>
+<span class="fc" id="L347">      final WaarpMOScalar lastTimeScalar =</span>
+<span class="fc" id="L348">          rowGlobal.getRow()[WaarpGlobalValuesIndex.applLastChange.ordinal()];</span>
+<span class="fc" id="L349">      final TimeTicks time = (TimeTicks) lastTimeScalar.getValue();</span>
+<span class="fc" id="L350">      time.setValue(upTime.get().getValue());</span>
     }
-<span class="fc" id="L350">  }</span>
+<span class="fc" id="L352">  }</span>
 
   /**
    * Send a notification (trap or inform) for Shutdown event
@@ -355,12 +357,13 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyStartStop(final String message, final String message2) {
-<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L360">      return;</span>
+  public final void notifyStartStop(final String message,
+                                    final String message2) {
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L363">      return;</span>
     }
-<span class="nc" id="L362">    notify(NotificationElements.TrapShutdown, message, message2);</span>
-<span class="nc" id="L363">  }</span>
+<span class="nc" id="L365">    notify(NotificationElements.TrapShutdown, message, message2);</span>
+<span class="nc" id="L366">  }</span>
 
   /**
    * Send a notification (trap or inform) for Error event
@@ -368,12 +371,12 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyError(final String message, final String message2) {
-<span class="pc bpc" id="L372" title="1 of 2 branches missed.">    if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L373">      return;</span>
+  public final void notifyError(final String message, final String message2) {
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">    if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L376">      return;</span>
     }
-<span class="nc" id="L375">    notify(NotificationElements.TrapError, message, message2);</span>
-<span class="nc" id="L376">  }</span>
+<span class="nc" id="L378">    notify(NotificationElements.TrapError, message, message2);</span>
+<span class="nc" id="L379">  }</span>
 
   /**
    * Send a notification (trap or inform) for Server Overloaded event
@@ -381,12 +384,13 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyOverloaded(final String message, final String message2) {
-<span class="pc bpc" id="L385" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L386">      return;</span>
+  public final void notifyOverloaded(final String message,
+                                     final String message2) {
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L390">      return;</span>
     }
-<span class="nc" id="L388">    notify(NotificationElements.TrapOverloaded, message, message2);</span>
-<span class="nc" id="L389">  }</span>
+<span class="nc" id="L392">    notify(NotificationElements.TrapOverloaded, message, message2);</span>
+<span class="nc" id="L393">  }</span>
 
   /**
    * Send a notification (trap or inform) for Warning event
@@ -394,12 +398,12 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyWarning(final String message, final String message2) {
-<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L399">      return;</span>
+  public final void notifyWarning(final String message, final String message2) {
+<span class="pc bpc" id="L402" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L403">      return;</span>
     }
-<span class="nc" id="L401">    notify(NotificationElements.TrapWarning, message, message2);</span>
-<span class="nc" id="L402">  }</span>
+<span class="nc" id="L405">    notify(NotificationElements.TrapWarning, message, message2);</span>
+<span class="nc" id="L406">  }</span>
 
   /**
    * Send a notification (trap or inform) for Warning/Error event on a single
@@ -408,115 +412,96 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param runner
    */
-  public void notifyInfoTask(final String message, final DbTransferLog runner) {
-<span class="pc bpc" id="L412" title="1 of 2 branches missed.">    if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L413">      return;</span>
+  public final void notifyInfoTask(final String message,
+                                   final DbTransferLog runner) {
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">    if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L418">      return;</span>
     }
-<span class="nc bnc" id="L415" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L416">      logger.debug(</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L421">      logger.debug(</span>
           &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
           runner);
     }
-<span class="nc" id="L420">    long delay =</span>
-<span class="nc" id="L421">        (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;</span>
-<span class="nc bnc" id="L422" title="All 2 branches missed.">    if (delay &lt; 0) {</span>
-<span class="nc" id="L423">      delay = 0;</span>
+<span class="nc" id="L425">    long delay =</span>
+<span class="nc" id="L426">        (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">    if (delay &lt; 0) {</span>
+<span class="nc" id="L428">      delay = 0;</span>
     }
-<span class="nc" id="L425">    agent.getNotificationOriginator().notify(new OctetString(&quot;public&quot;),</span>
-                                             NotificationElements.InfoTask
-<span class="nc" id="L427">                                                 .getOID(rootOIDWaarpNotif),</span>
+<span class="nc" id="L430">    agent.getNotificationOriginator().notify(new OctetString(&quot;public&quot;),</span>
+<span class="nc" id="L431">                                             NotificationElements.InfoTask.getOID(</span>
+                                                 rootOIDWaarpNotif),
                                              new VariableBinding[] {
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L431">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             1),
+<span class="nc" id="L435">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(
-                                                         NotificationElements.InfoTask
-<span class="nc" id="L436">                                                             .name())),</span>
+<span class="nc" id="L438">                                                         NotificationElements.InfoTask.name())),</span>
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L439">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             1),
+<span class="nc" id="L440">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(message)),
                                                  // Start of Task
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L446">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.filenameInfo
-<span class="nc" id="L449">                                                                 .getOID()),</span>
+<span class="nc" id="L445">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L447">                                                         NotificationTasks.filenameInfo.getOID()),</span>
                                                      new OctetString(
-<span class="nc" id="L451">                                                         runner.getFilename())),</span>
+<span class="nc" id="L449">                                                         runner.getFilename())),</span>
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L454">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.modeTransInfo
-<span class="nc" id="L457">                                                                 .getOID()),</span>
+<span class="nc" id="L451">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L453">                                                         NotificationTasks.modeTransInfo.getOID()),</span>
                                                      new OctetString(
-<span class="nc" id="L459">                                                         runner.getMode())),</span>
+<span class="nc" id="L455">                                                         runner.getMode())),</span>
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L462">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.startTransInfo
-<span class="nc" id="L465">                                                                 .getOID()),</span>
+<span class="nc" id="L457">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L459">                                                         NotificationTasks.startTransInfo.getOID()),</span>
                                                      new TimeTicks(delay)),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L469">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.infoStatusInfo
-<span class="nc" id="L472">                                                                 .getOID()),</span>
+<span class="nc" id="L462">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L464">                                                         NotificationTasks.infoStatusInfo.getOID()),</span>
                                                      new OctetString(
-<span class="nc" id="L474">                                                         runner.getErrorInfo()</span>
-<span class="nc" id="L475">                                                               .getMesg())),</span>
+<span class="nc" id="L466">                                                         runner.getErrorInfo()</span>
+<span class="nc" id="L467">                                                               .getMesg())),</span>
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L478">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.userIdInfo
-<span class="nc" id="L481">                                                                 .getOID()),</span>
+<span class="nc" id="L469">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L471">                                                         NotificationTasks.userIdInfo.getOID()),</span>
                                                      new OctetString(
-<span class="nc" id="L483">                                                         runner.getUser())),</span>
+<span class="nc" id="L473">                                                         runner.getUser())),</span>
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L486">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.accountId
-<span class="nc" id="L489">                                                                 .getOID()),</span>
+<span class="nc" id="L475">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L477">                                                         NotificationTasks.accountId.getOID()),</span>
                                                      new OctetString(
-<span class="nc" id="L491">                                                         runner.getAccount())),</span>
+<span class="nc" id="L479">                                                         runner.getAccount())),</span>
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-<span class="nc" id="L494">                                                         .getOID(</span>
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.specialIdInfo
-<span class="nc" id="L497">                                                                 .getOID()),</span>
-                                                     new OctetString(String
-<span class="nc" id="L499">                                                                         .valueOf(</span>
-                                                                             runner
-<span class="nc" id="L501">                                                                                 .getSpecialId()))),</span>
+<span class="nc" id="L481">                                                     NotificationElements.InfoTask.getOID(</span>
+                                                         rootOIDWaarpNotif,
+<span class="nc" id="L483">                                                         NotificationTasks.specialIdInfo.getOID()),</span>
+                                                     new OctetString(
+<span class="nc" id="L485">                                                         String.valueOf(</span>
+<span class="nc" id="L486">                                                             runner.getSpecialId()))),</span>
                                                  // End of Task
                                                  new VariableBinding(
                                                      SnmpConstants.sysDescr,
-<span class="nc" id="L505">                                                     snmpv2.getDescr()),</span>
+<span class="nc" id="L490">                                                     snmpv2.getDescr()),</span>
                                                  new VariableBinding(
                                                      SnmpConstants.sysObjectID,
-<span class="nc" id="L508">                                                     snmpv2.getObjectID()),</span>
+<span class="nc" id="L493">                                                     snmpv2.getObjectID()),</span>
                                                  new VariableBinding(
                                                      SnmpConstants.sysContact,
-<span class="nc" id="L511">                                                     snmpv2.getContact()),</span>
+<span class="nc" id="L496">                                                     snmpv2.getContact()),</span>
                                                  new VariableBinding(
                                                      SnmpConstants.sysName,
-<span class="nc" id="L514">                                                     snmpv2.getName()),</span>
+<span class="nc" id="L499">                                                     snmpv2.getName()),</span>
                                                  new VariableBinding(
                                                      SnmpConstants.sysLocation,
-<span class="nc" id="L517">                                                     snmpv2.getLocation())</span>
+<span class="nc" id="L502">                                                     snmpv2.getLocation())</span>
                                              });
-<span class="nc" id="L519">  }</span>
+<span class="nc" id="L504">  }</span>
 
   /**
    * Trap/Notification
@@ -527,36 +512,36 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    */
   private void notify(final NotificationElements element, final String message,
                       final String message2) {
-<span class="nc bnc" id="L530" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L531">      logger.debug(&quot;Notify: &quot; + element + ':' + message + ':' + message2);</span>
+<span class="nc bnc" id="L515" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L516">      logger.debug(&quot;Notify: &quot; + element + ':' + message + ':' + message2);</span>
     }
-<span class="nc" id="L533">    agent.getNotificationOriginator()</span>
-<span class="nc" id="L534">         .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
+<span class="nc" id="L518">    agent.getNotificationOriginator()</span>
+<span class="nc" id="L519">         .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
                  new VariableBinding[] {
-<span class="nc" id="L536">                     new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
-<span class="nc" id="L537">                                         new OctetString(element.name())),</span>
-<span class="nc" id="L538">                     new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+<span class="nc" id="L521">                     new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+<span class="nc" id="L522">                                         new OctetString(element.name())),</span>
+<span class="nc" id="L523">                     new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
                                          new OctetString(message)),
-<span class="nc" id="L540">                     new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+<span class="nc" id="L525">                     new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
                                          new OctetString(message2)),
                      new VariableBinding(SnmpConstants.sysDescr,
-<span class="nc" id="L543">                                         snmpv2.getDescr()),</span>
+<span class="nc" id="L528">                                         snmpv2.getDescr()),</span>
                      new VariableBinding(SnmpConstants.sysObjectID,
-<span class="nc" id="L545">                                         snmpv2.getObjectID()),</span>
+<span class="nc" id="L530">                                         snmpv2.getObjectID()),</span>
                      new VariableBinding(SnmpConstants.sysContact,
-<span class="nc" id="L547">                                         snmpv2.getContact()),</span>
+<span class="nc" id="L532">                                         snmpv2.getContact()),</span>
                      new VariableBinding(SnmpConstants.sysName,
-<span class="nc" id="L549">                                         snmpv2.getName()),</span>
+<span class="nc" id="L534">                                         snmpv2.getName()),</span>
                      new VariableBinding(SnmpConstants.sysLocation,
-<span class="nc" id="L551">                                         snmpv2.getLocation())</span>
+<span class="nc" id="L536">                                         snmpv2.getLocation())</span>
                  });
-<span class="nc" id="L553">  }</span>
+<span class="nc" id="L538">  }</span>
 
   /**
    * MIB entry levels
    */
-<span class="fc" id="L558">  public enum MibLevel {</span>
-<span class="fc" id="L559">    staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo</span>
+<span class="fc" id="L543">  public enum MibLevel {</span>
+<span class="fc" id="L544">    staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo</span>
   }
 
   // From now the MIB definition
@@ -564,127 +549,127 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Notification Elements
    */
-<span class="nc" id="L567">  public enum NotificationElements {</span>
-<span class="nc" id="L568">    TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),</span>
-<span class="nc" id="L569">    InfoTask(5);</span>
+<span class="nc" id="L552">  public enum NotificationElements {</span>
+<span class="nc" id="L553">    TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),</span>
+<span class="nc" id="L554">    InfoTask(5);</span>
 
     public final int[] oid;
 
-<span class="nc" id="L573">    NotificationElements(final int oid) {</span>
-<span class="nc" id="L574">      this.oid = new int[] { oid };</span>
-<span class="nc" id="L575">    }</span>
+<span class="nc" id="L558">    NotificationElements(final int oid) {</span>
+<span class="nc" id="L559">      this.oid = new int[] { oid };</span>
+<span class="nc" id="L560">    }</span>
 
-    public OID getOID(final OID oidBase) {
-<span class="nc" id="L578">      return new OID(oidBase.getValue(), oid);</span>
+    public final OID getOID(final OID oidBase) {
+<span class="nc" id="L563">      return new OID(oidBase.getValue(), oid);</span>
     }
 
-    public OID getOID(final OID oidBase, final int rank) {
-<span class="nc" id="L582">      final int[] ids = { oid[0], rank };</span>
-<span class="nc" id="L583">      return new OID(oidBase.getValue(), ids);</span>
+    public final OID getOID(final OID oidBase, final int rank) {
+<span class="nc" id="L567">      final int[] ids = { oid[0], rank };</span>
+<span class="nc" id="L568">      return new OID(oidBase.getValue(), ids);</span>
     }
   }
 
   /**
    * Notification for a task trap
    */
-<span class="nc" id="L590">  public enum NotificationTasks {</span>
-<span class="nc" id="L591">    filenameInfo, modeTransInfo, startTransInfo, infoStatusInfo, userIdInfo,</span>
-<span class="nc" id="L592">    accountId, specialIdInfo;</span>
+<span class="nc" id="L575">  public enum NotificationTasks {</span>
+<span class="nc" id="L576">    filenameInfo, modeTransInfo, startTransInfo, infoStatusInfo, userIdInfo,</span>
+<span class="nc" id="L577">    accountId, specialIdInfo;</span>
 
-    public int getOID() {
-<span class="nc" id="L595">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L580">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Definition part
    */
-<span class="fc" id="L602">  public enum WaarpDefinitionIndex {</span>
-<span class="fc" id="L603">    applName, applServerName, applVersion, applDescription, applURL,</span>
-<span class="fc" id="L604">    applApplicationProtocol;</span>
+<span class="fc" id="L587">  public enum WaarpDefinitionIndex {</span>
+<span class="fc" id="L588">    applName, applServerName, applVersion, applDescription, applURL,</span>
+<span class="fc" id="L589">    applApplicationProtocol;</span>
 
-    public int getOID() {
-<span class="nc" id="L607">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L592">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Definition part
    */
-<span class="fc" id="L614">  public static final WaarpEntry[] WaarpDefinition =</span>
+<span class="fc" id="L599">  public static final WaarpEntry[] WaarpDefinition =</span>
       WaarpPrivateMib.WaarpDefinition;
 
   /**
    * Global part
    */
-<span class="fc" id="L620">  public enum WaarpGlobalValuesIndex {</span>
-<span class="fc" id="L621">    applUptime, applOperStatus, applLastChange, applInboundAssociations,</span>
-<span class="fc" id="L622">    applOutboundAssociations, applAccumInboundAssociations,</span>
-<span class="fc" id="L623">    applAccumOutboundAssociations, applLastInboundActivity,</span>
-<span class="fc" id="L624">    applLastOutboundActivity, applRejectedInboundAssociations,</span>
-<span class="fc" id="L625">    applFailedOutboundAssociations, applInboundBandwidthKBS,</span>
-<span class="fc" id="L626">    applOutboundBandwidthKBS, nbInfoUnknown, nbInfoNotUpdated,</span>
-<span class="fc" id="L627">    nbInfoInterrupted, nbInfoToSubmit, nbInfoError, nbInfoRunning, nbInfoDone,</span>
-<span class="fc" id="L628">    nbAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,</span>
-<span class="fc" id="L629">    nbNetworkConnection;</span>
+<span class="fc" id="L605">  public enum WaarpGlobalValuesIndex {</span>
+<span class="fc" id="L606">    applUptime, applOperStatus, applLastChange, applInboundAssociations,</span>
+<span class="fc" id="L607">    applOutboundAssociations, applAccumInboundAssociations,</span>
+<span class="fc" id="L608">    applAccumOutboundAssociations, applLastInboundActivity,</span>
+<span class="fc" id="L609">    applLastOutboundActivity, applRejectedInboundAssociations,</span>
+<span class="fc" id="L610">    applFailedOutboundAssociations, applInboundBandwidthKBS,</span>
+<span class="fc" id="L611">    applOutboundBandwidthKBS, nbInfoUnknown, nbInfoNotUpdated,</span>
+<span class="fc" id="L612">    nbInfoInterrupted, nbInfoToSubmit, nbInfoError, nbInfoRunning, nbInfoDone,</span>
+<span class="fc" id="L613">    nbAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,</span>
+<span class="fc" id="L614">    nbNetworkConnection;</span>
 
-    public int getOID() {
-<span class="fc" id="L632">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="fc" id="L617">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Global part
    */
-<span class="fc" id="L639">  public static final WaarpEntry[] WaarpGlobalValues =</span>
+<span class="fc" id="L624">  public static final WaarpEntry[] WaarpGlobalValues =</span>
       WaarpPrivateMib.WaarpGlobalValues;
 
   /**
    * Detailed part
    */
-<span class="fc" id="L645">  public enum WaarpDetailedValuesIndex {</span>
-<span class="fc" id="L646">    reply_000(ReplyCode.REPLY_000_SPECIAL_NOSTATUS),</span>
-<span class="fc" id="L647">    reply_110(ReplyCode.REPLY_110_RESTART_MARKER_REPLY),</span>
-<span class="fc" id="L648">    reply_120(ReplyCode.REPLY_120_SERVICE_READY_IN_NNN_MINUTES),</span>
-<span class="fc" id="L649">    reply_125(ReplyCode.REPLY_125_DATA_CONNECTION_ALREADY_OPEN),</span>
-<span class="fc" id="L650">    reply_150(ReplyCode.REPLY_150_FILE_STATUS_OKAY),</span>
-<span class="fc" id="L651">    reply_200(ReplyCode.REPLY_200_COMMAND_OKAY),</span>
-<span class="fc" id="L652">    reply_202(ReplyCode.REPLY_202_COMMAND_NOT_IMPLEMENTED),</span>
-<span class="fc" id="L653">    reply_211(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY),</span>
-<span class="fc" id="L654">    reply_212(ReplyCode.REPLY_212_DIRECTORY_STATUS),</span>
-<span class="fc" id="L655">    reply_213(ReplyCode.REPLY_213_FILE_STATUS),</span>
-<span class="fc" id="L656">    reply_214(ReplyCode.REPLY_214_HELP_MESSAGE),</span>
-<span class="fc" id="L657">    reply_215(ReplyCode.REPLY_215_NAME_SYSTEM_TYPE),</span>
-<span class="fc" id="L658">    reply_220(ReplyCode.REPLY_220_SERVICE_READY),</span>
-<span class="fc" id="L659">    reply_221(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION),</span>
-<span class="fc" id="L660">    reply_225(ReplyCode.REPLY_225_DATA_CONNECTION_OPEN_NO_TRANSFER_IN_PROGRESS),</span>
-<span class="fc" id="L661">    reply_226(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION),</span>
-<span class="fc" id="L662">    reply_227(ReplyCode.REPLY_227_ENTERING_PASSIVE_MODE),</span>
-<span class="fc" id="L663">    reply_229(ReplyCode.REPLY_229_ENTERING_PASSIVE_MODE),</span>
-<span class="fc" id="L664">    reply_230(ReplyCode.REPLY_230_USER_LOGGED_IN),</span>
-<span class="fc" id="L665">    reply_232(ReplyCode.REPLY_232_USER_LOGGED_IN),</span>
-<span class="fc" id="L666">    reply_234(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE),</span>
-<span class="fc" id="L667">    reply_250(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY),</span>
-<span class="fc" id="L668">    reply_257(ReplyCode.REPLY_257_PATHNAME_CREATED),</span>
-<span class="fc" id="L669">    reply_331(ReplyCode.REPLY_331_USER_NAME_OKAY_NEED_PASSWORD),</span>
-<span class="fc" id="L670">    reply_332(ReplyCode.REPLY_332_NEED_ACCOUNT_FOR_LOGIN), reply_350(</span>
+<span class="fc" id="L630">  public enum WaarpDetailedValuesIndex {</span>
+<span class="fc" id="L631">    reply_000(ReplyCode.REPLY_000_SPECIAL_NOSTATUS),</span>
+<span class="fc" id="L632">    reply_110(ReplyCode.REPLY_110_RESTART_MARKER_REPLY),</span>
+<span class="fc" id="L633">    reply_120(ReplyCode.REPLY_120_SERVICE_READY_IN_NNN_MINUTES),</span>
+<span class="fc" id="L634">    reply_125(ReplyCode.REPLY_125_DATA_CONNECTION_ALREADY_OPEN),</span>
+<span class="fc" id="L635">    reply_150(ReplyCode.REPLY_150_FILE_STATUS_OKAY),</span>
+<span class="fc" id="L636">    reply_200(ReplyCode.REPLY_200_COMMAND_OKAY),</span>
+<span class="fc" id="L637">    reply_202(ReplyCode.REPLY_202_COMMAND_NOT_IMPLEMENTED),</span>
+<span class="fc" id="L638">    reply_211(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY),</span>
+<span class="fc" id="L639">    reply_212(ReplyCode.REPLY_212_DIRECTORY_STATUS),</span>
+<span class="fc" id="L640">    reply_213(ReplyCode.REPLY_213_FILE_STATUS),</span>
+<span class="fc" id="L641">    reply_214(ReplyCode.REPLY_214_HELP_MESSAGE),</span>
+<span class="fc" id="L642">    reply_215(ReplyCode.REPLY_215_NAME_SYSTEM_TYPE),</span>
+<span class="fc" id="L643">    reply_220(ReplyCode.REPLY_220_SERVICE_READY),</span>
+<span class="fc" id="L644">    reply_221(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION),</span>
+<span class="fc" id="L645">    reply_225(ReplyCode.REPLY_225_DATA_CONNECTION_OPEN_NO_TRANSFER_IN_PROGRESS),</span>
+<span class="fc" id="L646">    reply_226(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION),</span>
+<span class="fc" id="L647">    reply_227(ReplyCode.REPLY_227_ENTERING_PASSIVE_MODE),</span>
+<span class="fc" id="L648">    reply_229(ReplyCode.REPLY_229_ENTERING_PASSIVE_MODE),</span>
+<span class="fc" id="L649">    reply_230(ReplyCode.REPLY_230_USER_LOGGED_IN),</span>
+<span class="fc" id="L650">    reply_232(ReplyCode.REPLY_232_USER_LOGGED_IN),</span>
+<span class="fc" id="L651">    reply_234(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE),</span>
+<span class="fc" id="L652">    reply_250(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY),</span>
+<span class="fc" id="L653">    reply_257(ReplyCode.REPLY_257_PATHNAME_CREATED),</span>
+<span class="fc" id="L654">    reply_331(ReplyCode.REPLY_331_USER_NAME_OKAY_NEED_PASSWORD),</span>
+<span class="fc" id="L655">    reply_332(ReplyCode.REPLY_332_NEED_ACCOUNT_FOR_LOGIN), reply_350(</span>
         ReplyCode.REPLY_350_REQUESTED_FILE_ACTION_PENDING_FURTHER_INFORMATION);
 
     public final ReplyCode code;
 
-<span class="fc" id="L675">    WaarpDetailedValuesIndex(final ReplyCode code) {</span>
-<span class="fc" id="L676">      this.code = code;</span>
-<span class="fc" id="L677">    }</span>
+<span class="fc" id="L660">    WaarpDetailedValuesIndex(final ReplyCode code) {</span>
+<span class="fc" id="L661">      this.code = code;</span>
+<span class="fc" id="L662">    }</span>
 
-    public int getOID() {
-<span class="nc" id="L680">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L665">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Detailed part
    */
-<span class="fc" id="L687">  public static final WaarpEntry[] WaarpDetailedValues = {</span>
+<span class="fc" id="L672">  public static final WaarpEntry[] WaarpDetailedValues = {</span>
       // reply_000,
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -767,51 +752,51 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Error part
    */
-<span class="fc" id="L770">  public enum WaarpErrorValuesIndex {</span>
-<span class="fc" id="L771">    reply_421(</span>
+<span class="fc" id="L755">  public enum WaarpErrorValuesIndex {</span>
+<span class="fc" id="L756">    reply_421(</span>
         ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION),
-<span class="fc" id="L773">    reply_425(ReplyCode.REPLY_425_CANT_OPEN_DATA_CONNECTION),</span>
-<span class="fc" id="L774">    reply_426(ReplyCode.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED),</span>
-<span class="fc" id="L775">    reply_431(</span>
+<span class="fc" id="L758">    reply_425(ReplyCode.REPLY_425_CANT_OPEN_DATA_CONNECTION),</span>
+<span class="fc" id="L759">    reply_426(ReplyCode.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED),</span>
+<span class="fc" id="L760">    reply_431(</span>
         ReplyCode.REPLY_431_NEED_UNAVAILABLE_RESOURCE_TO_PROCESS_SECURITY),
-<span class="fc" id="L777">    reply_450(ReplyCode.REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN),</span>
-<span class="fc" id="L778">    reply_451(ReplyCode.REPLY_451_REQUESTED_ACTION_ABORTED),</span>
-<span class="fc" id="L779">    reply_452(ReplyCode.REPLY_452_REQUESTED_ACTION_NOT_TAKEN),</span>
-<span class="fc" id="L780">    reply_500(ReplyCode.REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED),</span>
-<span class="fc" id="L781">    reply_501(ReplyCode.REPLY_501_SYNTAX_ERROR_IN_PARAMETERS_OR_ARGUMENTS),</span>
-<span class="fc" id="L782">    reply_502(ReplyCode.REPLY_502_COMMAND_NOT_IMPLEMENTED),</span>
-<span class="fc" id="L783">    reply_503(ReplyCode.REPLY_503_BAD_SEQUENCE_OF_COMMANDS),</span>
-<span class="fc" id="L784">    reply_504(ReplyCode.REPLY_504_COMMAND_NOT_IMPLEMENTED_FOR_THAT_PARAMETER),</span>
-<span class="fc" id="L785">    reply_522(</span>
+<span class="fc" id="L762">    reply_450(ReplyCode.REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN),</span>
+<span class="fc" id="L763">    reply_451(ReplyCode.REPLY_451_REQUESTED_ACTION_ABORTED),</span>
+<span class="fc" id="L764">    reply_452(ReplyCode.REPLY_452_REQUESTED_ACTION_NOT_TAKEN),</span>
+<span class="fc" id="L765">    reply_500(ReplyCode.REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED),</span>
+<span class="fc" id="L766">    reply_501(ReplyCode.REPLY_501_SYNTAX_ERROR_IN_PARAMETERS_OR_ARGUMENTS),</span>
+<span class="fc" id="L767">    reply_502(ReplyCode.REPLY_502_COMMAND_NOT_IMPLEMENTED),</span>
+<span class="fc" id="L768">    reply_503(ReplyCode.REPLY_503_BAD_SEQUENCE_OF_COMMANDS),</span>
+<span class="fc" id="L769">    reply_504(ReplyCode.REPLY_504_COMMAND_NOT_IMPLEMENTED_FOR_THAT_PARAMETER),</span>
+<span class="fc" id="L770">    reply_522(</span>
         ReplyCode.REPLY_522_EXTENDED_PORT_FAILURE_UNKNOWN_NETWORK_PROTOCOL),
-<span class="fc" id="L787">    reply_530(ReplyCode.REPLY_530_NOT_LOGGED_IN),</span>
-<span class="fc" id="L788">    reply_532(ReplyCode.REPLY_532_NEED_ACCOUNT_FOR_STORING_FILES), reply_533(</span>
+<span class="fc" id="L772">    reply_530(ReplyCode.REPLY_530_NOT_LOGGED_IN),</span>
+<span class="fc" id="L773">    reply_532(ReplyCode.REPLY_532_NEED_ACCOUNT_FOR_STORING_FILES), reply_533(</span>
         ReplyCode.REPLY_533_COMMAND_PROTECTION_LEVEL_DENIED_FOR_POLICY_REASONS),
-<span class="fc" id="L790">    reply_534(ReplyCode.REPLY_534_REQUEST_DENIED_FOR_POLICY_REASONS),</span>
-<span class="fc" id="L791">    reply_535(ReplyCode.REPLY_535_FAILED_SECURITY_CHECK),</span>
-<span class="fc" id="L792">    reply_536(ReplyCode.REPLY_536_REQUESTED_PROT_LEVEL_NOT_SUPPORTED),</span>
-<span class="fc" id="L793">    reply_550(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN),</span>
-<span class="fc" id="L794">    reply_551(ReplyCode.REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN),</span>
-<span class="fc" id="L795">    reply_552(</span>
+<span class="fc" id="L775">    reply_534(ReplyCode.REPLY_534_REQUEST_DENIED_FOR_POLICY_REASONS),</span>
+<span class="fc" id="L776">    reply_535(ReplyCode.REPLY_535_FAILED_SECURITY_CHECK),</span>
+<span class="fc" id="L777">    reply_536(ReplyCode.REPLY_536_REQUESTED_PROT_LEVEL_NOT_SUPPORTED),</span>
+<span class="fc" id="L778">    reply_550(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN),</span>
+<span class="fc" id="L779">    reply_551(ReplyCode.REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN),</span>
+<span class="fc" id="L780">    reply_552(</span>
         ReplyCode.REPLY_552_REQUESTED_FILE_ACTION_ABORTED_EXCEEDED_STORAGE),
-<span class="fc" id="L797">    reply_553(</span>
+<span class="fc" id="L782">    reply_553(</span>
         ReplyCode.REPLY_553_REQUESTED_ACTION_NOT_TAKEN_FILE_NAME_NOT_ALLOWED);
 
     public final ReplyCode code;
 
-<span class="fc" id="L802">    WaarpErrorValuesIndex(final ReplyCode code) {</span>
-<span class="fc" id="L803">      this.code = code;</span>
-<span class="fc" id="L804">    }</span>
+<span class="fc" id="L787">    WaarpErrorValuesIndex(final ReplyCode code) {</span>
+<span class="fc" id="L788">      this.code = code;</span>
+<span class="fc" id="L789">    }</span>
 
-    public int getOID() {
-<span class="nc" id="L807">      return ordinal() + 1;</span>
+    public final int getOID() {
+<span class="nc" id="L792">      return ordinal() + 1;</span>
     }
   }
 
   /**
    * Error part
    */
-<span class="fc" id="L814">  public static final WaarpEntry[] WaarpErrorValues = {</span>
+<span class="fc" id="L799">  public static final WaarpEntry[] WaarpErrorValues = {</span>
       // reply_421,
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -885,15 +870,15 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Oper Status (as defined in Net Application SNMP)
    */
-<span class="fc" id="L888">  public enum OperStatus {</span>
-<span class="fc" id="L889">    up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);</span>
+<span class="fc" id="L873">  public enum OperStatus {</span>
+<span class="fc" id="L874">    up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);</span>
 
     public final int status;
 
-<span class="fc" id="L893">    OperStatus(final int status) {</span>
-<span class="fc" id="L894">      this.status = status;</span>
-<span class="fc" id="L895">    }</span>
+<span class="fc" id="L878">    OperStatus(final int status) {</span>
+<span class="fc" id="L879">      this.status = status;</span>
+<span class="fc" id="L880">    }</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

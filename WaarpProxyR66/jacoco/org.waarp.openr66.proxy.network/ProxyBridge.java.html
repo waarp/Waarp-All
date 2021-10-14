@@ -50,51 +50,50 @@ public class ProxyBridge {
 <span class="fc" id="L50">    this.source = source;</span>
 <span class="fc" id="L51">  }</span>
 
-  public void initializeProxy() {
-<span class="fc" id="L54">    final Channel proxy = transaction</span>
-<span class="fc" id="L55">        .createConnectionWithRetry(proxyEntry.getRemoteSocketAddress(),</span>
-<span class="fc" id="L56">                                   proxyEntry.isRemoteSsl());</span>
-<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (proxy == null) {</span>
+  public final void initializeProxy() {
+<span class="fc" id="L54">    final Channel proxy = transaction.createConnectionWithRetry(</span>
+<span class="fc" id="L55">        proxyEntry.getRemoteSocketAddress(), proxyEntry.isRemoteSsl());</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">    if (proxy == null) {</span>
       // Can't connect ?
-<span class="nc" id="L59">      futureRemoteConnected.cancel();</span>
-<span class="nc" id="L60">      return;</span>
+<span class="nc" id="L58">      futureRemoteConnected.cancel();</span>
+<span class="nc" id="L59">      return;</span>
     }
-<span class="fc" id="L62">    proxified = (NetworkServerHandler) proxy.pipeline().get(NETWORK_HANDLER);</span>
-<span class="fc" id="L63">    proxified.setBridge(this);</span>
-<span class="fc" id="L64">  }</span>
+<span class="fc" id="L61">    proxified = (NetworkServerHandler) proxy.pipeline().get(NETWORK_HANDLER);</span>
+<span class="fc" id="L62">    proxified.setBridge(this);</span>
+<span class="fc" id="L63">  }</span>
 
-  public void remoteConnected() {
-<span class="fc" id="L67">    futureRemoteConnected.setSuccess();</span>
-<span class="fc" id="L68">  }</span>
+  public final void remoteConnected() {
+<span class="fc" id="L66">    futureRemoteConnected.setSuccess();</span>
+<span class="fc" id="L67">  }</span>
 
-  public boolean waitForRemoteConnection() {
-<span class="fc" id="L71">    futureRemoteConnected.awaitOrInterruptible(configuration.getTimeoutCon());</span>
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (!futureRemoteConnected.isSuccess()) {</span>
-<span class="nc" id="L73">      futureRemoteConnected.cancel();</span>
-<span class="nc" id="L74">      return false;</span>
+  public final boolean waitForRemoteConnection() {
+<span class="fc" id="L70">    futureRemoteConnected.awaitOrInterruptible(configuration.getTimeoutCon());</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (!futureRemoteConnected.isSuccess()) {</span>
+<span class="nc" id="L72">      futureRemoteConnected.cancel();</span>
+<span class="nc" id="L73">      return false;</span>
     }
-<span class="fc" id="L76">    return true;</span>
+<span class="fc" id="L75">    return true;</span>
   }
 
   /**
    * @return the proxyEntry
    */
-  public ProxyEntry getProxyEntry() {
-<span class="fc" id="L83">    return proxyEntry;</span>
+  public final ProxyEntry getProxyEntry() {
+<span class="fc" id="L82">    return proxyEntry;</span>
   }
 
   /**
    * @return the source
    */
-  public NetworkServerHandler getSource() {
-<span class="fc" id="L90">    return source;</span>
+  public final NetworkServerHandler getSource() {
+<span class="fc" id="L89">    return source;</span>
   }
 
   /**
    * @return the proxified
    */
-  public NetworkServerHandler getProxified() {
-<span class="fc" id="L97">    return proxified;</span>
+  public final NetworkServerHandler getProxified() {
+<span class="fc" id="L96">    return proxified;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

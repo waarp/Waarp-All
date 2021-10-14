@@ -43,70 +43,70 @@ public class TestPacket extends AbstractLocalPacket {
                                             final int middleLength,
                                             final int endLength,
                                             final ByteBuf buf) {
-<span class="nc" id="L46">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="nc" id="L47">    final byte[] bmiddle = new byte[middleLength];</span>
-<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="nc" id="L49">      buf.readBytes(bheader);</span>
+<span class="fc" id="L46">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L47">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L49">      buf.readBytes(bheader);</span>
     }
-<span class="nc bnc" id="L51" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
-<span class="nc" id="L52">      buf.readBytes(bmiddle);</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="fc" id="L52">      buf.readBytes(bmiddle);</span>
     }
-<span class="nc" id="L54">    return new TestPacket(new String(bheader, WaarpStringUtils.UTF8),</span>
+<span class="fc" id="L54">    return new TestPacket(new String(bheader, WaarpStringUtils.UTF8),</span>
                           new String(bmiddle, WaarpStringUtils.UTF8),
-<span class="nc" id="L56">                          buf.readInt());</span>
+<span class="fc" id="L56">                          buf.readInt());</span>
   }
 
-<span class="nc" id="L59">  public TestPacket(final String header, final String middle, final int code) {</span>
-<span class="nc" id="L60">    sheader = header;</span>
-<span class="nc" id="L61">    smiddle = middle;</span>
-<span class="nc" id="L62">    this.code = code;</span>
-<span class="nc" id="L63">  }</span>
+<span class="fc" id="L59">  public TestPacket(final String header, final String middle, final int code) {</span>
+<span class="fc" id="L60">    sheader = header;</span>
+<span class="fc" id="L61">    smiddle = middle;</span>
+<span class="fc" id="L62">    this.code = code;</span>
+<span class="fc" id="L63">  }</span>
 
   @Override
   public final boolean hasGlobalBuffer() {
-<span class="nc" id="L67">    return true;</span>
+<span class="fc" id="L67">    return true;</span>
   }
 
   @Override
   public final synchronized void createAllBuffers(
       final LocalChannelReference lcr, final int networkHeader) {
-<span class="nc bnc" id="L73" title="All 2 branches missed.">    final byte[] headerBytes =</span>
-<span class="nc" id="L74">        sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;</span>
-<span class="nc" id="L75">    final int headerSize = headerBytes.length;</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">    final byte[] middleBytes =</span>
-<span class="nc" id="L77">        smiddle != null? smiddle.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;</span>
-<span class="nc" id="L78">    final int middleSize = middleBytes.length;</span>
-<span class="nc" id="L79">    final int endSize = 4;</span>
-<span class="nc" id="L80">    final int globalSize =</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    final byte[] headerBytes =</span>
+<span class="pc" id="L74">        sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;</span>
+<span class="fc" id="L75">    final int headerSize = headerBytes.length;</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    final byte[] middleBytes =</span>
+<span class="pc" id="L77">        smiddle != null? smiddle.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;</span>
+<span class="fc" id="L78">    final int middleSize = middleBytes.length;</span>
+<span class="fc" id="L79">    final int endSize = 4;</span>
+<span class="fc" id="L80">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="nc" id="L82">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L83">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
-<span class="nc" id="L84">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="nc" id="L85">    header.writeBytes(headerBytes);</span>
-<span class="nc" id="L86">    offset += headerSize;</span>
-<span class="nc" id="L87">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="nc" id="L88">    middle.writeBytes(middleBytes);</span>
-<span class="nc" id="L89">    offset += middleSize;</span>
-<span class="nc" id="L90">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
-<span class="nc" id="L91">    end.writeInt(code);</span>
-<span class="nc" id="L92">  }</span>
+<span class="fc" id="L82">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L83">    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);</span>
+<span class="fc" id="L84">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="fc" id="L85">    header.writeBytes(headerBytes);</span>
+<span class="fc" id="L86">    offset += headerSize;</span>
+<span class="fc" id="L87">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="fc" id="L88">    middle.writeBytes(middleBytes);</span>
+<span class="fc" id="L89">    offset += middleSize;</span>
+<span class="fc" id="L90">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="fc" id="L91">    end.writeInt(code);</span>
+<span class="fc" id="L92">  }</span>
 
   @Override
   public final byte getType() {
-<span class="nc bnc" id="L96" title="All 2 branches missed.">    if (code &gt; PINGPONG) {</span>
-<span class="nc" id="L97">      return LocalPacketFactory.VALIDPACKET;</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">    if (code &gt; PINGPONG) {</span>
+<span class="fc" id="L97">      return LocalPacketFactory.VALIDPACKET;</span>
     }
-<span class="nc" id="L99">    return LocalPacketFactory.TESTPACKET;</span>
+<span class="fc" id="L99">    return LocalPacketFactory.TESTPACKET;</span>
   }
 
   @Override
   public final String toString() {
-<span class="nc" id="L104">    return &quot;TestPacket: &quot; + sheader + ':' + smiddle + ':' + code;</span>
+<span class="fc" id="L104">    return &quot;TestPacket: &quot; + sheader + ':' + smiddle + ':' + code;</span>
   }
 
   public final synchronized void update() {
-<span class="nc" id="L108">    code++;</span>
-<span class="nc" id="L109">    end = null;</span>
-<span class="nc" id="L110">  }</span>
+<span class="fc" id="L108">    code++;</span>
+<span class="fc" id="L109">    end = null;</span>
+<span class="fc" id="L110">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

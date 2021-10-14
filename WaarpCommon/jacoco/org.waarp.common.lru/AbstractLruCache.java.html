@@ -46,7 +46,7 @@ public abstract class AbstractLruCache&lt;K, V&gt;
 <span class="fc" id="L46">  }</span>
 
   @Override
-  public boolean contains(final K key) {
+  public final boolean contains(final K key) {
     // can't use contains because of expiration policy
 <span class="fc" id="L51">    final V value = get(key);</span>
 
@@ -74,12 +74,12 @@ public abstract class AbstractLruCache&lt;K, V&gt;
   }
 
   @Override
-  public V get(final K key, final Callable&lt;V&gt; callback) throws Exception {
+  public final V get(final K key, final Callable&lt;V&gt; callback) throws Exception {
 <span class="fc" id="L78">    return get(key, callback, ttl);</span>
   }
 
   @Override
-  public V get(final K key, final Callable&lt;V&gt; callback, final long ttl)
+  public final V get(final K key, final Callable&lt;V&gt; callback, final long ttl)
       throws Exception {
 <span class="fc" id="L84">    V value = get(key);</span>
 
@@ -93,12 +93,12 @@ public abstract class AbstractLruCache&lt;K, V&gt;
   }
 
   @Override
-  public long getTtl() {
+  public final long getTtl() {
 <span class="fc" id="L97">    return ttl;</span>
   }
 
   @Override
-  public void setNewTtl(final long ttl) {
+  public final void setNewTtl(final long ttl) {
 <span class="fc bfc" id="L102" title="All 2 branches covered.">    if (ttl &lt;= 0) {</span>
 <span class="fc" id="L103">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
     }
@@ -115,7 +115,7 @@ public abstract class AbstractLruCache&lt;K, V&gt;
   protected abstract InterfaceLruCacheEntry&lt;V&gt; getEntry(K key);
 
   @Override
-  public void updateTtl(final K key) {
+  public final void updateTtl(final K key) {
 <span class="fc" id="L119">    final InterfaceLruCacheEntry&lt;V&gt; cacheEntry = getEntry(key);</span>
 <span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (cacheEntry != null) {</span>
 <span class="fc" id="L121">      cacheEntry.resetTime(ttl);</span>
@@ -131,7 +131,7 @@ public abstract class AbstractLruCache&lt;K, V&gt;
    *
    * @return Value
    */
-  protected V getValue(final K key) {
+  protected final V getValue(final K key) {
 <span class="fc" id="L135">    V value = null;</span>
 
 <span class="fc" id="L137">    final InterfaceLruCacheEntry&lt;V&gt; cacheEntry = getEntry(key);</span>
@@ -149,12 +149,12 @@ public abstract class AbstractLruCache&lt;K, V&gt;
   }
 
   @Override
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
 <span class="pc bpc" id="L153" title="1 of 2 branches missed.">    return size() == 0;</span>
   }
 
   @Override
-  public void put(final K key, final V value) {
+  public final void put(final K key, final V value) {
 <span class="fc" id="L158">    put(key, value, ttl);</span>
 <span class="fc" id="L159">  }</span>
 
@@ -173,4 +173,4 @@ public abstract class AbstractLruCache&lt;K, V&gt;
    */
   protected abstract void putEntry(K key, InterfaceLruCacheEntry&lt;V&gt; entry);
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

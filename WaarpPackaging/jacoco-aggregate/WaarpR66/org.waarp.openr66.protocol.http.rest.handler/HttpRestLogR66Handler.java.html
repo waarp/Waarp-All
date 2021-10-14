@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestLogR66Handler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.handler</a> &gt; <span class="el_source">HttpRestLogR66Handler.java</span></div><h1>HttpRestLogR66Handler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.rest.handler;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
+import org.waarp.openr66.protocol.localhandler.ServerActions;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.LogJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.LogResponseJsonPacket;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+/**
+ * Log Http REST interface: http://host/log?... + LogJsonPacket as GET
+ */
+public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
+
+  public static final String BASEURI = &quot;log&quot;;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(HttpRestLogR66Handler.class);</span>
+
+  public HttpRestLogR66Handler(final RestConfiguration config,
+                               final METHOD... methods) {
+<span class="fc" id="L64">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L65">    setIntersectionMethods(methods, METHOD.GET);</span>
+<span class="fc" id="L66">  }</span>
+
+  @Override
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+    try {
+<span class="fc" id="L75">      HttpRestV1Utils.checkSanity(arguments);</span>
+<span class="nc" id="L76">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L77">      throw new HttpIncorrectRequestException(&quot;Issue on values&quot;, e);</span>
+<span class="fc" id="L78">    }</span>
+<span class="fc" id="L79">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L81">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    }
+<span class="fc" id="L83">    handler.setWillClose(false);</span>
+<span class="fc" id="L84">    final ServerActions serverHandler =</span>
+<span class="fc" id="L85">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+    // now action according to body
+<span class="fc" id="L87">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">    if (json == null) {</span>
+<span class="fc" id="L89">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="fc" id="L90">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L91">      return;</span>
+    }
+<span class="nc" id="L93">    result.getAnswer().put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Log.name());</span>
+    try {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (json instanceof LogJsonPacket) {//</span>
+<span class="nc" id="L96">        result.setCommand(ACTIONS_TYPE.GetLog.name());</span>
+<span class="nc" id="L97">        final LogJsonPacket node = (LogJsonPacket) json;</span>
+<span class="nc" id="L98">        final boolean purge = node.isPurge();</span>
+<span class="nc" id="L99">        final boolean clean = node.isClean();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        final Timestamp start = node.getStart() == null? null :</span>
+<span class="nc" id="L101">            new Timestamp(node.getStart().getTime());</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        final Timestamp stop = node.getStop() == null? null :</span>
+<span class="nc" id="L103">            new Timestamp(node.getStop().getTime());</span>
+<span class="nc" id="L104">        final String startid = node.getStartid();</span>
+<span class="nc" id="L105">        final String stopid = node.getStopid();</span>
+<span class="nc" id="L106">        final String rule = node.getRule();</span>
+<span class="nc" id="L107">        final String request = node.getRequest();</span>
+<span class="nc" id="L108">        final boolean pending = node.isStatuspending();</span>
+<span class="nc" id="L109">        final boolean transfer = node.isStatustransfer();</span>
+<span class="nc" id="L110">        final boolean done = node.isStatusdone();</span>
+<span class="nc" id="L111">        final boolean error = node.isStatuserror();</span>
+<span class="nc" id="L112">        final String[] sresult =</span>
+<span class="nc" id="L113">            serverHandler.logPurge(purge, clean, start, stop, startid, stopid,</span>
+                                   rule, request, pending, transfer, done,
+                                   error, purge);
+<span class="nc" id="L116">        final LogResponseJsonPacket newjson = new LogResponseJsonPacket();</span>
+<span class="nc" id="L117">        newjson.fromJson(node);</span>
+        // Now answer
+<span class="nc" id="L119">        newjson.setCommand(node.getRequestUserPacket());</span>
+<span class="nc" id="L120">        newjson.setFilename(sresult[0]);</span>
+<span class="nc" id="L121">        newjson.setExported(Long.parseLong(sresult[1]));</span>
+<span class="nc" id="L122">        newjson.setPurged(Long.parseLong(sresult[2]));</span>
+<span class="nc" id="L123">        setOk(handler, result, newjson, HttpResponseStatus.OK);</span>
+<span class="nc" id="L124">      } else {</span>
+<span class="nc" id="L125">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
+<span class="nc" id="L126">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L127">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+      }
+<span class="nc" id="L129">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L130">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L131">    } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L132">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L133">    }</span>
+<span class="nc" id="L134">  }</span>
+
+  @Override
+  protected final ArrayNode getDetailedAllow() {
+<span class="fc" id="L138">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L141">      final LogJsonPacket node3 = new LogJsonPacket();</span>
+<span class="fc" id="L142">      node3.setRequestUserPacket();</span>
+<span class="fc" id="L143">      node3.setComment(&quot;Log export request (GET)&quot;);</span>
+<span class="fc" id="L144">      node3.setRequest(&quot;The requester or requested host name&quot;);</span>
+<span class="fc" id="L145">      node3.setRule(&quot;The rule name&quot;);</span>
+<span class="fc" id="L146">      node3.setStart(new Date());</span>
+<span class="fc" id="L147">      node3.setStop(new Date());</span>
+<span class="fc" id="L148">      node3.setStartid(&quot;Start id - long -&quot;);</span>
+<span class="fc" id="L149">      node3.setStopid(&quot;Stop id - long -&quot;);</span>
+      final ObjectNode node2;
+<span class="fc" id="L151">      final LogResponseJsonPacket resp = new LogResponseJsonPacket();</span>
+<span class="fc" id="L152">      resp.setComment(&quot;Log export response&quot;);</span>
+<span class="fc" id="L153">      resp.setFilename(&quot;filepath&quot;);</span>
+<span class="fc" id="L154">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+      try {
+<span class="fc" id="L156">        node1.add(resp.createObjectNode());</span>
+<span class="fc" id="L157">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L158">                                               ACTIONS_TYPE.GetLog.name(),</span>
+<span class="fc" id="L159">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L160">        node.add(node2);</span>
+<span class="nc" id="L161">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="fc" id="L163">      }</span>
+    }
+
+<span class="fc" id="L166">    final ObjectNode node2 =</span>
+<span class="fc" id="L167">        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,</span>
+<span class="fc" id="L168">                                       COMMAND_TYPE.OPTIONS.name(), null, null);</span>
+<span class="fc" id="L169">    node.add(node2);</span>
+
+<span class="fc" id="L171">    return node;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

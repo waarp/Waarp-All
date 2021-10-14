@@ -23,7 +23,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -61,163 +61,140 @@ import static org.waarp.common.database.DbConstant.*;
    */
   public static void main(final String[] args)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L64">    WaarpLoggerFactory</span>
-<span class="nc" id="L65">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L64">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
 <span class="nc" id="L66">    final WaarpLogger logger =</span>
 <span class="nc" id="L67">        WaarpLoggerFactory.getLogger(ServerShutdown.class);</span>
 <span class="nc bnc" id="L68" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
 <span class="nc" id="L69">      logger.error(INFO_ARGS);</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L71">        return;</span>
-      }
-<span class="nc" id="L73">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L74">      System.exit(1);//NOSONAR</span>
-<span class="nc" id="L75">      return;</span>
+<span class="nc" id="L70">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L71">      return;</span>
     }
-<span class="nc" id="L77">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">        .setConfigurationServerShutdownFromXml(Configuration.configuration,</span>
-                                               args[0])) {
-<span class="nc" id="L80">      logger.error(INFO_ARGS);</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L82">        admin.close();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (!FileBasedConfiguration.setConfigurationServerShutdownFromXml(</span>
+        Configuration.configuration, args[0])) {
+<span class="nc" id="L75">      logger.error(INFO_ARGS);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L77">        admin.close();</span>
       }
-<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L85">        return;</span>
-      }
-<span class="nc" id="L87">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L88">      System.exit(1);//NOSONAR</span>
-<span class="nc" id="L89">      return;</span>
+<span class="nc" id="L79">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L80">      return;</span>
     }
-<span class="nc" id="L91">    boolean useSsl = true;</span>
-<span class="nc" id="L92">    boolean isblock = false;</span>
-<span class="nc" id="L93">    boolean isunblock = false;</span>
-<span class="nc" id="L94">    boolean isRestart = false;</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (args.length &gt; 1) {</span>
-<span class="nc bnc" id="L96" title="All 2 branches missed.">      for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (&quot;-nossl&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L98">          useSsl = false;</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">        } else if (&quot;-block&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L100">          isblock = true;</span>
-<span class="nc bnc" id="L101" title="All 2 branches missed.">        } else if (&quot;-unblock&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L102">          isunblock = true;</span>
-<span class="nc bnc" id="L103" title="All 2 branches missed.">        } else if (&quot;-restart&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L104">          isRestart = true;</span>
+<span class="nc" id="L82">    boolean useSsl = true;</span>
+<span class="nc" id="L83">    boolean isblock = false;</span>
+<span class="nc" id="L84">    boolean isunblock = false;</span>
+<span class="nc" id="L85">    boolean isRestart = false;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (args.length &gt; 1) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (&quot;-nossl&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L89">          useSsl = false;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        } else if (&quot;-block&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L91">          isblock = true;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        } else if (&quot;-unblock&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L93">          isunblock = true;</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        } else if (&quot;-restart&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L95">          isRestart = true;</span>
         }
       }
     }
     final DbHostAuth host;
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (useSsl) {</span>
-<span class="nc" id="L110">      host = Configuration.configuration.getHostSslAuth();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (useSsl) {</span>
+<span class="nc" id="L101">      host = Configuration.configuration.getHostSslAuth();</span>
     } else {
-<span class="nc" id="L112">      host = Configuration.configuration.getHostAuth();</span>
+<span class="nc" id="L103">      host = Configuration.configuration.getHostAuth();</span>
     }
-<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (host == null) {</span>
-<span class="nc" id="L115">      logger.error(&quot;Host id not found while SSL mode is : &quot; + useSsl);</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L117">        admin.close();</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (host == null) {</span>
+<span class="nc" id="L106">      logger.error(&quot;Host id not found while SSL mode is : &quot; + useSsl);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L108">        admin.close();</span>
       }
-<span class="nc bnc" id="L119" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L120">        return;</span>
-      }
-<span class="nc" id="L122">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L123">      System.exit(1);//NOSONAR</span>
-<span class="nc" id="L124">      return;</span>
+<span class="nc" id="L110">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L111">      return;</span>
     }
-<span class="nc bnc" id="L126" title="All 4 branches missed.">    if (isunblock &amp;&amp; isblock) {</span>
-<span class="nc" id="L127">      logger.error(&quot;Only one of '-block' or '-unblock' must be specified&quot;);</span>
-<span class="nc bnc" id="L128" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L129">        admin.close();</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">    if (isunblock &amp;&amp; isblock) {</span>
+<span class="nc" id="L114">      logger.error(&quot;Only one of '-block' or '-unblock' must be specified&quot;);</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L116">        admin.close();</span>
       }
-<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L132">        return;</span>
-      }
-<span class="nc" id="L134">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L135">      System.exit(1);//NOSONAR</span>
-<span class="nc" id="L136">      return;</span>
+<span class="nc" id="L118">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L119">      return;</span>
     }
     final byte[] key;
-<span class="nc" id="L139">    key = FilesystemBasedDigest</span>
-<span class="nc" id="L140">        .passwdCrypt(Configuration.configuration.getServerAdminKey());</span>
+<span class="nc" id="L122">    key = FilesystemBasedDigest.passwdCrypt(</span>
+<span class="nc" id="L123">        Configuration.configuration.getServerAdminKey());</span>
     final AbstractLocalPacket packet;
-<span class="nc bnc" id="L142" title="All 4 branches missed.">    if (isblock || isunblock) {</span>
-<span class="nc" id="L143">      packet = new BlockRequestPacket(isblock, key);</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">    if (isblock || isunblock) {</span>
+<span class="nc" id="L126">      packet = new BlockRequestPacket(isblock, key);</span>
     } else {
-<span class="nc bnc" id="L145" title="All 2 branches missed.">      if (isRestart) {</span>
-<span class="nc" id="L146">        packet = new ShutdownPacket(key, (byte) 1);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      if (isRestart) {</span>
+<span class="nc" id="L129">        packet = new ShutdownPacket(key, (byte) 1);</span>
       } else {
-<span class="nc" id="L148">        packet = new ShutdownPacket(key);</span>
+<span class="nc" id="L131">        packet = new ShutdownPacket(key);</span>
       }
     }
     final SocketAddress socketServerAddress;
     try {
-<span class="nc" id="L153">      socketServerAddress = host.getSocketAddress();</span>
-<span class="nc" id="L154">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L155">      logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L157">        return;</span>
-      }
-<span class="nc" id="L159">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L160">      System.exit(1);//NOSONAR</span>
-<span class="nc" id="L161">      return;</span>
-<span class="nc" id="L162">    }</span>
-<span class="nc" id="L163">    Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L164">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
-<span class="nc" id="L165">    LocalChannelReference localChannelReference = null;</span>
-<span class="nc" id="L166">    localChannelReference = networkTransaction</span>
-<span class="nc" id="L167">        .createConnectionWithRetry(socketServerAddress, useSsl, null);</span>
-<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L169">      logger.error(&quot;Cannot connect to &quot; + host.getHostid());</span>
-<span class="nc" id="L170">      networkTransaction.closeAll();</span>
-<span class="nc" id="L171">      return;</span>
+<span class="nc" id="L136">      socketServerAddress = host.getSocketAddress();</span>
+<span class="nc" id="L137">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L138">      logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
+<span class="nc" id="L139">      WaarpSystemUtil.systemExit(1);</span>
+<span class="nc" id="L140">      return;</span>
+<span class="nc" id="L141">    }</span>
+<span class="nc" id="L142">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L143">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+<span class="nc" id="L144">    LocalChannelReference localChannelReference = null;</span>
+<span class="nc" id="L145">    localChannelReference =</span>
+<span class="nc" id="L146">        networkTransaction.createConnectionWithRetry(socketServerAddress,</span>
+                                                     useSsl, null);
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L149">      logger.error(&quot;Cannot connect to &quot; + host.getHostid());</span>
+<span class="nc" id="L150">      networkTransaction.closeAll();</span>
+<span class="nc" id="L151">      return;</span>
     }
-<span class="nc bnc" id="L173" title="All 4 branches missed.">    if (isblock || isunblock) {</span>
-<span class="nc" id="L174">      localChannelReference.sessionNewState(R66FiniteDualStates.BUSINESSR);</span>
+<span class="nc bnc" id="L153" title="All 4 branches missed.">    if (isblock || isunblock) {</span>
+<span class="nc" id="L154">      localChannelReference.sessionNewState(R66FiniteDualStates.BUSINESSR);</span>
     } else {
-<span class="nc" id="L176">      localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);</span>
+<span class="nc" id="L156">      localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);</span>
     }
-<span class="nc" id="L178">    ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet, false);</span>
-<span class="nc" id="L179">    localChannelReference.getFutureRequest().awaitOrInterruptible();</span>
-<span class="nc" id="L180">    int value = 66;</span>
-<span class="nc bnc" id="L181" title="All 4 branches missed.">    if (isblock || isunblock) {</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (localChannelReference.getFutureRequest().isSuccess()) {</span>
-<span class="nc bnc" id="L183" title="All 2 branches missed.">        logger.warn((isblock? &quot;Blocking&quot; : &quot;Unblocking&quot;) + &quot; OK&quot;);</span>
-<span class="nc" id="L184">        value = 0;</span>
+<span class="nc" id="L158">    ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet, true);</span>
+<span class="nc" id="L159">    localChannelReference.getFutureRequest().awaitOrInterruptible();</span>
+<span class="nc" id="L160">    int value = 66;</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">    if (isblock || isunblock) {</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      if (localChannelReference.getFutureRequest().isSuccess()) {</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        logger.warn((isblock? &quot;Blocking&quot; : &quot;Unblocking&quot;) + &quot; OK&quot;);</span>
+<span class="nc" id="L164">        value = 0;</span>
       } else {
-<span class="nc" id="L186">        final R66Result result =</span>
-<span class="nc" id="L187">            localChannelReference.getFutureRequest().getResult();</span>
-<span class="nc bnc" id="L188" title="All 2 branches missed.">        logger.error(</span>
+<span class="nc" id="L166">        final R66Result result =</span>
+<span class="nc" id="L167">            localChannelReference.getFutureRequest().getResult();</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        logger.error(</span>
             &quot;Cannot &quot; + (isblock? &quot;Blocking&quot; : &quot;Unblocking&quot;) + &quot;: &quot; + result,
-<span class="nc" id="L190">            localChannelReference.getFutureRequest().getCause());</span>
-<span class="nc" id="L191">        value = result.getCode().ordinal();</span>
-<span class="nc" id="L192">      }</span>
+<span class="nc" id="L170">            localChannelReference.getFutureRequest().getCause());</span>
+<span class="nc" id="L171">        value = result.getCode().ordinal();</span>
+<span class="nc" id="L172">      }</span>
     } else {
-<span class="nc bnc" id="L194" title="All 2 branches missed.">      if (localChannelReference.getFutureRequest().isSuccess()) {</span>
-<span class="nc" id="L195">        logger.warn(&quot;Shutdown OK&quot;);</span>
-<span class="nc" id="L196">        value = 0;</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      if (localChannelReference.getFutureRequest().isSuccess()) {</span>
+<span class="nc" id="L175">        logger.warn(&quot;Shutdown OK&quot;);</span>
+<span class="nc" id="L176">        value = 0;</span>
       } else {
-<span class="nc" id="L198">        final R66Result result =</span>
-<span class="nc" id="L199">            localChannelReference.getFutureRequest().getResult();</span>
-<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (result.getOther() instanceof ValidPacket &amp;&amp;</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">            ((ValidPacket) result.getOther()).getTypeValid() ==</span>
+<span class="nc" id="L178">        final R66Result result =</span>
+<span class="nc" id="L179">            localChannelReference.getFutureRequest().getResult();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (result.getOther() instanceof ValidPacket &amp;&amp;</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            ((ValidPacket) result.getOther()).getTypeValid() ==</span>
             LocalPacketFactory.SHUTDOWNPACKET) {
-<span class="nc" id="L203">          logger.warn(&quot;Shutdown command OK&quot;);</span>
-<span class="nc" id="L204">          value = 0;</span>
-<span class="nc bnc" id="L205" title="All 2 branches missed.">        } else if (result.getCode() == ErrorCode.Shutdown) {</span>
-<span class="nc" id="L206">          logger.warn(&quot;Shutdown command done&quot;);</span>
-<span class="nc" id="L207">          value = 0;</span>
+<span class="nc" id="L183">          logger.warn(&quot;Shutdown command OK&quot;);</span>
+<span class="nc" id="L184">          value = 0;</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        } else if (result.getCode() == ErrorCode.Shutdown) {</span>
+<span class="nc" id="L186">          logger.warn(&quot;Shutdown command done&quot;);</span>
+<span class="nc" id="L187">          value = 0;</span>
         } else {
-<span class="nc" id="L209">          logger.error(&quot;Cannot Shutdown: &quot; + result,</span>
-<span class="nc" id="L210">                       localChannelReference.getFutureRequest().getCause());</span>
-<span class="nc" id="L211">          value = result.getCode().ordinal();</span>
+<span class="nc" id="L189">          logger.error(&quot;Cannot Shutdown: &quot; + result,</span>
+<span class="nc" id="L190">                       localChannelReference.getFutureRequest().getCause());</span>
+<span class="nc" id="L191">          value = result.getCode().ordinal();</span>
         }
       }
     }
-<span class="nc" id="L215">    networkTransaction.closeAll();</span>
-<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L217">      return;</span>
-    }
-<span class="nc" id="L219">    System.exit(value);//NOSONAR</span>
-<span class="nc" id="L220">  }</span>
+<span class="nc" id="L195">    networkTransaction.closeAll();</span>
+<span class="nc" id="L196">    WaarpSystemUtil.systemExit(value);</span>
+<span class="nc" id="L197">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

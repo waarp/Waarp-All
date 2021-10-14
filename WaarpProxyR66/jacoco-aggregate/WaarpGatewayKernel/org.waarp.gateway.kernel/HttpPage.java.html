@@ -43,11 +43,11 @@ public class HttpPage {
   /**
    * Internal Logger
    */
-<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(HttpPage.class);</span>
+<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(HttpPage.class);</span>
 
-<span class="nc" id="L49">  public enum PageRole {</span>
-<span class="nc" id="L50">    HTML, MENU, GETDOWNLOAD, POST, PUT, POSTUPLOAD, DELETE, ERROR</span>
+<span class="fc" id="L49">  public enum PageRole {</span>
+<span class="fc" id="L50">    HTML, MENU, GETDOWNLOAD, POST, PUT, POSTUPLOAD, DELETE, ERROR</span>
   }
 
   /*
@@ -94,37 +94,37 @@ public class HttpPage {
                   final String classname,
                   final Map&lt;String, AbstractHttpField&gt; fields)
       throws ClassNotFoundException, InstantiationException,
-<span class="nc" id="L97">             IllegalAccessException {</span>
-<span class="nc" id="L98">    setPagename(pagename);</span>
-<span class="nc" id="L99">    setFileform(fileform);</span>
-<span class="nc bnc" id="L100" title="All 4 branches missed.">    if (getFileform() != null &amp;&amp; getFileform().length() == 0) {</span>
+<span class="fc" id="L97">             IllegalAccessException {</span>
+<span class="fc" id="L98">    setPagename(pagename);</span>
+<span class="fc" id="L99">    setFileform(fileform);</span>
+<span class="pc bpc" id="L100" title="3 of 4 branches missed.">    if (getFileform() != null &amp;&amp; getFileform().length() == 0) {</span>
 <span class="nc" id="L101">      setFileform(null);</span>
     }
-<span class="nc" id="L103">    setHeader(header);</span>
-<span class="nc" id="L104">    setFooter(footer);</span>
-<span class="nc" id="L105">    setBeginform(beginform);</span>
-<span class="nc" id="L106">    setEndform(endform);</span>
-<span class="nc" id="L107">    setNextinform(nextinform);</span>
-<span class="nc" id="L108">    setUri(uri);</span>
-<span class="nc" id="L109">    setPagerole(pagerole);</span>
-<span class="nc" id="L110">    setErrorpage(errorpage);</span>
-<span class="nc" id="L111">    setClassname(classname);</span>
-<span class="nc" id="L112">    setFields(fields);</span>
+<span class="fc" id="L103">    setHeader(header);</span>
+<span class="fc" id="L104">    setFooter(footer);</span>
+<span class="fc" id="L105">    setBeginform(beginform);</span>
+<span class="fc" id="L106">    setEndform(endform);</span>
+<span class="fc" id="L107">    setNextinform(nextinform);</span>
+<span class="fc" id="L108">    setUri(uri);</span>
+<span class="fc" id="L109">    setPagerole(pagerole);</span>
+<span class="fc" id="L110">    setErrorpage(errorpage);</span>
+<span class="fc" id="L111">    setClassname(classname);</span>
+<span class="fc" id="L112">    setFields(fields);</span>
     try {
-<span class="nc" id="L114">      ParametersChecker.checkSanityString(classname);</span>
+<span class="fc" id="L114">      ParametersChecker.checkSanityString(classname);</span>
 <span class="nc" id="L115">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L116">      throw new IllegalArgumentException(e.getMessage());</span>
-<span class="nc" id="L117">    }</span>
+<span class="fc" id="L117">    }</span>
     @SuppressWarnings(&quot;unchecked&quot;)
     final HttpBusinessFactory factory;
     try {
-<span class="nc" id="L121">      factory =</span>
-<span class="nc" id="L122">          (HttpBusinessFactory) WaarpSystemUtil.newInstance(classname);//NOSONAR</span>
+<span class="fc" id="L121">      factory =</span>
+<span class="fc" id="L122">          (HttpBusinessFactory) WaarpSystemUtil.newInstance(classname);//NOSONAR</span>
 <span class="nc" id="L123">    } catch (final InvocationTargetException e) {</span>
 <span class="nc" id="L124">      throw new InstantiationException(e.getMessage());</span>
-<span class="nc" id="L125">    }</span>
-<span class="nc" id="L126">    setHttpBusinessFactory(factory);//NOSONAR</span>
-<span class="nc" id="L127">  }</span>
+<span class="fc" id="L125">    }</span>
+<span class="fc" id="L126">    setHttpBusinessFactory(factory);//NOSONAR</span>
+<span class="fc" id="L127">  }</span>
 
   /**
    * Called at the beginning of every request to get the current
@@ -136,16 +136,16 @@ public class HttpPage {
    */
   public AbstractHttpBusinessRequest newRequest(
       final SocketAddress remoteAddress) {
-<span class="nc" id="L139">    final LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap =</span>
-<span class="nc" id="L140">        new LinkedHashMap&lt;String, AbstractHttpField&gt;(getFields().size());</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">    for (final AbstractHttpField field : getFields().values()) {</span>
-<span class="nc" id="L142">      final AbstractHttpField newfield = field.clone();</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">      if (getPagerole() != PageRole.MENU) {</span>
-<span class="nc" id="L144">        newfield.fieldvalue = null;</span>
+<span class="fc" id="L139">    final LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap =</span>
+<span class="fc" id="L140">        new LinkedHashMap&lt;String, AbstractHttpField&gt;(getFields().size());</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">    for (final AbstractHttpField field : getFields().values()) {</span>
+<span class="fc" id="L142">      final AbstractHttpField newfield = field.clone();</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">      if (getPagerole() != PageRole.MENU) {</span>
+<span class="fc" id="L144">        newfield.fieldvalue = null;</span>
       }
-<span class="nc" id="L146">      linkedHashMap.put(field.getFieldname(), newfield);</span>
-<span class="nc" id="L147">    }</span>
-<span class="nc" id="L148">    return getHttpBusinessFactory().getNewHttpBusinessRequest(remoteAddress,</span>
+<span class="fc" id="L146">      linkedHashMap.put(field.getFieldname(), newfield);</span>
+<span class="fc" id="L147">    }</span>
+<span class="fc" id="L148">    return getHttpBusinessFactory().getNewHttpBusinessRequest(remoteAddress,</span>
                                                               linkedHashMap,
                                                               this);
   }
@@ -170,8 +170,8 @@ public class HttpPage {
    */
   public final String getHtmlPage(final AbstractHttpBusinessRequest reference)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L173" title="All 2 branches missed.">    if (reference == null) {</span>
-<span class="nc" id="L174">      return &quot;&lt;HTML&gt;&lt;HEADER/&gt;ERROR&lt;/HTML&gt;&quot;;</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">    if (reference == null) {</span>
+<span class="fc" id="L174">      return &quot;&lt;HTML&gt;&lt;HEADER/&gt;ERROR&lt;/HTML&gt;&quot;;</span>
     }
 <span class="nc bnc" id="L176" title="All 2 branches missed.">    if (getPagerole() == PageRole.HTML) {</span>
 <span class="nc" id="L177">      return getSimpleHtml(reference);</span>
@@ -346,8 +346,8 @@ public class HttpPage {
                              final String fieldname, final String value,
                              final FieldPosition position)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L349" title="All 2 branches missed.">    if (reference == null) {</span>
-<span class="nc" id="L350">      return;</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">    if (reference == null) {</span>
+<span class="fc" id="L350">      return;</span>
     }
 <span class="nc" id="L352">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
 <span class="nc" id="L353">        reference.getMapHttpFields();</span>
@@ -400,8 +400,8 @@ public class HttpPage {
    */
   public final boolean isRequestValid(
       final AbstractHttpBusinessRequest reference) {
-<span class="nc bnc" id="L403" title="All 2 branches missed.">    if (reference == null) {</span>
-<span class="nc" id="L404">      return true;</span>
+<span class="pc bpc" id="L403" title="1 of 2 branches missed.">    if (reference == null) {</span>
+<span class="fc" id="L404">      return true;</span>
     }
 <span class="nc" id="L406">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
 <span class="nc" id="L407">        reference.getMapHttpFields();</span>
@@ -424,8 +424,8 @@ public class HttpPage {
    */
   public final Map&lt;String, AbstractHttpField&gt; getFieldsForRequest(
       final AbstractHttpBusinessRequest reference) {
-<span class="nc bnc" id="L427" title="All 2 branches missed.">    if (reference == null) {</span>
-<span class="nc" id="L428">      return SingletonUtils.singletonMap();</span>
+<span class="pc bpc" id="L427" title="1 of 2 branches missed.">    if (reference == null) {</span>
+<span class="fc" id="L428">      return SingletonUtils.singletonMap();</span>
     }
 <span class="nc" id="L430">    return reference.getMapHttpFields();</span>
   }
@@ -481,175 +481,175 @@ public class HttpPage {
    * @return the pagename
    */
   public final String getPagename() {
-<span class="nc" id="L484">    return pagename;</span>
+<span class="fc" id="L484">    return pagename;</span>
   }
 
   /**
    * @param pagename the pagename to set
    */
   private void setPagename(final String pagename) {
-<span class="nc" id="L491">    this.pagename = pagename;</span>
-<span class="nc" id="L492">  }</span>
+<span class="fc" id="L491">    this.pagename = pagename;</span>
+<span class="fc" id="L492">  }</span>
 
   /**
    * @return the fileform
    */
   public final String getFileform() {
-<span class="nc" id="L498">    return fileform;</span>
+<span class="fc" id="L498">    return fileform;</span>
   }
 
   /**
    * @param fileform the fileform to set
    */
   private void setFileform(final String fileform) {
-<span class="nc" id="L505">    this.fileform = fileform;</span>
-<span class="nc" id="L506">  }</span>
+<span class="fc" id="L505">    this.fileform = fileform;</span>
+<span class="fc" id="L506">  }</span>
 
   /**
    * @return the header
    */
   public final String getHeader() {
-<span class="nc" id="L512">    return header;</span>
+<span class="fc" id="L512">    return header;</span>
   }
 
   /**
    * @param header the header to set
    */
   private void setHeader(final String header) {
-<span class="nc" id="L519">    this.header = header;</span>
-<span class="nc" id="L520">  }</span>
+<span class="fc" id="L519">    this.header = header;</span>
+<span class="fc" id="L520">  }</span>
 
   /**
    * @return the footer
    */
   public final String getFooter() {
-<span class="nc" id="L526">    return footer;</span>
+<span class="fc" id="L526">    return footer;</span>
   }
 
   /**
    * @param footer the footer to set
    */
   private void setFooter(final String footer) {
-<span class="nc" id="L533">    this.footer = footer;</span>
-<span class="nc" id="L534">  }</span>
+<span class="fc" id="L533">    this.footer = footer;</span>
+<span class="fc" id="L534">  }</span>
 
   /**
    * @return the beginform
    */
   public final String getBeginform() {
-<span class="nc" id="L540">    return beginform;</span>
+<span class="fc" id="L540">    return beginform;</span>
   }
 
   /**
    * @param beginform the beginform to set
    */
   private void setBeginform(final String beginform) {
-<span class="nc" id="L547">    this.beginform = beginform;</span>
-<span class="nc" id="L548">  }</span>
+<span class="fc" id="L547">    this.beginform = beginform;</span>
+<span class="fc" id="L548">  }</span>
 
   /**
    * @return the endform
    */
   public final String getEndform() {
-<span class="nc" id="L554">    return endform;</span>
+<span class="fc" id="L554">    return endform;</span>
   }
 
   /**
    * @param endform the endform to set
    */
   private void setEndform(final String endform) {
-<span class="nc" id="L561">    this.endform = endform;</span>
-<span class="nc" id="L562">  }</span>
+<span class="fc" id="L561">    this.endform = endform;</span>
+<span class="fc" id="L562">  }</span>
 
   /**
    * @return the nextinform
    */
   public final String getNextinform() {
-<span class="nc" id="L568">    return nextinform;</span>
+<span class="fc" id="L568">    return nextinform;</span>
   }
 
   /**
    * @param nextinform the nextinform to set
    */
   private void setNextinform(final String nextinform) {
-<span class="nc" id="L575">    this.nextinform = nextinform;</span>
-<span class="nc" id="L576">  }</span>
+<span class="fc" id="L575">    this.nextinform = nextinform;</span>
+<span class="fc" id="L576">  }</span>
 
   /**
    * @return the uri
    */
   public final String getUri() {
-<span class="nc" id="L582">    return uri;</span>
+<span class="fc" id="L582">    return uri;</span>
   }
 
   /**
    * @param uri the uri to set
    */
   private void setUri(final String uri) {
-<span class="nc" id="L589">    this.uri = uri;</span>
-<span class="nc" id="L590">  }</span>
+<span class="fc" id="L589">    this.uri = uri;</span>
+<span class="fc" id="L590">  }</span>
 
   /**
    * @return the pagerole
    */
   public final PageRole getPagerole() {
-<span class="nc" id="L596">    return pagerole;</span>
+<span class="fc" id="L596">    return pagerole;</span>
   }
 
   /**
    * @param pagerole the pagerole to set
    */
   private void setPagerole(final PageRole pagerole) {
-<span class="nc" id="L603">    this.pagerole = pagerole;</span>
-<span class="nc" id="L604">  }</span>
+<span class="fc" id="L603">    this.pagerole = pagerole;</span>
+<span class="fc" id="L604">  }</span>
 
   /**
    * @return the errorpage
    */
   public final String getErrorpage() {
-<span class="nc" id="L610">    return errorpage;</span>
+<span class="fc" id="L610">    return errorpage;</span>
   }
 
   /**
    * @param errorpage the errorpage to set
    */
   private void setErrorpage(final String errorpage) {
-<span class="nc" id="L617">    this.errorpage = errorpage;</span>
-<span class="nc" id="L618">  }</span>
+<span class="fc" id="L617">    this.errorpage = errorpage;</span>
+<span class="fc" id="L618">  }</span>
 
   /**
    * @return the classname
    */
   public final String getClassname() {
-<span class="nc" id="L624">    return classname;</span>
+<span class="fc" id="L624">    return classname;</span>
   }
 
   /**
    * @param classname the classname to set
    */
   private void setClassname(final String classname) {
-<span class="nc" id="L631">    this.classname = classname;</span>
-<span class="nc" id="L632">  }</span>
+<span class="fc" id="L631">    this.classname = classname;</span>
+<span class="fc" id="L632">  }</span>
 
   /**
    * @return the fields
    */
   public final Map&lt;String, AbstractHttpField&gt; getFields() {
-<span class="nc" id="L638">    return fields;</span>
+<span class="fc" id="L638">    return fields;</span>
   }
 
   /**
    * @param fields the fields to set
    */
   private void setFields(final Map&lt;String, AbstractHttpField&gt; fields) {
-<span class="nc" id="L645">    this.fields = fields;</span>
-<span class="nc" id="L646">  }</span>
+<span class="fc" id="L645">    this.fields = fields;</span>
+<span class="fc" id="L646">  }</span>
 
   /**
    * @return the httpBusinessFactory
    */
   public final HttpBusinessFactory getHttpBusinessFactory() {
-<span class="nc" id="L652">    return httpBusinessFactory;</span>
+<span class="fc" id="L652">    return httpBusinessFactory;</span>
   }
 
   /**
@@ -657,7 +657,7 @@ public class HttpPage {
    */
   private void setHttpBusinessFactory(
       final HttpBusinessFactory httpBusinessFactory) {
-<span class="nc" id="L660">    this.httpBusinessFactory = httpBusinessFactory;</span>
-<span class="nc" id="L661">  }</span>
+<span class="fc" id="L660">    this.httpBusinessFactory = httpBusinessFactory;</span>
+<span class="fc" id="L661">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

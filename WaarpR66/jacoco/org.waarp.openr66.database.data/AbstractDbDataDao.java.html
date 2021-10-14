@@ -33,6 +33,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.AbstractDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 
@@ -43,8 +44,8 @@ import java.util.Map.Entry;
  * Abstract database table implementation
  */
 public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
-<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(AbstractDbDataDao.class);</span>
+<span class="fc" id="L47">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L48">      WaarpLoggerFactory.getLogger(AbstractDbDataDao.class);</span>
   public static final String JSON_MODEL = &quot;@model&quot;;
   protected static final String SHOULD_NOT_BE_CALLED = &quot;Should not be called&quot;;
 
@@ -53,14 +54,16 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
   /**
    * Abstract constructor
    */
-<span class="fc" id="L56">  protected AbstractDbDataDao() {</span>
+<span class="fc" id="L57">  protected AbstractDbDataDao() {</span>
     // nothing
-<span class="fc" id="L58">  }</span>
+<span class="fc" id="L59">  }</span>
 
   protected abstract String getTable();
 
+  protected abstract void checkValues() throws WaarpDatabaseSqlException;
 
-  protected abstract AbstractDAO&lt;E&gt; getDao() throws DAOConnectionException;
+  protected abstract AbstractDAO&lt;E&gt; getDao(final boolean isCacheable)
+      throws DAOConnectionException;
 
   protected abstract String getPrimaryKey();
 
@@ -82,16 +85,14 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   public boolean exist() throws WaarpDatabaseException {
-<span class="fc" id="L85">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
+<span class="fc" id="L88">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
     try {
-<span class="fc" id="L87">      abstractDAO = getDao();</span>
-<span class="fc" id="L88">      return abstractDAO.exist(getPrimaryKey());</span>
-<span class="nc" id="L89">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L90">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="fc" id="L90">      abstractDAO = getDao(true);</span>
+<span class="fc" id="L91">      return abstractDAO.exist(getPrimaryKey());</span>
+<span class="nc" id="L92">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L93">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">      if (abstractDAO != null) {</span>
-<span class="fc" id="L93">        abstractDAO.close();</span>
-      }
+<span class="fc" id="L95">      DAOFactory.closeDAO(abstractDAO);</span>
     }
   }
 
@@ -102,21 +103,19 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   public void select() throws WaarpDatabaseException {
-<span class="nc" id="L105">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
+<span class="nc" id="L106">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
     try {
-<span class="nc" id="L107">      abstractDAO = getDao();</span>
-<span class="nc" id="L108">      pojo = abstractDAO.select(getPrimaryKey());</span>
-<span class="nc" id="L109">      isSaved = true;</span>
-<span class="nc" id="L110">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L111">      throw new WaarpDatabaseNoConnectionException(e);</span>
-<span class="nc" id="L112">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L113">      throw new WaarpDatabaseNoDataException((e));</span>
+<span class="nc" id="L108">      abstractDAO = getDao(true);</span>
+<span class="nc" id="L109">      pojo = abstractDAO.select(getPrimaryKey());</span>
+<span class="nc" id="L110">      isSaved = true;</span>
+<span class="nc" id="L111">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L112">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="nc" id="L113">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L114">      throw new WaarpDatabaseNoDataException((e));</span>
     } finally {
-<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (abstractDAO != null) {</span>
-<span class="nc" id="L116">        abstractDAO.close();</span>
-      }
+<span class="nc" id="L116">      DAOFactory.closeDAO(abstractDAO);</span>
     }
-<span class="nc" id="L119">  }</span>
+<span class="nc" id="L118">  }</span>
 
   /**
    * Insert object into table
@@ -125,22 +124,21 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   public void insert() throws WaarpDatabaseException {
-<span class="fc bfc" id="L128" title="All 2 branches covered.">    if (isSaved) {</span>
-<span class="fc" id="L129">      return;</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L128">      return;</span>
     }
+<span class="fc" id="L130">    checkValues();</span>
 <span class="fc" id="L131">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
     try {
-<span class="fc" id="L133">      abstractDAO = getDao();</span>
+<span class="fc" id="L133">      abstractDAO = getDao(false);</span>
 <span class="fc" id="L134">      abstractDAO.insert(pojo);</span>
 <span class="fc" id="L135">      isSaved = true;</span>
 <span class="fc" id="L136">    } catch (final DAOConnectionException e) {</span>
 <span class="fc" id="L137">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="pc bpc" id="L139" title="1 of 2 branches missed.">      if (abstractDAO != null) {</span>
-<span class="fc" id="L140">        abstractDAO.close();</span>
-      }
+<span class="fc" id="L139">      DAOFactory.closeDAO(abstractDAO);</span>
     }
-<span class="fc" id="L143">  }</span>
+<span class="fc" id="L141">  }</span>
 
   /**
    * Update object to table
@@ -149,24 +147,23 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   public void update() throws WaarpDatabaseException {
-<span class="pc bpc" id="L152" title="1 of 2 branches missed.">    if (isSaved) {</span>
-<span class="nc" id="L153">      return;</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L151">      return;</span>
     }
-<span class="fc" id="L155">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
+<span class="fc" id="L153">    checkValues();</span>
+<span class="fc" id="L154">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
     try {
-<span class="fc" id="L157">      abstractDAO = getDao();</span>
-<span class="fc" id="L158">      abstractDAO.update(pojo);</span>
-<span class="fc" id="L159">      isSaved = true;</span>
-<span class="nc" id="L160">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L161">      throw new WaarpDatabaseNoConnectionException(e);</span>
-<span class="nc" id="L162">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L163">      throw new WaarpDatabaseNoDataException((e));</span>
+<span class="fc" id="L156">      abstractDAO = getDao(false);</span>
+<span class="fc" id="L157">      abstractDAO.update(pojo);</span>
+<span class="fc" id="L158">      isSaved = true;</span>
+<span class="nc" id="L159">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L160">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="nc" id="L161">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L162">      throw new WaarpDatabaseNoDataException((e));</span>
     } finally {
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">      if (abstractDAO != null) {</span>
-<span class="fc" id="L166">        abstractDAO.close();</span>
-      }
+<span class="fc" id="L164">      DAOFactory.closeDAO(abstractDAO);</span>
     }
-<span class="fc" id="L169">  }</span>
+<span class="fc" id="L166">  }</span>
 
   /**
    * Delete object from table
@@ -175,36 +172,35 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   public void delete() throws WaarpDatabaseException {
-<span class="fc" id="L178">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
+<span class="fc" id="L175">    AbstractDAO&lt;E&gt; abstractDAO = null;</span>
     try {
-<span class="fc" id="L180">      abstractDAO = getDao();</span>
-<span class="fc" id="L181">      abstractDAO.delete(pojo);</span>
-<span class="fc" id="L182">      isSaved = false;</span>
-<span class="nc" id="L183">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L184">      throw new WaarpDatabaseNoConnectionException(e);</span>
-<span class="nc" id="L185">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L186">      throw new WaarpDatabaseNoDataException((e));</span>
+<span class="fc" id="L177">      abstractDAO = getDao(false);</span>
+<span class="fc" id="L178">      abstractDAO.delete(pojo);</span>
+<span class="fc" id="L179">      isSaved = false;</span>
+<span class="nc" id="L180">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L181">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="nc" id="L182">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L183">      throw new WaarpDatabaseNoDataException((e));</span>
     } finally {
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">      if (abstractDAO != null) {</span>
-<span class="fc" id="L189">        abstractDAO.close();</span>
-      }
+<span class="fc" id="L185">      DAOFactory.closeDAO(abstractDAO);</span>
     }
-<span class="fc" id="L192">  }</span>
+<span class="fc" id="L187">  }</span>
 
   /**
    * @return the PoJo as Json
    */
   @Override
-  public String asJson() {
-<span class="nc" id="L199">    final ObjectNode node = getJson();</span>
-<span class="nc" id="L200">    return JsonHandler.writeAsString(node);</span>
+  public final String asJson() {
+<span class="nc" id="L194">    final ObjectNode node = getJson();</span>
+<span class="nc" id="L195">    return JsonHandler.writeAsString(node);</span>
   }
 
   /**
-   * @return the PoJo as Json
+   * @return the PoJo as Json (shall not be used except for native Json but
+   *     possibly incorrect
    */
   public String toJson() {
-<span class="fc" id="L207">    return JsonHandler.writeAsString(pojo);</span>
+<span class="fc" id="L203">    return JsonHandler.writeAsString(pojo);</span>
   }
 
   /**
@@ -214,21 +210,22 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   public ObjectNode getJson() {
-<span class="fc" id="L217">    final ObjectNode node = JsonHandler.createObjectNode();</span>
-<span class="fc" id="L218">    node.put(JSON_MODEL, getClass().getSimpleName());</span>
-<span class="fc" id="L219">    final String json = JsonHandler.writeAsString(pojo);</span>
-<span class="fc" id="L220">    final ObjectNode subnode = JsonHandler.getFromString(json);</span>
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    if (subnode != null) {</span>
-<span class="fc" id="L222">      for (final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; it = subnode.fields();</span>
-<span class="fc bfc" id="L223" title="All 2 branches covered.">           it.hasNext(); ) {</span>
-<span class="fc" id="L224">        final Entry&lt;String, JsonNode&gt; entry = it.next();</span>
-<span class="fc" id="L225">        node.set(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L226">      }</span>
+<span class="fc" id="L213">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L214">    node.put(JSON_MODEL, getClass().getSimpleName());</span>
+<span class="fc" id="L215">    final String json = JsonHandler.writeAsString(pojo);</span>
+<span class="fc" id="L216">    final ObjectNode subnode = JsonHandler.getFromString(json);</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">    if (subnode != null) {</span>
+<span class="fc" id="L218">      for (final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; it = subnode.fields();</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">           it.hasNext(); ) {</span>
+<span class="fc" id="L220">        final Entry&lt;String, JsonNode&gt; entry = it.next();</span>
+<span class="fc" id="L221">        node.set(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L222">      }</span>
     }
-<span class="fc" id="L228">    return node;</span>
+<span class="fc" id="L224">    return node;</span>
   }
 
-  protected abstract void setFromJson(String field, JsonNode value);
+  protected abstract void setFromJson(String field, JsonNode value)
+      throws WaarpDatabaseSqlException;
 
   /**
    * Set the values from the Json node to the current object (no database
@@ -242,41 +239,43 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
   @Override
   public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
-<span class="fc" id="L245">    boolean foundPrimaryKey = false;</span>
-<span class="fc" id="L246">    for (final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; it = node.fields();</span>
-<span class="fc bfc" id="L247" title="All 2 branches covered.">         it.hasNext(); ) {</span>
-<span class="fc" id="L248">      final Entry&lt;String, JsonNode&gt; entry = it.next();</span>
-<span class="fc" id="L249">      logger.debug(&quot;{} = {}&quot;, entry.getKey(), entry.getValue());</span>
-<span class="fc bfc" id="L250" title="All 2 branches covered.">      if (&quot;UPDATEDINFO&quot;.equalsIgnoreCase(entry.getKey())) {</span>
-<span class="fc" id="L251">        continue;</span>
+<span class="fc" id="L242">    boolean foundPrimaryKey = false;</span>
+<span class="fc" id="L243">    for (final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; it = node.fields();</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">         it.hasNext(); ) {</span>
+<span class="fc" id="L245">      final Entry&lt;String, JsonNode&gt; entry = it.next();</span>
+<span class="fc" id="L246">      logger.debug(&quot;{} = {}&quot;, entry.getKey(), entry.getValue());</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">      if (&quot;UPDATEDINFO&quot;.equalsIgnoreCase(entry.getKey())) {</span>
+<span class="fc" id="L248">        continue;</span>
       }
-<span class="fc bfc" id="L253" title="All 2 branches covered.">      if (getPrimaryField().equalsIgnoreCase(entry.getKey())) {</span>
-<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        if (ignorePrimaryKey) {</span>
-<span class="nc" id="L255">          continue;</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">      if (getPrimaryField().equalsIgnoreCase(entry.getKey())) {</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">        if (ignorePrimaryKey) {</span>
+<span class="nc" id="L252">          continue;</span>
         } else {
-<span class="pc bpc" id="L257" title="1 of 2 branches missed.">          foundPrimaryKey = !entry.getValue().isNull() &amp;&amp;</span>
-<span class="pc bpc" id="L258" title="1 of 2 branches missed.">                            !entry.getValue().asText().isEmpty();</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">          foundPrimaryKey = !entry.getValue().isNull() &amp;&amp;</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">                            !entry.getValue().asText().isEmpty();</span>
         }
       }
-<span class="fc" id="L261">      setFromJson(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L262">    }</span>
-<span class="pc bpc" id="L263" title="1 of 4 branches missed.">    if (!ignorePrimaryKey &amp;&amp; foundPrimaryKey) {</span>
+<span class="fc" id="L258">      setFromJson(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L259">      isSaved = false;</span>
+<span class="fc" id="L260">    }</span>
+<span class="fc" id="L261">    checkValues();</span>
+<span class="pc bpc" id="L262" title="1 of 4 branches missed.">    if (!ignorePrimaryKey &amp;&amp; foundPrimaryKey) {</span>
       try {
-<span class="fc" id="L265">        insert();</span>
-<span class="nc" id="L266">      } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L264">        insert();</span>
+<span class="nc" id="L265">      } catch (final WaarpDatabaseException e) {</span>
         try {
-<span class="nc" id="L268">          update();</span>
-<span class="nc" id="L269">        } catch (final WaarpDatabaseException ex) {</span>
-<span class="nc" id="L270">          logger.error(&quot;Cannot save item&quot;, ex);</span>
-<span class="nc" id="L271">        }</span>
-<span class="fc" id="L272">      }</span>
+<span class="nc" id="L267">          update();</span>
+<span class="nc" id="L268">        } catch (final WaarpDatabaseException ex) {</span>
+<span class="nc" id="L269">          logger.error(&quot;Cannot save item: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L270">        }</span>
+<span class="fc" id="L271">      }</span>
     }
-<span class="fc" id="L274">  }</span>
+<span class="fc" id="L273">  }</span>
 
   @Override
   protected void initObject() {
     // nothing
-<span class="fc" id="L279">  }</span>
+<span class="fc" id="L278">  }</span>
 
   /**
    * {@link UnsupportedOperationException}
@@ -285,7 +284,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected String getWherePrimaryKey() {
-<span class="nc" id="L288">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L287">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -293,7 +292,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected void setPrimaryKey() {
-<span class="nc" id="L296">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L295">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -303,7 +302,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected String getSelectAllFields() {
-<span class="nc" id="L306">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L305">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -313,7 +312,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected String getInsertAllValues() {
-<span class="nc" id="L316">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L315">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -323,7 +322,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected String getUpdateAllFields() {
-<span class="nc" id="L326">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L325">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -331,7 +330,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected void setToArray() {
-<span class="nc" id="L334">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L333">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -339,7 +338,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
    */
   @Override
   protected void setFromArray() {
-<span class="nc" id="L342">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L341">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 
   /**
@@ -348,7 +347,7 @@ public abstract class AbstractDbDataDao&lt;E&gt; extends AbstractDbData {
   @Override
   protected void getValues(final DbPreparedStatement preparedStatement,
                            final DbValue[] values) {
-<span class="nc" id="L351">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
+<span class="nc" id="L350">    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

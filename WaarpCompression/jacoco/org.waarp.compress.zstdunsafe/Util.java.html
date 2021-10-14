@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Util.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Compression</a> &gt; <a href="index.source.html" class="el_package">org.waarp.compress.zstdunsafe</a> &gt; <span class="el_source">Util.java</span></div><h1>Util.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdunsafe;
+
+import org.waarp.compress.MalformedInputException;
+
+import static org.waarp.compress.zstdunsafe.Constants.*;
+
+final class Util {
+  private Util() {
+  }
+
+  public static int highestBit(final int value) {
+<span class="fc" id="L45">    return 31 - Integer.numberOfLeadingZeros(value);</span>
+  }
+
+  public static boolean isPowerOf2(final int value) {
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">    return (value &amp; (value - 1)) == 0;</span>
+  }
+
+  public static int mask(final int bits) {
+<span class="fc" id="L53">    return (1 &lt;&lt; bits) - 1;</span>
+  }
+
+  public static void verify(final boolean condition, final long offset,
+                            final String reason) {
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">    if (!condition) {</span>
+<span class="nc" id="L59">      throw new MalformedInputException(offset, reason);</span>
+    }
+<span class="fc" id="L61">  }</span>
+
+  public static void checkArgument(final boolean condition,
+                                   final String reason) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">    if (!condition) {</span>
+<span class="fc" id="L66">      throw new IllegalArgumentException(reason);</span>
+    }
+<span class="fc" id="L68">  }</span>
+
+  public static void checkState(final boolean condition, final String reason) {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">    if (!condition) {</span>
+<span class="nc" id="L72">      throw new IllegalStateException(reason);</span>
+    }
+<span class="nc" id="L74">  }</span>
+
+  public static MalformedInputException fail(final long offset,
+                                             final String reason) {
+<span class="nc" id="L78">    throw new MalformedInputException(offset, reason);</span>
+  }
+
+  public static int cycleLog(final int hashLog,
+                             final CompressionParameters.Strategy strategy) {
+<span class="fc" id="L83">    int cycleLog = hashLog;</span>
+<span class="pc bpc" id="L84" title="3 of 6 branches missed.">    if (strategy == CompressionParameters.Strategy.BTLAZY2 ||</span>
+        strategy == CompressionParameters.Strategy.BTOPT ||
+        strategy == CompressionParameters.Strategy.BTULTRA) {
+<span class="nc" id="L87">      cycleLog = hashLog - 1;</span>
+    }
+<span class="fc" id="L89">    return cycleLog;</span>
+  }
+
+  public static void put24BitLittleEndian(final Object outputBase,
+                                          final long outputAddress,
+                                          final int value) {
+<span class="fc" id="L95">    UnsafeUtil.UNSAFE.putShort(outputBase, outputAddress, (short) value);</span>
+<span class="fc" id="L96">    UnsafeUtil.UNSAFE.putByte(outputBase, outputAddress + SIZE_OF_SHORT,</span>
+                              (byte) (value &gt;&gt;&gt; Short.SIZE));
+<span class="fc" id="L98">  }</span>
+
+  // provides the minimum logSize to safely represent a distribution
+  public static int minTableLog(final int inputSize, final int maxSymbolValue) {
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (inputSize &lt;= 1) {</span>
+<span class="nc" id="L103">      throw new IllegalArgumentException(</span>
+          &quot;Not supported. RLE should be used instead&quot;); // TODO
+    }
+
+<span class="fc" id="L107">    final int minBitsSrc = highestBit((inputSize - 1)) + 1;</span>
+<span class="fc" id="L108">    final int minBitsSymbols = highestBit(maxSymbolValue) + 2;</span>
+<span class="fc" id="L109">    return Math.min(minBitsSrc, minBitsSymbols);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

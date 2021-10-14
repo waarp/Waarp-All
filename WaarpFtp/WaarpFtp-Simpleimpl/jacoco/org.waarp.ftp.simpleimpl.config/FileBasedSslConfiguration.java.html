@@ -178,16 +178,17 @@ public class FileBasedSslConfiguration {
 <span class="fc" id="L178">        useClientAuthent = value.getBoolean();</span>
       }
       try {
-<span class="fc" id="L181">        FtpsInitializer.waarpSecureKeyStore</span>
-<span class="fc" id="L182">            .initTrustStore(keypath, keystorepass, useClientAuthent);</span>
-<span class="nc" id="L183">      } catch (final CryptoException e) {</span>
-<span class="nc" id="L184">        logger.error(&quot;Bad TrustKeyStore construction&quot;);</span>
-<span class="nc" id="L185">        return false;</span>
-<span class="fc" id="L186">      }</span>
+<span class="fc" id="L181">        FtpsInitializer.waarpSecureKeyStore.initTrustStore(keypath,</span>
+                                                           keystorepass,
+                                                           useClientAuthent);
+<span class="nc" id="L184">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L185">        logger.error(&quot;Bad TrustKeyStore construction&quot;);</span>
+<span class="nc" id="L186">        return false;</span>
+<span class="fc" id="L187">      }</span>
     }
-<span class="fc" id="L188">    FtpsInitializer.waarpSslContextFactory =</span>
+<span class="fc" id="L189">    FtpsInitializer.waarpSslContextFactory =</span>
         new WaarpSslContextFactory(FtpsInitializer.waarpSecureKeyStore);
-<span class="fc" id="L190">    return true;</span>
+<span class="fc" id="L191">    return true;</span>
   }
 
   /**
@@ -202,26 +203,27 @@ public class FileBasedSslConfiguration {
     final Document document;
     // Open config file
     try {
-<span class="fc" id="L205">      document = XmlUtil.getNewSaxReader().read(filename);</span>
-<span class="nc" id="L206">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L207">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
-<span class="nc" id="L208">      return false;</span>
-<span class="fc" id="L209">    }</span>
-<span class="pc bpc" id="L210" title="1 of 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L211">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
-<span class="nc" id="L212">      return false;</span>
+<span class="fc" id="L206">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L207">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L208">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename + &quot;: {}&quot;,</span>
+<span class="nc" id="L209">                   e.getMessage());</span>
+<span class="nc" id="L210">      return false;</span>
+<span class="fc" id="L211">    }</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L213">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L214">      return false;</span>
     }
-<span class="fc" id="L214">    XmlValue[] configuration = XmlUtil.read(document, configServer);</span>
-<span class="fc" id="L215">    hashConfig = new XmlHash(configuration);</span>
+<span class="fc" id="L216">    XmlValue[] configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L217">    hashConfig = new XmlHash(configuration);</span>
     // Now read the configuration
-<span class="pc bpc" id="L217" title="1 of 2 branches missed.">    if (!loadSsl(config)) {</span>
-<span class="nc" id="L218">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
-<span class="nc" id="L219">      return false;</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (!loadSsl(config)) {</span>
+<span class="nc" id="L220">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L221">      return false;</span>
     }
-<span class="fc" id="L221">    hashConfig.clear();</span>
-<span class="fc" id="L222">    hashConfig = null;</span>
-<span class="fc" id="L223">    configuration = null;</span>
-<span class="fc" id="L224">    return true;</span>
+<span class="fc" id="L223">    hashConfig.clear();</span>
+<span class="fc" id="L224">    hashConfig = null;</span>
+<span class="fc" id="L225">    configuration = null;</span>
+<span class="fc" id="L226">    return true;</span>
   }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

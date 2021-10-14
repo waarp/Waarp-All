@@ -19,7 +19,6 @@
  */
 package org.waarp.common.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
@@ -38,164 +37,164 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * MariaDB/MySQL common Database Model implementation
  */
-<span class="nc" id="L41">public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {</span>
+<span class="fc" id="L40">public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L45">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L46">      WaarpLoggerFactory.getLogger(DbModelCommonMariadbMySql.class);</span>
+<span class="fc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L45">      WaarpLoggerFactory.getLogger(DbModelCommonMariadbMySql.class);</span>
 
-<span class="nc" id="L48">  protected enum DBType {</span>
-<span class="nc" id="L49">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;),</span>
-<span class="nc" id="L50">    VARCHAR(Types.VARCHAR, &quot; VARCHAR(&quot; + MAX_VARCHAR + &quot;) &quot;),</span>
+<span class="fc" id="L47">  protected enum DBType {</span>
+<span class="fc" id="L48">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;),</span>
+<span class="fc" id="L49">    VARCHAR(Types.VARCHAR, &quot; VARCHAR(&quot; + MAX_VARCHAR + &quot;) &quot;),</span>
     /**
      * Used in replacement of VARCHAR for MYSQL/MARIADB (limitation of size
      * if
      * in Primary Key)
      */
-<span class="nc" id="L56">    NVARCHAR(Types.VARCHAR, &quot; VARCHAR(&quot; + MAX_KEY_VARCHAR + &quot;) &quot;),</span>
-<span class="nc" id="L57">    LONGVARCHAR(Types.LONGVARCHAR, &quot; TEXT &quot;), BIT(Types.BIT, &quot; &quot; + &quot;BOOLEAN &quot;),</span>
-<span class="nc" id="L58">    TINYINT(Types.TINYINT, &quot; TINYINT &quot;), SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;),</span>
-<span class="nc" id="L59">    INTEGER(Types.INTEGER, &quot; INTEGER &quot;), BIGINT(Types.BIGINT, &quot; BIGINT &quot;),</span>
-<span class="nc" id="L60">    REAL(Types.REAL, &quot; FLOAT &quot;), DOUBLE(Types.DOUBLE, &quot; DOUBLE &quot;),</span>
-<span class="nc" id="L61">    VARBINARY(Types.VARBINARY, &quot; VARBINARY(&quot; + (MAX_BINARY * 2) + &quot;) &quot;),</span>
-<span class="nc" id="L62">    DATE(Types.DATE, &quot; &quot; + &quot;DATE &quot;),</span>
-<span class="nc" id="L63">    TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP(3) &quot;);</span>
+<span class="fc" id="L55">    NVARCHAR(Types.VARCHAR, &quot; VARCHAR(&quot; + MAX_KEY_VARCHAR + &quot;) &quot;),</span>
+<span class="fc" id="L56">    LONGVARCHAR(Types.LONGVARCHAR, &quot; TEXT &quot;), BIT(Types.BIT, &quot; &quot; + &quot;BOOLEAN &quot;),</span>
+<span class="fc" id="L57">    TINYINT(Types.TINYINT, &quot; TINYINT &quot;), SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;),</span>
+<span class="fc" id="L58">    INTEGER(Types.INTEGER, &quot; INTEGER &quot;), BIGINT(Types.BIGINT, &quot; BIGINT &quot;),</span>
+<span class="fc" id="L59">    REAL(Types.REAL, &quot; FLOAT &quot;), DOUBLE(Types.DOUBLE, &quot; DOUBLE &quot;),</span>
+<span class="fc" id="L60">    VARBINARY(Types.VARBINARY, &quot; VARBINARY(&quot; + (MAX_BINARY * 2) + &quot;) &quot;),</span>
+<span class="fc" id="L61">    DATE(Types.DATE, &quot; &quot; + &quot;DATE &quot;),</span>
+<span class="fc" id="L62">    TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP(3) &quot;);</span>
 
     public final int type;
 
     public final String constructor;
 
-<span class="nc" id="L69">    DBType(final int type, final String constructor) {</span>
-<span class="nc" id="L70">      this.type = type;</span>
-<span class="nc" id="L71">      this.constructor = constructor;</span>
-<span class="nc" id="L72">    }</span>
+<span class="fc" id="L68">    DBType(final int type, final String constructor) {</span>
+<span class="fc" id="L69">      this.type = type;</span>
+<span class="fc" id="L70">      this.constructor = constructor;</span>
+<span class="fc" id="L71">    }</span>
 
     public static String getType(final int sqltype) {
-<span class="nc bnc" id="L75" title="All 15 branches missed.">      switch (sqltype) {</span>
+<span class="pc bpc" id="L74" title="6 of 15 branches missed.">      switch (sqltype) {</span>
         case Types.CHAR:
-<span class="nc" id="L77">          return CHAR.constructor;</span>
+<span class="fc" id="L76">          return CHAR.constructor;</span>
         case Types.VARCHAR:
-<span class="nc" id="L79">          return VARCHAR.constructor;</span>
+<span class="fc" id="L78">          return VARCHAR.constructor;</span>
         case Types.NVARCHAR:
-<span class="nc" id="L81">          return NVARCHAR.constructor;</span>
+<span class="fc" id="L80">          return NVARCHAR.constructor;</span>
         case Types.LONGVARCHAR:
-<span class="nc" id="L83">          return LONGVARCHAR.constructor;</span>
+<span class="fc" id="L82">          return LONGVARCHAR.constructor;</span>
         case Types.BIT:
-<span class="nc" id="L85">          return BIT.constructor;</span>
+<span class="fc" id="L84">          return BIT.constructor;</span>
         case Types.TINYINT:
-<span class="nc" id="L87">          return TINYINT.constructor;</span>
+<span class="nc" id="L86">          return TINYINT.constructor;</span>
         case Types.SMALLINT:
-<span class="nc" id="L89">          return SMALLINT.constructor;</span>
+<span class="nc" id="L88">          return SMALLINT.constructor;</span>
         case Types.INTEGER:
-<span class="nc" id="L91">          return INTEGER.constructor;</span>
+<span class="fc" id="L90">          return INTEGER.constructor;</span>
         case Types.BIGINT:
-<span class="nc" id="L93">          return BIGINT.constructor;</span>
+<span class="fc" id="L92">          return BIGINT.constructor;</span>
         case Types.REAL:
-<span class="nc" id="L95">          return REAL.constructor;</span>
+<span class="nc" id="L94">          return REAL.constructor;</span>
         case Types.DOUBLE:
-<span class="nc" id="L97">          return DOUBLE.constructor;</span>
+<span class="nc" id="L96">          return DOUBLE.constructor;</span>
         case Types.VARBINARY:
-<span class="nc" id="L99">          return VARBINARY.constructor;</span>
+<span class="fc" id="L98">          return VARBINARY.constructor;</span>
         case Types.DATE:
-<span class="nc" id="L101">          return DATE.constructor;</span>
+<span class="nc" id="L100">          return DATE.constructor;</span>
         case Types.TIMESTAMP:
-<span class="nc" id="L103">          return TIMESTAMP.constructor;</span>
+<span class="fc" id="L102">          return TIMESTAMP.constructor;</span>
         default:
-<span class="nc" id="L105">          return null;</span>
+<span class="nc" id="L104">          return null;</span>
       }
     }
   }
 
-<span class="nc" id="L110">  private final ReentrantLock lock = new ReentrantLock();</span>
+<span class="fc" id="L109">  private final ReentrantLock lock = new ReentrantLock();</span>
 
   @Override
   public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L115">    final String action =</span>
+<span class="nc" id="L114">    final String action =</span>
         &quot;UPDATE Sequences SET seq = &quot; + newvalue + &quot; WHERE name = '&quot; +
         DbDataModel.fieldseq + '\'';
-<span class="nc" id="L118">    final DbRequest request = new DbRequest(session);</span>
+<span class="nc" id="L117">    final DbRequest request = new DbRequest(session);</span>
     try {
-<span class="nc" id="L120">      request.query(action);</span>
-<span class="nc" id="L121">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L122">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
-<span class="nc" id="L123">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L124">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
+<span class="nc" id="L119">      request.query(action);</span>
+<span class="nc" id="L120">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L121">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
+<span class="nc" id="L122">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L123">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
     } finally {
-<span class="nc" id="L126">      request.close();</span>
+<span class="nc" id="L125">      request.close();</span>
     }
-<span class="nc" id="L128">    logger.warn(action);</span>
-<span class="nc" id="L129">  }</span>
+<span class="nc" id="L127">    logger.warn(action);</span>
+<span class="nc" id="L128">  }</span>
 
   @Override
-  public synchronized long nextSequence(final DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L135">    lock.lock();</span>
+<span class="nc" id="L134">    lock.lock();</span>
     try {
-<span class="nc" id="L137">      long result = DbConstant.ILLEGALVALUE;</span>
-<span class="nc" id="L138">      String action =</span>
+      long result;
+<span class="nc" id="L137">      String action =</span>
           &quot;SELECT seq FROM Sequences WHERE name = '&quot; + DbDataModel.fieldseq +
           &quot;' FOR UPDATE&quot;;
-<span class="nc" id="L141">      final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L140">      final DbPreparedStatement preparedStatement =</span>
           new DbPreparedStatement(dbSession);
       try {
-<span class="nc" id="L144">        dbSession.getConn().setAutoCommit(false);</span>
-<span class="nc" id="L145">      } catch (final SQLException ignored) {</span>
-<span class="nc" id="L146">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="nc" id="L147">      }</span>
+<span class="nc" id="L143">        dbSession.getConn().setAutoCommit(false);</span>
+<span class="nc" id="L144">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L145">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L146">      }</span>
       try {
-<span class="nc" id="L149">        preparedStatement.createPrepareStatement(action);</span>
+<span class="nc" id="L148">        preparedStatement.createPrepareStatement(action);</span>
         // Limit the search
-<span class="nc" id="L151">        preparedStatement.executeQuery();</span>
-<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (preparedStatement.getNext()) {</span>
+<span class="nc" id="L150">        preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if (preparedStatement.getNext()) {</span>
           try {
-<span class="nc" id="L154">            result = preparedStatement.getResultSet().getLong(1);</span>
-<span class="nc" id="L155">          } catch (final SQLException e) {</span>
-<span class="nc" id="L156">            throw new WaarpDatabaseSqlException(e);</span>
-<span class="nc" id="L157">          }</span>
+<span class="nc" id="L153">            result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L154">          } catch (final SQLException e) {</span>
+<span class="nc" id="L155">            throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L156">          }</span>
         } else {
-<span class="nc" id="L159">          throw new WaarpDatabaseNoDataException(</span>
+<span class="nc" id="L158">          throw new WaarpDatabaseNoDataException(</span>
               &quot;No sequence found. Must be initialized first&quot;);
         }
       } finally {
-<span class="nc" id="L163">        preparedStatement.realClose();</span>
+<span class="nc" id="L162">        preparedStatement.realClose();</span>
       }
-<span class="nc" id="L165">      action =</span>
+<span class="nc" id="L164">      action =</span>
           &quot;UPDATE Sequences SET seq = &quot; + (result + 1) + &quot; WHERE name = '&quot; +
           DbDataModel.fieldseq + '\'';
       try {
-<span class="nc" id="L169">        preparedStatement.createPrepareStatement(action);</span>
+<span class="nc" id="L168">        preparedStatement.createPrepareStatement(action);</span>
         // Limit the search
-<span class="nc" id="L171">        preparedStatement.executeUpdate();</span>
+<span class="nc" id="L170">        preparedStatement.executeUpdate();</span>
       } finally {
-<span class="nc" id="L173">        preparedStatement.realClose();</span>
+<span class="nc" id="L172">        preparedStatement.realClose();</span>
       }
-<span class="nc" id="L175">      return result;</span>
+<span class="nc" id="L174">      return result;</span>
     } finally {
       try {
-<span class="nc" id="L178">        dbSession.getConn().setAutoCommit(true);</span>
-<span class="nc" id="L179">      } catch (final SQLException ignored) {</span>
-<span class="nc" id="L180">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L177">        dbSession.getConn().setAutoCommit(true);</span>
+<span class="nc" id="L178">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L179">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
       } finally {
-<span class="nc" id="L182">        lock.unlock();</span>
+<span class="nc" id="L181">        lock.unlock();</span>
       }
     }
   }
 
   @Override
   protected final String validConnectionString() {
-<span class="nc" id="L189">    return &quot;select 1 from dual&quot;;</span>
+<span class="nc" id="L188">    return &quot;select 1 from dual&quot;;</span>
   }
 
   @Override
   public final String limitRequest(final String allfields, final String request,
                                    final int nb) {
-<span class="nc bnc" id="L195" title="All 2 branches missed.">    if (nb == 0) {</span>
-<span class="nc" id="L196">      return request;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="nc" id="L195">      return request;</span>
     }
-<span class="nc" id="L198">    return request + &quot; LIMIT &quot; + nb;</span>
+<span class="nc" id="L197">    return request + &quot; LIMIT &quot; + nb;</span>
   }
 
 }

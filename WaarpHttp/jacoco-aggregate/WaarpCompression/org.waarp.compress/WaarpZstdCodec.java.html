@@ -52,21 +52,21 @@ import java.io.OutputStream;
  * &lt;/ul&gt;
  */
 public class WaarpZstdCodec {
-<span class="nc" id="L55">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L56">      WaarpLoggerFactory.getLogger(WaarpZstdCodec.class);</span>
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(WaarpZstdCodec.class);</span>
   private final CompressorCodec codec;
 
-<span class="nc" id="L59">  public WaarpZstdCodec() {</span>
+<span class="fc" id="L59">  public WaarpZstdCodec() {</span>
     boolean jniLoaded;
     try {
-<span class="nc" id="L62">      Native.load();</span>
-<span class="nc" id="L63">      jniLoaded = true;</span>
+<span class="fc" id="L62">      Native.load();</span>
+<span class="fc" id="L63">      jniLoaded = true;</span>
 <span class="nc" id="L64">    } catch (final Exception e) {</span>
 <span class="nc" id="L65">      jniLoaded = false;</span>
 <span class="nc" id="L66">      logger.warn(&quot;Cannot load JNI based ZSTD codec: {}&quot;, e.getMessage());</span>
-<span class="nc" id="L67">    }</span>
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (jniLoaded) {</span>
-<span class="nc" id="L69">      codec = new ZstdJniCodec();</span>
+<span class="fc" id="L67">    }</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (jniLoaded) {</span>
+<span class="fc" id="L69">      codec = new ZstdJniCodec();</span>
     } else {
 <span class="nc bnc" id="L71" title="All 2 branches missed.">      if (UnsafeUtil.isValid()) {</span>
 <span class="nc" id="L72">        codec = new ZstdUnsafeCodec();</span>
@@ -74,13 +74,13 @@ public class WaarpZstdCodec {
 <span class="nc" id="L74">        codec = new ZstdSafeCodec();</span>
       }
     }
-<span class="nc" id="L77">  }</span>
+<span class="fc" id="L77">  }</span>
 
   /**
    * @return the current Compressor Codec implementation
    */
   public final CompressorCodec getCompressorCodec() {
-<span class="nc" id="L83">    return codec;</span>
+<span class="fc" id="L83">    return codec;</span>
   }
 
   /**
@@ -89,7 +89,7 @@ public class WaarpZstdCodec {
    * @return the maximum size of a compressed buffer of size given
    */
   public static int getMaxCompressedSize(final int bufferSize) {
-<span class="nc" id="L92">    return ZstdSafeCodec.maxCompressedSize(bufferSize);</span>
+<span class="fc" id="L92">    return ZstdSafeCodec.maxCompressedSize(bufferSize);</span>
   }
 
   /**
@@ -104,21 +104,21 @@ public class WaarpZstdCodec {
    */
   public final long compress(final File input, final File output)
       throws MalformedInputException {
-<span class="nc" id="L107">    InputStream inputStream = null;</span>
-<span class="nc" id="L108">    OutputStream outputStream = null;</span>
+<span class="fc" id="L107">    InputStream inputStream = null;</span>
+<span class="fc" id="L108">    OutputStream outputStream = null;</span>
     try {
       final byte[] buffer;
-<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (codec instanceof ZstdJniCodec) {</span>
-<span class="nc" id="L112">        inputStream = new FileInputStream(input);</span>
-<span class="nc" id="L113">        outputStream = new ZstdOutputStream(new FileOutputStream(output), 1);</span>
-<span class="nc" id="L114">        buffer = new byte[Zstd.blockSizeMax()];</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">      if (codec instanceof ZstdJniCodec) {</span>
+<span class="fc" id="L112">        inputStream = new FileInputStream(input);</span>
+<span class="fc" id="L113">        outputStream = new ZstdOutputStream(new FileOutputStream(output), 1);</span>
+<span class="fc" id="L114">        buffer = new byte[Zstd.blockSizeMax()];</span>
         while (true) {
-<span class="nc" id="L116">          final int r = inputStream.read(buffer);</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">          if (r == -1) {</span>
-<span class="nc" id="L118">            break;</span>
+<span class="fc" id="L116">          final int r = inputStream.read(buffer);</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">          if (r == -1) {</span>
+<span class="fc" id="L118">            break;</span>
           }
-<span class="nc" id="L120">          outputStream.write(buffer, 0, r);</span>
-<span class="nc" id="L121">        }</span>
+<span class="fc" id="L120">          outputStream.write(buffer, 0, r);</span>
+<span class="fc" id="L121">        }</span>
       } else {
 <span class="nc" id="L123">        inputStream = new FileInputStream(input);</span>
 <span class="nc" id="L124">        buffer = ByteStreams.toByteArray(inputStream);</span>
@@ -131,15 +131,15 @@ public class WaarpZstdCodec {
                            bufferCompression.length);
 <span class="nc" id="L132">        outputStream.write(bufferCompression, 0, length);</span>
       }
-<span class="nc" id="L134">      outputStream.flush();</span>
-<span class="nc" id="L135">      FileUtils.close(outputStream);</span>
-<span class="nc" id="L136">      outputStream = null;</span>
-<span class="nc" id="L137">      return output.length();</span>
+<span class="fc" id="L134">      outputStream.flush();</span>
+<span class="fc" id="L135">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L136">      outputStream = null;</span>
+<span class="fc" id="L137">      return output.length();</span>
 <span class="nc" id="L138">    } catch (final Exception e) {</span>
 <span class="nc" id="L139">      throw new MalformedInputException(e);</span>
     } finally {
-<span class="nc" id="L141">      FileUtils.close(inputStream);</span>
-<span class="nc" id="L142">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L141">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L142">      FileUtils.close(outputStream);</span>
     }
   }
 
@@ -155,21 +155,21 @@ public class WaarpZstdCodec {
    */
   public final long decompress(final File input, final File output)
       throws MalformedInputException {
-<span class="nc" id="L158">    InputStream inputStream = null;</span>
-<span class="nc" id="L159">    OutputStream outputStream = null;</span>
+<span class="fc" id="L158">    InputStream inputStream = null;</span>
+<span class="fc" id="L159">    OutputStream outputStream = null;</span>
     try {
       final byte[] buffer;
-<span class="nc bnc" id="L162" title="All 2 branches missed.">      if (codec instanceof ZstdJniCodec) {</span>
-<span class="nc" id="L163">        inputStream = new ZstdInputStream(new FileInputStream(input));</span>
-<span class="nc" id="L164">        outputStream = new FileOutputStream(output);</span>
-<span class="nc" id="L165">        buffer = new byte[Zstd.blockSizeMax()];</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">      if (codec instanceof ZstdJniCodec) {</span>
+<span class="fc" id="L163">        inputStream = new ZstdInputStream(new FileInputStream(input));</span>
+<span class="fc" id="L164">        outputStream = new FileOutputStream(output);</span>
+<span class="fc" id="L165">        buffer = new byte[Zstd.blockSizeMax()];</span>
         while (true) {
-<span class="nc" id="L167">          final int r = inputStream.read(buffer);</span>
-<span class="nc bnc" id="L168" title="All 2 branches missed.">          if (r == -1) {</span>
-<span class="nc" id="L169">            break;</span>
+<span class="fc" id="L167">          final int r = inputStream.read(buffer);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">          if (r == -1) {</span>
+<span class="fc" id="L169">            break;</span>
           }
-<span class="nc" id="L171">          outputStream.write(buffer, 0, r);</span>
-<span class="nc" id="L172">        }</span>
+<span class="fc" id="L171">          outputStream.write(buffer, 0, r);</span>
+<span class="fc" id="L172">        }</span>
       } else {
 <span class="nc" id="L174">        inputStream = new FileInputStream(input);</span>
 <span class="nc" id="L175">        final byte[] sourceArray = ByteStreams.toByteArray(inputStream);</span>
@@ -182,15 +182,15 @@ public class WaarpZstdCodec {
                              buffer.length);
 <span class="nc" id="L183">        outputStream.write(buffer, 0, length);</span>
       }
-<span class="nc" id="L185">      outputStream.flush();</span>
-<span class="nc" id="L186">      FileUtils.close(outputStream);</span>
-<span class="nc" id="L187">      outputStream = null;</span>
-<span class="nc" id="L188">      return output.length();</span>
+<span class="fc" id="L185">      outputStream.flush();</span>
+<span class="fc" id="L186">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L187">      outputStream = null;</span>
+<span class="fc" id="L188">      return output.length();</span>
 <span class="nc" id="L189">    } catch (final Exception e) {</span>
 <span class="nc" id="L190">      throw new MalformedInputException(e);</span>
     } finally {
-<span class="nc" id="L192">      FileUtils.close(inputStream);</span>
-<span class="nc" id="L193">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L192">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L193">      FileUtils.close(outputStream);</span>
     }
   }
 }

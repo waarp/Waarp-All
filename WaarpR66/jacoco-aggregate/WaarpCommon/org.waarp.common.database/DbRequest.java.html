@@ -36,8 +36,8 @@ public class DbRequest {
   /**
    * Internal Logger
    */
-<span class="nc" id="L39">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L40">      WaarpLoggerFactory.getLogger(DbRequest.class);</span>
+<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(DbRequest.class);</span>
   private static final String SQL_EXCEPTION_REQUEST = &quot;SQL Exception Request:&quot;;
   private static final String SQL_EXCEPTION_REQUEST1 = &quot;SQL Exception Request:&quot;;
 
@@ -64,12 +64,12 @@ public class DbRequest {
    * @throws WaarpDatabaseNoConnectionException
    */
   public DbRequest(final DbSession ls)
-<span class="nc" id="L67">      throws WaarpDatabaseNoConnectionException {</span>
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="fc" id="L67">      throws WaarpDatabaseNoConnectionException {</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (ls.isDisActive()) {</span>
 <span class="nc" id="L69">      ls.checkConnection();</span>
     }
-<span class="nc" id="L71">    this.ls = ls;</span>
-<span class="nc" id="L72">  }</span>
+<span class="fc" id="L71">    this.ls = ls;</span>
+<span class="fc" id="L72">  }</span>
 
   /**
    * Create a statement with some particular options
@@ -81,17 +81,17 @@ public class DbRequest {
    */
   private Statement createStatement()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (ls == null) {</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">    if (ls == null) {</span>
 <span class="nc" id="L85">      throw new WaarpDatabaseNoConnectionException(&quot;No connection&quot;);</span>
     }
-<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (ls.getConn() == null) {</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">    if (ls.getConn() == null) {</span>
 <span class="nc" id="L88">      throw new WaarpDatabaseNoConnectionException(&quot;No connection&quot;);</span>
     }
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">    if (ls.isDisActive()) {</span>
 <span class="nc" id="L91">      ls.checkConnection();</span>
     }
     try {
-<span class="nc" id="L94">      return ls.getConn().createStatement();</span>
+<span class="fc" id="L94">      return ls.getConn().createStatement();</span>
 <span class="nc" id="L95">    } catch (final SQLException e) {</span>
 <span class="nc" id="L96">      ls.checkConnection();</span>
       try {
@@ -115,21 +115,21 @@ public class DbRequest {
    */
   public final void select(final String select)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L118">    close();</span>
-<span class="nc" id="L119">    stmt = createStatement();</span>
+<span class="fc" id="L118">    close();</span>
+<span class="fc" id="L119">    stmt = createStatement();</span>
     // or alternatively, if you don't know ahead of time that
     // the query will be a SELECT...
     try {
-<span class="nc bnc" id="L123" title="All 2 branches missed.">      if (stmt.execute(select)) {</span>
-<span class="nc" id="L124">        rs = stmt.getResultSet();</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">      if (stmt.execute(select)) {</span>
+<span class="fc" id="L124">        rs = stmt.getResultSet();</span>
       }
 <span class="nc" id="L126">    } catch (final SQLException e) {</span>
 <span class="nc" id="L127">      logger.error(SQL_EXCEPTION_REQUEST + select + ' ' + e.getMessage());</span>
 <span class="nc" id="L128">      DbSession.error(e);</span>
 <span class="nc" id="L129">      ls.checkConnectionNoException();</span>
 <span class="nc" id="L130">      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);</span>
-<span class="nc" id="L131">    }</span>
-<span class="nc" id="L132">  }</span>
+<span class="fc" id="L131">    }</span>
+<span class="fc" id="L132">  }</span>
 
   /**
    * Execute a SELECT statement and set of Result. The statement must not be
@@ -184,17 +184,17 @@ public class DbRequest {
    */
   public final int query(final String query)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L187">    close();</span>
-<span class="nc" id="L188">    stmt = createStatement();</span>
+<span class="fc" id="L187">    close();</span>
+<span class="fc" id="L188">    stmt = createStatement();</span>
     try {
-<span class="nc" id="L190">      final int rowcount = stmt.executeUpdate(query);</span>
-<span class="nc" id="L191">      logger.debug(&quot;QUERY({}): {}&quot;, rowcount, query);</span>
-<span class="nc" id="L192">      return rowcount;</span>
-<span class="nc" id="L193">    } catch (final SQLException e) {</span>
-<span class="nc" id="L194">      logger.error(SQL_EXCEPTION_REQUEST1 + query + ' ' + e.getMessage());</span>
-<span class="nc" id="L195">      DbSession.error(e);</span>
-<span class="nc" id="L196">      ls.checkConnectionNoException();</span>
-<span class="nc" id="L197">      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + query, e);</span>
+<span class="fc" id="L190">      final int rowcount = stmt.executeUpdate(query);</span>
+<span class="fc" id="L191">      logger.debug(&quot;QUERY({}): {}&quot;, rowcount, query);</span>
+<span class="fc" id="L192">      return rowcount;</span>
+<span class="fc" id="L193">    } catch (final SQLException e) {</span>
+<span class="fc" id="L194">      logger.error(SQL_EXCEPTION_REQUEST1 + query + ' ' + e.getMessage());</span>
+<span class="fc" id="L195">      DbSession.error(e);</span>
+<span class="fc" id="L196">      ls.checkConnectionNoException();</span>
+<span class="fc" id="L197">      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + query, e);</span>
     }
   }
 
@@ -206,23 +206,23 @@ public class DbRequest {
     // resources in a finally{} block
     // in reverse-order of their creation
     // if they are no-longer needed
-<span class="nc bnc" id="L209" title="All 2 branches missed.">    if (rs != null) {</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">    if (rs != null) {</span>
       try {
-<span class="nc" id="L211">        rs.close();</span>
+<span class="fc" id="L211">        rs.close();</span>
 <span class="nc" id="L212">      } catch (final SQLException sqlEx) {</span>
 <span class="nc" id="L213">        ls.checkConnectionNoException();</span>
-<span class="nc" id="L214">      } // ignore</span>
-<span class="nc" id="L215">      rs = null;</span>
+<span class="fc" id="L214">      } // ignore</span>
+<span class="fc" id="L215">      rs = null;</span>
     }
-<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (stmt != null) {</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">    if (stmt != null) {</span>
       try {
-<span class="nc" id="L219">        stmt.close();</span>
+<span class="fc" id="L219">        stmt.close();</span>
 <span class="nc" id="L220">      } catch (final SQLException sqlEx) {</span>
 <span class="nc" id="L221">        ls.checkConnectionNoException();</span>
-<span class="nc" id="L222">      } // ignore</span>
-<span class="nc" id="L223">      stmt = null;</span>
+<span class="fc" id="L222">      } // ignore</span>
+<span class="fc" id="L223">      stmt = null;</span>
     }
-<span class="nc" id="L225">  }</span>
+<span class="fc" id="L225">  }</span>
 
   /**
    * Get the last ID autoincrement from the last request
@@ -294,11 +294,11 @@ public class DbRequest {
    */
   public final ResultSet getResultSet()
       throws WaarpDatabaseNoConnectionException {
-<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (rs == null) {</span>
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">    if (rs == null) {</span>
 <span class="nc" id="L298">      throw new WaarpDatabaseNoConnectionException(</span>
           &quot;SQL ResultSet is Null into getResultSet&quot;);
     }
-<span class="nc" id="L301">    return rs;</span>
+<span class="fc" id="L301">    return rs;</span>
   }
 
   /**

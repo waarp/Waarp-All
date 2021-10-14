@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LogExtendedExport.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Packaging RPM, DEB, ZIP and TGZ</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.server</a> &gt; <span class="el_source">LogExtendedExport.java</span></div><h1>LogExtendedExport.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.server;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.client.AbstractTransfer;
+import org.waarp.openr66.client.DirectTransfer;
+import org.waarp.openr66.configuration.FileBasedConfiguration;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.json.LogJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.LogResponseJsonPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.io.File;
+import java.sql.Timestamp;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Log Export from a client (local or allowed)
+ */
+public class LogExtendedExport implements Runnable {
+  /**
+   * Internal Logger
+   */
+  static volatile WaarpLogger logger;
+
+  protected static final String INFO_ARGS =
+      &quot;Need at least the configuration file as first argument then optionally\n&quot; +
+      &quot;    -purge\n    -clean\n    -startid id\n    -stopid id\n    -rule rule\n    -request host\n&quot; +
+      &quot;    -pending\n    -transfer\n    -done\n    -error\n&quot; +
+      &quot;    -start timestamp in format yyyyMMddHHmmssSSS possibly truncated and where one of ':-. ' can be separators\n&quot; +
+      &quot;    -stop timestamp in same format than start\n&quot; +
+      &quot;If not start and no stop are given, stop is Today Midnight (00:00:00)\n&quot; +
+      &quot;If start is equals or greater than stop, stop is start+24H\n&quot; +
+      &quot;    -host host (optional additional options:\n&quot; +
+      &quot;      -ruleDownload ruleDownload if set, will try to download the exported logs\n&quot; +
+      &quot;      -import that will try to import exported logs using ruleDownload to download the logs)&quot;;
+
+  protected final R66Future future;
+  protected final boolean clean;
+  protected final boolean purgeLog;
+  protected final Timestamp start;
+  protected final Timestamp stop;
+  protected final String startid;
+  protected final String stopid;
+  protected final String rule;
+  protected final String request;
+  protected final boolean statuspending;
+  protected final boolean statustransfer;
+  protected final boolean statusdone;
+  protected final boolean statuserror;
+  protected String ruleDownload;
+  protected boolean tryimport;
+  protected final NetworkTransaction networkTransaction;
+  protected DbHostAuth host;
+
+  /**
+   * @param future
+   * @param clean
+   * @param purgeLog
+   * @param start
+   * @param stop
+   * @param startid
+   * @param stopid
+   * @param rule
+   * @param request
+   * @param statuspending
+   * @param statustransfer
+   * @param statusdone
+   * @param statuserror
+   * @param networkTransaction
+   * @param host
+   */
+  public LogExtendedExport(final R66Future future, final boolean clean,
+                           final boolean purgeLog, final Timestamp start,
+                           final Timestamp stop, final String startid,
+                           final String stopid, final String rule,
+                           final String request, final boolean statuspending,
+                           final boolean statustransfer,
+                           final boolean statusdone, final boolean statuserror,
+                           final NetworkTransaction networkTransaction,
+<span class="nc" id="L118">                           final DbHostAuth host) {</span>
+<span class="nc" id="L119">    this.future = future;</span>
+<span class="nc" id="L120">    this.clean = clean;</span>
+<span class="nc" id="L121">    this.purgeLog = purgeLog;</span>
+<span class="nc" id="L122">    this.start = start;</span>
+<span class="nc" id="L123">    this.stop = stop;</span>
+<span class="nc" id="L124">    this.startid = startid;</span>
+<span class="nc" id="L125">    this.stopid = stopid;</span>
+<span class="nc" id="L126">    this.rule = rule;</span>
+<span class="nc" id="L127">    this.request = request;</span>
+<span class="nc" id="L128">    this.statuspending = statuspending;</span>
+<span class="nc" id="L129">    this.statustransfer = statustransfer;</span>
+<span class="nc" id="L130">    this.statusdone = statusdone;</span>
+<span class="nc" id="L131">    this.statuserror = statuserror;</span>
+<span class="nc" id="L132">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L133">    this.host = host;</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L135">      logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);</span>
+    }
+<span class="nc" id="L137">  }</span>
+
+  /**
+   * Try first to download the exported logs, then to import (must be a host
+   * different than the source one)
+   *
+   * @param ruleDownload
+   * @param tryimport
+   */
+  public void setDownloadTryImport(final String ruleDownload,
+                                   final boolean tryimport) {
+<span class="nc" id="L148">    this.ruleDownload = ruleDownload;</span>
+<span class="nc bnc" id="L149" title="All 4 branches missed.">    this.tryimport = ruleDownload != null &amp;&amp; tryimport &amp;&amp; !host.getHostid()</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">                                                               .equals(</span>
+<span class="nc" id="L151">                                                                   Configuration.configuration.getHostId()) &amp;&amp;</span>
+<span class="nc" id="L152">                     !host.getHostid()</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">                          .equals(Configuration.configuration.getHostSslId());</span>
+<span class="nc" id="L154">  }</span>
+
+  /**
+   * Prior to call this method, the pipeline and NetworkTransaction must have
+   * been initialized. It is the
+   * responsibility of the caller to finish all network resources.
+   */
+  @Override
+  public void run() {
+<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L164">      logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);</span>
+    }
+<span class="nc bnc" id="L166" title="All 8 branches missed.">    if (!(statusdone || statuserror || statuspending || statustransfer)) {</span>
+<span class="nc" id="L167">      logger.error(&quot;No action required&quot;);</span>
+<span class="nc" id="L168">      future.setResult(new R66Result(</span>
+          new OpenR66ProtocolNoDataException(&quot;No action required&quot;), null, true,
+          ErrorCode.IncorrectCommand, null));
+<span class="nc" id="L171">      future.setFailure(future.getResult().getException());</span>
+<span class="nc" id="L172">      return;</span>
+    }
+
+<span class="nc bnc" id="L175" title="All 2 branches missed.">    final byte type = purgeLog? LocalPacketFactory.LOGPURGEPACKET :</span>
+        LocalPacketFactory.LOGPACKET;
+<span class="nc" id="L177">    final LogJsonPacket node = new LogJsonPacket();</span>
+<span class="nc" id="L178">    node.setClean(clean);</span>
+<span class="nc" id="L179">    node.setPurge(purgeLog);</span>
+<span class="nc" id="L180">    node.setStart(start);</span>
+<span class="nc" id="L181">    node.setStop(stop);</span>
+<span class="nc" id="L182">    node.setStartid(startid);</span>
+<span class="nc" id="L183">    node.setStopid(stopid);</span>
+<span class="nc" id="L184">    node.setRule(rule);</span>
+<span class="nc" id="L185">    node.setRequest(request);</span>
+<span class="nc" id="L186">    node.setStatuspending(statuspending);</span>
+<span class="nc" id="L187">    node.setStatustransfer(statustransfer);</span>
+<span class="nc" id="L188">    node.setStatuserror(statuserror);</span>
+<span class="nc" id="L189">    node.setStatusdone(statusdone);</span>
+
+<span class="nc" id="L191">    final JsonCommandPacket valid = new JsonCommandPacket(node, type);</span>
+<span class="nc" id="L192">    logger.debug(&quot;ExtendedLogCommand: {}&quot;, valid.getRequest());</span>
+<span class="nc" id="L193">    final R66Future newFuture = new R66Future(true);</span>
+<span class="nc" id="L194">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L195">        AbstractTransfer.tryConnect(host, newFuture, networkTransaction);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L197">      future.setResult(newFuture.getResult());</span>
+<span class="nc" id="L198">      future.setFailure(future.getCause());</span>
+<span class="nc" id="L199">      return;</span>
+    }
+<span class="nc" id="L201">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+    try {
+<span class="nc" id="L203">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);</span>
+<span class="nc" id="L204">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L205">      logger.error(&quot;Bad Protocol&quot;, e);</span>
+<span class="nc" id="L206">      localChannelReference.close();</span>
+<span class="nc" id="L207">      host = null;</span>
+<span class="nc" id="L208">      future.setResult(</span>
+          new R66Result(e, null, true, ErrorCode.TransferError, null));
+<span class="nc" id="L210">      future.setFailure(e);</span>
+<span class="nc" id="L211">      return;</span>
+<span class="nc" id="L212">    }</span>
+<span class="nc" id="L213">    host = null;</span>
+<span class="nc" id="L214">    newFuture.awaitOrInterruptible();</span>
+<span class="nc" id="L215">    logger.info(&quot;Request done with {}&quot;,</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                newFuture.isSuccess()? &quot;success&quot; : &quot;error&quot;);</span>
+<span class="nc bnc" id="L217" title="All 4 branches missed.">    if (newFuture.isSuccess() &amp;&amp; ParametersChecker.isNotEmpty(ruleDownload)) {</span>
+      try {
+<span class="nc" id="L219">        importLog(newFuture);</span>
+<span class="nc" id="L220">      } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L221">        localChannelReference.close();</span>
+<span class="nc" id="L222">        return;</span>
+<span class="nc" id="L223">      }</span>
+    }
+<span class="nc" id="L225">    future.setFilesize(newFuture.getFilesize());</span>
+<span class="nc" id="L226">    future.setRunner(newFuture.getRunner());</span>
+<span class="nc" id="L227">    future.setResult(newFuture.getResult());</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">    if (newFuture.isSuccess()) {</span>
+<span class="nc" id="L229">      future.setSuccess();</span>
+    } else {
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (newFuture.getCause() != null) {</span>
+<span class="nc" id="L232">        future.setFailure(newFuture.getCause());</span>
+      }
+<span class="nc" id="L234">      future.cancel();</span>
+    }
+<span class="nc" id="L236">    localChannelReference.close();</span>
+<span class="nc" id="L237">  }</span>
+
+  public void importLog(final R66Future future)
+      throws OpenR66ProtocolBusinessException {
+<span class="nc bnc" id="L241" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="nc" id="L242">      final JsonCommandPacket packet =</span>
+<span class="nc" id="L243">          (JsonCommandPacket) future.getResult().getOther();</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">      if (packet != null) {</span>
+<span class="nc" id="L245">        final LogResponseJsonPacket res =</span>
+<span class="nc" id="L246">            (LogResponseJsonPacket) packet.getJsonRequest();</span>
+<span class="nc" id="L247">        final String fileExported = res.getFilename();</span>
+        // download logs
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (ParametersChecker.isNotEmpty(fileExported)) {</span>
+<span class="nc" id="L250">          final String ruleToExport = ruleDownload;</span>
+<span class="nc" id="L251">          final R66Future futuretemp = new R66Future(true);</span>
+<span class="nc" id="L252">          final DirectTransfer transfer =</span>
+<span class="nc" id="L253">              new DirectTransfer(futuretemp, host.getHostid(), fileExported,</span>
+                                 ruleToExport, &quot;Get Exported Logs from &quot; +
+<span class="nc" id="L255">                                               Configuration.configuration.getHostId(),</span>
+                                 false,
+<span class="nc" id="L257">                                 Configuration.configuration.getBlockSize(),</span>
+                                 ILLEGALVALUE, networkTransaction);
+<span class="nc" id="L259">          transfer.run();</span>
+          final File logsFile;
+<span class="nc bnc" id="L261" title="All 2 branches missed.">          if (!futuretemp.isSuccess()) {</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">            if (futuretemp.getCause() != null) {</span>
+<span class="nc" id="L263">              throw new OpenR66ProtocolBusinessException(futuretemp.getCause());</span>
+            }
+<span class="nc" id="L265">            throw new OpenR66ProtocolBusinessException(</span>
+                &quot;Download of exported logs in error&quot;);
+          } else {
+<span class="nc" id="L268">            logsFile = futuretemp.getResult().getFile().getTrueFile();</span>
+          }
+<span class="nc bnc" id="L270" title="All 2 branches missed.">          if (tryimport) {</span>
+            try {
+<span class="nc" id="L272">              DbTaskRunner.loadXml(logsFile);</span>
+<span class="nc" id="L273">            } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L274">              logger.warn(</span>
+<span class="nc" id="L275">                  &quot;Cannot load the logs from &quot; + logsFile.getAbsolutePath() +</span>
+<span class="nc" id="L276">                  &quot; since: &quot; + e.getMessage());</span>
+<span class="nc" id="L277">              throw new OpenR66ProtocolBusinessException(</span>
+<span class="nc" id="L278">                  &quot;Cannot load the logs from &quot; + logsFile.getAbsolutePath(), e);</span>
+<span class="nc" id="L279">            }</span>
+          }
+<span class="nc" id="L281">        } else {</span>
+<span class="nc" id="L282">          throw new OpenR66ProtocolBusinessException(</span>
+              &quot;Export log with no file result&quot;);
+        }
+<span class="nc" id="L285">      } else {</span>
+<span class="nc" id="L286">        throw new OpenR66ProtocolBusinessException(</span>
+            &quot;Export log with no file result&quot;);
+      }
+<span class="nc" id="L289">    } else {</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">      if (future.getCause() != null) {</span>
+<span class="nc" id="L291">        throw new OpenR66ProtocolBusinessException(future.getCause());</span>
+      }
+<span class="nc" id="L293">      throw new OpenR66ProtocolBusinessException(&quot;Export log in error&quot;);</span>
+    }
+<span class="nc" id="L295">  }</span>
+
+  protected static boolean sclean;
+  protected static boolean spurgeLog;
+  protected static Timestamp sstart;
+  protected static Timestamp sstop;
+  protected static String sstartid;
+  protected static String sstopid;
+  protected static String srule;
+  protected static String srequest;
+  protected static boolean sstatuspending;
+  protected static boolean sstatustransfer;
+<span class="nc" id="L307">  protected static boolean sstatusdone = true;</span>
+  protected static boolean sstatuserror;
+  protected static String stohost;
+  protected static String sruleDownload;
+  protected static boolean stryimport;
+
+  protected static boolean getParams(final String[] args) {
+<span class="nc bnc" id="L314" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L315">      logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);</span>
+    }
+<span class="nc bnc" id="L317" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L318">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L319">      return false;</span>
+    }
+<span class="nc bnc" id="L321" title="All 2 branches missed.">    if (!FileBasedConfiguration.setClientConfigurationFromXml(</span>
+        Configuration.configuration, args[0])) {
+<span class="nc" id="L323">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L324">      return false;</span>
+    }
+<span class="nc" id="L326">    String ssstart = null;</span>
+<span class="nc" id="L327">    String ssstop = null;</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">      if (&quot;-purge&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L330">        spurgeLog = true;</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">      } else if (&quot;-clean&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L332">        sclean = true;</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L334">        i++;</span>
+<span class="nc" id="L335">        ssstart = args[i];</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">      } else if (&quot;-stop&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L337">        i++;</span>
+<span class="nc" id="L338">        ssstop = args[i];</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">      } else if (&quot;-startid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L340">        i++;</span>
+<span class="nc" id="L341">        sstartid = args[i];</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">      } else if (&quot;-stopid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L343">        i++;</span>
+<span class="nc" id="L344">        sstopid = args[i];</span>
+<span class="nc bnc" id="L345" title="All 2 branches missed.">      } else if (&quot;-rule&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L346">        i++;</span>
+<span class="nc" id="L347">        srule = args[i];</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">      } else if (&quot;-request&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L349">        i++;</span>
+<span class="nc" id="L350">        srequest = args[i];</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">      } else if (&quot;-pending&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L352">        sstatuspending = true;</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">      } else if (&quot;-transfer&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L354">        sstatustransfer = true;</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">      } else if (&quot;-done&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L356">        sstatusdone = true;</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">      } else if (&quot;-error&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L358">        sstatuserror = true;</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">      } else if (&quot;-import&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L360">        stryimport = true;</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">      } else if (&quot;-host&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L362">        i++;</span>
+<span class="nc" id="L363">        stohost = args[i];</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">      } else if (&quot;-ruleDownload&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L365">        i++;</span>
+<span class="nc" id="L366">        sruleDownload = args[i];</span>
+      }
+    }
+<span class="nc bnc" id="L369" title="All 2 branches missed.">    if (ssstart != null) {</span>
+<span class="nc" id="L370">      final Timestamp tstart = WaarpStringUtils.fixDate(ssstart);</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">      if (tstart != null) {</span>
+<span class="nc" id="L372">        sstart = tstart;</span>
+      }
+    }
+<span class="nc bnc" id="L375" title="All 2 branches missed.">    if (ssstop != null) {</span>
+<span class="nc" id="L376">      final Timestamp tstop = WaarpStringUtils.fixDate(ssstop, sstart);</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">      if (tstop != null) {</span>
+<span class="nc" id="L378">        sstop = tstop;</span>
+      }
+    }
+<span class="nc bnc" id="L381" title="All 4 branches missed.">    if (ssstart == null &amp;&amp; ssstop == null) {</span>
+<span class="nc" id="L382">      sstop = WaarpStringUtils.getTodayMidnight();</span>
+    }
+<span class="nc bnc" id="L384" title="All 2 branches missed.">    if (stohost == null) {</span>
+<span class="nc" id="L385">      stryimport = false;</span>
+    }
+<span class="nc" id="L387">    return true;</span>
+  }
+
+  public static void main(final String[] args) {
+<span class="nc" id="L391">    WaarpLoggerFactory.setDefaultFactoryIfNotSame(</span>
+        new WaarpSlf4JLoggerFactory(null));
+<span class="nc bnc" id="L393" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L394">      logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);</span>
+    }
+<span class="nc bnc" id="L396" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L397">      logger.error(&quot;Wrong initialization&quot;);</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L399">        admin.close();</span>
+      }
+<span class="nc" id="L401">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc" id="L403">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L404">    DbHostAuth dbhost = null;</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (stohost != null) {</span>
+      try {
+<span class="nc" id="L407">        dbhost = new DbHostAuth(stohost);</span>
+<span class="nc" id="L408">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L409">        logger.error(&quot;Wrong initialization&quot;);</span>
+<span class="nc bnc" id="L410" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L411">          admin.close();</span>
+        }
+<span class="nc" id="L413">        System.exit(2);//NOSONAR</span>
+<span class="nc" id="L414">      }</span>
+    } else {
+<span class="nc" id="L416">      dbhost = Configuration.configuration.getHostSslAuth();</span>
+<span class="nc" id="L417">      stohost = Configuration.configuration.getHostSslId();</span>
+    }
+<span class="nc" id="L419">    final R66Future future = new R66Future(true);</span>
+
+<span class="nc" id="L421">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L422">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+    try {
+<span class="nc" id="L424">      final LogExtendedExport transaction =</span>
+          new LogExtendedExport(future, sclean, spurgeLog, sstart, sstop,
+                                sstartid, sstopid, srule, srequest,
+                                sstatuspending, sstatustransfer, sstatusdone,
+                                sstatuserror, networkTransaction, dbhost);
+<span class="nc" id="L429">      transaction.setDownloadTryImport(sruleDownload, stryimport);</span>
+<span class="nc" id="L430">      transaction.run();</span>
+<span class="nc" id="L431">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L432">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L433">      final long delay = time2 - time1;</span>
+<span class="nc" id="L434">      final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc bnc" id="L436" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">          logger.warn(&quot;WARNED on file:     &quot; + (result.getOther() != null?</span>
+<span class="nc" id="L438">              ((JsonCommandPacket) result.getOther()).getRequest() :</span>
+              &quot;no file&quot;) + &quot;     delay: &quot; + delay);
+        } else {
+<span class="nc" id="L441">          logger.warn(&quot;SUCCESS on Final file:     &quot; +</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">                      (result.getOther() != null?</span>
+<span class="nc" id="L443">                          ((JsonCommandPacket) result.getOther()).getRequest() :</span>
+                          &quot;no file&quot;) + &quot;     delay: &quot; + delay);
+        }
+      } else {
+<span class="nc bnc" id="L447" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L448">          logger.warn(&quot;LogExtendedExport is     WARNED&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">                      future.getCause() != null?</span>
+<span class="nc" id="L450">                          future.getCause().getMessage() : &quot;&quot;);</span>
+        } else {
+<span class="nc" id="L452">          logger.error(&quot;LogExtendedExport in     FAILURE&quot; + &quot; : {}&quot;,</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">                       future.getCause() != null?</span>
+<span class="nc" id="L454">                           future.getCause().getMessage() : &quot;&quot;);</span>
+        }
+<span class="nc" id="L456">        networkTransaction.closeAll();</span>
+<span class="nc" id="L457">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+      }
+    } finally {
+<span class="nc" id="L460">      networkTransaction.closeAll();</span>
+<span class="nc" id="L461">      System.exit(0);//NOSONAR</span>
+    }
+<span class="nc" id="L463">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -38,8 +38,8 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
   public static final String ROOT = &quot;root&quot;;
 
   public RootOptionsRestMethodHandler(final RestConfiguration config) {
-<span class="nc" id="L41">    super(ROOT, &quot;/&quot;, true, config, METHOD.OPTIONS);</span>
-<span class="nc" id="L42">  }</span>
+<span class="fc" id="L41">    super(ROOT, &quot;/&quot;, true, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L42">  }</span>
 
   @Override
   public final void checkHandlerSessionCorrectness(
@@ -85,45 +85,45 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
   public final void optionsCommand(final HttpRestHandler handler,
                                    final RestArgument arguments,
                                    final RestArgument result) {
-<span class="nc" id="L88">    result.setCommand(COMMAND_TYPE.OPTIONS);</span>
-<span class="nc" id="L89">    final METHOD[] realmethods = METHOD.values();</span>
-<span class="nc" id="L90">    final boolean[] allMethods = new boolean[realmethods.length];</span>
-<span class="nc bnc" id="L91" title="All 2 branches missed.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">      for (final METHOD methoditem : method.methods) {</span>
-<span class="nc" id="L93">        allMethods[methoditem.ordinal()] = true;</span>
-<span class="nc" id="L94">      }</span>
-<span class="nc" id="L95">    }</span>
-<span class="nc" id="L96">    StringBuilder allow = null;</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    for (int i = 0; i &lt; allMethods.length; i++) {</span>
-<span class="nc bnc" id="L98" title="All 2 branches missed.">      if (allMethods[i]) {</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (allow == null) {</span>
-<span class="nc" id="L100">          allow = new StringBuilder(realmethods[i].name());</span>
+<span class="fc" id="L88">    result.setCommand(COMMAND_TYPE.OPTIONS);</span>
+<span class="fc" id="L89">    final METHOD[] realmethods = METHOD.values();</span>
+<span class="fc" id="L90">    final boolean[] allMethods = new boolean[realmethods.length];</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">      for (final METHOD methoditem : method.methods) {</span>
+<span class="fc" id="L93">        allMethods[methoditem.ordinal()] = true;</span>
+<span class="fc" id="L94">      }</span>
+<span class="fc" id="L95">    }</span>
+<span class="fc" id="L96">    StringBuilder allow = null;</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">    for (int i = 0; i &lt; allMethods.length; i++) {</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">      if (allMethods[i]) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (allow == null) {</span>
+<span class="fc" id="L100">          allow = new StringBuilder(realmethods[i].name());</span>
         } else {
-<span class="nc" id="L102">          allow.append(',').append(realmethods[i].name());</span>
+<span class="fc" id="L102">          allow.append(',').append(realmethods[i].name());</span>
         }
       }
     }
-<span class="nc" id="L106">    StringBuilder allowUri = null;</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (allowUri == null) {</span>
-<span class="nc" id="L109">        allowUri = new StringBuilder(method.path);</span>
+<span class="fc" id="L106">    StringBuilder allowUri = null;</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">      if (allowUri == null) {</span>
+<span class="fc" id="L109">        allowUri = new StringBuilder(method.path);</span>
       } else {
-<span class="nc" id="L111">        allowUri.append(',').append(method.path);</span>
+<span class="fc" id="L111">        allowUri.append(',').append(method.path);</span>
       }
-<span class="nc" id="L113">    }</span>
-<span class="nc" id="L114">    final ArrayNode array = JsonHandler.createArrayNode();</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
-<span class="nc" id="L116">      final ArrayNode array2 = method.getDetailedAllow();</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">      if (method != this) {</span>
-<span class="nc" id="L118">        array.addObject().putArray(method.path).addAll(array2);</span>
+<span class="fc" id="L113">    }</span>
+<span class="fc" id="L114">    final ArrayNode array = JsonHandler.createArrayNode();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">    for (final RestMethodHandler method : handler.restHashMap.values()) {</span>
+<span class="fc" id="L116">      final ArrayNode array2 = method.getDetailedAllow();</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">      if (method != this) {</span>
+<span class="fc" id="L118">        array.addObject().putArray(method.path).addAll(array2);</span>
       } else {
 <span class="nc" id="L120">        array.addObject().putArray(ROOT).addAll(array2);</span>
       }
-<span class="nc" id="L122">    }</span>
-<span class="nc bnc" id="L123" title="All 4 branches missed.">    if (allow != null &amp;&amp; allowUri != null) {</span>
-<span class="nc" id="L124">      result.addOptions(allow.toString(), allowUri.toString(), array);</span>
+<span class="fc" id="L122">    }</span>
+<span class="pc bpc" id="L123" title="2 of 4 branches missed.">    if (allow != null &amp;&amp; allowUri != null) {</span>
+<span class="fc" id="L124">      result.addOptions(allow.toString(), allowUri.toString(), array);</span>
     }
-<span class="nc" id="L126">  }</span>
+<span class="fc" id="L126">  }</span>
 
   @Override
   protected final ArrayNode getDetailedAllow() {

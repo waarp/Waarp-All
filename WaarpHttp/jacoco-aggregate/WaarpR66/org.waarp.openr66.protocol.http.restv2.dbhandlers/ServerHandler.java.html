@@ -102,20 +102,20 @@ public class ServerHandler extends AbstractRestDbHandler {
   /**
    * Stores the path to the archive directory.
    */
-<span class="nc" id="L105">  private static final String ARCH_PATH =</span>
-<span class="nc" id="L106">      configuration.getBaseDirectory() + configuration.getArchivePath();</span>
+<span class="fc" id="L105">  private static final String ARCH_PATH =</span>
+<span class="fc" id="L106">      configuration.getBaseDirectory() + configuration.getArchivePath();</span>
 
   /**
    * Stores the path to the configuration directory.
    */
-<span class="nc" id="L111">  private static final String CONFIGS_PATH =</span>
-<span class="nc" id="L112">      configuration.getBaseDirectory() + configuration.getConfigPath();</span>
+<span class="fc" id="L111">  private static final String CONFIGS_PATH =</span>
+<span class="fc" id="L112">      configuration.getBaseDirectory() + configuration.getConfigPath();</span>
 
   /**
    * Stores a {@link Map} associating each sub-path of the handler to their
    * respective CRUD configuration.
    */
-<span class="nc" id="L118">  private final Map&lt;String, Byte&gt; serverCRUD = new HashMap&lt;String, Byte&gt;();</span>
+<span class="fc" id="L118">  private final Map&lt;String, Byte&gt; serverCRUD = new HashMap&lt;String, Byte&gt;();</span>
 
   /**
    * Instantiates the handler with the given CRUD configuration array.
@@ -124,14 +124,14 @@ public class ServerHandler extends AbstractRestDbHandler {
    *     configurations.
    */
   public ServerHandler(final byte[] crud) {
-<span class="nc" id="L127">    super((byte) 0);</span>
-<span class="nc" id="L128">    serverCRUD.put(STATUS_URI, crud[Information.ordinal()]);</span>
-<span class="nc" id="L129">    serverCRUD.put(DEACTIVATE_URI, crud[Server.ordinal()]);</span>
-<span class="nc" id="L130">    serverCRUD.put(SHUTDOWN_URI, crud[Server.ordinal()]);</span>
-<span class="nc" id="L131">    serverCRUD.put(RESTART_URI, crud[Server.ordinal()]);</span>
-<span class="nc" id="L132">    serverCRUD.put(LOGS_URI, crud[Log.ordinal()]);</span>
-<span class="nc" id="L133">    serverCRUD.put(CONFIG_URI, crud[Config.ordinal()]);</span>
-<span class="nc" id="L134">  }</span>
+<span class="fc" id="L127">    super((byte) 0);</span>
+<span class="fc" id="L128">    serverCRUD.put(STATUS_URI, crud[Information.ordinal()]);</span>
+<span class="fc" id="L129">    serverCRUD.put(DEACTIVATE_URI, crud[Server.ordinal()]);</span>
+<span class="fc" id="L130">    serverCRUD.put(SHUTDOWN_URI, crud[Server.ordinal()]);</span>
+<span class="fc" id="L131">    serverCRUD.put(RESTART_URI, crud[Server.ordinal()]);</span>
+<span class="fc" id="L132">    serverCRUD.put(LOGS_URI, crud[Log.ordinal()]);</span>
+<span class="fc" id="L133">    serverCRUD.put(CONFIG_URI, crud[Config.ordinal()]);</span>
+<span class="fc" id="L134">  }</span>
 
   /**
    * Checks if the request can be made in consideration to the handler's CRUD
@@ -145,27 +145,27 @@ public class ServerHandler extends AbstractRestDbHandler {
    */
   @Override
   public boolean checkCRUD(final HttpRequest request) {
-<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (request.method().equals(HttpMethod.OPTIONS)) {</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (request.method().equals(HttpMethod.OPTIONS)) {</span>
 <span class="nc" id="L149">      return true;</span>
     }
 
-<span class="nc" id="L152">    final Pattern pattern =</span>
-<span class="nc" id="L153">        Pattern.compile('(' + SERVER_HANDLER_URI + &quot;)(\\w+)(\\?.+)?&quot;);</span>
-<span class="nc" id="L154">    final Matcher matcher = pattern.matcher(request.uri());</span>
-<span class="nc" id="L155">    final HttpMethod method = request.method();</span>
+<span class="fc" id="L152">    final Pattern pattern =</span>
+<span class="fc" id="L153">        Pattern.compile('(' + SERVER_HANDLER_URI + &quot;)(\\w+)(\\?.+)?&quot;);</span>
+<span class="fc" id="L154">    final Matcher matcher = pattern.matcher(request.uri());</span>
+<span class="fc" id="L155">    final HttpMethod method = request.method();</span>
 
     final Byte crud;
-<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">    if (!matcher.find()) {</span>
 <span class="nc" id="L159">      crud = 0;</span>
     } else {
-<span class="nc" id="L161">      final String subPath = matcher.group(2);</span>
-<span class="nc" id="L162">      crud = serverCRUD.get(subPath);</span>
+<span class="fc" id="L161">      final String subPath = matcher.group(2);</span>
+<span class="fc" id="L162">      crud = serverCRUD.get(subPath);</span>
     }
 
-<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (crud == null) {</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    if (crud == null) {</span>
 <span class="nc" id="L166">      return false;</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.GET)) {</span>
-<span class="nc" id="L168">      return CRUD.READ.isValid(crud);</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">    } else if (method.equals(HttpMethod.GET)) {</span>
+<span class="fc" id="L168">      return CRUD.READ.isValid(crud);</span>
 <span class="nc bnc" id="L169" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.POST)) {</span>
 <span class="nc" id="L170">      return CRUD.CREATE.isValid(crud);</span>
 <span class="nc bnc" id="L171" title="All 2 branches missed.">    } else if (method.equals(HttpMethod.DELETE)) {</span>
@@ -192,18 +192,18 @@ public class ServerHandler extends AbstractRestDbHandler {
                               final HttpResponder responder,
                               @QueryParam(PERIOD) @DefaultValue(&quot;P1DT0H0M0S&quot;)
                               final String periodStr) {
-<span class="nc" id="L195">    checkSanity(periodStr);</span>
+<span class="fc" id="L195">    checkSanity(periodStr);</span>
     try {
-<span class="nc" id="L197">      final Period period = Period.parse(periodStr);</span>
-<span class="nc" id="L198">      final ObjectNode status = ServerStatusMaker.exportAsJson(period);</span>
-<span class="nc" id="L199">      final String responseText = JsonUtils.nodeToString(status);</span>
-<span class="nc" id="L200">      responder.sendJson(OK, responseText);</span>
+<span class="fc" id="L197">      final Period period = Period.parse(periodStr);</span>
+<span class="fc" id="L198">      final ObjectNode status = ServerStatusMaker.exportAsJson(period);</span>
+<span class="fc" id="L199">      final String responseText = JsonUtils.nodeToString(status);</span>
+<span class="fc" id="L200">      responder.sendJson(OK, responseText);</span>
 <span class="nc" id="L201">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L202">      throw new RestErrorException(ILLEGAL_PARAMETER_VALUE(PERIOD, periodStr));</span>
 <span class="nc" id="L203">    } catch (final UnsupportedOperationException e) {</span>
 <span class="nc" id="L204">      throw new RestErrorException(ILLEGAL_PARAMETER_VALUE(PERIOD, periodStr));</span>
-<span class="nc" id="L205">    }</span>
-<span class="nc" id="L206">  }</span>
+<span class="fc" id="L205">    }</span>
+<span class="fc" id="L206">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on the
