@@ -48,6 +48,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -180,7 +181,12 @@ public class XMLTransferDAO implements TransferDAO {
       return new ArrayList<Transfer>(dbR66TaskHashMap.values());
     }
     final File arch = new File(Configuration.configuration.getArchivePath());
-    final File[] runnerFiles = arch.listFiles();
+    final File[] runnerFiles = arch.listFiles(new FilenameFilter() {
+      @Override
+      public boolean accept(final File file, final String s) {
+        return s.endsWith(XMLEXTENSION);
+      }
+    });
     final List<Transfer> res = new ArrayList<Transfer>();
     if (runnerFiles != null) {
       for (final File fileNew : runnerFiles) {
@@ -333,6 +339,12 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   @Override
+  public void update(final List<Filter> filters, final String toSet)
+      throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  @Override
   public void insert(final Transfer transfer) throws DAOConnectionException {
     // Set unique Id
     if (transfer.getId() == DbConstantR66.ILLEGALVALUE) {
@@ -429,7 +441,7 @@ public class XMLTransferDAO implements TransferDAO {
         final NodeList nodeList = root.getChildNodes();
         final int nb = nodeList.getLength();
         for (int i = 0; i < nb; i++) {
-          int found = 4;
+          int found = -4;
           node = nodeList.item(0);
           if (node.hasChildNodes()) {
             final NodeList nodeChildList = node.getChildNodes();

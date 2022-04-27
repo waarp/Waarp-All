@@ -20,20 +20,20 @@
 
 package org.waarp.openr66.it;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.CountResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
+import co.elastic.clients.json.JsonData;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.core.CountRequest;
-import org.elasticsearch.client.core.CountResponse;
-import org.elasticsearch.common.document.DocumentField;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -55,6 +55,7 @@ import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -161,40 +162,42 @@ public class ScenarioLoopBenchmarkMonitoringElasticsearchPostGreSqlIT
      * @return the number of items, or -1 if an error occurs
      */
     public long countReferences(final String serverId) {
-      if (client == null) {
-        client = new RestHighLevelClient(builder);
-      }
+      createClient();
       final String partialIndex = index.replace(ELASTIC_WAARPHOST, serverId);
       final int posPercent = partialIndex.indexOf('%');
       final String finalIndex = posPercent >= 0?
           partialIndex.substring(0, posPercent).toLowerCase() + "*" :
           partialIndex.toLowerCase(Locale.ROOT);
-      SearchRequest searchRequest = new SearchRequest(finalIndex);
-      SearchSourceBuilder builder = new SearchSourceBuilder();
-      builder.query(QueryBuilders.matchAllQuery()).docValueField(FOLLOW_ID)
-             .docValueField(SPECIAL_ID).fetchSource(false);
-      builder.size(1);
-      searchRequest.source(builder);
+
+      SearchRequest.Builder builderSearch =
+          new SearchRequest.Builder().index(finalIndex);
+      Query query =
+          new Query.Builder().matchAll(QueryBuilders.matchAll().build())
+                             .build();
+      builderSearch.query(query).docvalueFields(
+                       new FieldAndFormat.Builder().field(FOLLOW_ID).build(),
+                       new FieldAndFormat.Builder().field(SPECIAL_ID).build())
+                   .source(new SourceConfig.Builder().fetch(false).build())
+                   .size(1);
+      SearchRequest searchRequest = builderSearch.build();
       logger.debug("Will get count from {}", finalIndex);
       try {
         CountResponse countResponse =
-            client.count(new CountRequest(finalIndex), RequestOptions.DEFAULT);
-        if (countResponse.getCount() > 0) {
+            client.count(new CountRequest.Builder().index(finalIndex).build());
+        if (countResponse.count() > 0) {
           SearchResponse searchResponse =
-              client.search(searchRequest, RequestOptions.DEFAULT);
-          if (searchResponse.status().getStatus() == 200) {
-            SearchHits searchHits = searchResponse.getHits();
-            SearchHit[] searchHits1 = searchHits.getHits();
-            if (searchHits1.length > 0) {
-              SearchHit searchHit = searchHits1[0];
-              Map<String, DocumentField> map = searchHit.getFields();
-              for (String key : map.keySet()) {
-                logger.warn("{} : {}", key, map.get(key).toString());
-              }
+              client.search(searchRequest, Object.class);
+          HitsMetadata searchHits = searchResponse.hits();
+          List<Hit> searchHits1 = searchHits.hits();
+          if (searchHits1.size() > 0) {
+            Hit searchHit = searchHits1.get(0);
+            Map<String, JsonData> map = searchHit.fields();
+            for (String key : map.keySet()) {
+              logger.warn("{} : {}", key, map.get(key).toString());
             }
           }
         }
-        return countResponse.getCount();
+        return countResponse.count();
       } catch (IOException e) {
         logger.error(e.getMessage());
         return -1;

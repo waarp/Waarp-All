@@ -85,7 +85,8 @@ public class WaarpR66S3Client {
               }
             }
             return null;
-          } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+          } catch (final MinioException | InvalidKeyException | IOException |
+                         NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
             return null;
           }
@@ -160,7 +161,8 @@ public class WaarpR66S3Client {
       logger.debug("Resp: {} {} {} {} {}", response.bucket(), response.object(),
                    response.versionId(), response.etag(), response.region());
       return response.versionId();
-    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+    } catch (final MinioException | IOException | NoSuchAlgorithmException |
+                   InvalidKeyException e) {
       logger.error(e.getMessage());
       error = true;
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
@@ -198,7 +200,8 @@ public class WaarpR66S3Client {
             SetObjectTagsArgs.builder().bucket(bucketName).object(targetName)
                              .tags(tags).build());
       }
-    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+    } catch (final MinioException | IOException | NoSuchAlgorithmException |
+                   InvalidKeyException e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
@@ -224,7 +227,8 @@ public class WaarpR66S3Client {
           GetObjectRetentionArgs.builder().bucket(bucketName).object(bucketName)
                                 .build());
       return retention.retainUntilDate();
-    } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+    } catch (final MinioException | InvalidKeyException | IOException |
+                   NoSuchAlgorithmException e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
@@ -259,7 +263,8 @@ public class WaarpR66S3Client {
           SetObjectRetentionArgs.builder().bucket(bucketName).object(targetName)
                                 .config(config).bypassGovernanceMode(true)
                                 .build());
-    } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+    } catch (final MinioException | InvalidKeyException | IOException |
+                   NoSuchAlgorithmException e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
@@ -307,7 +312,8 @@ public class WaarpR66S3Client {
       } else {
         return SingletonUtils.singletonMap();
       }
-    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+    } catch (final MinioException | IOException | NoSuchAlgorithmException |
+                   InvalidKeyException e) {
       logger.info(e);
       error = true;
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
@@ -340,7 +346,8 @@ public class WaarpR66S3Client {
                            .build());
 
       return tags.get();
-    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+    } catch (final MinioException | IOException | NoSuchAlgorithmException |
+                   InvalidKeyException e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
@@ -363,7 +370,8 @@ public class WaarpR66S3Client {
       minioClient.removeObject(
           RemoveObjectArgs.builder().bucket(bucketName).object(sourceName)
                           .build());
-    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+    } catch (final MinioException | IOException | NoSuchAlgorithmException |
+                   InvalidKeyException e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }

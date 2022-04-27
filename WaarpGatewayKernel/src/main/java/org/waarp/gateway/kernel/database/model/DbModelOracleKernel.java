@@ -19,18 +19,14 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelOracle;
+import org.waarp.common.guid.LongUuid;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
-
-import java.sql.SQLException;
 
 /**
  * Oracle Database Model implementation
@@ -115,10 +111,7 @@ public class DbModelOracleKernel extends DbModelOracle {
     }
 
     // cptrunner
-    final long minimalValue = System.currentTimeMillis() + 1;
-    action = new StringBuilder(
-        "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstantGateway.ILLEGALVALUE + 1) + " START WITH " + minimalValue);
+    action = new StringBuilder("DROP SEQUENCE " + DbTransferLog.fieldseq);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -134,72 +127,18 @@ public class DbModelOracleKernel extends DbModelOracle {
   @Override
   public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    resetSequenceMonitoring(session, newvalue);
-  }
-
-  public static void resetSequenceMonitoring(final DbSession session,
-                                             final long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    final String action = "DROP SEQUENCE " + DbTransferLog.fieldseq;
-    final String action2 =
-        "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstantGateway.ILLEGALVALUE + 1) + " START WITH " + newvalue;
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-      request.query(action2);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-      return;
-    } finally {
-      request.close();
-    }
-
-    SysErrLogger.FAKE_LOGGER.sysout(action);
+    // Nothing
   }
 
   @Override
-  public final long nextSequence(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    return nextSequenceMonitoring(dbSession);
-  }
-
-  public static long nextSequenceMonitoring(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    long result;
-    final String action =
-        "SELECT " + DbTransferLog.fieldseq + ".NEXTVAL FROM DUAL";
-    final DbPreparedStatement preparedStatement =
-        new DbPreparedStatement(dbSession);
-    try {
-      preparedStatement.createPrepareStatement(action);
-      // Limit the search
-      preparedStatement.executeQuery();
-      if (preparedStatement.getNext()) {
-        try {
-          result = preparedStatement.getResultSet().getLong(1);
-        } catch (final SQLException e) {
-          throw new WaarpDatabaseSqlException(e);
-        }
-        return result;
-      } else {
-        throw new WaarpDatabaseNoDataException(
-            "No sequence found. Must be initialized first");
-      }
-    } finally {
-      preparedStatement.realClose();
-    }
+  public final long nextSequence(final DbSession dbSession) {
+    return LongUuid.getLongUuid();
   }
 
   @Override
   public final boolean upgradeDb(final DbSession session,
                                  final String version) {
-    return false;
+    return true;
   }
 
   @Override

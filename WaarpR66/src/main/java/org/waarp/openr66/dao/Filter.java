@@ -25,6 +25,7 @@ public class Filter {
   public static final String BETWEEN = "BETWEEN";
   public static final String IS_NOT_NULL = "IS NOT NULL";
   public static final String IN = "IN";
+  public static final String SPECIFIC_SQL = "SPEC_SQL";
   private static final byte B_NONE = 'n';
   private static final byte B_SINGLE = 's';
   private static final byte B_MULTIPLE = 'm';
@@ -52,11 +53,10 @@ public class Filter {
   }
 
   /**
-   * @return the number of values for the operand (-1 for 0, 0 for 1, 1 for 2
-   *     or (n-1) for n)
+   * @return the number of values for the operand
    */
   public final int nbAdditionnalParams() {
-    return nbArgs - 1;
+    return nbArgs;
   }
 
   /**
@@ -67,7 +67,9 @@ public class Filter {
    * @return the associated value
    */
   public final Object append(final StringBuilder builder) {
-    if (nbArgs == 0) {
+    if (SPECIFIC_SQL.equalsIgnoreCase(operand)) {
+      builder.append(key);
+    } else if (nbArgs == 0) {
       builder.append(key).append(' ').append(operand).append(" ");
     } else if (nbArgs == 1) {
       builder.append(key).append(' ').append(operand).append(" ? ");

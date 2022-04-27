@@ -41,7 +41,7 @@ public class DBMySQLDAOTest extends DBAllDAOTest {
 
   static {
     TMPFSMAP.clear();
-    TMPFSMAP.put("/var/lib/mysql/data", "rw");
+    TMPFSMAP.put("/tmp/mysql/data", "rw");
   }
 
   @ClassRule

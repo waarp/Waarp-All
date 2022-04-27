@@ -19,10 +19,21 @@
  */
 package org.waarp.common.database;
 
+import org.waarp.common.database.model.DbType;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.SQLException;
+
 /**
  * Constants value for database
  */
 public class DbConstant {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(DbConstant.class);
   /**
    * Illegal value as SpecialId of transfer (any value above is valid)
    */
@@ -48,4 +59,23 @@ public class DbConstant {
    */
   public static final int DELAYMAXCONNECTION = 30;
 
+  /**
+   * Print the error from SQLException
+   *
+   * @param ex
+   */
+  public static void error(final SQLException ex) {
+    // handle any errors
+    logger.error(
+        "SQLException: " + ex.getMessage() + " SQLState: " + ex.getSQLState() +
+        " VendorError: " + ex.getErrorCode());
+  }
+
+  /**
+   * @return True if Db is used
+   */
+  public static boolean isDbUsed() {
+    return admin != null && admin.getTypeDriver() != null &&
+           admin.getTypeDriver() != DbType.none;
+  }
 }

@@ -125,6 +125,13 @@ public class DbXmlDAOTest extends DBAllDAOTest {
         return null;
       }
     }
+
+    @Override
+    public String getLimitRequest(final String request, final int limit,
+                                  final int offset) {
+      return request;
+    }
+
   }
 
   @Override

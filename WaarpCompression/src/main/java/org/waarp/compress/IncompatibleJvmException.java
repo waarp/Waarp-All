@@ -34,6 +34,9 @@
 package org.waarp.compress;
 
 public class IncompatibleJvmException extends RuntimeException {
+
+  private static final long serialVersionUID = 1092428986329239661L;
+
   public IncompatibleJvmException(final String message) {
     super(message);
   }

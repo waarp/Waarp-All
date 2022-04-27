@@ -1281,6 +1281,7 @@ public class NetworkClientTest extends TestAbstract {
 
   private void test_Spooled(final SpooledThread spooledThread)
       throws IOException, InterruptedException {
+    Assume.assumeTrue(spooledThread.spooledDirectoryTransfer != null);
     final int size = 200;
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);

@@ -54,6 +54,15 @@ public abstract class DAOFactory {
   }
 
   /**
+   * Test only
+   *
+   * @param daoFactory
+   */
+  public static void setInstanceTestOnly(DAOFactory daoFactory) {
+    instance = daoFactory;
+  }
+
+  /**
    * OWASP security
    *
    * @return the {@link DocumentBuilderFactory} ready
@@ -173,4 +182,14 @@ public abstract class DAOFactory {
    * @throws DAOConnectionException if cannot create the DAO
    */
   public abstract TransferDAO getTransferDAO() throws DAOConnectionException;
+
+  /**
+   * @param request
+   * @param limit
+   * @param offset
+   *
+   * @return the request using limit offset
+   */
+  public abstract String getLimitRequest(final String request, final int limit,
+                                         final int offset);
 }

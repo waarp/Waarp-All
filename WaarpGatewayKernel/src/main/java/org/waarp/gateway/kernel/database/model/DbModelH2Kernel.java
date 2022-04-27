@@ -22,11 +22,10 @@ package org.waarp.gateway.kernel.database.model;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelH2;
+import org.waarp.common.guid.LongUuid;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 /**
@@ -112,53 +111,35 @@ public class DbModelH2Kernel extends DbModelH2 {
     }
 
     // cptrunner
-    final long minimalValue = System.currentTimeMillis() + 1;
-    action = new StringBuilder(
-        "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
-        " START WITH " + (DbConstantGateway.ILLEGALVALUE + 1) + " MINVALUE " +
-        minimalValue);
+    action =
+        new StringBuilder("DROP SEQUENCE IF EXISTS " + DbTransferLog.fieldseq);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } catch (final WaarpDatabaseSqlException e) {
-      // version <= 1.2.173
-      action = new StringBuilder(
-          "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
-          " START WITH " + minimalValue);
-      SysErrLogger.FAKE_LOGGER.sysout(action);
-      try {
-        request.query(action.toString());
-      } catch (final WaarpDatabaseNoConnectionException e2) {
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
-      } catch (final WaarpDatabaseSqlException e2) {
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
-      } finally {
-        request.close();
-      }
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } finally {
       request.close();
     }
   }
 
   @Override
-  public final void resetSequence(final DbSession session, final long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
+  public final void resetSequence(final DbSession session,
+                                  final long newvalue) {
+    // Nothing since LongUuid
   }
 
   @Override
-  public final long nextSequence(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
+  public final long nextSequence(final DbSession dbSession) {
+    return LongUuid.getLongUuid();
   }
 
   @Override
   public final boolean upgradeDb(final DbSession session,
                                  final String version) {
-    return false;
+    return true;
   }
 
   @Override

@@ -5,9 +5,11 @@
 Les outils suivants sont nécessaires. Des variantes peuvent être utilisées :
 
 - Java 1.8 (les tests requièrent java 1.8, même si les modules sont compilés en
-  Java 1.6), Java 1.11 pour créer la version `jre11` (attention, pour les
+  Java 1.6), Java 1.11 (voire 13) pour créer la version `jre11` (attention, pour les
   versions `jre6` et `jre8`, JRE8 est nécessaire)
-- Maven 3.6.3 (3.8.x pour des JDK > 11, testé jusqu'à la JDK 16, en remplacement de la JDK 11)
+- Maven 3.6.3 (3.8.x pour des JDK > 13, testé jusqu'à la JDK 16, en remplacement de la JDK 11)
+  - A noter que les versions 11 récentes produisent un comportement anormal à la compilation qui
+    semble résolu en version 13 avec maven 3.6.3 mais présent en version 17
 - Docker (19 par exemple) (optionnel)
 - PGP, Sphinx pour signer les packages et générer la documentation
 - Artifactory (ou équivalent) pour pré-publier les jar (via Docker sur le PC :
@@ -49,9 +51,7 @@ et leur inclusion, il peut être nécessaire de les inclure statiquement.
 Sont concernés :
 
 - `netty-http-java6` : fork de la version netty-http mais pour JRE 6
-- `selenium-java` : pour avoir une version compatible JRE 6, mais la version Java 8 est 
-  normalement utilisée par tous les tests
-- `Waarp-Shaded-Parent` : le parent de ces deux jars
+- `Waarp-Shaded-Parent` : le parent de ce jar
 
 Pour mettre à jour ces jars, veuillez utiliser la procéduire suivante :
 
@@ -60,7 +60,6 @@ Pour mettre à jour ces jars, veuillez utiliser la procéduire suivante :
 - Copier les répertoires depuis le dépôt local `.m2` les dossiers correspondants
 
   - `.m2/repository/Waarp/Waarp-Shaded-Parent/1.0.3/` dans `lib/Waarp/Waarp-Shaded-Parent/1.0.3/`
-  - `.m2/repository/Waarp/selenium-java/3.141.59/` dans `lib/Waarp/selenium-java/3.141.59/`
   - `.m2/repository/Waarp/netty-http-java6/1.5.0/` dans `lib/Waarp/netty-http-java6/1.5.0/`
   
 - Mettre à jour dans chacun des dossiers parents le fichier `maven-metadata-local.xml` pour ne conserver
@@ -247,7 +246,8 @@ DEB, RPM, TAR.GZ, ZIP, HTML et GITHUB.
 ### 3.1  Création des packagings
 
 *Note: ne surtout pas faire un `clean` sur cette étape afin de conserver les packagings
-préalables pour entre les JRE 6, 8 et 11.*
+préalables pour entre les JRE 6, 8 et 11, sauf si vous précisez l'option `-DtargetDirectory=/targetDir` où
+l'ensemble des packagings seront alors copiés (sans perdre une seule version).*
 
 **A la fin des étapes pour jre6, 8 et 11, copier le contenu de `WaarpPackaging` et `WaarpPackaging6`
 dans un répertoire externe afin de les conserver. Vous pouvez préciser l'option 
@@ -265,7 +265,12 @@ En exécutant la commande
   - TGZ : au format `waarp-all-3.6.0-jre11.linux.tar.gz` pour les Systèmes d'exploitation de type Linux
   - ZIP : au format `waarp-all-3.6.0-jre11.windows.zip` pour les Systèmes d'exploitation de type Windows
   - JAR : un jar unique pour tous les programmes (sauf les dépréciés)
-    `Waarp-All-3.6.0-jre11-jar-with-dependencies.jar`
+    `Waarp-All-3.6.0-jre11-jar-with-dependencies.jar` ou `Waarp-All-Without-Extensions-3.6.0-jre11-jar-with-dependencies.jar`
+
+    - La différence entre la version `Waarp-All` et `Waarp-All-Without-Extenions` est la présence ou l'absence
+      du support des tâches `S3` et du `Monitoring` compatible Elasticsearch natif. Si ces fonctions ne sont pas
+      nécessaires, le poids du jar est très réduit en utilisant la version `Waarp-All-Without-Extenions` 
+      (environ 40 Mo de moins).
 
 Afin de pouvoir générer les packages DEB et RPM signés, il faut au préalable avoir une clef PGP
 et la renseigner dans le fichier général de configuration de Maven (`settings.xml`) sous la forme
@@ -307,7 +312,7 @@ via Maven, il est possible de pré-publier les Jar dans un dépôt local maven :
 
 - `mvn -P release,jreX clean deploy -DskipTests -DtargetDirectory=/targetDir`
 
-Si vous disposez de Java 11, vous pouvez donc publier la version :
+Si vous disposez de Java 11 ou mieux 13, vous pouvez donc publier la version :
 - Java 11 avec `jre11`
 
 Si vous disposez de Java 8, vous pouvez publier 2 versions :

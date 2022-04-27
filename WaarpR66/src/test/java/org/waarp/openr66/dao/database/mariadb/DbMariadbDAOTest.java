@@ -40,7 +40,7 @@ public class DbMariadbDAOTest extends DBAllDAOTest {
 
   static {
     TMPFSMAP.clear();
-    TMPFSMAP.put("/var/lib/mariadb/data", "rw");
+    TMPFSMAP.put("/tmp/mariadb/data", "rw");
   }
 
   @ClassRule

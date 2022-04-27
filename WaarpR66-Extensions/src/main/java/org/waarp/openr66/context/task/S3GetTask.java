@@ -91,7 +91,8 @@ public class S3GetTask extends S3AbstractTask {
       internalRun();
       // The update will be done after PRE task done
       futureCompletion.setSuccess();
-    } catch (final OpenR66ProtocolNetworkException | CommandAbstractException | WaarpDatabaseException e) {
+    } catch (final OpenR66ProtocolNetworkException | CommandAbstractException |
+                   WaarpDatabaseException e) {
       finalizeInError(e, "Error while S3 Action");
     }
   }

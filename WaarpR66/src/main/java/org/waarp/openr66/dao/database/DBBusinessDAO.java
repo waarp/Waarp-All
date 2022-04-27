@@ -92,6 +92,11 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
+  protected final String getTable() {
+    return TABLE;
+  }
+
+  @Override
   protected final String getSelectRequest() {
     return SQL_SELECT;
   }

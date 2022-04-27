@@ -23,17 +23,7 @@ package org.waarp.openr66.protocol.junit;
 import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.Before;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Platform;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.waarp.common.database.exception.WaarpDatabaseException;
-import org.waarp.common.file.FileUtils;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
@@ -61,9 +51,6 @@ import org.waarp.openr66.server.ServerInitDatabase;
 import java.io.File;
 import java.io.FileFilter;
 import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 import static org.junit.Assert.*;
 
@@ -78,13 +65,6 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   protected static NetworkTransaction networkTransaction;
   protected static Project project;
   protected static File homeDir;
-  public static WebDriver driver = null;
-
-  public enum DriverType {
-    PHANTOMJS
-  }
-
-  public static DriverType driverType = DriverType.PHANTOMJS;
 
   public static void setUpDbBeforeClass() throws Exception {
     deleteBase();
@@ -185,99 +165,6 @@ public abstract class TestAbstract extends TestAbstractMinimal {
           future.getCause() != null? future.getCause().getMessage() :
               "No Cause");
     }
-  }
-
-  public static void initiateWebDriver(File file) {
-    File libdir = file.getParentFile().getParentFile().getParentFile();
-    // test-classes -> target -> WaarpR66 -> lib -> geckodriver (linux x64)
-    File libPhantomJS = new File("/tmp/phantomjs-2.1.1");
-    if (!libPhantomJS.canRead()) {
-      File libPhantomJSZip = new File(libdir, "lib/phantomjs-2.1.1.bz2");
-      if (libPhantomJSZip.canRead()) {
-        FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
-        libPhantomJS.setExecutable(true);
-      }
-    }
-    assertTrue(libPhantomJS.exists());
-    System.setProperty("phantomjs.binary.path", libPhantomJS.getAbsolutePath());
-    try {
-      driver = initializeDriver();
-    } catch (InterruptedException e) {//NOSONAR
-      e.printStackTrace();
-      fail(e.getMessage());
-    }
-  }
-
-  public static void reloadDriver() throws InterruptedException {
-    if (driver != null) {
-      finalizeDriver();
-    }
-    driver = initializeDriver();
-  }
-
-  public static WebDriver initializeDriver() throws InterruptedException {
-    WebDriver driver;
-    switch (driverType) {
-      case PHANTOMJS:
-      default:
-        driver = createPhantomJSDriver();
-    }
-    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-    driver.manage().window().setSize(new Dimension(1920, 1080));
-    //driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
-    Thread.sleep(10);
-    return driver;
-  }
-
-  private static WebDriver createPhantomJSDriver() {
-    DesiredCapabilities desiredCapabilities =
-        new DesiredCapabilities("phantomjs", "", Platform.ANY);
-    desiredCapabilities.setCapability(
-        PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-        System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR,
-                                      true);
-    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities.setCapability(
-        CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
-    LoggingPreferences logPrefs = new LoggingPreferences();
-    logPrefs.enable(LogType.BROWSER, Level.OFF);
-    logPrefs.enable(LogType.CLIENT, Level.OFF);
-    logPrefs.enable(LogType.DRIVER, Level.OFF);
-    logPrefs.enable(LogType.PERFORMANCE, Level.OFF);
-    logPrefs.enable(LogType.PROFILER, Level.OFF);
-    logPrefs.enable(LogType.SERVER, Level.OFF);
-    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-    desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities.setCapability(
-        PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-        "--webdriver-loglevel=NONE");
-    desiredCapabilities.setJavascriptEnabled(true);
-
-    ArrayList<String> cliArgs = new ArrayList<String>();
-    cliArgs.add("--web-security=true");
-    cliArgs.add("--ignore-ssl-errors=true");
-    cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS,
-                                      cliArgs);
-
-    PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
-    phantomJSDriver.setLogLevel(Level.OFF);
-    return phantomJSDriver;
-  }
-
-  public static void finalizeDriver() throws InterruptedException {
-    // 17 | close |  |  |
-    // driver.close();
-    if (driver != null) {
-      try {
-        driver.quit();
-      } catch (Exception e) {
-        // Ignore
-      }
-      driver = null;
-    }
-    Thread.sleep(10);
   }
 
   public static void initiateDb(String serverInit) {

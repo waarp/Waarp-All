@@ -23,6 +23,7 @@ package org.waarp.openr66.protocol.junit;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -142,6 +143,11 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
       File jar = new File(JAR352);
       FileOutputStream outputStream = new FileOutputStream(jar);
       FileUtils.copy(stream, outputStream);
+      if (!jar.exists()) {
+        logger.error("CANNOT FIND version 3.5.2");
+        fail("CANNOT FIND version 3.5.2");
+        return 9999;
+      }
       project = Processes.getProject(homeDir);
       Processes.executeJvmSpecificClasspath(project, jar, R66Server.class,
                                             argsServer, true);
@@ -902,6 +908,7 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
 
   private void test_Spooled(final SpooledThread spooledThread)
       throws IOException, InterruptedException {
+    Assume.assumeTrue(spooledThread.spooledDirectoryTransfer != null);
     final int size = 200;
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);

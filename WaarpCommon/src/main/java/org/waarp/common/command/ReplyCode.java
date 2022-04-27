@@ -164,6 +164,11 @@ public enum ReplyCode {
   REPLY_350_REQUESTED_FILE_ACTION_PENDING_FURTHER_INFORMATION(350),
 
   /**
+   * 400 Bad Request (Http)
+   */
+  REPLY_400_BAD_REQUEST(400),
+
+  /**
    * 421 Service not available, closing control connection. This may be a
    * reply
    * to any command if the service
@@ -457,6 +462,8 @@ public enum ReplyCode {
         return REPLY_332_NEED_ACCOUNT_FOR_LOGIN;
       case 350:
         return REPLY_350_REQUESTED_FILE_ACTION_PENDING_FURTHER_INFORMATION;
+      case 400:
+        return REPLY_400_BAD_REQUEST;
       case 421:
         return REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION;
       case 425:
@@ -505,6 +512,28 @@ public enum ReplyCode {
         return REPLY_553_REQUESTED_ACTION_NOT_TAKEN_FILE_NAME_NOT_ALLOWED;
       default:
         throw new InvalidArgumentException("Unknown ReplyCode " + code);
+    }
+  }
+
+  /**
+   * @param httpCode
+   *
+   * @return the associated ReplyCode from the given numerical code
+   *
+   * @throws InvalidArgumentException
+   */
+  public static ReplyCode getReplyCodeFromHttp(final int httpCode)
+      throws InvalidArgumentException {
+    if (httpCode < 200) {
+      return REPLY_000_SPECIAL_NOSTATUS;
+    } else if (httpCode < 300) {
+      return REPLY_200_COMMAND_OKAY;
+    } else if (httpCode < 400) {
+      return REPLY_220_SERVICE_READY;
+    } else if (httpCode < 500) {
+      return REPLY_400_BAD_REQUEST;
+    } else {
+      return REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED;
     }
   }
 }

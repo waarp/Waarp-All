@@ -23,7 +23,7 @@ import com.mysql.jdbc.Driver;
 import io.netty.util.internal.PlatformDependent;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbConnectionPool;
-import org.waarp.common.database.DbSession;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -216,7 +216,7 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       // SQLException
       logger.error(
           "Cannot register Driver " + type.name() + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseNoConnectionException(
           "Cannot load database drive:" + type.name(), e);
     }
