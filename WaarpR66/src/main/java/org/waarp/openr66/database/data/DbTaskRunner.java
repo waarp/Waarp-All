@@ -32,6 +32,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultElement;
 import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData;
@@ -1143,7 +1144,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       dbTaskRunner.checkThroughMode();
       return dbTaskRunner;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
@@ -1186,7 +1187,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       dbTaskRunner.checkThroughMode();
       return dbTaskRunner;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
@@ -1228,7 +1229,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       dbTaskRunner.checkThroughMode();
       return dbTaskRunner;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);

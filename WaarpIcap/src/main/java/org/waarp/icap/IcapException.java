@@ -24,6 +24,7 @@ package org.waarp.icap;
  * All ICAP exception
  */
 public class IcapException extends Exception {
+  private static final long serialVersionUID = -2391448349074668817L;
   private final IcapError error;
 
   public IcapException(final String message, final IcapError error) {

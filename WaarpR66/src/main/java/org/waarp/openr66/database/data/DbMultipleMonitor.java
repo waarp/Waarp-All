@@ -20,6 +20,7 @@
 package org.waarp.openr66.database.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -52,7 +53,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
 
   public static final String table = " MULTIPLEMONITOR ";
 
-  protected static final String selectAllFields =
+  public static final String selectAllFields =
       Columns.COUNTCONFIG.name() + ',' + Columns.COUNTHOST.name() + ',' +
       Columns.COUNTRULE.name() + ',' + Columns.HOSTID.name();
 
@@ -175,7 +176,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
               preparedStatement.getResultSet());
       return dbMm;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);

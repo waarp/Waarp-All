@@ -92,7 +92,8 @@ public class S3GetAndDeleteTask extends S3GetTask {
       // The update will be done after PRE task done
       logger.debug("GET and DELETED {}", taskUtil.getSourceName());
       futureCompletion.setSuccess();
-    } catch (final OpenR66ProtocolNetworkException | CommandAbstractException | WaarpDatabaseException e) {
+    } catch (final OpenR66ProtocolNetworkException | CommandAbstractException |
+                   WaarpDatabaseException e) {
       finalizeInError(e, "Error while S3 Action");
     }
   }

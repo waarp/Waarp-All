@@ -29,6 +29,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.TestWebAbstract;
 import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.File;
@@ -37,7 +38,7 @@ import java.io.IOException;
 /**
  *
  */
-public abstract class TestAbstractMinimal {
+public abstract class TestAbstractMinimal extends TestWebAbstract {
   /**
    * Internal Logger
    */

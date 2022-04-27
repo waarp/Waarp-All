@@ -67,4 +67,11 @@ public class XMLDAOFactory extends DAOFactory {
   public TransferDAO getTransferDAO() {
     return new XMLTransferDAO();
   }
+
+  @Override
+  public String getLimitRequest(final String request, final int limit,
+                                final int offset) {
+    return request;
+  }
+
 }

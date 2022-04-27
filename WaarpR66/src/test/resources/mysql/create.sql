@@ -37,7 +37,7 @@ CREATE TABLE hosts (
     address character varying(250) NOT NULL,
     port integer NOT NULL,
     isssl boolean NOT NULL,
-    hostkey VARBINARY(1024) NOT NULL,
+    hostkey VARBINARY(512) NOT NULL,
     adminrole boolean NOT NULL,
     isclient boolean NOT NULL,
     isactive boolean NOT NULL,

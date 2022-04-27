@@ -22,7 +22,6 @@ package org.waarp.openr66.dao.database;
 
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.guid.LongUuid;
-import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
@@ -130,36 +129,49 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       PARAMETER_COMMA + GLOBAL_LAST_STEP_FIELD + PARAMETER_COMMA + STEP_FIELD +
       " = ?  " + "WHERE " + PRIMARY_KEY_WHERE;
 
+  @Override
   protected final String getDeleteRequest() {
     return SQL_DELETE;
   }
 
+  @Override
   protected final String getDeleteAllRequest() {
     return SQL_DELETE_ALL;
   }
 
+  @Override
   protected final String getExistRequest() {
     return SQL_EXIST;
   }
 
+  @Override
   protected final String getGetAllRequest() {
     return SQL_GET_ALL;
   }
 
+  @Override
   protected final String getInsertRequest() {
     return SQL_INSERT;
   }
 
+  @Override
   protected final String getSelectRequest() {
     return SQL_SELECT;
   }
 
+  @Override
   protected final String getCountRequest() {
     return SQL_COUNT_ALL;
   }
 
+  @Override
   protected final String getUpdateRequest() {
     return SQL_UPDATE;
+  }
+
+  @Override
+  protected final String getTable() {
+    return TABLE;
   }
 
   final String getUpdateLimitedRankRequest() {
@@ -318,37 +330,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public final List<Transfer> find(final List<Filter> filters, final int limit)
-      throws DAOConnectionException {
-    final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
-    // Create the SQL query
-    final Object[] params = prepareFindParams(filters);
-    final StringBuilder query =
-        new StringBuilder(prepareFindQuery(filters, params));
-    // Set LIMIT
-    if (limit > 0) {
-      query.append(LIMIT2).append(limit);
-    }
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query.toString());
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        transfers.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return transfers;
-  }
-
-  @Override
   public final List<Transfer> find(final List<Filter> filters, final int limit,
                                    final int offset)
       throws DAOConnectionException {
@@ -357,123 +338,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
-    // Set LIMIT
-    if (limit > 0) {
-      query.append(LIMIT2).append(limit);
-    }
-    // Set OFFSET
-    if (offset > 0) {
-      query.append(" OFFSET ").append(offset);
-    }
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query.toString());
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        transfers.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return transfers;
-  }
-
-  @Override
-  public final List<Transfer> find(final List<Filter> filters,
-                                   final String column, final boolean ascend)
-      throws DAOConnectionException {
-    final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
-    // Create the SQL query
-    final Object[] params = prepareFindParams(filters);
-    final StringBuilder query =
-        new StringBuilder(prepareFindQuery(filters, params));
-    // Set ORDER BY
-    if (ParametersChecker.isNotEmpty(column)) {
-      query.append(" ORDER BY ").append(column);
-      if (!ascend) {
-        query.append(" DESC");
-      }
-    }
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query.toString());
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        transfers.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return transfers;
-  }
-
-  @Override
-  public final List<Transfer> find(final List<Filter> filters,
-                                   final String column, final boolean ascend,
-                                   final int limit)
-      throws DAOConnectionException {
-    final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
-    // Create the SQL query
-    final Object[] params = prepareFindParams(filters);
-    final StringBuilder query =
-        new StringBuilder(prepareFindQuery(filters, params));
-    // Set ORDER BY
-    if (ParametersChecker.isNotEmpty(column)) {
-      query.append(" ORDER BY ").append(column);
-      if (!ascend) {
-        query.append(" DESC");
-      }
-    }
-    // Set LIMIT
-    if (limit > 0) {
-      query.append(LIMIT2).append(limit);
-    }
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query.toString());
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        transfers.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return transfers;
-  }
-
-  @Override
-  public final List<Transfer> find(final List<Filter> filters,
-                                   final String column, final boolean ascend,
-                                   final int limit, final int offset)
-      throws DAOConnectionException {
-    final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
-    // Create the SQL query
-    final Object[] params = prepareFindParams(filters);
-    final StringBuilder query =
-        new StringBuilder(prepareFindQuery(filters, params));
-    // Set ORDER BY
-    query.append(" ORDER BY ").append(column);
-    if (!ascend) {
-      query.append(" DESC");
-    }
     // Set LIMIT
     if (limit > 0) {
       query.append(LIMIT2).append(limit);

@@ -29,6 +29,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelAbstract;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -37,6 +38,7 @@ import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 
+import java.sql.Types;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -56,6 +58,66 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   protected AbstractDbDataDao() {
     // nothing
+  }
+
+  /**
+   * Validate Byte array max length
+   *
+   * @param values the values to check against Types.VARBINARY
+   *
+   * @throws WaarpDatabaseSqlException if length is not acceptable
+   */
+  public static void validateLength(final byte[]... values)
+      throws WaarpDatabaseSqlException {
+    for (final byte[] value : values) {
+      if (value != null && value.length > DbModelAbstract.MAX_BINARY * 2) {
+        throw new WaarpDatabaseSqlException(
+            "BINARY value exceed max size: " + value.length + " (" +
+            DbModelAbstract.MAX_BINARY + ")");
+      }
+    }
+  }
+
+  /**
+   * Validate String max length
+   *
+   * @param type between Types.VARCHAR, NVARCHAR, LONGVARCHAR
+   * @param values the values to check against same type
+   *
+   * @throws WaarpDatabaseSqlException if length is not acceptable
+   */
+  public static void validateLength(final int type, final String... values)
+      throws WaarpDatabaseSqlException {
+    for (final String value : values) {
+      if (value == null) {
+        continue;
+      }
+      switch (type) {
+        case Types.VARCHAR:
+          if (value.length() > DbModelAbstract.MAX_VARCHAR) {
+            throw new WaarpDatabaseSqlException(
+                "VARCHAR value exceed max size: " + value.length() + " (" +
+                DbModelAbstract.MAX_VARCHAR + ")");
+          }
+          break;
+        case Types.NVARCHAR:
+          if (value.length() > DbModelAbstract.MAX_KEY_VARCHAR) {
+            throw new WaarpDatabaseSqlException(
+                "VARCHAR as KEY value exceed max size: " + value.length() +
+                " (" + DbModelAbstract.MAX_KEY_VARCHAR + ")");
+          }
+          break;
+        case Types.LONGVARCHAR:
+          if (value.length() > DbModelAbstract.MAX_LONGVARCHAR) {
+            throw new WaarpDatabaseSqlException(
+                "LONGVARCHAR value exceed max size: " + value.length() + " (" +
+                DbModelAbstract.MAX_LONGVARCHAR + ")");
+          }
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   protected abstract String getTable();

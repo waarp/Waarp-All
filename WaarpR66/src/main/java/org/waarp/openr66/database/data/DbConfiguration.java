@@ -21,6 +21,7 @@ package org.waarp.openr66.database.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -246,6 +247,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
     int i = 0;
     for (final Limit limit : limits) {
       res[i] = new DbConfiguration(limit);
+      res[i].isSaved = true;
       i++;
     }
     return res;
@@ -314,7 +316,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
               statement.getResultSet());
       return dbConfiguration;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);

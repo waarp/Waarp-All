@@ -27,6 +27,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.joda.time.DateTime;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -579,7 +580,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
               preparedStatement.getResultSet());
       return dbHostConfiguration;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
@@ -617,6 +618,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     int i = 0;
     for (final Business business : businesses) {
       res[i] = new DbHostConfiguration(business);
+      res[i].isSaved = true;
       i++;
     }
     return res;

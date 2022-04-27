@@ -137,7 +137,7 @@ public final class SystemPropertyUtil {
     }
     // Ensure minimize Direct except if something different set
     if (!contains(IO_NETTY_MAXDIRECTMEMORY) ||
-        ParametersChecker.isNotEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {
+        ParametersChecker.isEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {
       try {
         System.setProperty(IO_NETTY_MAXDIRECTMEMORY, "0");
         synchronized (PROPS) {
@@ -151,15 +151,19 @@ public final class SystemPropertyUtil {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
-    try {
-      System.setProperty(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY,
-                         NET_SF_SAXON_TRANSFORMER_FACTORY_IMPL);
-      synchronized (PROPS) {
-        PROPS.clear();
-        PROPS.putAll(newProps);
+    if (!contains(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY) ||
+        ParametersChecker.isEmpty(
+            get(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY))) {
+      try {
+        System.setProperty(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY,
+                           NET_SF_SAXON_TRANSFORMER_FACTORY_IMPL);
+        synchronized (PROPS) {
+          PROPS.clear();
+          PROPS.putAll(newProps);
+        }
+      } catch (final Throwable ignored) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
-    } catch (final Throwable ignored) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
     if (!contains(FILE_ENCODING) ||
         !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {

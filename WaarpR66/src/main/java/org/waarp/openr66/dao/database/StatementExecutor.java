@@ -25,6 +25,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.AbstractDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.database.DBDAOFactory.FakeConnection;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -100,6 +101,10 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     connection = con;
   }
 
+  public Connection getConnection() {
+    return connection;
+  }
+
   protected final void setParameters(final PreparedStatement stm,
                                      final Object... values)
       throws SQLException {
@@ -111,7 +116,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  final void executeUpdate(final PreparedStatement stm) throws SQLException {
+  protected final void executeUpdate(final PreparedStatement stm)
+      throws SQLException {
     final int res;
     res = stm.executeUpdate();
     if (res < 1) {
@@ -123,9 +129,9 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  protected final void executeAction(final PreparedStatement stm)
+  protected final int executeAction(final PreparedStatement stm)
       throws SQLException {
-    stm.executeUpdate();
+    return stm.executeUpdate();
   }
 
   protected final ResultSet executeQuery(final PreparedStatement stm)
@@ -167,6 +173,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   protected abstract String getId(E e1);
+
+  protected abstract String getTable();
 
   protected abstract String getSelectRequest();
 
@@ -227,6 +235,67 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
+  protected final String prepareDeleteQuery(final List<Filter> filters,
+                                            final Object[] params) {
+    final StringBuilder query = new StringBuilder(getDeleteAllRequest());
+    return getFullRequest(filters, params, query);
+  }
+
+  private final String getFullRequest(final List<Filter> filters,
+                                      final Object[] params,
+                                      final StringBuilder query) {
+    if (filters.isEmpty()) {
+      return query.toString();
+    }
+    query.append(WHERE);
+    String prefix = "";
+    int i = 0;
+    for (final Filter filter : filters) {
+      query.append(prefix);
+      if (filter.nbAdditionnalParams() > 1) {
+        final Object[] objects = (Object[]) filter.append(query);
+        for (final Object o : objects) {
+          params[i++] = o;
+        }
+      } else if (filter.nbAdditionnalParams() == 1) {
+        params[i] = filter.append(query);
+        i++;
+      } else {
+        filter.append(query);
+      }
+      prefix = " AND ";
+    }
+    return query.toString();
+  }
+
+  /**
+   * Delete all items according to filter
+   *
+   * @param filters
+   *
+   * @return the number of deleted items
+   *
+   * @throws DAOConnectionException
+   */
+  public final int delete(final List<Filter> filters)
+      throws DAOConnectionException {
+    final ArrayList<E> es = new ArrayList<E>();
+    // Create the SQL query
+    final Object[] params = prepareFindParams(filters);
+    final String query = prepareDeleteQuery(filters, params);
+    // Execute query
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(query);
+      setParameters(stm, params);
+      return executeAction(stm);
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
   @Override
   public final List<E> getAll() throws DAOConnectionException {
     final ArrayList<E> es = new ArrayList<E>();
@@ -247,39 +316,19 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     return es;
   }
 
-  final String prepareFindQuery(final List<Filter> filters,
-                                final Object[] params) {
+  protected final String prepareFindQuery(final List<Filter> filters,
+                                          final Object[] params) {
     final StringBuilder query = new StringBuilder(getGetAllRequest());
-    if (filters.isEmpty()) {
-      return query.toString();
-    }
-    query.append(WHERE);
-    String prefix = "";
-    int i = 0;
-    for (final Filter filter : filters) {
-      query.append(prefix);
-      if (filter.nbAdditionnalParams() > 0) {
-        final Object[] objects = (Object[]) filter.append(query);
-        for (final Object o : objects) {
-          params[i++] = o;
-        }
-      } else if (filter.nbAdditionnalParams() == 0) {
-        params[i] = filter.append(query);
-        i++;
-      } else {
-        filter.append(query);
-      }
-      prefix = " AND ";
-    }
-    return query.toString();
+    return getFullRequest(filters, params, query);
   }
 
-  final Object[] prepareFindParams(final List<Filter> filters) {
+  protected final Object[] prepareFindParams(final List<Filter> filters) {
     Object[] params = new Object[0];
     if (filters != null) {
       int len = filters.size();
       for (final Filter filter : filters) {
-        len += filter.nbAdditionnalParams();
+        // Already got 1
+        len += filter.nbAdditionnalParams() - 1;
       }
       params = new Object[len];
     }
@@ -289,6 +338,32 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   @Override
   public final List<E> find(final List<Filter> filters)
       throws DAOConnectionException {
+    return find(filters, null, false, -1);
+  }
+
+  @Override
+  public final List<E> find(final List<Filter> filters, final int limit)
+      throws DAOConnectionException {
+    return find(filters, null, false, limit);
+  }
+
+  @Override
+  public final List<E> find(final List<Filter> filters, final String field,
+                            final boolean asc) throws DAOConnectionException {
+    return find(filters, field, asc, -1);
+  }
+
+  @Override
+  public final List<E> find(final List<Filter> filters, final String field,
+                            final boolean asc, final int limit)
+      throws DAOConnectionException {
+    return find(filters, field, asc, limit, -1);
+  }
+
+  @Override
+  public final List<E> find(final List<Filter> filters, final String field,
+                            final boolean asc, final int limit,
+                            final int offset) throws DAOConnectionException {
     final ArrayList<E> es = new ArrayList<E>();
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
@@ -298,7 +373,21 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     PreparedStatement stm = null;
     ResultSet res = null;
     try {
-      stm = connection.prepareStatement(query.toString());
+      if (field != null) {
+        query.append(" ORDER BY ").append(field);
+        if (!asc) {
+          query.append(" DESC ");
+        }
+      }
+      String squery = query.toString();
+      if (limit > 0 || offset > 0) {
+        squery =
+            DAOFactory.getInstance().getLimitRequest(squery, limit, offset);
+      }
+      logger.debug("DEBUG {} {} {}", squery,
+                   params != null && params.length > 0? params[0] : "No first",
+                   params.length >= 2? params[1] : " No 2nd");
+      stm = connection.prepareStatement(squery);
       setParameters(stm, params);
       res = executeQuery(stm);
       while (res.next()) {
@@ -313,31 +402,51 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     return es;
   }
 
-  final String prepareCountQuery(final List<Filter> filters,
-                                 final Object[] params) {
-    final StringBuilder query = new StringBuilder(getCountRequest());
-    if (filters.isEmpty()) {
-      return query.toString();
-    }
-    query.append(WHERE);
-    String prefix = "";
-    int i = 0;
-    for (final Filter filter : filters) {
-      query.append(prefix);
-      if (filter.nbAdditionnalParams() > 0) {
-        final Object[] objects = (Object[]) filter.append(query);
-        for (final Object o : objects) {
-          params[i++] = o;
+  @Override
+  public final void update(final List<Filter> filters, final String fieldToSet)
+      throws DAOConnectionException {
+    final ArrayList<E> es = new ArrayList<E>();
+    // Create the SQL query
+    final Object[] params = prepareFindParams(filters);
+    if (isCachedEnable()) {
+      final String query = prepareFindQuery(filters, params);
+      // Execute query
+      PreparedStatement stm = null;
+      ResultSet res = null;
+      try {
+        stm = connection.prepareStatement(query);
+        setParameters(stm, params);
+        res = executeQuery(stm);
+        while (res.next()) {
+          final E e = getFromResultSet(res);
+          removeFromCache(getId(e));
         }
-      } else if (filter.nbAdditionnalParams() == 0) {
-        params[i] = filter.append(query);
-        i++;
-      } else {
-        filter.append(query);
+      } catch (final SQLException e) {
+        throw new DAOConnectionException(e);
+      } finally {
+        closeResultSet(res);
+        closeStatement(stm);
       }
-      prefix = " AND ";
     }
-    return query.toString();
+    final StringBuilder query = new StringBuilder("UPDATE " + getTable());
+    query.append(" SET ").append(fieldToSet);
+    final String squery = getFullRequest(filters, params, query);
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(squery);
+      setParameters(stm, params);
+      executeUpdate(stm);
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
+  protected final String prepareCountQuery(final List<Filter> filters,
+                                           final Object[] params) {
+    final StringBuilder query = new StringBuilder(getCountRequest());
+    return getFullRequest(filters, params, query);
   }
 
   @Override
@@ -345,14 +454,13 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
-    final StringBuilder query =
-        new StringBuilder(prepareCountQuery(filters, params));
+    final String query = prepareCountQuery(filters, params);
     // Execute query
     PreparedStatement stm = null;
     ResultSet res = null;
     long total = -1;
     try {
-      stm = connection.prepareStatement(query.toString());
+      stm = connection.prepareStatement(query);
       setParameters(stm, params);
       res = executeQuery(stm);
       if (res.next()) {

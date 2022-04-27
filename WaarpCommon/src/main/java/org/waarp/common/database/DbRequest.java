@@ -125,7 +125,7 @@ public class DbRequest {
       }
     } catch (final SQLException e) {
       logger.error(SQL_EXCEPTION_REQUEST + select + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);
     }
@@ -163,7 +163,7 @@ public class DbRequest {
       }
     } catch (final SQLException e) {
       logger.error(SQL_EXCEPTION_REQUEST1 + select + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);
     }
@@ -192,7 +192,7 @@ public class DbRequest {
       return rowcount;
     } catch (final SQLException e) {
       logger.error(SQL_EXCEPTION_REQUEST1 + query + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + query, e);
     }
@@ -242,7 +242,7 @@ public class DbRequest {
         result = rstmp.getLong(1);
       }
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseNoDataException("No data found", e);
     } finally {
@@ -281,7 +281,7 @@ public class DbRequest {
       return rs.next();
     } catch (final SQLException e) {
       logger.warn("SQL Exception to getNextRow" + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException("SQL Exception to getNextRow", e);
     }
