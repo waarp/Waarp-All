@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -428,6 +429,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     int i = 0;
     for (final Rule rule : rules) {
       res[i] = new DbRule(rule);
+      res[i].isSaved = false;
       i++;
     }
     return res;
@@ -484,7 +486,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
           preparedStatement.getResultSet());
       return dbRule;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);

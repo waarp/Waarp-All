@@ -33,7 +33,6 @@ import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.common.database.model.DbType;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -201,8 +200,7 @@ public class FileBasedConfiguration {
   }
 
   private static boolean isDbInactive(final Configuration configuration) {
-    return admin == null || admin.getTypeDriver() == DbType.none ||
-           configuration.isSaveTaskRunnerWithNoDb();
+    return !isDbUsed() || configuration.isSaveTaskRunnerWithNoDb();
   }
 
   /**
@@ -718,15 +716,9 @@ public class FileBasedConfiguration {
     final XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_CLIENT));
     try {
       XmlValue value = hashConfig.get(XML_SAVE_TASKRUNNERNODB);
-      if (admin == null || admin.getTypeDriver() == DbType.none) {
-        if (value != null && !value.isEmpty()) {
-          config.setSaveTaskRunnerWithNoDb(value.getBoolean());
-          logger.info(
-              Messages.getString("FileBasedConfiguration.NoDB")); //$NON-NLS-1$
-          if (admin == null) {
-            admin = new DbAdmin(); // no database support
-            noCommitAdmin = admin;
-          }
+      if (!isDbUsed()) {
+        if (value != null && !value.isEmpty() && value.getBoolean()) {
+          initNoDb(config);
         }
       }
       value = hashConfig.get(XML_BUSINESS_FACTORY);
@@ -1566,32 +1558,25 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
+  @SuppressWarnings("deprecation")
   private static boolean loadDatabase(final Configuration config,
                                       final boolean initdb) {
+    if (hashRootConfig.get(XML_DB) == null) {
+      return initNoDb(config);
+    }
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DB));
     try {
       XmlValue value = hashConfig.get(XML_SAVE_TASKRUNNERNODB);
       if (value != null && !value.isEmpty() && value.getBoolean()) {
-        config.setSaveTaskRunnerWithNoDb(value.getBoolean());
-        logger.info(
-            Messages.getString("FileBasedConfiguration.NoDB")); //$NON-NLS-1$
-        admin = new DbAdmin(); // no database support
-        noCommitAdmin = admin;
-        DAOFactory.initialize();
-        return true;
+        return initNoDb(config);
       }
       value = hashConfig.get(XML_DBDRIVER);
       if (value == null || value.isEmpty()) {
         if (config.isWarnOnStartup()) {
           logger.warn(Messages.getString("FileBasedConfiguration.NoDB"));
           //$NON-NLS-1$
-        } else {
-          logger.info(
-              Messages.getString("FileBasedConfiguration.NoDB")); //$NON-NLS-1$
         }
-        admin = new DbAdmin(); // no database support
-        noCommitAdmin = admin;
-        DAOFactory.initialize();
+        return initNoDb(config);
       } else {
         final String dbdriver = value.getString();
         value = hashConfig.get(XML_DBSERVER);
@@ -1722,6 +1707,16 @@ public class FileBasedConfiguration {
       hashConfig.clear();
       hashConfig = null;
     }
+  }
+
+  private static boolean initNoDb(final Configuration config) {
+    config.setSaveTaskRunnerWithNoDb(true);
+    logger.info(
+        Messages.getString("FileBasedConfiguration.NoDB")); //$NON-NLS-1$
+    admin = new DbAdmin(); // no database support
+    noCommitAdmin = admin;
+    DAOFactory.initialize();
+    return true;
   }
 
   /**
@@ -2071,6 +2066,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
+  @SuppressWarnings("deprecation")
   public static boolean setConfigurationServerMinimalFromXml(
       final Configuration config, final String filename) {
     if (!SystemPropertyUtil.get(
@@ -2152,6 +2148,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
+  @SuppressWarnings("deprecation")
   public static boolean setConfigurationServerShutdownFromXml(
       final Configuration config, final String filename) {
     if (!SystemPropertyUtil.get(
@@ -2351,6 +2348,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
+  @SuppressWarnings("deprecation")
   public static boolean setClientConfigurationFromXml(
       final Configuration config, final String filename) {
     if (!SystemPropertyUtil.get(
@@ -2454,6 +2452,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
+  @SuppressWarnings("deprecation")
   public static boolean setSubmitClientConfigurationFromXml(
       final Configuration config, final String filename) {
     if (!SystemPropertyUtil.get(

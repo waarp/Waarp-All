@@ -19,18 +19,15 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelMysql;
+import org.waarp.common.guid.LongUuid;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
-import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -120,9 +117,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
     /*
      * # Table to handle any number of sequences
      */
-    action = new StringBuilder(
-        "CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY," +
-        "seq BIGINT NOT NULL)");
+    action = new StringBuilder("DROP TABLE IF EXISTS Sequences");
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -135,115 +130,23 @@ public class DbModelMysqlKernel extends DbModelMysql {
     } finally {
       request.close();
     }
-    action = new StringBuilder(
-        "INSERT INTO Sequences (name, seq) VALUES ('" + DbTransferLog.fieldseq +
-        "', " + (DbConstantGateway.ILLEGALVALUE + 1) + ')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-    } finally {
-      request.close();
-    }
   }
 
   @Override
   public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    resetSequenceMonitoring(session, newvalue);
-  }
-
-  public static void resetSequenceMonitoring(final DbSession session,
-                                             final long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    final String action =
-        "UPDATE Sequences SET seq = " + newvalue + " WHERE name = '" +
-        DbTransferLog.fieldseq + '\'';
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-      return;
-    } finally {
-      request.close();
-    }
-    SysErrLogger.FAKE_LOGGER.sysout(action);
+    // Nothing
   }
 
   @Override
-  public long nextSequence(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    return nextSequenceMonitoring(dbSession, lock);
-  }
-
-  public static long nextSequenceMonitoring(final DbSession dbSession,
-                                            final ReentrantLock lock)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    lock.lock();
-    try {
-      long result = DbConstantGateway.ILLEGALVALUE;
-      String action =
-          "SELECT seq FROM Sequences WHERE name = '" + DbTransferLog.fieldseq +
-          "' FOR UPDATE";
-      final DbPreparedStatement preparedStatement =
-          new DbPreparedStatement(dbSession);
-      try {
-        dbSession.getConn().setAutoCommit(false);
-      } catch (final SQLException ignored) {
-        // nothing
-      }
-      try {
-        preparedStatement.createPrepareStatement(action);
-        // Limit the search
-        preparedStatement.executeQuery();
-        if (preparedStatement.getNext()) {
-          try {
-            result = preparedStatement.getResultSet().getLong(1);
-          } catch (final SQLException e) {
-            throw new WaarpDatabaseSqlException(e);
-          }
-        } else {
-          throw new WaarpDatabaseNoDataException(
-              "No sequence found. Must be initialized first");
-        }
-      } finally {
-        preparedStatement.realClose();
-      }
-      action =
-          "UPDATE Sequences SET seq = " + (result + 1) + " WHERE name = '" +
-          DbTransferLog.fieldseq + '\'';
-      try {
-        preparedStatement.createPrepareStatement(action);
-        // Limit the search
-        preparedStatement.executeUpdate();
-      } finally {
-        preparedStatement.realClose();
-      }
-      return result;
-    } finally {
-      try {
-        dbSession.getConn().setAutoCommit(true);
-      } catch (final SQLException ignored) {
-        // nothing
-      } finally {
-        lock.unlock();
-      }
-    }
+  public long nextSequence(final DbSession dbSession) {
+    return LongUuid.getLongUuid();
   }
 
   @Override
   public final boolean upgradeDb(final DbSession session,
                                  final String version) {
-    return false;
+    return true;
   }
 
   @Override

@@ -142,6 +142,11 @@ public class NetworkClientCompressionVs35Test extends TestAbstract {
       File jar = new File(JAR352);
       FileOutputStream outputStream = new FileOutputStream(jar);
       FileUtils.copy(stream, outputStream);
+      if (!jar.exists()) {
+        logger.error("CANNOT FIND version 3.5.2");
+        fail("CANNOT FIND version 3.5.2");
+        return 9999;
+      }
       project = Processes.getProject(homeDir);
       Processes.executeJvmSpecificClasspath(project, jar, R66Server.class,
                                             argsServer, true);

@@ -7,6 +7,21 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.6.2 (2022-03-01)
+============================
+
+
+Correctifs
+----------
+
+- Correction pour le File Watcher (Spool) d'un paramètre optionnel mais qui devait être explicité
+  (``taskrunnernodb`` dans ``client``)
+- Correction de bugs database (Limit, initialisation H2 pour la séquence)
+- Correction des tests Web
+- Changement de client Elasticsearch
+- Mise à jour des dépendances
+
+
 Waarp R66 3.6.1 (2021-12-10)
 ============================
 

@@ -34,6 +34,7 @@
 package org.waarp.compress;
 
 public class MalformedInputException extends RuntimeException {
+  private static final long serialVersionUID = 2770594310659926623L;
   private final long offset;
 
   public MalformedInputException(final long offset) {

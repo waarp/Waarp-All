@@ -26,14 +26,6 @@ import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.openqa.selenium.Platform;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
@@ -43,6 +35,7 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.TestWebAbstract;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
@@ -61,12 +54,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-public abstract class CommonUtil {
+public abstract class CommonUtil extends TestWebAbstract {
   private static final String OPEN_R_66_AUTHENT_THROUGH_PROXY_XML =
       "OpenR66-authent-ThroughProxy.xml";
   private static final String OPEN_R_66_AUTHENT_A_XML = "OpenR66-authent-A.xml";
@@ -91,15 +82,8 @@ public abstract class CommonUtil {
   static Configuration proxyConfiguration;
   static int r66pid = 0;
   static boolean testShouldFailed;
-  public static WebDriver driver = null;
   public static PrintStream err = System.err;
   static boolean useCompression = false;
-
-  public enum DriverType {
-    PHANTOMJS // Works for R66
-  }
-
-  public static DriverType driverType = DriverType.PHANTOMJS;
 
   public static void launchServers() throws Exception {
     System.setErr(new NullPrintStream());
@@ -410,104 +394,6 @@ public abstract class CommonUtil {
     Configuration.configuration.setTimeoutCon(100);
     reloadDriver();
     Thread.sleep(100);
-  }
-
-  public static void initiateWebDriver(File file) {
-    System.setErr(new NullPrintStream());
-    File libdir = file.getParentFile().getParentFile().getParentFile();
-    // test-classes -> target -> WaarpR66 -> lib -> geckodriver (linux x64)
-    File libPhantomJS = new File("/tmp/phantomjs-2.1.1");
-    if (!libPhantomJS.canRead()) {
-      File libPhantomJSZip = new File(libdir, "lib/phantomjs-2.1.1.bz2");
-      if (libPhantomJSZip.canRead()) {
-        FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
-        libPhantomJS.setExecutable(true);
-      }
-    }
-    assertTrue(libPhantomJS.exists());
-    System.setProperty("phantomjs.binary.path", libPhantomJS.getAbsolutePath());
-    try {
-      driver = initializeDriver();
-    } catch (InterruptedException e) {//NOSONAR
-      e.printStackTrace();
-      fail(e.getMessage());
-    }
-    System.setErr(err);
-  }
-
-  public static void reloadDriver() throws InterruptedException {
-    System.setErr(new NullPrintStream());
-    if (driver != null) {
-      finalizeDriver();
-      Thread.sleep(200);
-    }
-    driver = initializeDriver();
-    System.setErr(err);
-  }
-
-  public static WebDriver initializeDriver() throws InterruptedException {
-    System.setErr(new NullPrintStream());
-    WebDriver driver;
-    switch (driverType) {
-      case PHANTOMJS:
-      default:
-        driver = createPhantomJSDriver();
-    }
-    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-    //driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
-    Thread.sleep(10);
-    System.setErr(err);
-    return driver;
-  }
-
-  private static WebDriver createPhantomJSDriver() {
-    System.setErr(new NullPrintStream());
-    DesiredCapabilities desiredCapabilities =
-        new DesiredCapabilities("phantomjs", "", Platform.ANY);
-    desiredCapabilities.setCapability(
-        PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-        System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR,
-                                      true);
-    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities.setCapability(
-        CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
-    LoggingPreferences logPrefs = new LoggingPreferences();
-    logPrefs.enable(LogType.BROWSER, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.CLIENT, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.DRIVER, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.PERFORMANCE, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.PROFILER, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.SERVER, java.util.logging.Level.OFF);
-    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-    desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities.setCapability(
-        PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-        "--webdriver-loglevel=NONE");
-
-    desiredCapabilities.setJavascriptEnabled(true);
-
-    ArrayList<String> cliArgs = new ArrayList<String>();
-    cliArgs.add("--web-security=true");
-    cliArgs.add("--ignore-ssl-errors=true");
-    cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS,
-                                      cliArgs);
-
-    PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
-    phantomJSDriver.setLogLevel(java.util.logging.Level.OFF);
-    System.setErr(err);
-    return phantomJSDriver;
-  }
-
-  public static void finalizeDriver() throws InterruptedException {
-    System.setErr(new NullPrintStream());
-    // 17 | close |  |  |
-    // driver.close();
-    driver.quit();
-    driver = null;
-    Thread.sleep(10);
-    System.setErr(err);
   }
 
 }

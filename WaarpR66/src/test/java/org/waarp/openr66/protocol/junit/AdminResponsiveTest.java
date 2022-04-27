@@ -40,6 +40,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.TestWebAbstract;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
@@ -76,9 +77,9 @@ public class AdminResponsiveTest extends TestAbstract {
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
     if (file.exists()) {
-      driverType = DriverType.PHANTOMJS;
+      TestWebAbstract.driverType = TestWebAbstract.DriverType.FIREFOX;
       try {
-        initiateWebDriver(file.getParentFile());
+        TestWebAbstract.initiateWebDriver(file.getParentFile());
       } catch (NoSuchMethodError e) {
         RUN_TEST = false;
         return;
@@ -100,7 +101,7 @@ public class AdminResponsiveTest extends TestAbstract {
       return;
     }
     Thread.sleep(100);
-    finalizeDriver();
+    TestWebAbstract.finalizeDriver();
     System.setErr(err);
     // Shutdown server
     logger.warn("Shutdown Server");
@@ -116,7 +117,7 @@ public class AdminResponsiveTest extends TestAbstract {
     if (!RUN_TEST) {
       return;
     }
-    reloadDriver();
+    TestWebAbstract.reloadDriver();
     Thread.sleep(500);
   }
 
@@ -124,48 +125,23 @@ public class AdminResponsiveTest extends TestAbstract {
 
   private static void get(final String url) throws NoSuchElementException {
     Exception error = null;
-    try {
-      Thread.sleep(WAIT);
-    } catch (final InterruptedException e2) {
-      // ignore
-    }
     for (int i = 0; i < RETRY; i++) {
       try {
-        driver.get(url);
-        try {
-          Thread.sleep(WAIT);
-        } catch (final InterruptedException e2) {
-          // ignore
-        }
+        TestWebAbstract.driver.get(url);
         return;
       } catch (final Exception e) {
         error = e;
-        try {
-          Thread.sleep(WAIT);
-        } catch (final InterruptedException e2) {
-          // ignore
-        }
       }
     }
     throw new NoSuchElementException("Get Error", error);
   }
 
   private static boolean currentUrlEquals(final String url) {
-    try {
-      Thread.sleep(WAIT);
-    } catch (final InterruptedException e2) {
-      // ignore
-    }
     for (int i = 0; i < RETRY; i++) {
       try {
-        return driver.getCurrentUrl().equals(url);
+        return TestWebAbstract.driver.getCurrentUrl().equals(url);
       } catch (final Exception e) {
         // ignore
-        try {
-          Thread.sleep(WAIT);
-        } catch (final InterruptedException e2) {
-          // ignore
-        }
       }
     }
     return false;
@@ -173,40 +149,20 @@ public class AdminResponsiveTest extends TestAbstract {
 
   private static WebElement findElement(final By by)
       throws NoSuchElementException {
-    try {
-      Thread.sleep(WAIT);
-    } catch (final InterruptedException e2) {
-      // ignore
-    }
     Exception error = null;
     for (int i = 0; i < RETRY; i++) {
       try {
-        WebElement element = driver.findElement(by);
-        try {
-          Thread.sleep(WAIT);
-        } catch (final InterruptedException e2) {
-          // ignore
-        }
+        WebElement element = TestWebAbstract.driver.findElement(by);
         return element;
       } catch (final Exception e) {
         error = e;
-        try {
-          Thread.sleep(WAIT);
-        } catch (final InterruptedException e2) {
-          // ignore
-        }
       }
     }
     throw new NoSuchElementException("Find Element Error", error);
   }
 
   private static String getPageSource() {
-    try {
-      Thread.sleep(WAIT);
-    } catch (final InterruptedException e2) {
-      // ignore
-    }
-    return driver.getPageSource();
+    return TestWebAbstract.driver.getPageSource();
   }
 
   @Test
@@ -442,9 +398,7 @@ public class AdminResponsiveTest extends TestAbstract {
       // 11 | select | id=aid3 | label=test
       {
         WebElement dropdown = findElement(By.id("aid3"));
-        Thread.sleep(WAIT);
         dropdown.findElement(By.xpath("//option[. = 'test']")).click();
-        Thread.sleep(WAIT);
       }
       // 12 | click | css=#aid3 > option:nth-child(5) |
       findElement(By.cssSelector("#aid3 > option:nth-child(5)")).click();
@@ -459,21 +413,18 @@ public class AdminResponsiveTest extends TestAbstract {
       {
         WebElement element = findElement(
             By.cssSelector("tr:nth-child(4) > td:nth-child(4) > .btn"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.moveToElement(element).perform();
-        Thread.sleep(WAIT);
       }
       // 17 | mouseOut | css=tr:nth-child(4) > td:nth-child(4) > .btn |
       {
         WebElement element = findElement(By.tagName("body"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.moveToElement(element, 0, 0).perform();
-        Thread.sleep(WAIT);
       }
       // 18 | click | css=#ah_myModal .btn-success |
       findElement(By.cssSelector("#ah_myModal .btn-success")).click();
+      Thread.sleep(200);
       // 19 | click | css=.btn-success:nth-child(1) |
       findElement(By.cssSelector(".btn-success:nth-child(1)")).click();
       // 20 | click | linkText=HOSTS |
@@ -500,6 +451,7 @@ public class AdminResponsiveTest extends TestAbstract {
       findElement(By.cssSelector("#rh_myModal .modal-body")).click();
       // 28 | click | css=#rh_myModal .btn-success |
       findElement(By.cssSelector("#rh_myModal .btn-success")).click();
+      Thread.sleep(200);
       // 29 | click | css=.btn-success:nth-child(1) |
       findElement(By.cssSelector(".btn-success:nth-child(1)")).click();
       // 30 | click | linkText=HOSTS |
@@ -527,13 +479,13 @@ public class AdminResponsiveTest extends TestAbstract {
       findElement(By.cssSelector("#bh_myModal .modal-body")).click();
       // 37 | click | css=#bh_myModal .btn-success |
       findElement(By.cssSelector("#bh_myModal .btn-success")).click();
+      Thread.sleep(200);
       // 38 | click | css=.btn-success:nth-child(1) |
       findElement(By.cssSelector(".btn-success:nth-child(1)")).click();
       // 39 | click | linkText=HOSTS |
-      get("https://127.0.0.1:8867/Hosts.html");
-      //findElement(By.linkText("HOSTS")).click();
-      // 40 | click | css=.odd:nth-child(3) |
-      findElement(By.cssSelector(".odd:nth-child(3)")).click();
+      //get("https://127.0.0.1:8867/Hosts.html");
+      findElement(By.linkText("HOSTS")).click();
+      Thread.sleep(200);
       page = getPageSource();
       assertTrue(page.contains("(ReverseAlias: mytest ) (Business: Allowed)"));
     } catch (NoSuchElementException e) {
@@ -596,10 +548,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 17 | doubleClick | name=DTRA |
       {
         WebElement element = findElement(By.name("DTRA"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.doubleClick(element).perform();
-        Thread.sleep(WAIT);
       }
       // 18 | type | name=DTRA | 100
       findElement(By.name("DTRA")).clear();
@@ -611,10 +561,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 21 | doubleClick | name=DCOM |
       {
         WebElement element = findElement(By.name("DCOM"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.doubleClick(element).perform();
-        Thread.sleep(WAIT);
       }
       // 22 | type | name=DCOM | 10000
       findElement(By.name("DCOM")).clear();
@@ -626,10 +574,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 25 | doubleClick | name=DRET |
       {
         WebElement element = findElement(By.name("DRET"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.doubleClick(element).perform();
-        Thread.sleep(WAIT);
       }
       // 26 | type | name=DRET | 100
       findElement(By.name("DRET")).clear();
@@ -772,46 +718,36 @@ public class AdminResponsiveTest extends TestAbstract {
       // 37 | mouseOver | id=ROLES |
       {
         WebElement element = findElement(By.id("ROLES"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.moveToElement(element).perform();
-        Thread.sleep(WAIT);
       }
       // 38 | mouseOut | id=ROLES |
       {
         WebElement element = findElement(By.tagName("body"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.moveToElement(element, 0, 0).perform();
-        Thread.sleep(WAIT);
       }
       // 39 | click | css=#rh_myModal .modal-body > .btn |
       findElement(By.cssSelector("#rh_myModal .modal-body > .btn")).click();
       // 40 | mouseOver | css=#rh_myModal .modal-body > .btn |
       {
-        WebElement element = driver.findElement(
+        WebElement element = TestWebAbstract.driver.findElement(
             By.cssSelector("#rh_myModal .modal-body > .btn"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.moveToElement(element).perform();
-        Thread.sleep(WAIT);
       }
       // 41 | mouseOut | css=#rh_myModal .modal-body > .btn |
       {
         WebElement element = findElement(By.tagName("body"));
-        Thread.sleep(WAIT);
-        Actions builder = new Actions(driver);
+        Actions builder = new Actions(TestWebAbstract.driver);
         builder.moveToElement(element, 0, 0).perform();
-        Thread.sleep(WAIT);
       }
       // 42 | click | id=rid5 |
       findElement(By.id("rid5")).click();
       // 43 | select | id=rid5 | label=testb
       {
         WebElement dropdown = findElement(By.id("rid5"));
-        Thread.sleep(WAIT);
         dropdown.findElement(By.xpath("//option[. = 'testb']")).click();
-        Thread.sleep(WAIT);
       }
       // 44 | click | css=#rid5 > option:nth-child(7) |
       findElement(By.cssSelector("#rid5 > option:nth-child(7)")).click();
@@ -828,8 +764,10 @@ public class AdminResponsiveTest extends TestAbstract {
       findElement(By.cssSelector(".open li:nth-child(5) .checkbox")).click();
       // 50 | click | css=#rh_myModal .modal-body |
       findElement(By.cssSelector("#rh_myModal .modal-body")).click();
+      Thread.sleep(200);
       // 51 | click | css=#rh_myModal .btn-success |
       findElement(By.cssSelector("#rh_myModal .btn-success")).click();
+      Thread.sleep(200);
       // 52 | click | css=.btn-success:nth-child(1) |
       findElement(By.cssSelector(".btn-success:nth-child(1)")).click();
       // 53 | click | linkText=LOGOUT |
@@ -935,17 +873,13 @@ public class AdminResponsiveTest extends TestAbstract {
       findElement(By.id("IDRULE")).click();
       {
         WebElement dropdown = findElement(By.id("IDRULE"));
-        Thread.sleep(WAIT);
         dropdown.findElement(By.xpath("//option[. = 'rule3']")).click();
-        Thread.sleep(WAIT);
       }
       findElement(By.cssSelector("#IDRULE > option:nth-child(2)")).click();
       findElement(By.id("REQUESTED")).click();
       {
         WebElement dropdown = findElement(By.id("REQUESTED"));
-        Thread.sleep(WAIT);
         dropdown.findElement(By.xpath("//option[. = 'hostas']")).click();
-        Thread.sleep(WAIT);
       }
       findElement(By.cssSelector("#REQUESTED > option:nth-child(2)")).click();
       findElement(By.id("FILENAME")).sendKeys("test");

@@ -153,7 +153,8 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     }
     int len = filters.size();
     for (Filter filter : filters) {
-      len += filter.nbAdditionnalParams();
+      // Already got 1
+      len += filter.nbAdditionnalParams() - 1;
     }
     final Object[] params = new Object[len];
     query.append(" WHERE ");
@@ -161,12 +162,12 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     int i = 0;
     for (Filter filter : filters) {
       query.append(prefix);
-      if (filter.nbAdditionnalParams() > 0) {
+      if (filter.nbAdditionnalParams() > 1) {
         final Object[] objects = (Object[]) filter.append(query);
         for (final Object o : objects) {
           params[i++] = o;
         }
-      } else if (filter.nbAdditionnalParams() == 0) {
+      } else if (filter.nbAdditionnalParams() == 1) {
         params[i] = filter.append(query);
         i++;
       } else {

@@ -45,7 +45,7 @@ CREATE TABLE hosts (
     address VARCHAR(8096) NOT NULL,
     port integer NOT NULL,
     isssl boolean NOT NULL,
-    hostkey binary NOT NULL,
+    hostkey varbinary(512) NOT NULL,
     adminrole boolean NOT NULL,
     isclient boolean NOT NULL,
     isactive boolean NOT NULL,

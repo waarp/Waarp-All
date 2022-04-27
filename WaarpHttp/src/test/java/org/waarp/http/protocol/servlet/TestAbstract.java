@@ -324,8 +324,4 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     Configuration.configuration.setTimeoutCon(100);
     Thread.sleep(100);
   }
-
-  public enum DriverType {
-    PHANTOMJS
-  }
 }

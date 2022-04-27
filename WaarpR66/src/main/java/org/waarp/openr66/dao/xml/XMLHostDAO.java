@@ -152,6 +152,38 @@ public class XMLHostDAO implements HostDAO {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  @Override
+  public List<Host> find(final List<Filter> filters, final int limit)
+      throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  @Override
+  public List<Host> find(final List<Filter> filters, final String field,
+                         final boolean asc) throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  @Override
+  public List<Host> find(final List<Filter> filters, final String field,
+                         final boolean asc, final int limit)
+      throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  @Override
+  public List<Host> find(final List<Filter> filters, final String field,
+                         final boolean asc, final int limit, final int offset)
+      throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  @Override
+  public void update(final List<Filter> filters, final String toSet)
+      throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
   /**
    * {@link DAOConnectionException}
    *

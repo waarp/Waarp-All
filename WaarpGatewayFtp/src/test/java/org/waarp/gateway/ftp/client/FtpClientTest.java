@@ -31,15 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
@@ -50,6 +42,7 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.TestWebAbstract;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.ServerInitDatabase;
@@ -62,21 +55,19 @@ import org.waarp.gateway.ftp.database.DbConstantFtp;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
  * Simple test example using predefined scenario (Note: this uses the configuration example for user shutdown
  * command)
  */
-public class FtpClientTest {
+public class FtpClientTest extends TestWebAbstract {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
@@ -87,14 +78,7 @@ public class FtpClientTest {
    */
   public static final String IT_LONG_TEST = "IT_LONG_TEST";
   static String key;
-  public static WebDriver driver = null;
   private static int DELAY = 10;
-
-  public enum DriverType {
-    PHANTOMJS
-  }
-
-  public static DriverType driverType = DriverType.PHANTOMJS;
 
   /**
    * Internal Logger
@@ -197,7 +181,7 @@ public class FtpClientTest {
     final ClassLoader classLoader = FtpClientTest.class.getClassLoader();
     File file = new File(classLoader.getResource("Gg-FTP.xml").getFile());
     if (file.exists()) {
-      driverType = DriverType.PHANTOMJS;
+      driverType = DriverType.FIREFOX;
       initiateWebDriver(file.getParentFile());
     }
     final File tmp = new File("/tmp");
@@ -319,93 +303,6 @@ public class FtpClientTest {
     testFtp4J("127.0.0.1", 2021, "fred", key, "a", 0,
               localFilename.getAbsolutePath(), 0, delay, true, nbThread,
               nbPerThread);
-  }
-
-  public static void initiateWebDriver(File file) {
-    File libdir = file.getParentFile().getParentFile().getParentFile();
-    // test-classes -> target -> WaarpR66 -> lib -> geckodriver (linux x64)
-    File libPhantomJS = new File("/tmp/phantomjs-2.1.1");
-    if (!libPhantomJS.canRead()) {
-      File libPhantomJSZip = new File(libdir, "lib/phantomjs-2.1.1.bz2");
-      if (libPhantomJSZip.canRead()) {
-        FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
-        libPhantomJS.setExecutable(true);
-      }
-    }
-    assertTrue(libPhantomJS.exists());
-    System.setProperty("phantomjs.binary.path", libPhantomJS.getAbsolutePath());
-    try {
-      driver = initializeDriver();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    }
-  }
-
-  public static void reloadDriver() throws InterruptedException {
-    if (driver != null) {
-      finalizeDriver();
-    }
-    driver = initializeDriver();
-  }
-
-  public static WebDriver initializeDriver() throws InterruptedException {
-    WebDriver driver;
-    switch (driverType) {
-      case PHANTOMJS:
-      default:
-        driver = createPhantomJSDriver();
-    }
-    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-    //driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
-    Thread.sleep(10);
-    return driver;
-  }
-
-  private static WebDriver createPhantomJSDriver() {
-    DesiredCapabilities desiredCapabilities =
-        new DesiredCapabilities("phantomjs", "", Platform.ANY);
-    desiredCapabilities.setCapability(
-        PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-        System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR,
-                                      true);
-    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities.setCapability(
-        CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
-    LoggingPreferences logPrefs = new LoggingPreferences();
-    logPrefs.enable(LogType.BROWSER, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.CLIENT, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.DRIVER, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.PERFORMANCE, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.PROFILER, java.util.logging.Level.OFF);
-    logPrefs.enable(LogType.SERVER, java.util.logging.Level.OFF);
-    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-    desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities.setCapability(
-        PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-        "--webdriver-loglevel=NONE");
-
-    desiredCapabilities.setJavascriptEnabled(true);
-
-    ArrayList<String> cliArgs = new ArrayList<String>();
-    cliArgs.add("--web-security=true");
-    cliArgs.add("--ignore-ssl-errors=true");
-    cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS,
-                                      cliArgs);
-
-    PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
-    phantomJSDriver.setLogLevel(java.util.logging.Level.OFF);
-    return phantomJSDriver;
-  }
-
-  public static void finalizeDriver() throws InterruptedException {
-    // 17 | close |  |  |
-    // driver.close();
-    driver.quit();
-    driver = null;
-    Thread.sleep(10);
   }
 
   @Test

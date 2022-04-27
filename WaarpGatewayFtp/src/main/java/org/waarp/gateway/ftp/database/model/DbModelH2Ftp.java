@@ -21,10 +21,7 @@ package org.waarp.gateway.ftp.database.model;
 
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
-import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelH2;
-import org.waarp.gateway.kernel.database.model.DbModelFactoryGateway;
 import org.waarp.gateway.kernel.database.model.DbModelH2Kernel;
 
 /**
@@ -53,16 +50,14 @@ public class DbModelH2Ftp extends DbModelH2 {
   }
 
   @Override
-  public final void resetSequence(final DbSession session, final long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
+  public final void resetSequence(final DbSession session,
+                                  final long newvalue) {
+    // Nothing
   }
 
   @Override
-  public final long nextSequence(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
+  public final long nextSequence(final DbSession dbSession) {
+    return DbModelFactoryFtp.nextSequenceMonitoring();
   }
 
   @Override

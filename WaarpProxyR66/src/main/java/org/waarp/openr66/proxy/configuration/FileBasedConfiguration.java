@@ -304,7 +304,8 @@ public class FileBasedConfiguration {
    * @return True if OK
    */
   private static boolean loadDatabase(final Configuration config) {
-    logger.info("Unable to find DBDriver in Config file");
+    logger.info("No DBDriver in Config file for Proxy");
+    config.setSaveTaskRunnerWithNoDb(true);
     admin = new DbAdmin(); // no database support
     noCommitAdmin = admin;
     return true;
