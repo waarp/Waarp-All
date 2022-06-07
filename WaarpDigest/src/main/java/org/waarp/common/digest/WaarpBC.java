@@ -20,20 +20,23 @@
 
 package org.waarp.common.digest;
 
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.OpenSsl;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Objects;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.OpenSsl;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 
 public class WaarpBC {
   public static final String PROTOCOL = "TLS";
@@ -90,7 +93,7 @@ public class WaarpBC {
         final String name = String.format("%s.%s", type, alg);
         final Provider.Service service = provider.getService(type, alg);
         if (service != null) {
-          Security.insertProviderAt(new Provider(name, provider.getVersion(),
+          Security.insertProviderAt(new Provider(name, provider.getVersionStr(),
                                                  "Waarp quick fix for SecureRandom using urandom") {
             private static final long serialVersionUID = 1001L;
 
@@ -131,7 +134,7 @@ public class WaarpBC {
   public static SslContext getInstanceForServer(
       final KeyManagerFactory keyManagerFactory,
       final X509Certificate[] x509Certificates,
-      final boolean clientNeedAuthentication, final boolean startTls)
+      final boolean clientNeedAuthentication, final boolean startTls, final List<String> ciphers, final String... protocols)
       throws SSLException {
     final SslContextBuilder builder =
         SslContextBuilder.forServer(keyManagerFactory)
@@ -141,6 +144,12 @@ public class WaarpBC {
     }
     builder.clientAuth(
         clientNeedAuthentication? ClientAuth.REQUIRE : ClientAuth.NONE);
+	if (Objects.nonNull(ciphers) && !ciphers.isEmpty()) {
+		builder.ciphers(ciphers);
+	}
+	if (Objects.nonNull(protocols) && protocols.length > 0) {
+		builder.protocols(protocols);
+	}
     builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)
            .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC).startTls(startTls);
     return builder.build();

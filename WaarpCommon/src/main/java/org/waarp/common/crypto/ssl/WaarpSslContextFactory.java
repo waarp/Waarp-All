@@ -28,6 +28,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import static org.waarp.common.digest.WaarpBC.*;
 
@@ -70,11 +71,27 @@ public class WaarpSslContextFactory {
    */
   public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore) {
     // Both construct Client and Server mode
-    serverContext = initSslContextFactory(ggSecureKeyStore, true, false);
-    serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true);
-    clientContext = initSslContextFactory(ggSecureKeyStore, false, false);
+    serverContext = initSslContextFactory(ggSecureKeyStore, true, false, null);
+    serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, null);
+    clientContext = initSslContextFactory(ggSecureKeyStore, false, false, null);
   }
 
+  /**
+   * Create both CONTEXT with ciphers and/or protocols
+   * 
+   * @param ggSecureKeyStore
+   * @param ciphers
+   * @param protocols
+   */
+  
+	public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore, final List<String> ciphers,
+			final String... protocols) {
+		// Both construct Client and Server mode
+		serverContext = initSslContextFactory(ggSecureKeyStore, true, false, ciphers, protocols);
+		serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, ciphers, protocols);
+		clientContext = initSslContextFactory(ggSecureKeyStore, false, false, ciphers, protocols);
+	}
+  
   /**
    * Create only one of the CONTEXT
    *
@@ -84,17 +101,38 @@ public class WaarpSslContextFactory {
   public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore,
                                 final boolean serverMode) {
     if (serverMode) {
-      serverContext = initSslContextFactory(ggSecureKeyStore, true, false);
+      serverContext = initSslContextFactory(ggSecureKeyStore, true, false, null);
       serverContextStartTls =
-          initSslContextFactory(ggSecureKeyStore, true, true);
+          initSslContextFactory(ggSecureKeyStore, true, true, null);
       clientContext = null;
     } else {
-      clientContext = initSslContextFactory(ggSecureKeyStore, false, false);
+      clientContext = initSslContextFactory(ggSecureKeyStore, false, false, null);
       serverContext = null;
       serverContextStartTls = null;
     }
   }
 
+  /**
+   * Create only one of the CONTEXT with ciphers and/or protocols
+   * 
+   * @param ggSecureKeyStore
+   * @param serverMode
+   * @param ciphers
+   * @param protocols
+   */
+	public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore, final boolean serverMode,
+			final List<String> ciphers, final String... protocols) {
+		if (serverMode) {
+			serverContext = initSslContextFactory(ggSecureKeyStore, true, false, ciphers, protocols);
+			serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, ciphers, protocols);
+			clientContext = null;
+		} else {
+			clientContext = initSslContextFactory(ggSecureKeyStore, false, false, ciphers, protocols);
+			serverContext = null;
+			serverContextStartTls = null;
+		}
+	}
+  
   /**
    * @param ggSecureKeyStore
    * @param serverMode
@@ -103,7 +141,7 @@ public class WaarpSslContextFactory {
    */
   private SslContext initSslContextFactory(
       final WaarpSecureKeyStore ggSecureKeyStore, final boolean serverMode,
-      final boolean startTls) {
+      final boolean startTls, final List<String> ciphers, final String... protocols) {
     // Initialize the SSLContext to work with our key managers.
     final WaarpSecureTrustManagerFactory secureTrustManagerFactory =
         ggSecureKeyStore.getSecureTrustManagerFactory();
@@ -119,7 +157,7 @@ public class WaarpSslContextFactory {
       try {
         return getInstanceForServer(ggSecureKeyStore.getKeyManagerFactory(),
                                     certificates, needClientAuthentication,
-                                    startTls);
+                                    startTls, ciphers, protocols);
       } catch (final Throwable e) {//NOSONAR
         logger.error("Failed to initialize the server-side SSLContext {}",
                      e.getMessage());
