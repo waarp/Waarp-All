@@ -34,6 +34,7 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 public class WaarpBC {
   public static final String PROTOCOL = "TLS";
@@ -90,15 +91,15 @@ public class WaarpBC {
         final String name = String.format("%s.%s", type, alg);
         final Provider.Service service = provider.getService(type, alg);
         if (service != null) {
-          Security.insertProviderAt(new Provider(name, provider.getVersion(),
-                                                 "Waarp quick fix for SecureRandom using urandom") {
-            private static final long serialVersionUID = 1001L;
+          Security.insertProviderAt(
+              new Provider(name, provider.getVersion(), "Waarp quick fix for SecureRandom using urandom") {
+                private static final long serialVersionUID = 1001L;
 
-            {
-              System.setProperty(name, service.getClassName());
-            }
+                {
+                  System.setProperty(name, service.getClassName());
+                }
 
-          }, 1);
+              }, 1);
           specialSecureRandom = true;
         }
       }
@@ -128,35 +129,38 @@ public class WaarpBC {
     }
   }
 
-  public static SslContext getInstanceForServer(
-      final KeyManagerFactory keyManagerFactory,
-      final X509Certificate[] x509Certificates,
-      final boolean clientNeedAuthentication, final boolean startTls)
-      throws SSLException {
+  public static SslContext getInstanceForServer(final KeyManagerFactory keyManagerFactory,
+                                                final X509Certificate[] x509Certificates,
+                                                final boolean clientNeedAuthentication,
+                                                final boolean startTls, final List<String> ciphers,
+                                                final String... protocols) throws SSLException {
     final SslContextBuilder builder =
-        SslContextBuilder.forServer(keyManagerFactory)
-                         .sslProvider(SslContext.defaultServerProvider());
+        SslContextBuilder.forServer(keyManagerFactory).sslProvider(SslContext.defaultServerProvider());
     if (x509Certificates != null) {
       builder.trustManager(x509Certificates);
     }
-    builder.clientAuth(
-        clientNeedAuthentication? ClientAuth.REQUIRE : ClientAuth.NONE);
-    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)
-           .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC).startTls(startTls);
+    builder.clientAuth(clientNeedAuthentication? ClientAuth.REQUIRE : ClientAuth.NONE);
+    if (ciphers != null && !ciphers.isEmpty()) {
+      builder.ciphers(ciphers);
+    }
+    if (protocols != null && protocols.length > 0) {
+      builder.protocols(protocols);
+    }
+    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE).sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC)
+           .startTls(startTls);
     return builder.build();
   }
 
-  public static SslContext getInstanceForClient(
-      final KeyManagerFactory keyManagerFactory,
-      final X509Certificate[] x509Certificates)
+  public static SslContext getInstanceForClient(final KeyManagerFactory keyManagerFactory,
+                                                final X509Certificate[] x509Certificates)
       throws NoSuchAlgorithmException, NoSuchProviderException, SSLException {
-    final SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(
-        SslContext.defaultClientProvider()).keyManager(keyManagerFactory);
+    final SslContextBuilder builder =
+        SslContextBuilder.forClient().sslProvider(SslContext.defaultClientProvider())
+                         .keyManager(keyManagerFactory);
     if (x509Certificates != null) {
       builder.trustManager(x509Certificates);
     }
-    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)
-           .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);
+    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE).sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);
     return builder.build();
   }
 
