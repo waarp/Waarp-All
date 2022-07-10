@@ -1326,6 +1326,7 @@ public enum FtpCommandCode {
    * AUTH TLS -> 234 -> USER or ([PBSZ 0] PROT P then USER) -> 2xy
    */
   AUTH(org.waarp.ftp.core.command.rfc4217.AUTH.class, null,
+       org.waarp.ftp.core.command.rfc2389.OPTS.class,
        org.waarp.ftp.core.command.rfc4217.PROT.class,
        org.waarp.ftp.core.command.rfc4217.PBSZ.class,
        org.waarp.ftp.core.command.access.USER.class),
