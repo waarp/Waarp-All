@@ -124,7 +124,7 @@ public class DbSession {
       // handle any errors
       logger.error(CANNOT_CREATE_CONNECTION + " while already having {}",
                    DbAdmin.getNbConnection());
-      error(ex);
+      DbConstant.error(ex);
       if (getConn() != null) {
         try {
           getConn().close();
@@ -226,7 +226,7 @@ public class DbSession {
         // handle any errors
         logger.error(CANNOT_CREATE_CONNECTION + " while already having {}",
                      DbAdmin.getNbConnection());
-        error(e);
+        DbConstant.error(e);
         if (getConn() != null) {
           try {
             getConn().close();
@@ -254,18 +254,6 @@ public class DbSession {
    */
   protected final void setAdmin(final DbAdmin admin) {
     this.admin = admin;
-  }
-
-  /**
-   * Print the error from SQLException
-   *
-   * @param ex
-   */
-  public static void error(final SQLException ex) {
-    // handle any errors
-    logger.error(
-        "SQLException: " + ex.getMessage() + " SQLState: " + ex.getSQLState() +
-        " VendorError: " + ex.getErrorCode());
   }
 
   /**
@@ -373,7 +361,7 @@ public class DbSession {
       }
     } catch (final SQLException e) {
       logger.warn("Disconnection not OK");
-      error(e);
+      DbConstant.error(e);
     } catch (final ConcurrentModificationException e) {
       // ignore
     }
@@ -410,7 +398,7 @@ public class DbSession {
         }
       } catch (final SQLException e) {
         logger.warn("Disconnection not OK");
-        error(e);
+        DbConstant.error(e);
       } catch (final ConcurrentModificationException e) {
         // ignore
       }
@@ -538,7 +526,7 @@ public class DbSession {
       getConn().commit();
     } catch (final SQLException e) {
       logger.error("Cannot Commit");
-      error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Cannot commit", e);
     }
   }
@@ -569,7 +557,7 @@ public class DbSession {
       }
     } catch (final SQLException e) {
       logger.error("Cannot rollback");
-      error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Cannot rollback", e);
     }
   }
@@ -596,7 +584,7 @@ public class DbSession {
       return getConn().setSavepoint();
     } catch (final SQLException e) {
       logger.error("Cannot savepoint");
-      error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Cannot savepoint", e);
     }
   }
@@ -623,7 +611,7 @@ public class DbSession {
       getConn().releaseSavepoint(savepoint);
     } catch (final SQLException e) {
       logger.error("Cannot release savepoint");
-      error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Cannot release savepoint", e);
     }
   }

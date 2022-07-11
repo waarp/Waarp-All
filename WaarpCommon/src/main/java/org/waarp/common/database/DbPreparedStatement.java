@@ -134,7 +134,7 @@ public class DbPreparedStatement {
       } catch (final SQLException e1) {
         logger.error("SQL Exception PreparedStatement: " + request + ' ' +
                      e.getMessage());
-        DbSession.error(e);
+        DbConstant.error(e);
         preparedStatement = null;
         setReady(false);
         throw new WaarpDatabaseSqlException("SQL Exception PreparedStatement",
@@ -188,7 +188,7 @@ public class DbPreparedStatement {
       } catch (final SQLException e1) {
         logger.error("SQL Exception PreparedStatement: " + request + ' ' +
                      e.getMessage());
-        DbSession.error(e);
+        DbConstant.error(e);
         preparedStatement = null;
         setReady(false);
         throw new WaarpDatabaseSqlException("SQL Exception PreparedStatement",
@@ -236,7 +236,7 @@ public class DbPreparedStatement {
         logger.error(
             "SQL Exception createPreparedStatement from {}:" + requestarg +
             ' ' + e.getMessage(), ls.getAdmin().getServer());
-        DbSession.error(e);
+        DbConstant.error(e);
         realClose();
         preparedStatement = null;
         setReady(false);
@@ -285,7 +285,7 @@ public class DbPreparedStatement {
     } catch (final SQLException e) {
       logger.error(
           "SQL Exception executeQuery:" + request + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       close();
       rs = null;
       ls.checkConnectionNoException();
@@ -324,7 +324,7 @@ public class DbPreparedStatement {
       logger.error(
           "SQL Exception executeUpdate:" + request + ' ' + e.getMessage());
       logger.debug("SQL Exception full stack trace", e);
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(
           "SQL Exception executeUpdate: " + request, e);
@@ -391,7 +391,7 @@ public class DbPreparedStatement {
       logger.error("SQL Exception to getNextRow" +
                    (request != null? " [" + request + ']' : "") + ' ' +
                    e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(
           "SQL Exception to getNextRow: " + request, e);

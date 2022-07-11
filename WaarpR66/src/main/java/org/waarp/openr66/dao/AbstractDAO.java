@@ -50,6 +50,70 @@ public interface AbstractDAO<E> extends Cloneable {
   List<E> find(List<Filter> filters) throws DAOConnectionException;
 
   /**
+   * Retrieve all objects corresponding to the given filters in a List
+   * from the persistance layer
+   *
+   * @param filters List of filter
+   * @param limit max number of items to get
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  List<E> find(List<Filter> filters, int limit) throws DAOConnectionException;
+
+  /**
+   * Retrieve all objects corresponding to the given filters in a List
+   * from the persistance layer
+   *
+   * @param filters List of filter
+   * @param field field to sort on
+   * @param asc True for ascending, False for descending order
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  List<E> find(List<Filter> filters, String field, boolean asc)
+      throws DAOConnectionException;
+
+  /**
+   * Retrieve all objects corresponding to the given filters in a List
+   * from the persistance layer
+   *
+   * @param filters List of filter
+   * @param field field to sort on
+   * @param asc True for ascending, False for descending order
+   * @param limit max number of items to get
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  List<E> find(List<Filter> filters, String field, boolean asc, int limit)
+      throws DAOConnectionException;
+
+  /**
+   * Retrieve all objects corresponding to the given filters in a List
+   * from the persistance layer
+   *
+   * @param filters List of filter
+   * @param field field to sort on
+   * @param asc True for ascending, False for descending order
+   * @param limit max number of items to get
+   * @param offset start for items to get
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  List<E> find(List<Filter> filters, String field, boolean asc, int limit,
+               int offset) throws DAOConnectionException;
+
+  /**
+   * Update all objects corresponding to the given filters in a List
+   * from the persistance layer
+   *
+   * @param filters List of filter
+   * @param toSet field to update as "field1 = value1, field2 = value2, ..."
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  void update(List<Filter> filters, String toSet) throws DAOConnectionException;
+
+  /**
    * Count all objects corresponding to the given filters
    * from the persistance layer
    *

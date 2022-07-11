@@ -31,6 +31,7 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.TestWebAbstract;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.server.R66Server;
 
@@ -42,7 +43,7 @@ import static org.waarp.openr66.protocol.it.ScenarioBase.*;
 /**
  *
  */
-public abstract class TestAbstractMinimal {
+public abstract class TestAbstractMinimal extends TestWebAbstract {
   /**
    * Internal Logger
    */

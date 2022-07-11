@@ -22,11 +22,10 @@ package org.waarp.gateway.kernel.database.model;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelPostgresql;
+import org.waarp.common.guid.LongUuid;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 /**
@@ -105,10 +104,8 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
     }
 
     // cptrunner
-    final long minimalValue = System.currentTimeMillis() + 1;
-    action = new StringBuilder(
-        "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstantGateway.ILLEGALVALUE + 1) + " RESTART WITH " + minimalValue);
+    action =
+        new StringBuilder("DROP SEQUENCE IF EXISTS " + DbTransferLog.fieldseq);
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -122,22 +119,20 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
   }
 
   @Override
-  public final void resetSequence(final DbSession session, final long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
+  public final void resetSequence(final DbSession session,
+                                  final long newvalue) {
+    // Nothing since LongUuid
   }
 
   @Override
-  public final long nextSequence(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
+  public final long nextSequence(final DbSession dbSession) {
+    return LongUuid.getLongUuid();
   }
 
   @Override
   public final boolean upgradeDb(final DbSession session,
                                  final String version) {
-    return false;
+    return true;
   }
 
   @Override

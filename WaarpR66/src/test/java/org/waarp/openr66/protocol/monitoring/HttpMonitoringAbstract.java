@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -301,6 +302,7 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
 
   private void test_Spooled(final SpooledThread spooledThread)
       throws IOException, InterruptedException {
+    Assume.assumeTrue(spooledThread.spooledDirectoryTransfer != null);
     final int size = 200;
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);

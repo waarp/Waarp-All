@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -355,7 +356,9 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       DAOFactory.closeDAO(hostAccess);
     }
     for (final Host host : hosts) {
-      res.add(new DbHostAuth(host));
+      final DbHostAuth dbHostAuth = new DbHostAuth(host);
+      dbHostAuth.isSaved = true;
+      res.add(dbHostAuth);
     }
     return res.toArray(DBHOSTAUTH_0_SIZE);
   }
@@ -381,7 +384,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
           preparedStatement.getResultSet());
       return dbHostAuth;
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);

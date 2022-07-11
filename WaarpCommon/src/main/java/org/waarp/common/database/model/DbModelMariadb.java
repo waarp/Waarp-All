@@ -160,7 +160,7 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
       // SQLException
       logger.error(
           "Cannot register Driver " + type.name() + ' ' + e.getMessage());
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseNoConnectionException(
           "Cannot load database drive:" + type.name(), e);
     }

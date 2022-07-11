@@ -20,6 +20,16 @@
 
 package org.waarp.openr66.elasticsearch;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation.Builder;
+import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
+import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,33 +43,26 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.joda.time.DateTime;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
-import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 import org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClient;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClientBuilder.*;
 import static org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers.*;
@@ -75,7 +78,8 @@ public class ElasticsearchMonitoringExporterClientImpl
   protected final String index;
   protected final RestClientBuilder builder;
 
-  protected RestHighLevelClient client;
+  protected ElasticsearchTransport transport = null;
+  protected ElasticsearchClient client = null;
 
   /**
    * Note that only one among (username/pwd, token, apikey) is allowed and
@@ -145,7 +149,8 @@ public class ElasticsearchMonitoringExporterClientImpl
                                                                                        .getKeyTrustStore(),
                                                             null);
         sslContext = sslBuilder.build();
-      } catch (final NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {
+      } catch (final NoSuchAlgorithmException | KeyStoreException |
+                     UnrecoverableKeyException | KeyManagementException e) {
         logger.error(e.getMessage());
         throw new IllegalArgumentException(e);
       }
@@ -175,16 +180,22 @@ public class ElasticsearchMonitoringExporterClientImpl
     logger.info("Elasticsearch client: user {} pwd {} token {} apikey {} " +
                 "prefix {} index {}", username, pwd, token, apiKey, prefix,
                 index);
-    client = new RestHighLevelClient(builder);
+    createClient();
+  }
+
+  protected void createClient() {
+    if (client == null) {
+      final RestClient restClient = builder.build();
+      transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+      client = new ElasticsearchClient(transport);
+    }
   }
 
   @Override
   public final boolean post(final ObjectNode monitoredTransfers,
                             final DateTime start, final DateTime stop,
                             final String serverId) {
-    if (client == null) {
-      client = new RestHighLevelClient(builder);
-    }
+    createClient();
     final String finalIndex = index.replace(ELASTIC_WAARPHOST, serverId)
                                    .replaceAll(ELASTIC_DATETIME,
                                                stop.toString(FORMAT_DATETIME))
@@ -198,44 +209,47 @@ public class ElasticsearchMonitoringExporterClientImpl
                                                stop.toString(FORMAT_YEAR))
                                    .toLowerCase();
     logger.debug("Will post to {}", finalIndex);
-    final BulkRequest bulkRequest = new BulkRequest(finalIndex);
+    final BulkRequest.Builder bulkRequestBuilder =
+        new BulkRequest.Builder().index(finalIndex);
     final ArrayNode arrayNode = (ArrayNode) monitoredTransfers.get(RESULTS);
     final Iterator<JsonNode> iterator = arrayNode.elements();
+    final List<BulkOperation> operations = new ArrayList<>();
     while (iterator.hasNext()) {
       final ObjectNode node = (ObjectNode) iterator.next();
-      final IndexRequest indexRequest =
-          new IndexRequest().id(node.get(UNIQUE_ID).asText());
-      indexRequest.source(
-          JsonUtils.nodeToString(node).getBytes(StandardCharsets.UTF_8),
-          XContentType.JSON);
-      bulkRequest.add(indexRequest);
+      final IndexOperation.Builder<ObjectNode> indexBuilder =
+          new IndexOperation.Builder();
+      indexBuilder.index(finalIndex);
+      indexBuilder.id(node.get(UNIQUE_ID).asText());
+      indexBuilder.document(node);
+      operations.add(new Builder().index(indexBuilder.build()).build());
     }
     final BulkResponse bulkResponse;
     try {
-      bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+      bulkResponse =
+          client.bulk(bulkRequestBuilder.operations(operations).build());
     } catch (final IOException e) {
       logger.error(e.getMessage());
       return false;
     }
-    logger.debug("ES failure? {} {}", bulkResponse.hasFailures(),
-                 bulkResponse.status().getStatus());
-    if (logger.isDebugEnabled() && bulkResponse.hasFailures()) {
-      final Iterator<BulkItemResponse> iterator1 = bulkResponse.iterator();
-      while (iterator1.hasNext()) {
-        final BulkItemResponse response = iterator1.next();
-        logger.debug("ES item: {}", response.getFailureMessage());
+    logger.debug("ES failure? {} {}", bulkResponse.errors());
+    if (logger.isDebugEnabled() && bulkResponse.errors()) {
+      final List<BulkResponseItem> list = bulkResponse.items();
+      for (BulkResponseItem item : list) {
+        assert item.error() != null;
+        logger.debug("ES item: {}", item.error().reason());
       }
     }
-    return !bulkResponse.hasFailures();
+    return !bulkResponse.errors();
   }
 
   @Override
   public final void close() {
     try {
-      client.close();
+      transport.close();
     } catch (final IOException e) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
+    transport = null;
     client = null;
   }
 }

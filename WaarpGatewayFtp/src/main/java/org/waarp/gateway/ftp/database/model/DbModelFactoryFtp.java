@@ -24,6 +24,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.model.DbModel;
 import org.waarp.common.database.model.DbModelFactory;
 import org.waarp.common.database.model.DbType;
+import org.waarp.common.guid.LongUuid;
 
 /**
  * Factory to store the Database Model object
@@ -69,5 +70,9 @@ public class DbModelFactoryFtp extends DbModelFactory {
     }
     dbModels.add(dbModel);
     return new DbAdmin(dbModel, dbserver, dbuser, dbpasswd, write);
+  }
+
+  public static long nextSequenceMonitoring() {
+    return LongUuid.getLongUuid();
   }
 }

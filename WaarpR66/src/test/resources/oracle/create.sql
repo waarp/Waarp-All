@@ -33,7 +33,7 @@ CREATE TABLE hosts (
     address VARCHAR2(250) NOT NULL,
     port NUMBER NOT NULL,
     isssl NUMBER(1) NOT NULL,
-    hostkey RAW(1024) NOT NULL,
+    hostkey RAW(512) NOT NULL,
     adminrole NUMBER(1) NOT NULL,
     isclient NUMBER(1) NOT NULL,
     isactive NUMBER(1) NOT NULL,

@@ -76,6 +76,11 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
   }
 
   @Override
+  protected final String getTable() {
+    return TABLE;
+  }
+
+  @Override
   protected final String getSelectRequest() {
     return SQL_SELECT;
   }

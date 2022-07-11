@@ -50,9 +50,14 @@
     <package.name>waarp-all-${project.version}</package.name>
     <final.jar>Waarp-All-${project.version}-jar-with-dependencies.jar
     </final.jar>
-    <finalpath.jar>
+    <finalPath.jar>
       ${targetDirectory}/${final.jar}
-    </finalpath.jar>
+    </finalPath.jar>
+    <finalLess.jar>Waarp-All-Without-Extensions-${project.version}-jar-with-dependencies.jar
+    </finalLess.jar>
+    <finalLessPath.jar>
+      ${targetDirectory}/${finalLess.jar}
+    </finalLessPath.jar>
   </properties>
 
   <profiles>
@@ -177,8 +182,11 @@
               <target>
                 <taskdef resource="net/sf/antcontrib/antlib.xml"/>
                 <copy
+                  file="${root.directory}/WaarpProxyR66/target/WaarpProxyR66-${project.version}-jar-with-dependencies.jar"
+                  tofile="${finalLessPath.jar}"/>
+                <copy
                   file="${root.directory}/WaarpR66-Extensions/target/WaarpR66-Extensions-${project.version}-jar-with-dependencies.jar"
-                  tofile="${finalpath.jar}"/>
+                  tofile="${finalPath.jar}"/>
               </target>
             </configuration>
           </execution>
@@ -408,7 +416,7 @@
             <!-- Artifacts -->
             <data>
               <src>
-                ${finalpath.jar}
+                ${finalPath.jar}
               </src>
               <type>file</type>
               <mapper>
@@ -616,7 +624,7 @@
               <sources>
                 <source>
                   <location>
-                    ${finalpath.jar}
+                    ${finalPath.jar}
                   </location>
                   <destination>
                     ${final.jar}

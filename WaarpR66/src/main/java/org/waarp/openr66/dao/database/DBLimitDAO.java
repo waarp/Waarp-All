@@ -83,6 +83,11 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   }
 
   @Override
+  protected final String getTable() {
+    return TABLE;
+  }
+
+  @Override
   protected final String getSelectRequest() {
     return SQL_SELECT;
   }

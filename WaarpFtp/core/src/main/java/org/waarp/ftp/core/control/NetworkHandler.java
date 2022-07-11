@@ -285,7 +285,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         return;
       }
       AbstractCommand command = FtpCommandCode.getFromLine(getFtpSession(), e);
-      logger.debug("RECVMSG: {} CMD: {} {}" + command.getCode(), e,
+      logger.debug("RECVMSG: {} CMD: {} {}", command.getCode(), e,
                    command.getCommand());
       // First check if the command is an ABORT, QUIT or STAT
       if (!FtpCommandCode.isSpecialCommand(command.getCode())) {

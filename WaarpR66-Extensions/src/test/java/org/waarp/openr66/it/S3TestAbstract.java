@@ -23,7 +23,6 @@ package org.waarp.openr66.it;
 import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.Before;
-import org.openqa.selenium.WebDriver;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.dao.DAOFactory;
@@ -48,11 +47,6 @@ public abstract class S3TestAbstract extends S3TestAbstractMinimal {
   protected static NetworkTransaction networkTransaction;
   protected static Project project;
   protected static File homeDir;
-  public static WebDriver driver = null;
-
-  public enum DriverType {
-    PHANTOMJS
-  }
 
   public static void tearDownAfterClassServer() throws Exception {
     Configuration.configuration.setTimeoutCon(100);

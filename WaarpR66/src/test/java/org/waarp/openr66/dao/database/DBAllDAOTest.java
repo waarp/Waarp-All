@@ -182,6 +182,13 @@ public abstract class DBAllDAOTest extends TestAbstract {
         return null;
       }
     }
+
+    @Override
+    public String getLimitRequest(final String request, final int limit,
+                                  final int offset) {
+      return request;
+    }
+
   }
 
   public void runScript(String script) {
@@ -373,6 +380,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.deleteAll();
 
       checkSql("SELECT * FROM hostconfig");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -386,6 +394,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.delete(new Business("server1", "", "", "", ""));
 
       checkSql("SELECT * FROM hostconfig where hostid = 'server1'");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -397,6 +406,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       assertEquals(5, dao.getAll().size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -433,6 +443,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
           fail(e.getMessage());
         }
       }
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -445,6 +456,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO(true);
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -481,6 +493,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("minou", res2.getString("aliases"));
       assertEquals("ect", res2.getString("others"));
       assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res2.getInt("updatedInfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -505,6 +518,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("minou", res.getString("aliases"));
       assertEquals("ect", res.getString("others"));
       assertEquals(UpdatedInfo.RUNNING.ordinal(), res.getInt("updatedInfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -518,6 +532,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       assertEquals(2, dao.find(map).size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -541,6 +556,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.deleteAll();
 
       checkSql("SELECT * FROM hosts");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -554,6 +570,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.delete(new Host("server1", "", 666, null, false, false));
 
       checkSql("SELECT * FROM hosts where hostid = 'server1'");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -565,6 +582,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO(false);
       assertEquals(3, dao.getAll().size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -606,6 +624,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       } catch (final DAONoDataException e) {
         // Ignore since OK
       }
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -618,6 +637,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final HostDAO dao = getDaoFactory().getHostDAO(true);
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -658,6 +678,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertTrue(res2.getBoolean("adminrole"));
       assertTrue(res2.getBoolean("isactive"));
       assertEquals(0, res2.getInt("updatedinfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -688,6 +709,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertTrue(res.getBoolean("adminrole"));
       assertTrue(res.getBoolean("isactive"));
       assertEquals(0, res.getInt("updatedinfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -701,6 +723,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO(false);
       assertEquals(2, dao.find(map).size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -724,6 +747,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.deleteAll();
 
       checkSql("SELECT * FROM configuration");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -737,6 +761,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.delete(new Limit("server1", 0L));
 
       checkSql("SELECT * FROM configuration where hostid = 'server1'");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -748,6 +773,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       assertEquals(3, dao.getAll().size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -786,6 +812,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
           fail(e.getMessage());
         }
       }
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -798,6 +825,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final LimitDAO dao = getDaoFactory().getLimitDAO(true);
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -834,6 +862,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(13, res2.getLong("readSessionLimit"));
       assertEquals(12, res2.getLong("writeSessionLimit"));
       assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res2.getInt("updatedInfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -859,6 +888,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(13, res.getLong("readSessionLimit"));
       assertEquals(12, res.getLong("writeSessionLimit"));
       assertEquals(UpdatedInfo.RUNNING.ordinal(), res.getInt("updatedInfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -872,6 +902,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       assertEquals(2, dao.find(map).size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -900,6 +931,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.deleteAll();
 
       checkSql("SELECT * FROM multiplemonitor");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -918,6 +950,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.delete(new MultipleMonitor("server1", 0, 0, 0));
 
       checkSql("SELECT * FROM multiplemonitor where hostid = 'server1'");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -934,6 +967,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
         return;
       }
       assertEquals(4, dao.getAll().size());
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -961,6 +995,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       } catch (final DAONoDataException e) {
         // Ignore since OK
       }
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -978,6 +1013,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       }
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1007,6 +1043,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(98, res2.getInt("countRule"));
       assertEquals(19, res2.getInt("countHost"));
       assertEquals(31, res2.getInt("countConfig"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1031,6 +1068,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(98, res.getInt("countRule"));
       assertEquals(19, res.getInt("countHost"));
       assertEquals(31, res.getInt("countConfig"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1049,6 +1087,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
         return;
       }
       assertEquals(2, dao.find(map).size());
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1066,6 +1105,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.deleteAll();
 
       checkSql("SELECT * FROM rules");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1079,6 +1119,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.delete(new Rule("default", 1));
 
       checkSql("SELECT * FROM rules where idrule = 'default'");
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1093,6 +1134,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       assertEquals(3, dao.getAll().size());
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1131,6 +1173,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       } catch (final DAONoDataException e) {
         // Ignore since OK
       }
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1143,6 +1186,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final RuleDAO dao = getDaoFactory().getRuleDAO(true);
       assertTrue(dao.exist("dummy"));
       assertFalse(dao.exist("ghost"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1183,6 +1227,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("<tasks></tasks>", res2.getString("sposttasks"));
       assertEquals("<tasks></tasks>", res2.getString("serrortasks"));
       assertEquals(0, res2.getInt("updatedInfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1218,6 +1263,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("<tasks></tasks>", res.getString("sposttasks"));
       assertEquals("<tasks></tasks>", res.getString("serrortasks"));
       assertEquals(0, res.getInt("updatedInfo"));
+      DAOFactory.closeDAO(dao);
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
@@ -1231,6 +1277,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       assertEquals(2, dao.find(map).size());
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -1256,6 +1303,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     dao.deleteAll();
 
     checkSql("SELECT * FROM runner");
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
@@ -1266,12 +1314,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
                             Transfer.TASKSTEP.NOTASK, 0, ErrorCode.Unknown,
                             ErrorCode.Unknown, 0, null, null));
     checkSql("SELECT * FROM runner where specialid = 0");
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
   public void test06_GetAllTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
     assertEquals(4, dao.getAll().size());
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
@@ -1286,6 +1336,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     } catch (final DAONoDataException e) {
       // Ignore since OK
     }
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
@@ -1294,6 +1345,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       assertTrue(dao.exist(0L, "server1", "server2", "server1"));
       assertFalse(dao.exist(1L, "server1", "server2", "server1"));
+      DAOFactory.closeDAO(dao);
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -1344,6 +1396,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     assertEquals("info", res2.getString("fileinfo"));
     assertFalse(res2.getBoolean("ismoved"));
     assertEquals(3, res2.getInt("blocksz"));
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
@@ -1426,6 +1479,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     assertEquals(new Timestamp(1122242L), res.getTimestamp("starttrans"));
     assertEquals(new Timestamp(1123242L), res.getTimestamp("stoptrans"));
     assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res.getInt("updatedInfo"));
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
@@ -1439,6 +1493,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
 
     final TransferDAO dao = getDAO(getConnection());
     assertEquals(3, dao.find(map).size());
+    DAOFactory.closeDAO(dao);
   }
 
   @Test
@@ -1462,6 +1517,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     map.add(DbTaskRunner.getFollowIdFilter("1234567890"));
     logger.warn("Must find 1: {}", count);
     assertEquals(1, dao.find(map).size());
+    DAOFactory.closeDAO(dao);
   }
 
 

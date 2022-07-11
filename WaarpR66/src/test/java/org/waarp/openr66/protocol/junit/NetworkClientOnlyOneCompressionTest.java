@@ -31,6 +31,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -1027,6 +1028,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
 
   private void test_Spooled(final SpooledThread spooledThread)
       throws IOException, InterruptedException {
+    Assume.assumeTrue(spooledThread.spooledDirectoryTransfer != null);
     final int size = 200;
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);

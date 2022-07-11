@@ -171,6 +171,29 @@ public class DBDAOFactory extends DAOFactory {
     }
   }
 
+  @Override
+  public String getLimitRequest(final String request, final int limit,
+                                final int offset) {
+    final DbProperties prop = connectionFactory.getProperties();
+    String result = request;
+    final boolean isOracle = prop instanceof OracleProperties;
+    if (offset > 0) {
+      if (isOracle) {
+        result += " OFFSET " + limit + " ROWS";
+      } else {
+        result += " OFFSET " + limit;
+      }
+    }
+    if (limit > 0) {
+      if (isOracle) {
+        result += " FETCH NEXT " + limit + " ROWS ONLY";
+      } else {
+        result += " LIMIT " + limit;
+      }
+    }
+    return result;
+  }
+
   /**
    * Close the DBDAOFactory and close the ConnectionFactory Warning: You need
    * to close the Connection yourself!

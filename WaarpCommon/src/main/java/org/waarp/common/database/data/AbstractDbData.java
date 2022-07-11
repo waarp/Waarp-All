@@ -21,6 +21,7 @@ package org.waarp.common.database.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -512,7 +513,7 @@ public abstract class AbstractDbData {
       throw new WaarpDatabaseSqlException(
           "Setting values casting error: " + value.type + " at " + rank, e);
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException(
           "Setting values in error: " + value.type + " at " + rank, e);
     }
@@ -596,7 +597,7 @@ public abstract class AbstractDbData {
               value.getColumn());
       }
     } catch (final SQLException e) {
-      DbSession.error(e);
+      DbConstant.error(e);
       throw new WaarpDatabaseSqlException(
           "Getting values in error: " + value.type + " for " +
           value.getColumn(), e);
