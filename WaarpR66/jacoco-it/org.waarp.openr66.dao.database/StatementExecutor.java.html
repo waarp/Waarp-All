@@ -25,6 +25,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.AbstractDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.database.DBDAOFactory.FakeConnection;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -40,8 +41,8 @@ import java.util.List;
 
 public abstract class StatementExecutor&lt;E&gt; implements AbstractDAO&lt;E&gt; {
 
-<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(StatementExecutor.class);</span>
+<span class="fc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L45">      WaarpLoggerFactory.getLogger(StatementExecutor.class);</span>
   protected static final String WHERE = &quot; WHERE &quot;;
   protected static final String PARAMETER = &quot; = ?&quot;;
   protected static final String PARAMETER_COMMA = &quot; = ?, &quot;;
@@ -57,116 +58,123 @@ public abstract class StatementExecutor&lt;E&gt; implements AbstractDAO&lt;E&gt;
   protected abstract boolean isCachedEnable();
 
   protected SynchronizedLruCache&lt;String, E&gt; getCache() {
-<span class="nc" id="L60">    return null;</span>
+<span class="nc" id="L61">    return null;</span>
   }
 
   protected final void clearCache() {
-<span class="pc bpc" id="L64" title="1 of 2 branches missed.">    if (isCachedEnable()) {</span>
-<span class="nc" id="L65">      getCache().clear();</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">    if (isCachedEnable()) {</span>
+<span class="nc" id="L66">      getCache().clear();</span>
     }
-<span class="fc" id="L67">  }</span>
+<span class="fc" id="L68">  }</span>
 
   protected final void addToCache(final String key, final E elt) {
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (isCachedEnable()) {</span>
-<span class="fc" id="L71">      getCache().put(key, elt);</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (isCachedEnable()) {</span>
+<span class="fc" id="L72">      getCache().put(key, elt);</span>
     }
-<span class="fc" id="L73">  }</span>
+<span class="fc" id="L74">  }</span>
 
   protected final E getFromCache(final String key) {
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (isCachedEnable()) {</span>
-<span class="fc" id="L77">      final E value = getCache().get(key);</span>
-<span class="fc bfc" id="L78" title="All 2 branches covered.">      if (value != null) {</span>
-<span class="fc" id="L79">        getCache().updateTtl(key);</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">    if (isCachedEnable()) {</span>
+<span class="fc" id="L78">      final E value = getCache().get(key);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">      if (value != null) {</span>
+<span class="fc" id="L80">        getCache().updateTtl(key);</span>
       }
-<span class="fc" id="L81">      return value;</span>
+<span class="fc" id="L82">      return value;</span>
     }
-<span class="nc" id="L83">    return null;</span>
+<span class="nc" id="L84">    return null;</span>
   }
 
   protected final void removeFromCache(final String key) {
-<span class="nc bnc" id="L87" title="All 2 branches missed.">    if (isCachedEnable()) {</span>
-<span class="nc" id="L88">      getCache().remove(key);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (isCachedEnable()) {</span>
+<span class="nc" id="L89">      getCache().remove(key);</span>
     }
-<span class="nc" id="L90">  }</span>
+<span class="nc" id="L91">  }</span>
 
   protected final boolean isInCache(final String key) {
-<span class="fc bfc" id="L93" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
-<span class="fc" id="L94">      return getCache().contains(key);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
+<span class="fc" id="L95">      return getCache().contains(key);</span>
     }
-<span class="fc" id="L96">    return false;</span>
+<span class="fc" id="L97">    return false;</span>
   }
 
-<span class="fc" id="L99">  protected StatementExecutor(final Connection con) {</span>
-<span class="fc" id="L100">    connection = con;</span>
-<span class="fc" id="L101">  }</span>
+<span class="fc" id="L100">  protected StatementExecutor(final Connection con) {</span>
+<span class="fc" id="L101">    connection = con;</span>
+<span class="fc" id="L102">  }</span>
+
+  public Connection getConnection() {
+<span class="nc" id="L105">    return connection;</span>
+  }
 
   protected final void setParameters(final PreparedStatement stm,
                                      final Object... values)
       throws SQLException {
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    if (values == null) {</span>
-<span class="nc" id="L107">      return;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (values == null) {</span>
+<span class="nc" id="L112">      return;</span>
     }
-<span class="fc bfc" id="L109" title="All 2 branches covered.">    for (int i = 0; i &lt; values.length; i++) {</span>
-<span class="fc" id="L110">      stm.setObject(i + 1, values[i]);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    for (int i = 0; i &lt; values.length; i++) {</span>
+<span class="fc" id="L115">      stm.setObject(i + 1, values[i]);</span>
     }
-<span class="fc" id="L112">  }</span>
+<span class="fc" id="L117">  }</span>
 
-  final void executeUpdate(final PreparedStatement stm) throws SQLException {
+  protected final void executeUpdate(final PreparedStatement stm)
+      throws SQLException {
     final int res;
-<span class="fc" id="L116">    res = stm.executeUpdate();</span>
-<span class="pc bpc" id="L117" title="1 of 2 branches missed.">    if (res &lt; 1) {</span>
-<span class="nc" id="L118">      logger.error(&quot;Update failed, no record updated.&quot;);</span>
+<span class="fc" id="L122">    res = stm.executeUpdate();</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (res &lt; 1) {</span>
+<span class="nc" id="L124">      logger.error(&quot;Update failed, no record updated.&quot;);</span>
       //FIXME should be throw new SQLDataException(&quot;Update failed, no record
       // updated.&quot;);
     } else {
-<span class="fc" id="L122">      logger.debug(&quot;{} records updated.&quot;, res);</span>
+<span class="fc" id="L128">      logger.debug(&quot;{} records updated.&quot;, res);</span>
     }
-<span class="fc" id="L124">  }</span>
+<span class="fc" id="L130">  }</span>
 
-  protected final void executeAction(final PreparedStatement stm)
+  protected final int executeAction(final PreparedStatement stm)
       throws SQLException {
-<span class="fc" id="L128">    stm.executeUpdate();</span>
-<span class="fc" id="L129">  }</span>
+<span class="fc" id="L134">    return stm.executeUpdate();</span>
+  }
 
   protected final ResultSet executeQuery(final PreparedStatement stm)
       throws SQLException {
-<span class="fc" id="L133">    return stm.executeQuery();</span>
+<span class="fc" id="L139">    return stm.executeQuery();</span>
   }
 
   protected final void closeStatement(final Statement stm) {
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (stm == null) {</span>
-<span class="nc" id="L138">      return;</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">    if (stm == null) {</span>
+<span class="nc" id="L144">      return;</span>
     }
     try {
-<span class="fc" id="L141">      stm.close();</span>
-<span class="nc" id="L142">    } catch (final SQLException e) {</span>
-<span class="nc" id="L143">      logger.warn(&quot;An error occurs while closing the statement.&quot; + &quot; : {}&quot;,</span>
-<span class="nc" id="L144">                  e.getMessage());</span>
-<span class="fc" id="L145">    }</span>
-<span class="fc" id="L146">  }</span>
+<span class="fc" id="L147">      stm.close();</span>
+<span class="nc" id="L148">    } catch (final SQLException e) {</span>
+<span class="nc" id="L149">      logger.warn(&quot;An error occurs while closing the statement.&quot; + &quot; : {}&quot;,</span>
+<span class="nc" id="L150">                  e.getMessage());</span>
+<span class="fc" id="L151">    }</span>
+<span class="fc" id="L152">  }</span>
 
   protected final void closeResultSet(final ResultSet rs) {
-<span class="pc bpc" id="L149" title="1 of 2 branches missed.">    if (rs == null) {</span>
-<span class="nc" id="L150">      return;</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L156">      return;</span>
     }
     try {
-<span class="fc" id="L153">      rs.close();</span>
-<span class="nc" id="L154">    } catch (final SQLException e) {</span>
-<span class="nc" id="L155">      logger.warn(&quot;An error occurs while closing the resultSet.&quot; + &quot; : {}&quot;,</span>
-<span class="nc" id="L156">                  e.getMessage());</span>
-<span class="fc" id="L157">    }</span>
-<span class="fc" id="L158">  }</span>
+<span class="fc" id="L159">      rs.close();</span>
+<span class="nc" id="L160">    } catch (final SQLException e) {</span>
+<span class="nc" id="L161">      logger.warn(&quot;An error occurs while closing the resultSet.&quot; + &quot; : {}&quot;,</span>
+<span class="nc" id="L162">                  e.getMessage());</span>
+<span class="fc" id="L163">    }</span>
+<span class="fc" id="L164">  }</span>
 
   public final void close() {
     try {
-<span class="fc" id="L162">      connection.close();</span>
-<span class="nc" id="L163">    } catch (final SQLException e) {</span>
-<span class="nc" id="L164">      logger.warn(&quot;Cannot properly close the database connection&quot; + &quot; : {}&quot;,</span>
-<span class="nc" id="L165">                  e.getMessage());</span>
-<span class="fc" id="L166">    }</span>
-<span class="fc" id="L167">  }</span>
+<span class="fc" id="L168">      connection.close();</span>
+<span class="nc" id="L169">    } catch (final SQLException e) {</span>
+<span class="nc" id="L170">      logger.warn(&quot;Cannot properly close the database connection&quot; + &quot; : {}&quot;,</span>
+<span class="nc" id="L171">                  e.getMessage());</span>
+<span class="fc" id="L172">    }</span>
+<span class="fc" id="L173">  }</span>
 
   protected abstract String getId(E e1);
+
+  protected abstract String getTable();
 
   protected abstract String getSelectRequest();
 
@@ -193,307 +201,407 @@ public abstract class StatementExecutor&lt;E&gt; implements AbstractDAO&lt;E&gt;
   @Override
   public void delete(final E e1)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc bnc" id="L196" title="All 2 branches missed.">    if (isCachedEnable()) {</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (isCachedEnable()) {</span>
       // Need to check since all does not accept getId
-<span class="nc" id="L198">      removeFromCache(getId(e1));</span>
+<span class="nc" id="L206">      removeFromCache(getId(e1));</span>
     }
-<span class="nc" id="L200">    PreparedStatement stm = null;</span>
+<span class="nc" id="L208">    PreparedStatement stm = null;</span>
     try {
-<span class="nc" id="L202">      stm = connection.prepareStatement(getDeleteRequest());</span>
-<span class="nc" id="L203">      setParameters(stm, getId(e1));</span>
+<span class="nc" id="L210">      stm = connection.prepareStatement(getDeleteRequest());</span>
+<span class="nc" id="L211">      setParameters(stm, getId(e1));</span>
       try {
-<span class="nc" id="L205">        executeAction(stm);</span>
-<span class="nc" id="L206">      } catch (final SQLException e2) {</span>
-<span class="nc" id="L207">        throw new DAONoDataException(e2);</span>
-<span class="nc" id="L208">      }</span>
-<span class="nc" id="L209">    } catch (final SQLException e) {</span>
-<span class="nc" id="L210">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L213">        executeAction(stm);</span>
+<span class="nc" id="L214">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L215">        throw new DAONoDataException(e2);</span>
+<span class="nc" id="L216">      }</span>
+<span class="nc" id="L217">    } catch (final SQLException e) {</span>
+<span class="nc" id="L218">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="nc" id="L212">      closeStatement(stm);</span>
+<span class="nc" id="L220">      closeStatement(stm);</span>
     }
-<span class="nc" id="L214">  }</span>
+<span class="nc" id="L222">  }</span>
 
   @Override
   public final void deleteAll() throws DAOConnectionException {
-<span class="fc" id="L218">    clearCache();</span>
-<span class="fc" id="L219">    PreparedStatement stm = null;</span>
+<span class="fc" id="L226">    clearCache();</span>
+<span class="fc" id="L227">    PreparedStatement stm = null;</span>
     try {
-<span class="fc" id="L221">      stm = connection.prepareStatement(getDeleteAllRequest());</span>
-<span class="fc" id="L222">      executeAction(stm);</span>
-<span class="nc" id="L223">    } catch (final SQLException e) {</span>
-<span class="nc" id="L224">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L229">      stm = connection.prepareStatement(getDeleteAllRequest());</span>
+<span class="fc" id="L230">      executeAction(stm);</span>
+<span class="nc" id="L231">    } catch (final SQLException e) {</span>
+<span class="nc" id="L232">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L226">      closeStatement(stm);</span>
+<span class="fc" id="L234">      closeStatement(stm);</span>
     }
-<span class="fc" id="L228">  }</span>
+<span class="fc" id="L236">  }</span>
+
+  protected final String prepareDeleteQuery(final List&lt;Filter&gt; filters,
+                                            final Object[] params) {
+<span class="nc" id="L240">    final StringBuilder query = new StringBuilder(getDeleteAllRequest());</span>
+<span class="nc" id="L241">    return getFullRequest(filters, params, query);</span>
+  }
+
+  private final String getFullRequest(final List&lt;Filter&gt; filters,
+                                      final Object[] params,
+                                      final StringBuilder query) {
+<span class="fc bfc" id="L247" title="All 2 branches covered.">    if (filters.isEmpty()) {</span>
+<span class="fc" id="L248">      return query.toString();</span>
+    }
+<span class="fc" id="L250">    query.append(WHERE);</span>
+<span class="fc" id="L251">    String prefix = &quot;&quot;;</span>
+<span class="fc" id="L252">    int i = 0;</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">    for (final Filter filter : filters) {</span>
+<span class="fc" id="L254">      query.append(prefix);</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">      if (filter.nbAdditionnalParams() &gt; 1) {</span>
+<span class="fc" id="L256">        final Object[] objects = (Object[]) filter.append(query);</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">        for (final Object o : objects) {</span>
+<span class="fc" id="L258">          params[i++] = o;</span>
+        }
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">      } else if (filter.nbAdditionnalParams() == 1) {</span>
+<span class="fc" id="L261">        params[i] = filter.append(query);</span>
+<span class="fc" id="L262">        i++;</span>
+      } else {
+<span class="nc" id="L264">        filter.append(query);</span>
+      }
+<span class="fc" id="L266">      prefix = &quot; AND &quot;;</span>
+<span class="fc" id="L267">    }</span>
+<span class="fc" id="L268">    return query.toString();</span>
+  }
+
+  /**
+   * Delete all items according to filter
+   *
+   * @param filters
+   *
+   * @return the number of deleted items
+   *
+   * @throws DAOConnectionException
+   */
+  public final int delete(final List&lt;Filter&gt; filters)
+      throws DAOConnectionException {
+<span class="nc" id="L282">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
+    // Create the SQL query
+<span class="nc" id="L284">    final Object[] params = prepareFindParams(filters);</span>
+<span class="nc" id="L285">    final String query = prepareDeleteQuery(filters, params);</span>
+    // Execute query
+<span class="nc" id="L287">    PreparedStatement stm = null;</span>
+    try {
+<span class="nc" id="L289">      stm = connection.prepareStatement(query);</span>
+<span class="nc" id="L290">      setParameters(stm, params);</span>
+<span class="nc" id="L291">      return executeAction(stm);</span>
+<span class="nc" id="L292">    } catch (final SQLException e) {</span>
+<span class="nc" id="L293">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="nc" id="L295">      closeStatement(stm);</span>
+    }
+  }
 
   @Override
   public final List&lt;E&gt; getAll() throws DAOConnectionException {
-<span class="nc" id="L232">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
-<span class="nc" id="L233">    PreparedStatement stm = null;</span>
-<span class="nc" id="L234">    ResultSet res = null;</span>
+<span class="nc" id="L301">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
+<span class="nc" id="L302">    PreparedStatement stm = null;</span>
+<span class="nc" id="L303">    ResultSet res = null;</span>
     try {
-<span class="nc" id="L236">      stm = connection.prepareStatement(getGetAllRequest());</span>
-<span class="nc" id="L237">      res = executeQuery(stm);</span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L239">        es.add(getFromResultSet(res));</span>
+<span class="nc" id="L305">      stm = connection.prepareStatement(getGetAllRequest());</span>
+<span class="nc" id="L306">      res = executeQuery(stm);</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">      while (res.next()) {</span>
+<span class="nc" id="L308">        es.add(getFromResultSet(res));</span>
       }
-<span class="nc" id="L241">    } catch (final SQLException e) {</span>
-<span class="nc" id="L242">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L310">    } catch (final SQLException e) {</span>
+<span class="nc" id="L311">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="nc" id="L244">      closeResultSet(res);</span>
-<span class="nc" id="L245">      closeStatement(stm);</span>
+<span class="nc" id="L313">      closeResultSet(res);</span>
+<span class="nc" id="L314">      closeStatement(stm);</span>
     }
-<span class="nc" id="L247">    return es;</span>
+<span class="nc" id="L316">    return es;</span>
   }
 
-  final String prepareFindQuery(final List&lt;Filter&gt; filters,
-                                final Object[] params) {
-<span class="fc" id="L252">    final StringBuilder query = new StringBuilder(getGetAllRequest());</span>
-<span class="fc bfc" id="L253" title="All 2 branches covered.">    if (filters.isEmpty()) {</span>
-<span class="fc" id="L254">      return query.toString();</span>
-    }
-<span class="fc" id="L256">    query.append(WHERE);</span>
-<span class="fc" id="L257">    String prefix = &quot;&quot;;</span>
-<span class="fc" id="L258">    int i = 0;</span>
-<span class="fc bfc" id="L259" title="All 2 branches covered.">    for (final Filter filter : filters) {</span>
-<span class="fc" id="L260">      query.append(prefix);</span>
-<span class="fc bfc" id="L261" title="All 2 branches covered.">      if (filter.nbAdditionnalParams() &gt; 0) {</span>
-<span class="fc" id="L262">        final Object[] objects = (Object[]) filter.append(query);</span>
-<span class="fc bfc" id="L263" title="All 2 branches covered.">        for (final Object o : objects) {</span>
-<span class="fc" id="L264">          params[i++] = o;</span>
-        }
-<span class="pc bpc" id="L266" title="1 of 2 branches missed.">      } else if (filter.nbAdditionnalParams() == 0) {</span>
-<span class="fc" id="L267">        params[i] = filter.append(query);</span>
-<span class="fc" id="L268">        i++;</span>
-      } else {
-<span class="nc" id="L270">        filter.append(query);</span>
-      }
-<span class="fc" id="L272">      prefix = &quot; AND &quot;;</span>
-<span class="fc" id="L273">    }</span>
-<span class="fc" id="L274">    return query.toString();</span>
+  protected final String prepareFindQuery(final List&lt;Filter&gt; filters,
+                                          final Object[] params) {
+<span class="fc" id="L321">    final StringBuilder query = new StringBuilder(getGetAllRequest());</span>
+<span class="fc" id="L322">    return getFullRequest(filters, params, query);</span>
   }
 
-  final Object[] prepareFindParams(final List&lt;Filter&gt; filters) {
-<span class="fc" id="L278">    Object[] params = new Object[0];</span>
-<span class="pc bpc" id="L279" title="1 of 2 branches missed.">    if (filters != null) {</span>
-<span class="fc" id="L280">      int len = filters.size();</span>
-<span class="fc bfc" id="L281" title="All 2 branches covered.">      for (final Filter filter : filters) {</span>
-<span class="fc" id="L282">        len += filter.nbAdditionnalParams();</span>
-<span class="fc" id="L283">      }</span>
-<span class="fc" id="L284">      params = new Object[len];</span>
+  protected final Object[] prepareFindParams(final List&lt;Filter&gt; filters) {
+<span class="fc" id="L326">    Object[] params = new Object[0];</span>
+<span class="pc bpc" id="L327" title="1 of 2 branches missed.">    if (filters != null) {</span>
+<span class="fc" id="L328">      int len = filters.size();</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">      for (final Filter filter : filters) {</span>
+        // Already got 1
+<span class="fc" id="L331">        len += filter.nbAdditionnalParams() - 1;</span>
+<span class="fc" id="L332">      }</span>
+<span class="fc" id="L333">      params = new Object[len];</span>
     }
-<span class="fc" id="L286">    return params;</span>
+<span class="fc" id="L335">    return params;</span>
   }
 
   @Override
   public final List&lt;E&gt; find(final List&lt;Filter&gt; filters)
       throws DAOConnectionException {
-<span class="fc" id="L292">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
-    // Create the SQL query
-<span class="fc" id="L294">    final Object[] params = prepareFindParams(filters);</span>
-<span class="fc" id="L295">    final StringBuilder query =</span>
-<span class="fc" id="L296">        new StringBuilder(prepareFindQuery(filters, params));</span>
-    // Execute query
-<span class="fc" id="L298">    PreparedStatement stm = null;</span>
-<span class="fc" id="L299">    ResultSet res = null;</span>
-    try {
-<span class="fc" id="L301">      stm = connection.prepareStatement(query.toString());</span>
-<span class="fc" id="L302">      setParameters(stm, params);</span>
-<span class="fc" id="L303">      res = executeQuery(stm);</span>
-<span class="fc bfc" id="L304" title="All 2 branches covered.">      while (res.next()) {</span>
-<span class="fc" id="L305">        es.add(getFromResultSet(res));</span>
-      }
-<span class="nc" id="L307">    } catch (final SQLException e) {</span>
-<span class="nc" id="L308">      throw new DAOConnectionException(e);</span>
-    } finally {
-<span class="fc" id="L310">      closeResultSet(res);</span>
-<span class="fc" id="L311">      closeStatement(stm);</span>
-    }
-<span class="fc" id="L313">    return es;</span>
+<span class="fc" id="L341">    return find(filters, null, false, -1);</span>
   }
 
-  final String prepareCountQuery(final List&lt;Filter&gt; filters,
-                                 final Object[] params) {
-<span class="fc" id="L318">    final StringBuilder query = new StringBuilder(getCountRequest());</span>
-<span class="fc bfc" id="L319" title="All 2 branches covered.">    if (filters.isEmpty()) {</span>
-<span class="fc" id="L320">      return query.toString();</span>
-    }
-<span class="fc" id="L322">    query.append(WHERE);</span>
-<span class="fc" id="L323">    String prefix = &quot;&quot;;</span>
-<span class="fc" id="L324">    int i = 0;</span>
-<span class="fc bfc" id="L325" title="All 2 branches covered.">    for (final Filter filter : filters) {</span>
-<span class="fc" id="L326">      query.append(prefix);</span>
-<span class="fc bfc" id="L327" title="All 2 branches covered.">      if (filter.nbAdditionnalParams() &gt; 0) {</span>
-<span class="fc" id="L328">        final Object[] objects = (Object[]) filter.append(query);</span>
-<span class="fc bfc" id="L329" title="All 2 branches covered.">        for (final Object o : objects) {</span>
-<span class="fc" id="L330">          params[i++] = o;</span>
+  @Override
+  public final List&lt;E&gt; find(final List&lt;Filter&gt; filters, final int limit)
+      throws DAOConnectionException {
+<span class="nc" id="L347">    return find(filters, null, false, limit);</span>
+  }
+
+  @Override
+  public final List&lt;E&gt; find(final List&lt;Filter&gt; filters, final String field,
+                            final boolean asc) throws DAOConnectionException {
+<span class="fc" id="L353">    return find(filters, field, asc, -1);</span>
+  }
+
+  @Override
+  public final List&lt;E&gt; find(final List&lt;Filter&gt; filters, final String field,
+                            final boolean asc, final int limit)
+      throws DAOConnectionException {
+<span class="fc" id="L360">    return find(filters, field, asc, limit, -1);</span>
+  }
+
+  @Override
+  public final List&lt;E&gt; find(final List&lt;Filter&gt; filters, final String field,
+                            final boolean asc, final int limit,
+                            final int offset) throws DAOConnectionException {
+<span class="fc" id="L367">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
+    // Create the SQL query
+<span class="fc" id="L369">    final Object[] params = prepareFindParams(filters);</span>
+<span class="fc" id="L370">    final StringBuilder query =</span>
+<span class="fc" id="L371">        new StringBuilder(prepareFindQuery(filters, params));</span>
+    // Execute query
+<span class="fc" id="L373">    PreparedStatement stm = null;</span>
+<span class="fc" id="L374">    ResultSet res = null;</span>
+    try {
+<span class="fc bfc" id="L376" title="All 2 branches covered.">      if (field != null) {</span>
+<span class="fc" id="L377">        query.append(&quot; ORDER BY &quot;).append(field);</span>
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">        if (!asc) {</span>
+<span class="nc" id="L379">          query.append(&quot; DESC &quot;);</span>
         }
-<span class="pc bpc" id="L332" title="1 of 2 branches missed.">      } else if (filter.nbAdditionnalParams() == 0) {</span>
-<span class="fc" id="L333">        params[i] = filter.append(query);</span>
-<span class="fc" id="L334">        i++;</span>
-      } else {
-<span class="nc" id="L336">        filter.append(query);</span>
       }
-<span class="fc" id="L338">      prefix = &quot; AND &quot;;</span>
-<span class="fc" id="L339">    }</span>
-<span class="fc" id="L340">    return query.toString();</span>
+<span class="fc" id="L382">      String squery = query.toString();</span>
+<span class="pc bpc" id="L383" title="1 of 4 branches missed.">      if (limit &gt; 0 || offset &gt; 0) {</span>
+        squery =
+<span class="fc" id="L385">            DAOFactory.getInstance().getLimitRequest(squery, limit, offset);</span>
+      }
+<span class="pc bpc" id="L387" title="1 of 6 branches missed.">      logger.debug(&quot;DEBUG {} {} {}&quot;, squery,</span>
+                   params != null &amp;&amp; params.length &gt; 0? params[0] : &quot;No first&quot;,
+                   params.length &gt;= 2? params[1] : &quot; No 2nd&quot;);
+<span class="fc" id="L390">      stm = connection.prepareStatement(squery);</span>
+<span class="fc" id="L391">      setParameters(stm, params);</span>
+<span class="fc" id="L392">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L393" title="All 2 branches covered.">      while (res.next()) {</span>
+<span class="fc" id="L394">        es.add(getFromResultSet(res));</span>
+      }
+<span class="nc" id="L396">    } catch (final SQLException e) {</span>
+<span class="nc" id="L397">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L399">      closeResultSet(res);</span>
+<span class="fc" id="L400">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L402">    return es;</span>
+  }
+
+  @Override
+  public final void update(final List&lt;Filter&gt; filters, final String fieldToSet)
+      throws DAOConnectionException {
+<span class="nc" id="L408">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
+    // Create the SQL query
+<span class="nc" id="L410">    final Object[] params = prepareFindParams(filters);</span>
+<span class="nc bnc" id="L411" title="All 2 branches missed.">    if (isCachedEnable()) {</span>
+<span class="nc" id="L412">      final String query = prepareFindQuery(filters, params);</span>
+      // Execute query
+<span class="nc" id="L414">      PreparedStatement stm = null;</span>
+<span class="nc" id="L415">      ResultSet res = null;</span>
+      try {
+<span class="nc" id="L417">        stm = connection.prepareStatement(query);</span>
+<span class="nc" id="L418">        setParameters(stm, params);</span>
+<span class="nc" id="L419">        res = executeQuery(stm);</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">        while (res.next()) {</span>
+<span class="nc" id="L421">          final E e = getFromResultSet(res);</span>
+<span class="nc" id="L422">          removeFromCache(getId(e));</span>
+<span class="nc" id="L423">        }</span>
+<span class="nc" id="L424">      } catch (final SQLException e) {</span>
+<span class="nc" id="L425">        throw new DAOConnectionException(e);</span>
+      } finally {
+<span class="nc" id="L427">        closeResultSet(res);</span>
+<span class="nc" id="L428">        closeStatement(stm);</span>
+      }
+    }
+<span class="nc" id="L431">    final StringBuilder query = new StringBuilder(&quot;UPDATE &quot; + getTable());</span>
+<span class="nc" id="L432">    query.append(&quot; SET &quot;).append(fieldToSet);</span>
+<span class="nc" id="L433">    final String squery = getFullRequest(filters, params, query);</span>
+<span class="nc" id="L434">    PreparedStatement stm = null;</span>
+    try {
+<span class="nc" id="L436">      stm = connection.prepareStatement(squery);</span>
+<span class="nc" id="L437">      setParameters(stm, params);</span>
+<span class="nc" id="L438">      executeUpdate(stm);</span>
+<span class="nc" id="L439">    } catch (final SQLException e) {</span>
+<span class="nc" id="L440">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="nc" id="L442">      closeStatement(stm);</span>
+    }
+<span class="nc" id="L444">  }</span>
+
+  protected final String prepareCountQuery(final List&lt;Filter&gt; filters,
+                                           final Object[] params) {
+<span class="fc" id="L448">    final StringBuilder query = new StringBuilder(getCountRequest());</span>
+<span class="fc" id="L449">    return getFullRequest(filters, params, query);</span>
   }
 
   @Override
   public final long count(final List&lt;Filter&gt; filters)
       throws DAOConnectionException {
     // Create the SQL query
-<span class="fc" id="L347">    final Object[] params = prepareFindParams(filters);</span>
-<span class="fc" id="L348">    final StringBuilder query =</span>
-<span class="fc" id="L349">        new StringBuilder(prepareCountQuery(filters, params));</span>
+<span class="fc" id="L456">    final Object[] params = prepareFindParams(filters);</span>
+<span class="fc" id="L457">    final String query = prepareCountQuery(filters, params);</span>
     // Execute query
-<span class="fc" id="L351">    PreparedStatement stm = null;</span>
-<span class="fc" id="L352">    ResultSet res = null;</span>
-<span class="fc" id="L353">    long total = -1;</span>
+<span class="fc" id="L459">    PreparedStatement stm = null;</span>
+<span class="fc" id="L460">    ResultSet res = null;</span>
+<span class="fc" id="L461">    long total = -1;</span>
     try {
-<span class="fc" id="L355">      stm = connection.prepareStatement(query.toString());</span>
-<span class="fc" id="L356">      setParameters(stm, params);</span>
-<span class="fc" id="L357">      res = executeQuery(stm);</span>
-<span class="pc bpc" id="L358" title="1 of 2 branches missed.">      if (res.next()) {</span>
-<span class="fc" id="L359">        total = res.getLong(&quot;total&quot;);</span>
+<span class="fc" id="L463">      stm = connection.prepareStatement(query);</span>
+<span class="fc" id="L464">      setParameters(stm, params);</span>
+<span class="fc" id="L465">      res = executeQuery(stm);</span>
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">      if (res.next()) {</span>
+<span class="fc" id="L467">        total = res.getLong(&quot;total&quot;);</span>
       }
-<span class="nc" id="L361">    } catch (final SQLException e) {</span>
-<span class="nc" id="L362">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L469">    } catch (final SQLException e) {</span>
+<span class="nc" id="L470">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L364">      closeResultSet(res);</span>
-<span class="fc" id="L365">      closeStatement(stm);</span>
+<span class="fc" id="L472">      closeResultSet(res);</span>
+<span class="fc" id="L473">      closeStatement(stm);</span>
     }
-<span class="pc bpc" id="L367" title="1 of 2 branches missed.">    if (total &lt; 0) {</span>
-<span class="nc" id="L368">      throw new DAOConnectionException(&quot;Count cannot be retrieved&quot;);</span>
+<span class="pc bpc" id="L475" title="1 of 2 branches missed.">    if (total &lt; 0) {</span>
+<span class="nc" id="L476">      throw new DAOConnectionException(&quot;Count cannot be retrieved&quot;);</span>
     }
-<span class="fc" id="L370">    return total;</span>
+<span class="fc" id="L478">    return total;</span>
   }
 
   @Override
   public final boolean exist(final String id) throws DAOConnectionException {
-<span class="pc bpc" id="L375" title="1 of 2 branches missed.">    if (isDbTransfer()) {</span>
-<span class="nc" id="L376">      throw new UnsupportedOperationException();</span>
+<span class="pc bpc" id="L483" title="1 of 2 branches missed.">    if (isDbTransfer()) {</span>
+<span class="nc" id="L484">      throw new UnsupportedOperationException();</span>
     }
-<span class="fc bfc" id="L378" title="All 2 branches covered.">    if (isInCache(id)) {</span>
-<span class="fc" id="L379">      return true;</span>
+<span class="fc bfc" id="L486" title="All 2 branches covered.">    if (isInCache(id)) {</span>
+<span class="fc" id="L487">      return true;</span>
     }
-<span class="pc bpc" id="L381" title="1 of 2 branches missed.">    if (connection instanceof FakeConnection) {</span>
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">    if (connection instanceof FakeConnection) {</span>
       try {
-<span class="fc" id="L383">        connection = ((FakeConnection) connection).getRealConnection();</span>
-<span class="nc" id="L384">      } catch (final SQLException throwables) {</span>
-<span class="nc" id="L385">        throw new DAOConnectionException(throwables);</span>
-<span class="fc" id="L386">      }</span>
+<span class="fc" id="L491">        connection = ((FakeConnection) connection).getRealConnection();</span>
+<span class="nc" id="L492">      } catch (final SQLException throwables) {</span>
+<span class="nc" id="L493">        throw new DAOConnectionException(throwables);</span>
+<span class="fc" id="L494">      }</span>
     }
-<span class="fc" id="L388">    PreparedStatement stm = null;</span>
-<span class="fc" id="L389">    ResultSet res = null;</span>
+<span class="fc" id="L496">    PreparedStatement stm = null;</span>
+<span class="fc" id="L497">    ResultSet res = null;</span>
     try {
-<span class="fc" id="L391">      stm = connection.prepareStatement(getExistRequest());</span>
-<span class="fc" id="L392">      setParameters(stm, id);</span>
-<span class="fc" id="L393">      res = executeQuery(stm);</span>
-<span class="fc" id="L394">      return res.next();</span>
-<span class="nc" id="L395">    } catch (final SQLException e) {</span>
-<span class="nc" id="L396">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L499">      stm = connection.prepareStatement(getExistRequest());</span>
+<span class="fc" id="L500">      setParameters(stm, id);</span>
+<span class="fc" id="L501">      res = executeQuery(stm);</span>
+<span class="fc" id="L502">      return res.next();</span>
+<span class="nc" id="L503">    } catch (final SQLException e) {</span>
+<span class="nc" id="L504">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L398">      closeResultSet(res);</span>
-<span class="fc" id="L399">      closeStatement(stm);</span>
+<span class="fc" id="L506">      closeResultSet(res);</span>
+<span class="fc" id="L507">      closeStatement(stm);</span>
     }
   }
 
   @Override
   public final E select(final String id)
       throws DAOConnectionException, DAONoDataException {
-<span class="pc bpc" id="L406" title="1 of 2 branches missed.">    if (isDbTransfer()) {</span>
-<span class="nc" id="L407">      throw new UnsupportedOperationException();</span>
+<span class="pc bpc" id="L514" title="1 of 2 branches missed.">    if (isDbTransfer()) {</span>
+<span class="nc" id="L515">      throw new UnsupportedOperationException();</span>
     }
-<span class="fc bfc" id="L409" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
-<span class="fc" id="L410">      final E found = getFromCache(id);</span>
-<span class="fc bfc" id="L411" title="All 2 branches covered.">      if (found != null) {</span>
-<span class="fc" id="L412">        return found;</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
+<span class="fc" id="L518">      final E found = getFromCache(id);</span>
+<span class="fc bfc" id="L519" title="All 2 branches covered.">      if (found != null) {</span>
+<span class="fc" id="L520">        return found;</span>
       }
     }
-<span class="pc bpc" id="L415" title="1 of 2 branches missed.">    if (connection instanceof FakeConnection) {</span>
+<span class="pc bpc" id="L523" title="1 of 2 branches missed.">    if (connection instanceof FakeConnection) {</span>
       try {
-<span class="fc" id="L417">        connection = ((FakeConnection) connection).getRealConnection();</span>
-<span class="nc" id="L418">      } catch (final SQLException throwables) {</span>
-<span class="nc" id="L419">        throw new DAOConnectionException(throwables);</span>
-<span class="fc" id="L420">      }</span>
+<span class="fc" id="L525">        connection = ((FakeConnection) connection).getRealConnection();</span>
+<span class="nc" id="L526">      } catch (final SQLException throwables) {</span>
+<span class="nc" id="L527">        throw new DAOConnectionException(throwables);</span>
+<span class="fc" id="L528">      }</span>
     }
-<span class="fc" id="L422">    PreparedStatement stm = null;</span>
-<span class="fc" id="L423">    ResultSet res = null;</span>
+<span class="fc" id="L530">    PreparedStatement stm = null;</span>
+<span class="fc" id="L531">    ResultSet res = null;</span>
     try {
-<span class="fc" id="L425">      stm = connection.prepareStatement(getSelectRequest());</span>
-<span class="fc" id="L426">      setParameters(stm, id);</span>
-<span class="fc" id="L427">      res = executeQuery(stm);</span>
-<span class="fc bfc" id="L428" title="All 2 branches covered.">      if (res.next()) {</span>
-<span class="fc" id="L429">        final E found = getFromResultSet(res);</span>
-<span class="fc" id="L430">        addToCache(id, found);</span>
-<span class="fc" id="L431">        return found;</span>
+<span class="fc" id="L533">      stm = connection.prepareStatement(getSelectRequest());</span>
+<span class="fc" id="L534">      setParameters(stm, id);</span>
+<span class="fc" id="L535">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L536" title="All 2 branches covered.">      if (res.next()) {</span>
+<span class="fc" id="L537">        final E found = getFromResultSet(res);</span>
+<span class="fc" id="L538">        addToCache(id, found);</span>
+<span class="fc" id="L539">        return found;</span>
       } else {
-<span class="fc" id="L433">        throw new DAONoDataException(&quot;No &quot; + getClass().getName() + &quot; found&quot;);</span>
+<span class="fc" id="L541">        throw new DAONoDataException(&quot;No &quot; + getClass().getName() + &quot; found&quot;);</span>
       }
-<span class="nc" id="L435">    } catch (final SQLException e) {</span>
-<span class="nc" id="L436">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L543">    } catch (final SQLException e) {</span>
+<span class="nc" id="L544">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L438">      closeResultSet(res);</span>
-<span class="fc" id="L439">      closeStatement(stm);</span>
+<span class="fc" id="L546">      closeResultSet(res);</span>
+<span class="fc" id="L547">      closeStatement(stm);</span>
     }
   }
 
   @Override
   public void insert(final E e1) throws DAOConnectionException {
-<span class="fc bfc" id="L445" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
+<span class="fc bfc" id="L553" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
       // Need to check since all does not accept getId
-<span class="fc" id="L447">      addToCache(getId(e1), e1);</span>
+<span class="fc" id="L555">      addToCache(getId(e1), e1);</span>
     }
     final Object[] params;
     try {
-<span class="fc" id="L451">      params = getInsertValues(e1);</span>
-<span class="nc" id="L452">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L453">      throw new DAOConnectionException(e);</span>
-<span class="fc" id="L454">    }</span>
+<span class="fc" id="L559">      params = getInsertValues(e1);</span>
+<span class="nc" id="L560">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L561">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L562">    }</span>
 
-<span class="fc" id="L456">    PreparedStatement stm = null;</span>
+<span class="fc" id="L564">    PreparedStatement stm = null;</span>
     try {
-<span class="fc" id="L458">      stm = connection.prepareStatement(getInsertRequest());</span>
-<span class="fc" id="L459">      setParameters(stm, params);</span>
-<span class="fc" id="L460">      executeUpdate(stm);</span>
-<span class="nc" id="L461">    } catch (final SQLException e) {</span>
-<span class="nc" id="L462">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L566">      stm = connection.prepareStatement(getInsertRequest());</span>
+<span class="fc" id="L567">      setParameters(stm, params);</span>
+<span class="fc" id="L568">      executeUpdate(stm);</span>
+<span class="nc" id="L569">    } catch (final SQLException e) {</span>
+<span class="nc" id="L570">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L464">      closeStatement(stm);</span>
+<span class="fc" id="L572">      closeStatement(stm);</span>
     }
-<span class="fc" id="L466">  }</span>
+<span class="fc" id="L574">  }</span>
 
   @Override
   public final void update(final E e1)
       throws DAOConnectionException, DAONoDataException {
-<span class="fc bfc" id="L471" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
+<span class="fc bfc" id="L579" title="All 2 branches covered.">    if (isCachedEnable()) {</span>
       // Need to check since all does not accept getId
-<span class="fc" id="L473">      addToCache(getId(e1), e1);</span>
+<span class="fc" id="L581">      addToCache(getId(e1), e1);</span>
     }
     final Object[] params;
     try {
-<span class="fc" id="L477">      params = getUpdateValues(e1);</span>
-<span class="nc" id="L478">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L479">      throw new DAOConnectionException(e);</span>
-<span class="fc" id="L480">    }</span>
+<span class="fc" id="L585">      params = getUpdateValues(e1);</span>
+<span class="nc" id="L586">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L587">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L588">    }</span>
 
-<span class="fc" id="L482">    PreparedStatement stm = null;</span>
+<span class="fc" id="L590">    PreparedStatement stm = null;</span>
     try {
-<span class="fc" id="L484">      stm = connection.prepareStatement(getUpdateRequest());</span>
-<span class="fc" id="L485">      setParameters(stm, params);</span>
+<span class="fc" id="L592">      stm = connection.prepareStatement(getUpdateRequest());</span>
+<span class="fc" id="L593">      setParameters(stm, params);</span>
       try {
-<span class="fc" id="L487">        executeUpdate(stm);</span>
-<span class="nc" id="L488">      } catch (final SQLException e2) {</span>
-<span class="nc" id="L489">        throw new DAONoDataException(e2);</span>
-<span class="fc" id="L490">      }</span>
-<span class="nc" id="L491">    } catch (final SQLException e) {</span>
-<span class="nc" id="L492">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L595">        executeUpdate(stm);</span>
+<span class="nc" id="L596">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L597">        throw new DAONoDataException(e2);</span>
+<span class="fc" id="L598">      }</span>
+<span class="nc" id="L599">    } catch (final SQLException e) {</span>
+<span class="nc" id="L600">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L494">      closeStatement(stm);</span>
+<span class="fc" id="L602">      closeStatement(stm);</span>
     }
-<span class="fc" id="L496">  }</span>
+<span class="fc" id="L604">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

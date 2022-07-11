@@ -21,10 +21,7 @@ package org.waarp.gateway.ftp.database.model;
 
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
-import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelH2;
-import org.waarp.gateway.kernel.database.model.DbModelFactoryGateway;
 import org.waarp.gateway.kernel.database.model.DbModelH2Kernel;
 
 /**
@@ -43,39 +40,37 @@ public class DbModelH2Ftp extends DbModelH2 {
   public DbModelH2Ftp(final String dbserver, final String dbuser,
                       final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L46">    super(dbserver, dbuser, dbpasswd);</span>
-<span class="fc" id="L47">  }</span>
+<span class="fc" id="L43">    super(dbserver, dbuser, dbpasswd);</span>
+<span class="fc" id="L44">  }</span>
 
   @Override
   public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
-<span class="fc" id="L52">    DbModelH2Kernel.createTableMonitoring(session);</span>
-<span class="fc" id="L53">  }</span>
+<span class="fc" id="L49">    DbModelH2Kernel.createTableMonitoring(session);</span>
+<span class="fc" id="L50">  }</span>
 
   @Override
-  public final void resetSequence(final DbSession session, final long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L58">    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);</span>
-<span class="nc" id="L59">  }</span>
+  public final void resetSequence(final DbSession session,
+                                  final long newvalue) {
+    // Nothing
+<span class="nc" id="L56">  }</span>
 
   @Override
-  public final long nextSequence(final DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-<span class="fc" id="L65">    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);</span>
+  public final long nextSequence(final DbSession dbSession) {
+<span class="fc" id="L60">    return DbModelFactoryFtp.nextSequenceMonitoring();</span>
   }
 
   @Override
   public final boolean upgradeDb(final DbSession session,
                                  final String version) {
-<span class="nc" id="L71">    return true;</span>
+<span class="nc" id="L66">    return true;</span>
   }
 
   @Override
   public final boolean needUpgradeDb(final DbSession session,
                                      final String version,
                                      final boolean tryFix) {
-<span class="nc" id="L78">    return false;</span>
+<span class="nc" id="L73">    return false;</span>
   }
 
 }

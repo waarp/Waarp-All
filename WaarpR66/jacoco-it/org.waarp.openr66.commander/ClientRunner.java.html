@@ -470,14 +470,14 @@ public class ClientRunner extends Thread {
     } else {
       try {
 <span class="fc" id="L472">        taskRunner.select();</span>
-<span class="fc" id="L473">      } catch (final WaarpDatabaseException e) {</span>
-<span class="fc" id="L474">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;);</span>
-<span class="fc" id="L475">        taskRunner.setFrom(transfer.getRunner());</span>
+<span class="nc" id="L473">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L474">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;);</span>
+<span class="nc" id="L475">        taskRunner.setFrom(transfer.getRunner());</span>
 <span class="fc" id="L476">      }</span>
 <span class="fc" id="L477">      taskRunner.setSender(isSender);</span>
       // Case when we were interrupted
-<span class="pc bpc" id="L479" title="1 of 2 branches missed.">      if (transfer.getResult() == null) {</span>
-<span class="nc bnc" id="L480" title="All 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
+<span class="fc bfc" id="L479" title="All 2 branches covered.">      if (transfer.getResult() == null) {</span>
+<span class="pc bpc" id="L480" title="1 of 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
           case DONE:
 <span class="nc" id="L482">            final R66Result ok =</span>
                 new R66Result(null, true, ErrorCode.CompleteOk, taskRunner);
@@ -488,13 +488,13 @@ public class ClientRunner extends Thread {
           case INERROR:
           case INTERRUPTED:
           default:
-<span class="nc" id="L491">            final R66Result error =</span>
+<span class="fc" id="L491">            final R66Result error =</span>
                 new R66Result(null, true, ErrorCode.Internal, taskRunner);
-<span class="nc" id="L493">            transfer.setResult(error);</span>
-<span class="nc" id="L494">            transfer.cancel();</span>
-<span class="nc" id="L495">            changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);</span>
+<span class="fc" id="L493">            transfer.setResult(error);</span>
+<span class="fc" id="L494">            transfer.cancel();</span>
+<span class="fc" id="L495">            changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);</span>
         }
-<span class="nc" id="L497">        return transfer;</span>
+<span class="fc" id="L497">        return transfer;</span>
       }
 <span class="pc bpc" id="L499" title="1 of 2 branches missed.">      if (transfer.getResult().getCode() == ErrorCode.QueryAlreadyFinished) {</span>
         // check if post task to execute

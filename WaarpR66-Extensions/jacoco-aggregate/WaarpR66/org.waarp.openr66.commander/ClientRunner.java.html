@@ -185,17 +185,17 @@ public class ClientRunner extends Thread {
 <span class="fc" id="L185">          session.setRunner(reloaded);</span>
 <span class="fc" id="L186">          session.setBlockSize(reloaded.getBlocksize());</span>
 <span class="fc" id="L187">          final File file = new File(reloaded.getFullFilePath());</span>
-<span class="fc bfc" id="L188" title="All 2 branches covered.">          if (!file.isFile()) {</span>
-<span class="fc" id="L189">            logger.warn(&quot;File not found: {}&quot;, file.getAbsolutePath());</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">          if (!file.isFile()) {</span>
+<span class="nc" id="L189">            logger.warn(&quot;File not found: {}&quot;, file.getAbsolutePath());</span>
             // File does no more exist =&gt; error
-<span class="fc" id="L191">            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
-<span class="fc" id="L192">            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
-<span class="fc" id="L193">            logger.error(&quot;Runner Error: {} {}&quot;,</span>
-<span class="fc" id="L194">                         ErrorCode.FileNotFound.getMesg(),</span>
-<span class="fc" id="L195">                         taskRunner.toShortString());</span>
-<span class="fc" id="L196">            reloaded.setErrorTask();</span>
-<span class="fc" id="L197">            reloaded.update();</span>
-<span class="fc" id="L198">            return;</span>
+<span class="nc" id="L191">            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
+<span class="nc" id="L192">            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
+<span class="nc" id="L193">            logger.error(&quot;Runner Error: {} {}&quot;,</span>
+<span class="nc" id="L194">                         ErrorCode.FileNotFound.getMesg(),</span>
+<span class="nc" id="L195">                         taskRunner.toShortString());</span>
+<span class="nc" id="L196">            reloaded.setErrorTask();</span>
+<span class="nc" id="L197">            reloaded.update();</span>
+<span class="nc" id="L198">            return;</span>
           }
 <span class="fc" id="L200">          status = true;</span>
 <span class="nc" id="L201">        } catch (final CommandAbstractException e) {</span>
@@ -470,14 +470,14 @@ public class ClientRunner extends Thread {
     } else {
       try {
 <span class="fc" id="L472">        taskRunner.select();</span>
-<span class="fc" id="L473">      } catch (final WaarpDatabaseException e) {</span>
-<span class="fc" id="L474">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;);</span>
-<span class="fc" id="L475">        taskRunner.setFrom(transfer.getRunner());</span>
+<span class="nc" id="L473">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L474">        logger.debug(&quot;Not a problem but cannot find at the end the task&quot;);</span>
+<span class="nc" id="L475">        taskRunner.setFrom(transfer.getRunner());</span>
 <span class="fc" id="L476">      }</span>
 <span class="fc" id="L477">      taskRunner.setSender(isSender);</span>
       // Case when we were interrupted
-<span class="pc bpc" id="L479" title="1 of 2 branches missed.">      if (transfer.getResult() == null) {</span>
-<span class="nc bnc" id="L480" title="All 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
+<span class="fc bfc" id="L479" title="All 2 branches covered.">      if (transfer.getResult() == null) {</span>
+<span class="pc bpc" id="L480" title="1 of 2 branches missed.">        switch (taskRunner.getUpdatedInfo()) {</span>
           case DONE:
 <span class="nc" id="L482">            final R66Result ok =</span>
                 new R66Result(null, true, ErrorCode.CompleteOk, taskRunner);
@@ -488,13 +488,13 @@ public class ClientRunner extends Thread {
           case INERROR:
           case INTERRUPTED:
           default:
-<span class="nc" id="L491">            final R66Result error =</span>
+<span class="fc" id="L491">            final R66Result error =</span>
                 new R66Result(null, true, ErrorCode.Internal, taskRunner);
-<span class="nc" id="L493">            transfer.setResult(error);</span>
-<span class="nc" id="L494">            transfer.cancel();</span>
-<span class="nc" id="L495">            changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);</span>
+<span class="fc" id="L493">            transfer.setResult(error);</span>
+<span class="fc" id="L494">            transfer.cancel();</span>
+<span class="fc" id="L495">            changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.Internal, false);</span>
         }
-<span class="nc" id="L497">        return transfer;</span>
+<span class="fc" id="L497">        return transfer;</span>
       }
 <span class="pc bpc" id="L499" title="1 of 2 branches missed.">      if (transfer.getResult().getCode() == ErrorCode.QueryAlreadyFinished) {</span>
         // check if post task to execute
@@ -607,16 +607,16 @@ public class ClientRunner extends Thread {
         // now wait
         try {
 <span class="fc" id="L609">          Thread.sleep(Configuration.configuration.getDelayRetry());</span>
-<span class="fc" id="L610">        } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="fc" id="L611">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="fc" id="L612">          logger.info(</span>
+<span class="nc" id="L610">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L611">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L612">          logger.info(</span>
               &quot;Will not retry since an interruption occurs while connection to {}&quot;,
               host);
-<span class="fc" id="L615">          retry = &quot; and retries gets an interruption so stop here&quot;;</span>
-<span class="fc" id="L616">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
+<span class="nc" id="L615">          retry = &quot; and retries gets an interruption so stop here&quot;;</span>
+<span class="nc" id="L616">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                             true);
-<span class="fc" id="L618">          taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="fc" id="L619">          throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L618">          taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L619">          throw new OpenR66ProtocolNoConnectionException(</span>
               CANNOT_CONNECT_TO_SERVER + host + retry);
 <span class="fc" id="L621">        }</span>
 <span class="fc" id="L622">        changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,</span>

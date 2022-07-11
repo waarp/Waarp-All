@@ -502,22 +502,22 @@ public abstract class HttpRestHandler
       } else {
 <span class="nc" id="L503">        forceClosing(ctx);</span>
       }
-<span class="nc" id="L505">    } catch (final HttpInvalidAuthenticationException e1) {</span>
-<span class="nc bnc" id="L506" title="All 2 branches missed.">      if (handler != null) {</span>
+<span class="fc" id="L505">    } catch (final HttpInvalidAuthenticationException e1) {</span>
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">      if (handler != null) {</span>
 <span class="nc" id="L507">        status =</span>
 <span class="nc" id="L508">            handler.handleException(this, arguments, response, jsonObject, e1);</span>
       }
-<span class="nc bnc" id="L510" title="All 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
+<span class="pc bpc" id="L510" title="1 of 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
 <span class="nc" id="L511">        status = HttpResponseStatus.UNAUTHORIZED;</span>
       }
-<span class="nc" id="L513">      logger.warn(&quot;Error: {}&quot;, e1.getMessage());</span>
-<span class="nc bnc" id="L514" title="All 2 branches missed.">      if (response.getDetail().isEmpty()) {</span>
-<span class="nc" id="L515">        response.setDetail(e1.getMessage());</span>
+<span class="fc" id="L513">      logger.warn(&quot;Error: {}&quot;, e1.getMessage());</span>
+<span class="pc bpc" id="L514" title="1 of 2 branches missed.">      if (response.getDetail().isEmpty()) {</span>
+<span class="fc" id="L515">        response.setDetail(e1.getMessage());</span>
       }
-<span class="nc bnc" id="L517" title="All 2 branches missed.">      if (handler != null) {</span>
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">      if (handler != null) {</span>
 <span class="nc" id="L518">        finalizeSend(ctx);</span>
       } else {
-<span class="nc" id="L520">        forceClosing(ctx);</span>
+<span class="fc" id="L520">        forceClosing(ctx);</span>
       }
 <span class="fc" id="L522">    } catch (final HttpNotFoundRequestException e1) {</span>
 <span class="pc bpc" id="L523" title="1 of 2 branches missed.">      if (handler != null) {</span>
@@ -621,23 +621,23 @@ public abstract class HttpRestHandler
    * @param ctx
    */
   protected final void forceClosing(final ChannelHandlerContext ctx) {
-<span class="nc bnc" id="L624" title="All 2 branches missed.">    if (status == HttpResponseStatus.OK) {</span>
+<span class="pc bpc" id="L624" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.OK) {</span>
 <span class="nc" id="L625">      status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
     }
-<span class="nc bnc" id="L627" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
-<span class="nc" id="L628">      setWillClose(true);</span>
-<span class="nc" id="L629">      final String answer =</span>
-<span class="nc" id="L630">          &quot;&lt;html&gt;&lt;body&gt;Error &quot; + status.reasonPhrase() + &quot;&lt;/body&gt;&lt;/html&gt;&quot;;</span>
-<span class="nc" id="L631">      final FullHttpResponse httpResponse = getResponse(</span>
-<span class="nc" id="L632">          Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8)));</span>
-<span class="nc" id="L633">      httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
-<span class="nc" id="L634">      httpResponse.headers().set(HttpHeaderNames.REFERER, request.uri());</span>
-<span class="nc" id="L635">      final ChannelFuture future = ctx.writeAndFlush(httpResponse);</span>
-<span class="nc" id="L636">      logger.debug(&quot;Will close&quot;);</span>
-<span class="nc" id="L637">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="pc bpc" id="L627" title="1 of 2 branches missed.">    if (ctx.channel().isActive()) {</span>
+<span class="fc" id="L628">      setWillClose(true);</span>
+<span class="fc" id="L629">      final String answer =</span>
+<span class="fc" id="L630">          &quot;&lt;html&gt;&lt;body&gt;Error &quot; + status.reasonPhrase() + &quot;&lt;/body&gt;&lt;/html&gt;&quot;;</span>
+<span class="fc" id="L631">      final FullHttpResponse httpResponse = getResponse(</span>
+<span class="fc" id="L632">          Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8)));</span>
+<span class="fc" id="L633">      httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+<span class="fc" id="L634">      httpResponse.headers().set(HttpHeaderNames.REFERER, request.uri());</span>
+<span class="fc" id="L635">      final ChannelFuture future = ctx.writeAndFlush(httpResponse);</span>
+<span class="fc" id="L636">      logger.debug(&quot;Will close&quot;);</span>
+<span class="fc" id="L637">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
     }
-<span class="nc" id="L639">    clean();</span>
-<span class="nc" id="L640">  }</span>
+<span class="fc" id="L639">    clean();</span>
+<span class="fc" id="L640">  }</span>
 
   /**
    * @param content
@@ -663,7 +663,7 @@ public abstract class HttpRestHandler
 <span class="nc" id="L663">      return httpResponse;</span>
     }
 <span class="fc" id="L665">    boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
-<span class="pc bpc" id="L666" title="1 of 4 branches missed.">    setWillClose(isWillClose() || status != HttpResponseStatus.OK ||</span>
+<span class="fc bfc" id="L666" title="All 4 branches covered.">    setWillClose(isWillClose() || status != HttpResponseStatus.OK ||</span>
 <span class="pc bpc" id="L667" title="1 of 2 branches missed.">                 HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(</span>
 <span class="fc" id="L668">                     request.headers().get(HttpHeaderNames.CONNECTION)) ||</span>
 <span class="pc bpc" id="L669" title="3 of 4 branches missed.">                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &amp;&amp;</span>

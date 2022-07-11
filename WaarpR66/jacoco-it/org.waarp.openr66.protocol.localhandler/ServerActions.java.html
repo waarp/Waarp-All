@@ -2350,42 +2350,42 @@ public class ServerActions extends ConnectionActions {
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNoCorrectAuthenticationException {
-<span class="fc" id="L2353">    final String argRule = packet.getSheader();</span>
-<span class="pc bpc" id="L2354" title="1 of 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="nc" id="L2353">    final String argRule = packet.getSheader();</span>
+<span class="nc bnc" id="L2354" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
 <span class="nc" id="L2355">      session.newState(BUSINESSD);</span>
     }
-<span class="fc" id="L2357">    final R66Future future =</span>
-<span class="fc" id="L2358">        businessRequest(packet.isToValidate(), argRule, null, null,</span>
-<span class="fc" id="L2359">                        packet.getDelay());</span>
-<span class="pc bpc" id="L2360" title="2 of 4 branches missed.">    if (future != null &amp;&amp; !future.isSuccess()) {</span>
+<span class="nc" id="L2357">    final R66Future future =</span>
+<span class="nc" id="L2358">        businessRequest(packet.isToValidate(), argRule, null, null,</span>
+<span class="nc" id="L2359">                        packet.getDelay());</span>
+<span class="nc bnc" id="L2360" title="All 4 branches missed.">    if (future != null &amp;&amp; !future.isSuccess()) {</span>
 <span class="nc" id="L2361">      R66Result result = future.getResult();</span>
 <span class="nc bnc" id="L2362" title="All 2 branches missed.">      if (result == null) {</span>
 <span class="nc" id="L2363">        result = new R66Result(session, false, ErrorCode.ExternalOp,</span>
 <span class="nc" id="L2364">                               session.getRunner());</span>
       }
 <span class="nc" id="L2366">      wrongResult(packet, argRule, result);</span>
-<span class="pc bpc" id="L2367" title="1 of 2 branches missed.">    } else if (future == null) {</span>
+<span class="nc bnc" id="L2367" title="All 2 branches missed.">    } else if (future == null) {</span>
 <span class="nc" id="L2368">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.ExternalOp,
 <span class="nc" id="L2370">                        session.getRunner());</span>
 <span class="nc" id="L2371">      wrongResult(packet, argRule, result);</span>
 <span class="nc" id="L2372">    } else {</span>
-<span class="fc" id="L2373">      logger.debug(&quot;BusinessRequest part 2&quot;);</span>
-<span class="fc" id="L2374">      final R66Result result = future.getResult();</span>
-<span class="fc" id="L2375">      final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L2376">          session.getLocalChannelReference();</span>
-<span class="pc bpc" id="L2377" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="fc" id="L2378">        localChannelReference.validateRequest(result);</span>
+<span class="nc" id="L2373">      logger.debug(&quot;BusinessRequest part 2&quot;);</span>
+<span class="nc" id="L2374">      final R66Result result = future.getResult();</span>
+<span class="nc" id="L2375">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L2376">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L2377" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L2378">        localChannelReference.validateRequest(result);</span>
         try {
-<span class="fc" id="L2380">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+<span class="nc" id="L2380">          ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
                                                 false);
 <span class="nc" id="L2382">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
           // ignore
-<span class="fc" id="L2384">        }</span>
-<span class="fc" id="L2385">        localChannelReference.close();</span>
+<span class="nc" id="L2384">        }</span>
+<span class="nc" id="L2385">        localChannelReference.close();</span>
       }
     }
-<span class="fc" id="L2388">  }</span>
+<span class="nc" id="L2388">  }</span>
 
   private void wrongResult(final BusinessRequestPacket packet,
                            final String argRule, final R66Result result)
@@ -2432,11 +2432,11 @@ public class ServerActions extends ConnectionActions {
                                          final int delay)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolNoCorrectAuthenticationException {
-<span class="pc bpc" id="L2435" title="1 of 2 branches missed.">    if (!session.isAuthenticated()) {</span>
+<span class="nc bnc" id="L2435" title="All 2 branches missed.">    if (!session.isAuthenticated()) {</span>
 <span class="nc" id="L2436">      throw new OpenR66ProtocolNotAuthenticatedException(</span>
           &quot;Not authenticated while BusinessRequest received&quot;);
     }
-<span class="pc bpc" id="L2439" title="1 of 2 branches missed.">    if (isToApplied &amp;&amp; !Configuration.configuration.getBusinessWhiteSet()</span>
+<span class="nc bnc" id="L2439" title="All 2 branches missed.">    if (isToApplied &amp;&amp; !Configuration.configuration.getBusinessWhiteSet()</span>
 <span class="nc bnc" id="L2440" title="All 2 branches missed.">                                                   .contains(session.getAuth()</span>
 <span class="nc" id="L2441">                                                                    .getUser())) {</span>
 <span class="nc" id="L2442">      logger.warn(&quot;Not allow to execute a BusinessRequest: &quot; +</span>
@@ -2444,22 +2444,22 @@ public class ServerActions extends ConnectionActions {
 <span class="nc" id="L2444">      throw new OpenR66ProtocolNoCorrectAuthenticationException(</span>
           &quot;Not allow to execute a BusinessRequest&quot;);
     }
-<span class="fc" id="L2447">    session.setStatus(200);</span>
-<span class="fc" id="L2448">    String argRule = className;</span>
-<span class="pc bpc" id="L2449" title="1 of 2 branches missed.">    if (arguments != null) {</span>
+<span class="nc" id="L2447">    session.setStatus(200);</span>
+<span class="nc" id="L2448">    String argRule = className;</span>
+<span class="nc bnc" id="L2449" title="All 2 branches missed.">    if (arguments != null) {</span>
 <span class="nc" id="L2450">      argRule += ' ' + arguments;</span>
     }
-<span class="fc" id="L2452">    final ExecJavaTask task =</span>
+<span class="nc" id="L2452">    final ExecJavaTask task =</span>
         new ExecJavaTask(argRule + ' ' + isToApplied, delay, extraArguments,
                          session);
-<span class="fc" id="L2455">    task.setBusinessRequest(true);</span>
-<span class="fc" id="L2456">    task.run();</span>
-<span class="fc" id="L2457">    session.setStatus(201);</span>
-<span class="pc bpc" id="L2458" title="1 of 2 branches missed.">    if (task.isSuccess()) {</span>
-<span class="fc" id="L2459">      session.setStatus(202);</span>
-<span class="fc" id="L2460">      logger.info(&quot;Task done: &quot; + className.split(&quot; &quot;)[0]);</span>
+<span class="nc" id="L2455">    task.setBusinessRequest(true);</span>
+<span class="nc" id="L2456">    task.run();</span>
+<span class="nc" id="L2457">    session.setStatus(201);</span>
+<span class="nc bnc" id="L2458" title="All 2 branches missed.">    if (task.isSuccess()) {</span>
+<span class="nc" id="L2459">      session.setStatus(202);</span>
+<span class="nc" id="L2460">      logger.info(&quot;Task done: &quot; + className.split(&quot; &quot;)[0]);</span>
     }
-<span class="fc" id="L2462">    return task.getFutureCompletion();</span>
+<span class="nc" id="L2462">    return task.getFutureCompletion();</span>
   }
 
   /**

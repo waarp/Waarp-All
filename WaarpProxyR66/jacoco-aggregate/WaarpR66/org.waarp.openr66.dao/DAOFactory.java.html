@@ -38,7 +38,7 @@ import javax.xml.stream.XMLInputFactory;
   private static DAOFactory instance;
 
   public static void initialize() {
-<span class="fc bfc" id="L41" title="All 2 branches covered.">    if (instance == null) {</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">    if (instance == null) {</span>
 <span class="fc" id="L42">      instance = new XMLDAOFactory();</span>
     }
 <span class="fc" id="L44">  }</span>
@@ -54,37 +54,46 @@ import javax.xml.stream.XMLInputFactory;
   }
 
   /**
+   * Test only
+   *
+   * @param daoFactory
+   */
+  public static void setInstanceTestOnly(DAOFactory daoFactory) {
+<span class="nc" id="L62">    instance = daoFactory;</span>
+<span class="nc" id="L63">  }</span>
+
+  /**
    * OWASP security
    *
    * @return the {@link DocumentBuilderFactory} ready
    */
   public static DocumentBuilderFactory getDocumentBuilderFactory() {
     final DocumentBuilderFactory factory = // NOSONAR
-<span class="fc" id="L63">        DocumentBuilderFactory.newInstance(); // NOSONAR</span>
+<span class="fc" id="L72">        DocumentBuilderFactory.newInstance(); // NOSONAR</span>
     // disable external entities
     try {
-<span class="pc" id="L66">      factory.setFeature(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,</span>
-<span class="fc" id="L67">                         Boolean.FALSE);</span>
-<span class="fc" id="L68">    } catch (final ParserConfigurationException ignored) {</span>
+<span class="pc" id="L75">      factory.setFeature(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,</span>
+<span class="fc" id="L76">                         Boolean.FALSE);</span>
+<span class="fc" id="L77">    } catch (final ParserConfigurationException ignored) {</span>
       // nothing
-<span class="nc" id="L70">    } catch (final AbstractMethodError ignored) {</span>
+<span class="nc" id="L79">    } catch (final AbstractMethodError ignored) {</span>
       // nothing
-<span class="pc" id="L72">    }</span>
+<span class="pc" id="L81">    }</span>
     try {
-<span class="nc" id="L74">      factory.setFeature(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);</span>
-<span class="fc" id="L75">    } catch (final ParserConfigurationException ignored) {</span>
+<span class="nc" id="L83">      factory.setFeature(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);</span>
+<span class="fc" id="L84">    } catch (final ParserConfigurationException ignored) {</span>
       // nothing
-<span class="nc" id="L77">    } catch (final AbstractMethodError ignored) {</span>
+<span class="nc" id="L86">    } catch (final AbstractMethodError ignored) {</span>
       // nothing
-<span class="pc" id="L79">    }</span>
+<span class="pc" id="L88">    }</span>
     try {
-<span class="fc" id="L81">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);</span>
-<span class="nc" id="L82">    } catch (final ParserConfigurationException ignored) {</span>
+<span class="fc" id="L90">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);</span>
+<span class="nc" id="L91">    } catch (final ParserConfigurationException ignored) {</span>
       // nothing
-<span class="nc" id="L84">    } catch (final AbstractMethodError ignored) {</span>
+<span class="nc" id="L93">    } catch (final AbstractMethodError ignored) {</span>
       // nothing
-<span class="pc" id="L86">    }</span>
-<span class="fc" id="L87">    return factory;</span>
+<span class="pc" id="L95">    }</span>
+<span class="fc" id="L96">    return factory;</span>
   }
 
   /**
@@ -93,16 +102,16 @@ import javax.xml.stream.XMLInputFactory;
    * @param dao
    */
   public static void closeDAO(final AbstractDAO&lt;?&gt; dao) {
-<span class="fc bfc" id="L96" title="All 2 branches covered.">    if (dao != null) {</span>
-<span class="fc" id="L97">      dao.close();</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">    if (dao != null) {</span>
+<span class="fc" id="L106">      dao.close();</span>
     }
-<span class="fc" id="L99">  }</span>
+<span class="fc" id="L108">  }</span>
 
   /**
    * @return the current configuration of the database maximum connections
    */
   public int getMaxConnections() {
-<span class="nc" id="L105">    return 1000;</span>
+<span class="nc" id="L114">    return 1000;</span>
   }
 
   /**
@@ -173,5 +182,15 @@ import javax.xml.stream.XMLInputFactory;
    * @throws DAOConnectionException if cannot create the DAO
    */
   public abstract TransferDAO getTransferDAO() throws DAOConnectionException;
+
+  /**
+   * @param request
+   * @param limit
+   * @param offset
+   *
+   * @return the request using limit offset
+   */
+  public abstract String getLimitRequest(final String request, final int limit,
+                                         final int offset);
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

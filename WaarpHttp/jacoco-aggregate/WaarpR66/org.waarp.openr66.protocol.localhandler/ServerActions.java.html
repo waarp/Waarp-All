@@ -2141,32 +2141,32 @@ public class ServerActions extends ConnectionActions {
 <span class="fc bfc" id="L2141" title="All 2 branches covered.">    final ErrorCode code =</span>
         type == LocalPacketFactory.STOPPACKET? ErrorCode.StoppedTransfer :
             ErrorCode.CanceledTransfer;
-<span class="fc bfc" id="L2144" title="All 2 branches covered.">    if (lcr != null) {</span>
-<span class="fc" id="L2145">      int rank = 0;</span>
-<span class="pc bpc" id="L2146" title="3 of 4 branches missed.">      if (code == ErrorCode.StoppedTransfer &amp;&amp; lcr.getSession() != null) {</span>
+<span class="pc bpc" id="L2144" title="1 of 2 branches missed.">    if (lcr != null) {</span>
+<span class="nc" id="L2145">      int rank = 0;</span>
+<span class="nc bnc" id="L2146" title="All 4 branches missed.">      if (code == ErrorCode.StoppedTransfer &amp;&amp; lcr.getSession() != null) {</span>
 <span class="nc" id="L2147">        final DbTaskRunner taskRunner = lcr.getSession().getRunner();</span>
 <span class="nc bnc" id="L2148" title="All 2 branches missed.">        if (taskRunner != null) {</span>
 <span class="nc" id="L2149">          rank = taskRunner.getRank();</span>
         }
       }
-<span class="fc" id="L2152">      session.newState(ERROR);</span>
-<span class="fc" id="L2153">      final ErrorPacket error =</span>
-<span class="fc" id="L2154">          new ErrorPacket(code.name() + ' ' + rank, code.getCode(),</span>
+<span class="nc" id="L2152">      session.newState(ERROR);</span>
+<span class="nc" id="L2153">      final ErrorPacket error =</span>
+<span class="nc" id="L2154">          new ErrorPacket(code.name() + ' ' + rank, code.getCode(),</span>
                           ErrorPacket.FORWARDCLOSECODE);
       try {
         // inform local instead of remote
-<span class="fc" id="L2158">        LocalServerHandler.channelRead0(lcr, error);</span>
+<span class="nc" id="L2158">        LocalServerHandler.channelRead0(lcr, error);</span>
 <span class="nc" id="L2159">      } catch (final Exception e) {</span>
 <span class="nc" id="L2160">        logger.warn(&quot;Write local packet error&quot; + &quot; : {}&quot;, e.getMessage());</span>
-<span class="fc" id="L2161">      }</span>
-<span class="fc" id="L2162">      resulttest = new R66Result(session, true, ErrorCode.CompleteOk,</span>
-<span class="fc" id="L2163">                                 session.getRunner());</span>
-<span class="fc" id="L2164">    } else {</span>
+<span class="nc" id="L2161">      }</span>
+<span class="nc" id="L2162">      resulttest = new R66Result(session, true, ErrorCode.CompleteOk,</span>
+<span class="nc" id="L2163">                                 session.getRunner());</span>
+<span class="nc" id="L2164">    } else {</span>
       // Transfer is not running
       // but maybe need action on database
-<span class="fc bfc" id="L2167" title="All 2 branches covered.">      if (stopOrCancelRunner(id, reqd, reqr, code)) {</span>
-<span class="fc" id="L2168">        resulttest = new R66Result(session, true, ErrorCode.CompleteOk,</span>
-<span class="fc" id="L2169">                                   session.getRunner());</span>
+<span class="pc bpc" id="L2167" title="1 of 2 branches missed.">      if (stopOrCancelRunner(id, reqd, reqr, code)) {</span>
+<span class="nc" id="L2168">        resulttest = new R66Result(session, true, ErrorCode.CompleteOk,</span>
+<span class="nc" id="L2169">                                   session.getRunner());</span>
       } else {
 <span class="fc" id="L2171">        resulttest = new R66Result(session, true, ErrorCode.TransferOk,</span>
 <span class="fc" id="L2172">                                   session.getRunner());</span>

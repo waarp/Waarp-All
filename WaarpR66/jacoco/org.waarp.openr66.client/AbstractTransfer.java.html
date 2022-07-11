@@ -145,11 +145,11 @@ public abstract class AbstractTransfer implements Runnable {
                                         final LocalChannelReference localChannelReference,
                                         final AbstractLocalPacket packet,
                                         final R66Future future) {
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L149">      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);</span>
     }
     try {
-<span class="fc" id="L152">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+<span class="nc" id="L152">      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
                                             true);
 <span class="nc" id="L154">    } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L155">      RequestTransfer.logger.error(</span>
@@ -160,11 +160,11 @@ public abstract class AbstractTransfer implements Runnable {
           new R66Result(e, null, true, ErrorCode.TransferError, null));
 <span class="nc" id="L161">      future.setFailure(e);</span>
 <span class="nc" id="L162">      return false;</span>
-<span class="fc" id="L163">    }</span>
-<span class="fc" id="L164">    future.awaitOrInterruptible();</span>
+<span class="nc" id="L163">    }</span>
+<span class="nc" id="L164">    future.awaitOrInterruptible();</span>
 
-<span class="fc" id="L166">    localChannelReference.close();</span>
-<span class="fc" id="L167">    return true;</span>
+<span class="nc" id="L166">    localChannelReference.close();</span>
+<span class="nc" id="L167">    return true;</span>
   }
 
   /**
@@ -510,13 +510,13 @@ public abstract class AbstractTransfer implements Runnable {
   public static LocalChannelReference tryConnect(final DbHostAuth host,
                                                  final R66Future future,
                                                  final NetworkTransaction networkTransaction) {
-<span class="pc bpc" id="L513" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L514">      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);</span>
     }
-<span class="fc" id="L516">    logger.info(&quot;Try RequestTransfer to {}&quot;, host);</span>
+<span class="nc" id="L516">    logger.info(&quot;Try RequestTransfer to {}&quot;, host);</span>
     final SocketAddress socketAddress;
     try {
-<span class="fc" id="L519">      socketAddress = host.getSocketAddress();</span>
+<span class="nc" id="L519">      socketAddress = host.getSocketAddress();</span>
 <span class="nc" id="L520">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L521">      logger.debug(&quot;Cannot connect to {}&quot;, host);</span>
 <span class="nc" id="L522">      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(</span>
@@ -524,13 +524,13 @@ public abstract class AbstractTransfer implements Runnable {
                                      ErrorCode.ConnectionImpossible, null));
 <span class="nc" id="L525">      future.setFailure(future.getResult().getException());</span>
 <span class="nc" id="L526">      return null;</span>
-<span class="fc" id="L527">    }</span>
-<span class="fc" id="L528">    final boolean isSSL = host.isSsl();</span>
+<span class="nc" id="L527">    }</span>
+<span class="nc" id="L528">    final boolean isSSL = host.isSsl();</span>
 
-<span class="fc" id="L530">    final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L531">        networkTransaction.createConnectionWithRetry(socketAddress, isSSL,</span>
+<span class="nc" id="L530">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L531">        networkTransaction.createConnectionWithRetry(socketAddress, isSSL,</span>
                                                      future);
-<span class="pc bpc" id="L533" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
 <span class="nc" id="L534">      logger.debug(&quot;Cannot connect to {}&quot;, host);</span>
 <span class="nc" id="L535">      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(</span>
 <span class="nc" id="L536">          &quot;Cannot connect to server &quot; + host.getHostid()), null, true,</span>
@@ -538,7 +538,7 @@ public abstract class AbstractTransfer implements Runnable {
 <span class="nc" id="L538">      future.setFailure(future.getResult().getException());</span>
 <span class="nc" id="L539">      return null;</span>
     }
-<span class="fc" id="L541">    return localChannelReference;</span>
+<span class="nc" id="L541">    return localChannelReference;</span>
   }
 
 

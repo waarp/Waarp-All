@@ -316,34 +316,34 @@ public class RequestTransfer implements Runnable {
 <span class="nc" id="L316">          return;</span>
         }
 <span class="fc" id="L318">      }</span>
-<span class="pc bpc" id="L319" title="2 of 6 branches missed.">      if (cancel || stop || restart) {</span>
-<span class="pc bpc" id="L320" title="1 of 2 branches missed.">        if (cancel) {</span>
+<span class="pc bpc" id="L319" title="3 of 6 branches missed.">      if (cancel || stop || restart) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (cancel) {</span>
           // Cancel the task and delete any file if in retrieve
-<span class="fc bfc" id="L322" title="All 2 branches covered.">          if (runner.isAllDone()) {</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">          if (runner.isAllDone()) {</span>
             // nothing to do since already finished
-<span class="fc" id="L324">            setDone(runner);</span>
-<span class="fc" id="L325">            logger.info(&quot;Transfer already finished: {}&quot;, runner);</span>
-<span class="fc" id="L326">            future.setResult(</span>
+<span class="nc" id="L324">            setDone(runner);</span>
+<span class="nc" id="L325">            logger.info(&quot;Transfer already finished: {}&quot;, runner);</span>
+<span class="nc" id="L326">            future.setResult(</span>
                 new R66Result(null, true, ErrorCode.TransferOk, runner));
-<span class="fc" id="L328">            future.getResult().setRunner(runner);</span>
-<span class="fc" id="L329">            future.setSuccess();</span>
+<span class="nc" id="L328">            future.getResult().setRunner(runner);</span>
+<span class="nc" id="L329">            future.setSuccess();</span>
           } else {
             // Send a request of cancel
-<span class="fc" id="L332">            final ErrorCode code =</span>
-<span class="fc" id="L333">                sendStopOrCancel(LocalPacketFactory.CANCELPACKET);</span>
-<span class="fc" id="L334">            future.setResult(new R66Result(null, true, code, runner));</span>
-<span class="fc" id="L335">            future.getResult().setRunner(runner);</span>
-<span class="pc bpc" id="L336" title="1 of 3 branches missed.">            switch (code) {</span>
+<span class="nc" id="L332">            final ErrorCode code =</span>
+<span class="nc" id="L333">                sendStopOrCancel(LocalPacketFactory.CANCELPACKET);</span>
+<span class="nc" id="L334">            future.setResult(new R66Result(null, true, code, runner));</span>
+<span class="nc" id="L335">            future.getResult().setRunner(runner);</span>
+<span class="nc bnc" id="L336" title="All 3 branches missed.">            switch (code) {</span>
               case CompleteOk:
-<span class="fc" id="L338">                logger.info(&quot;Transfer cancel requested and done: {}&quot;, runner);</span>
-<span class="fc" id="L339">                future.setSuccess();</span>
-<span class="fc" id="L340">                break;</span>
+<span class="nc" id="L338">                logger.info(&quot;Transfer cancel requested and done: {}&quot;, runner);</span>
+<span class="nc" id="L339">                future.setSuccess();</span>
+<span class="nc" id="L340">                break;</span>
               case TransferOk:
-<span class="fc" id="L342">                logger.info(</span>
+<span class="nc" id="L342">                logger.info(</span>
                     &quot;Transfer cancel requested but already finished: {}&quot;,
                     runner);
-<span class="fc" id="L345">                future.setSuccess();</span>
-<span class="fc" id="L346">                break;</span>
+<span class="nc" id="L345">                future.setSuccess();</span>
+<span class="nc" id="L346">                break;</span>
               default:
 <span class="nc" id="L348">                logger.info(&quot;Transfer cancel requested but internal error: {}&quot;,</span>
                             runner);
@@ -351,7 +351,7 @@ public class RequestTransfer implements Runnable {
                     &quot;Transfer cancel requested but internal error&quot;));
                 break;
             }
-<span class="fc" id="L354">          }</span>
+<span class="nc" id="L354">          }</span>
 <span class="nc bnc" id="L355" title="All 2 branches missed.">        } else if (stop) {</span>
           // Just stop the task
           // Send a request
@@ -454,11 +454,11 @@ public class RequestTransfer implements Runnable {
    * @param runner
    */
   private void setDone(final DbTaskRunner runner) {
-<span class="pc bpc" id="L457" title="1 of 2 branches missed.">    if (runner.getUpdatedInfo() != UpdatedInfo.DONE) {</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">    if (runner.getUpdatedInfo() != UpdatedInfo.DONE) {</span>
 <span class="nc" id="L458">      runner.changeUpdatedInfo(UpdatedInfo.DONE);</span>
 <span class="nc" id="L459">      runner.forceSaveStatus();</span>
     }
-<span class="fc" id="L461">  }</span>
+<span class="nc" id="L461">  }</span>
 
   private ErrorCode sendValid(final DbTaskRunner runner, final byte code) {
     DbHostAuth host;
@@ -584,8 +584,8 @@ public class RequestTransfer implements Runnable {
 
   private ErrorCode sendStopOrCancel(final byte code) {
     final DbHostAuth host;
-<span class="fc" id="L587">    host = R66Auth.getServerAuth(requester);</span>
-<span class="pc bpc" id="L588" title="1 of 2 branches missed.">    if (host == null) {</span>
+<span class="nc" id="L587">    host = R66Auth.getServerAuth(requester);</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">    if (host == null) {</span>
 <span class="nc" id="L589">      logger.error(</span>
 <span class="nc" id="L590">          Messages.getString(&quot;RequestTransfer.39&quot;) + requester); //$NON-NLS-1$</span>
 <span class="nc" id="L591">      final OpenR66Exception e =</span>
@@ -596,38 +596,38 @@ public class RequestTransfer implements Runnable {
 <span class="nc" id="L596">      return ErrorCode.Internal;</span>
     }
 
-<span class="fc" id="L599">    final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L600">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
-<span class="pc bpc" id="L601" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L599">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L600">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
+<span class="nc bnc" id="L601" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
 <span class="nc" id="L602">      return ErrorCode.ConnectionImpossible;</span>
     }
 
-<span class="fc" id="L605">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
-<span class="fc" id="L606">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
+<span class="nc" id="L605">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
+<span class="nc" id="L606">    logger.debug(&quot;UseJson: {}&quot;, useJson);</span>
     final AbstractLocalPacket packet;
-<span class="pc bpc" id="L608" title="1 of 2 branches missed.">    if (useJson) {</span>
-<span class="fc" id="L609">      final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();</span>
-<span class="fc" id="L610">      node.setComment(REQUEST_ON_TRANSFER);</span>
-<span class="fc" id="L611">      node.setRequested(requested);</span>
-<span class="fc" id="L612">      node.setRequester(requester);</span>
-<span class="fc" id="L613">      node.setSpecialid(specialId);</span>
-<span class="fc" id="L614">      packet = new JsonCommandPacket(node, code);</span>
-<span class="fc" id="L615">    } else {</span>
+<span class="nc bnc" id="L608" title="All 2 branches missed.">    if (useJson) {</span>
+<span class="nc" id="L609">      final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();</span>
+<span class="nc" id="L610">      node.setComment(REQUEST_ON_TRANSFER);</span>
+<span class="nc" id="L611">      node.setRequested(requested);</span>
+<span class="nc" id="L612">      node.setRequester(requester);</span>
+<span class="nc" id="L613">      node.setSpecialid(specialId);</span>
+<span class="nc" id="L614">      packet = new JsonCommandPacket(node, code);</span>
+<span class="nc" id="L615">    } else {</span>
 <span class="nc" id="L616">      packet = new ValidPacket(REQUEST_ON_TRANSFER,</span>
                                requested + ' ' + requester + ' ' + specialId,
                                code);
     }
-<span class="fc" id="L620">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
-<span class="pc bpc" id="L621" title="1 of 2 branches missed.">    if (!AbstractTransfer.sendValidPacket(host, localChannelReference, packet,</span>
+<span class="nc" id="L620">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">    if (!AbstractTransfer.sendValidPacket(host, localChannelReference, packet,</span>
                                           future)) {
 <span class="nc" id="L623">      return ErrorCode.Internal;</span>
     }
 
-<span class="fc" id="L626">    logger.info(</span>
-<span class="pc bpc" id="L627" title="1 of 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
-<span class="fc" id="L628">    final R66Result result = future.getResult();</span>
-<span class="pc bpc" id="L629" title="1 of 2 branches missed.">    if (result != null) {</span>
-<span class="fc" id="L630">      return result.getCode();</span>
+<span class="nc" id="L626">    logger.info(</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L628">    final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">    if (result != null) {</span>
+<span class="nc" id="L630">      return result.getCode();</span>
     }
 <span class="nc" id="L632">    return ErrorCode.Internal;</span>
   }

@@ -28,6 +28,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import static org.waarp.common.digest.WaarpBC.*;
 
@@ -39,16 +40,14 @@ public class WaarpSslContextFactory {
   /**
    * Internal Logger
    */
-<span class="fc" id="L42">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L43">      WaarpLoggerFactory.getLogger(WaarpSslContextFactory.class);</span>
+<span class="fc" id="L43">  private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(WaarpSslContextFactory.class);</span>
 
   private static final long DEFAULT_HANDSHAKE_TIMEOUT = 10000;
-  public static final String HAS_TRUST_MANAGER_IS_SERVER_MODE =
-      &quot;Has TrustManager? {} Is ServerMode? {}&quot;;
+  public static final String HAS_TRUST_MANAGER_IS_SERVER_MODE = &quot;Has TrustManager? {} Is ServerMode? {}&quot;;
 
   static {
-<span class="fc" id="L50">    initializedTlsContext();</span>
-<span class="fc" id="L51">  }</span>
+<span class="fc" id="L49">    initializedTlsContext();</span>
+<span class="fc" id="L50">  }</span>
 
   /**
    *
@@ -68,12 +67,28 @@ public class WaarpSslContextFactory {
    *
    * @param ggSecureKeyStore
    */
-<span class="fc" id="L71">  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore) {</span>
+<span class="fc" id="L70">  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore) {</span>
     // Both construct Client and Server mode
-<span class="fc" id="L73">    serverContext = initSslContextFactory(ggSecureKeyStore, true, false);</span>
-<span class="fc" id="L74">    serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true);</span>
-<span class="fc" id="L75">    clientContext = initSslContextFactory(ggSecureKeyStore, false, false);</span>
-<span class="fc" id="L76">  }</span>
+<span class="fc" id="L72">    serverContext = initSslContextFactory(ggSecureKeyStore, true, false, null);</span>
+<span class="fc" id="L73">    serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, null);</span>
+<span class="fc" id="L74">    clientContext = initSslContextFactory(ggSecureKeyStore, false, false, null);</span>
+<span class="fc" id="L75">  }</span>
+
+  /**
+   * Create both CONTEXT with ciphers and/or protocols
+   *
+   * @param ggSecureKeyStore
+   * @param ciphers
+   * @param protocols
+   */
+
+  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore, final List&lt;String&gt; ciphers,
+<span class="nc" id="L86">                                final String... protocols) {</span>
+    // Both construct Client and Server mode
+<span class="nc" id="L88">    serverContext = initSslContextFactory(ggSecureKeyStore, true, false, ciphers, protocols);</span>
+<span class="nc" id="L89">    serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, ciphers, protocols);</span>
+<span class="nc" id="L90">    clientContext = initSslContextFactory(ggSecureKeyStore, false, false, ciphers, protocols);</span>
+<span class="nc" id="L91">  }</span>
 
   /**
    * Create only one of the CONTEXT
@@ -81,19 +96,38 @@ public class WaarpSslContextFactory {
    * @param ggSecureKeyStore
    * @param serverMode
    */
-  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore,
-<span class="fc" id="L85">                                final boolean serverMode) {</span>
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">    if (serverMode) {</span>
-<span class="fc" id="L87">      serverContext = initSslContextFactory(ggSecureKeyStore, true, false);</span>
-<span class="fc" id="L88">      serverContextStartTls =</span>
-<span class="fc" id="L89">          initSslContextFactory(ggSecureKeyStore, true, true);</span>
-<span class="fc" id="L90">      clientContext = null;</span>
+<span class="fc" id="L99">  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore, final boolean serverMode) {</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    if (serverMode) {</span>
+<span class="fc" id="L101">      serverContext = initSslContextFactory(ggSecureKeyStore, true, false, null);</span>
+<span class="fc" id="L102">      serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, null);</span>
+<span class="fc" id="L103">      clientContext = null;</span>
     } else {
-<span class="nc" id="L92">      clientContext = initSslContextFactory(ggSecureKeyStore, false, false);</span>
-<span class="nc" id="L93">      serverContext = null;</span>
-<span class="nc" id="L94">      serverContextStartTls = null;</span>
+<span class="nc" id="L105">      clientContext = initSslContextFactory(ggSecureKeyStore, false, false, null);</span>
+<span class="nc" id="L106">      serverContext = null;</span>
+<span class="nc" id="L107">      serverContextStartTls = null;</span>
     }
-<span class="fc" id="L96">  }</span>
+<span class="fc" id="L109">  }</span>
+
+  /**
+   * Create only one of the CONTEXT with ciphers and/or protocols
+   *
+   * @param ggSecureKeyStore
+   * @param serverMode
+   * @param ciphers
+   * @param protocols
+   */
+  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore, final boolean serverMode,
+<span class="nc" id="L120">                                final List&lt;String&gt; ciphers, final String... protocols) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (serverMode) {</span>
+<span class="nc" id="L122">      serverContext = initSslContextFactory(ggSecureKeyStore, true, false, ciphers, protocols);</span>
+<span class="nc" id="L123">      serverContextStartTls = initSslContextFactory(ggSecureKeyStore, true, true, ciphers, protocols);</span>
+<span class="nc" id="L124">      clientContext = null;</span>
+    } else {
+<span class="nc" id="L126">      clientContext = initSslContextFactory(ggSecureKeyStore, false, false, ciphers, protocols);</span>
+<span class="nc" id="L127">      serverContext = null;</span>
+<span class="nc" id="L128">      serverContextStartTls = null;</span>
+    }
+<span class="nc" id="L130">  }</span>
 
   /**
    * @param ggSecureKeyStore
@@ -101,40 +135,34 @@ public class WaarpSslContextFactory {
    *
    * @return the SSLContext
    */
-  private SslContext initSslContextFactory(
-      final WaarpSecureKeyStore ggSecureKeyStore, final boolean serverMode,
-      final boolean startTls) {
+  private SslContext initSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore,
+                                           final boolean serverMode, final boolean startTls,
+                                           final List&lt;String&gt; ciphers, final String... protocols) {
     // Initialize the SSLContext to work with our key managers.
-<span class="fc" id="L108">    final WaarpSecureTrustManagerFactory secureTrustManagerFactory =</span>
-<span class="fc" id="L109">        ggSecureKeyStore.getSecureTrustManagerFactory();</span>
-<span class="fc" id="L110">    needClientAuthentication = secureTrustManagerFactory.needAuthentication();</span>
-<span class="fc" id="L111">    X509Certificate[] certificates = null;</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">    if (secureTrustManagerFactory.hasTrustStore()) {</span>
-<span class="fc" id="L113">      logger.debug(&quot;Has TrustManager&quot;);</span>
-<span class="fc" id="L114">      certificates = secureTrustManagerFactory.getX509Certificates();</span>
+<span class="fc" id="L142">    final WaarpSecureTrustManagerFactory secureTrustManagerFactory =</span>
+<span class="fc" id="L143">        ggSecureKeyStore.getSecureTrustManagerFactory();</span>
+<span class="fc" id="L144">    needClientAuthentication = secureTrustManagerFactory.needAuthentication();</span>
+<span class="fc" id="L145">    X509Certificate[] certificates = null;</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">    if (secureTrustManagerFactory.hasTrustStore()) {</span>
+<span class="fc" id="L147">      logger.debug(&quot;Has TrustManager&quot;);</span>
+<span class="fc" id="L148">      certificates = secureTrustManagerFactory.getX509Certificates();</span>
     } else {
-<span class="fc" id="L116">      logger.debug(&quot;No TrustManager&quot;);</span>
+<span class="fc" id="L150">      logger.debug(&quot;No TrustManager&quot;);</span>
     }
-<span class="fc bfc" id="L118" title="All 2 branches covered.">    if (serverMode) {</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">    if (serverMode) {</span>
       try {
-<span class="fc" id="L120">        return getInstanceForServer(ggSecureKeyStore.getKeyManagerFactory(),</span>
-                                    certificates, needClientAuthentication,
-                                    startTls);
-<span class="nc" id="L123">      } catch (final Throwable e) {//NOSONAR</span>
-<span class="nc" id="L124">        logger.error(&quot;Failed to initialize the server-side SSLContext {}&quot;,</span>
-<span class="nc" id="L125">                     e.getMessage());</span>
-<span class="nc" id="L126">        throw new Error(&quot;Failed to initialize the server-side SSLContext&quot;,</span>
-                        e);//NOSONAR
+<span class="fc" id="L154">        return getInstanceForServer(ggSecureKeyStore.getKeyManagerFactory(), certificates,</span>
+                                    needClientAuthentication, startTls, ciphers, protocols);
+<span class="nc" id="L156">      } catch (final Throwable e) {//NOSONAR</span>
+<span class="nc" id="L157">        logger.error(&quot;Failed to initialize the server-side SSLContext {}&quot;, e.getMessage());</span>
+<span class="nc" id="L158">        throw new Error(&quot;Failed to initialize the server-side SSLContext&quot;, e);//NOSONAR</span>
       }
     } else {
       try {
-<span class="fc" id="L131">        return getInstanceForClient(ggSecureKeyStore.getKeyManagerFactory(),</span>
-                                    certificates);
-<span class="nc" id="L133">      } catch (final Throwable e) {//NOSONAR</span>
-<span class="nc" id="L134">        logger.error(&quot;Failed to initialize the client-side SSLContext {}&quot;,</span>
-<span class="nc" id="L135">                     e.getMessage());</span>
-<span class="nc" id="L136">        throw new Error(&quot;Failed to initialize the client-side SSLContext&quot;,</span>
-                        e);//NOSONAR
+<span class="fc" id="L162">        return getInstanceForClient(ggSecureKeyStore.getKeyManagerFactory(), certificates);</span>
+<span class="nc" id="L163">      } catch (final Throwable e) {//NOSONAR</span>
+<span class="nc" id="L164">        logger.error(&quot;Failed to initialize the client-side SSLContext {}&quot;, e.getMessage());</span>
+<span class="nc" id="L165">        throw new Error(&quot;Failed to initialize the client-side SSLContext&quot;, e);//NOSONAR</span>
       }
     }
   }
@@ -143,14 +171,14 @@ public class WaarpSslContextFactory {
    * @return the Server Context
    */
   public final SslContext getServerContext() {
-<span class="fc" id="L146">    return serverContext;</span>
+<span class="fc" id="L174">    return serverContext;</span>
   }
 
   /**
    * @return the Client Context
    */
   public final SslContext getClientContext() {
-<span class="fc" id="L153">    return clientContext;</span>
+<span class="fc" id="L181">    return clientContext;</span>
   }
 
   /**
@@ -164,40 +192,37 @@ public class WaarpSslContextFactory {
    *
    * @return the sslhandler
    */
-  public final SslHandler createHandlerServer(final boolean needClientAuth,
-                                              final Channel channel) {
-<span class="fc" id="L169">    logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, needClientAuth, true);</span>
-<span class="fc" id="L170">    channel.config().setAutoRead(true);</span>
-<span class="fc" id="L171">    final SslHandler sslHandler =</span>
-<span class="fc" id="L172">        getServerContext().newHandler(channel.alloc());</span>
-<span class="fc" id="L173">    sslHandler.setHandshakeTimeoutMillis(DEFAULT_HANDSHAKE_TIMEOUT);</span>
-<span class="fc" id="L174">    return sslHandler;</span>
-  }
-
-  /**
-   * To be called before adding as first entry in the Initializer as&lt;br&gt;
-   * pipeline.addLast(&quot;ssl&quot;, sslhandler);&lt;br&gt;
-   *
-   * @param needClientAuth True if the client needs to be
-   *     authenticated
-   *     (only if serverMode is True)
-   * @param channel the channel needing the SslHandler
-   *
-   * @return the sslhandler
-   */
-  public final SslHandler createHandlerServer(final boolean needClientAuth,
-                                              final boolean startTls,
-                                              final Channel channel) {
-<span class="fc" id="L191">    logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, needClientAuth, true);</span>
-<span class="fc" id="L192">    channel.config().setAutoRead(true);</span>
-    final SslHandler sslHandler;
-<span class="pc bpc" id="L194" title="1 of 2 branches missed.">    if (startTls) {</span>
-<span class="nc" id="L195">      sslHandler = serverContextStartTls.newHandler(channel.alloc());</span>
-    } else {
-<span class="fc" id="L197">      sslHandler = getServerContext().newHandler(channel.alloc());</span>
-    }
+  public final SslHandler createHandlerServer(final boolean needClientAuth, final Channel channel) {
+<span class="fc" id="L196">    logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, needClientAuth, true);</span>
+<span class="fc" id="L197">    channel.config().setAutoRead(true);</span>
+<span class="fc" id="L198">    final SslHandler sslHandler = getServerContext().newHandler(channel.alloc());</span>
 <span class="fc" id="L199">    sslHandler.setHandshakeTimeoutMillis(DEFAULT_HANDSHAKE_TIMEOUT);</span>
 <span class="fc" id="L200">    return sslHandler;</span>
+  }
+
+  /**
+   * To be called before adding as first entry in the Initializer as&lt;br&gt;
+   * pipeline.addLast(&quot;ssl&quot;, sslhandler);&lt;br&gt;
+   *
+   * @param needClientAuth True if the client needs to be
+   *     authenticated
+   *     (only if serverMode is True)
+   * @param channel the channel needing the SslHandler
+   *
+   * @return the sslhandler
+   */
+  public final SslHandler createHandlerServer(final boolean needClientAuth, final boolean startTls,
+                                              final Channel channel) {
+<span class="fc" id="L216">    logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, needClientAuth, true);</span>
+<span class="fc" id="L217">    channel.config().setAutoRead(true);</span>
+    final SslHandler sslHandler;
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (startTls) {</span>
+<span class="nc" id="L220">      sslHandler = serverContextStartTls.newHandler(channel.alloc());</span>
+    } else {
+<span class="fc" id="L222">      sslHandler = getServerContext().newHandler(channel.alloc());</span>
+    }
+<span class="fc" id="L224">    sslHandler.setHandshakeTimeoutMillis(DEFAULT_HANDSHAKE_TIMEOUT);</span>
+<span class="fc" id="L225">    return sslHandler;</span>
   }
 
   /**
@@ -209,28 +234,26 @@ public class WaarpSslContextFactory {
    * @return the sslhandler
    */
   public final SslHandler createHandlerClient(final SocketChannel channel) {
-<span class="fc" id="L212">    logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, false, false);</span>
-<span class="fc" id="L213">    channel.config().setAutoRead(true);</span>
-<span class="fc" id="L214">    final InetSocketAddress socketAddress = channel.remoteAddress();</span>
+<span class="fc" id="L237">    logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, false, false);</span>
+<span class="fc" id="L238">    channel.config().setAutoRead(true);</span>
+<span class="fc" id="L239">    final InetSocketAddress socketAddress = channel.remoteAddress();</span>
     final SslHandler sslHandler;
-<span class="pc bpc" id="L216" title="1 of 2 branches missed.">    if (socketAddress != null) {</span>
-<span class="nc" id="L217">      logger.debug(&quot;socket {} {}&quot;, socketAddress.getHostName(),</span>
-<span class="nc" id="L218">                   socketAddress.getPort());</span>
-<span class="nc" id="L219">      sslHandler = getClientContext().newHandler(channel.alloc(),</span>
-<span class="nc" id="L220">                                                 socketAddress.getHostName(),</span>
-<span class="nc" id="L221">                                                 socketAddress.getPort());</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">    if (socketAddress != null) {</span>
+<span class="nc" id="L242">      logger.debug(&quot;socket {} {}&quot;, socketAddress.getHostName(), socketAddress.getPort());</span>
+<span class="nc" id="L243">      sslHandler = getClientContext().newHandler(channel.alloc(), socketAddress.getHostName(),</span>
+<span class="nc" id="L244">                                                 socketAddress.getPort());</span>
     } else {
-<span class="fc" id="L223">      sslHandler = getClientContext().newHandler(channel.alloc());</span>
+<span class="fc" id="L246">      sslHandler = getClientContext().newHandler(channel.alloc());</span>
     }
-<span class="fc" id="L225">    sslHandler.setHandshakeTimeoutMillis(DEFAULT_HANDSHAKE_TIMEOUT);</span>
-<span class="fc" id="L226">    return sslHandler;</span>
+<span class="fc" id="L248">    sslHandler.setHandshakeTimeoutMillis(DEFAULT_HANDSHAKE_TIMEOUT);</span>
+<span class="fc" id="L249">    return sslHandler;</span>
   }
 
   /**
    * @return True if the associated KeyStore has a TrustStore
    */
   public final boolean needClientAuthentication() {
-<span class="fc" id="L233">    return needClientAuthentication;</span>
+<span class="fc" id="L256">    return needClientAuthentication;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

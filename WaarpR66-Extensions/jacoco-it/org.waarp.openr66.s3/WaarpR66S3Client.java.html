@@ -85,9 +85,10 @@ public class WaarpR66S3Client {
               }
             }
 <span class="nc" id="L87">            return null;</span>
-<span class="nc" id="L88">          } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {</span>
-<span class="nc" id="L89">            logger.error(e.getMessage());</span>
-<span class="nc" id="L90">            return null;</span>
+<span class="nc" id="L88">          } catch (final MinioException | InvalidKeyException | IOException |</span>
+                         NoSuchAlgorithmException e) {
+<span class="nc" id="L90">            logger.error(e.getMessage());</span>
+<span class="nc" id="L91">            return null;</span>
           }
         }
       };
@@ -101,13 +102,13 @@ public class WaarpR66S3Client {
    * @param endPointS3
    */
   public WaarpR66S3Client(final String accessKey, final String secretKey,
-<span class="fc" id="L104">                          final URL endPointS3) {</span>
-<span class="fc" id="L105">    ParametersChecker.checkParameter(&quot;Parameters cannot be null or empty&quot;,</span>
+<span class="fc" id="L105">                          final URL endPointS3) {</span>
+<span class="fc" id="L106">    ParametersChecker.checkParameter(&quot;Parameters cannot be null or empty&quot;,</span>
                                      accessKey, secretKey, endPointS3);
     // Create a minioClient with the MinIO server playground, its access key and secret key.
-<span class="fc" id="L108">    minioClient = MinioClient.builder().endpoint(endPointS3)</span>
-<span class="fc" id="L109">                             .credentials(accessKey, secretKey).build();</span>
-<span class="fc" id="L110">  }</span>
+<span class="fc" id="L109">    minioClient = MinioClient.builder().endpoint(endPointS3)</span>
+<span class="fc" id="L110">                             .credentials(accessKey, secretKey).build();</span>
+<span class="fc" id="L111">  }</span>
 
   /**
    * Create one file into S3 with optional Tags (null if none)
@@ -125,55 +126,56 @@ public class WaarpR66S3Client {
                                  final String targetName, final File file,
                                  final Map&lt;String, String&gt; tags)
       throws OpenR66ProtocolNetworkException {
-<span class="fc" id="L128">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="fc" id="L129">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, targetName);
-<span class="fc" id="L130">    ParametersChecker.checkParameter(&quot;File cannot be null&quot;, file);</span>
-<span class="pc bpc" id="L131" title="1 of 2 branches missed.">    if (!file.canRead()) {</span>
-<span class="nc" id="L132">      throw new IllegalArgumentException(</span>
-<span class="nc" id="L133">          &quot;File cannot be read: &quot; + file.getAbsolutePath());</span>
+<span class="fc" id="L131">    ParametersChecker.checkParameter(&quot;File cannot be null&quot;, file);</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    if (!file.canRead()) {</span>
+<span class="nc" id="L133">      throw new IllegalArgumentException(</span>
+<span class="nc" id="L134">          &quot;File cannot be read: &quot; + file.getAbsolutePath());</span>
     }
-<span class="fc" id="L135">    boolean uploaded = false;</span>
-<span class="fc" id="L136">    boolean error = false;</span>
+<span class="fc" id="L136">    boolean uploaded = false;</span>
+<span class="fc" id="L137">    boolean error = false;</span>
     try {
       // Make bucketName bucket if not exist.
-<span class="fc" id="L139">      final boolean found = minioClient.bucketExists(</span>
-<span class="fc" id="L140">          BucketExistsArgs.builder().bucket(bucketName).build());</span>
-<span class="fc bfc" id="L141" title="All 2 branches covered.">      if (!found) {</span>
+<span class="fc" id="L140">      final boolean found = minioClient.bucketExists(</span>
+<span class="fc" id="L141">          BucketExistsArgs.builder().bucket(bucketName).build());</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">      if (!found) {</span>
         // Make a new bucket
-<span class="fc" id="L143">        minioClient.makeBucket(</span>
-<span class="fc" id="L144">            MakeBucketArgs.builder().bucket(bucketName).build());</span>
+<span class="fc" id="L144">        minioClient.makeBucket(</span>
+<span class="fc" id="L145">            MakeBucketArgs.builder().bucket(bucketName).build());</span>
       } else {
-<span class="fc" id="L146">        logger.info(&quot;Bucket {} already exists.&quot;, bucketName);</span>
+<span class="fc" id="L147">        logger.info(&quot;Bucket {} already exists.&quot;, bucketName);</span>
       }
       // Upload file as object name targetName to bucket bucketName
-<span class="fc" id="L149">      final ObjectWriteResponse response = minioClient.uploadObject(</span>
-<span class="fc" id="L150">          UploadObjectArgs.builder().bucket(bucketName).object(targetName)</span>
-<span class="fc" id="L151">                          .filename(file.getAbsolutePath()).build());</span>
-<span class="fc" id="L152">      uploaded = true;</span>
-<span class="fc" id="L153">      logger.info(&quot;{} is successfully uploaded as object {} to bucket {}.&quot;,</span>
-<span class="fc" id="L154">                  file.getAbsolutePath(), targetName, bucketName);</span>
-<span class="pc bpc" id="L155" title="1 of 4 branches missed.">      if (tags != null &amp;&amp; !tags.isEmpty()) {</span>
-<span class="fc" id="L156">        minioClient.setObjectTags(</span>
-<span class="fc" id="L157">            SetObjectTagsArgs.builder().bucket(bucketName).object(targetName)</span>
-<span class="fc" id="L158">                             .tags(tags).build());</span>
+<span class="fc" id="L150">      final ObjectWriteResponse response = minioClient.uploadObject(</span>
+<span class="fc" id="L151">          UploadObjectArgs.builder().bucket(bucketName).object(targetName)</span>
+<span class="fc" id="L152">                          .filename(file.getAbsolutePath()).build());</span>
+<span class="fc" id="L153">      uploaded = true;</span>
+<span class="fc" id="L154">      logger.info(&quot;{} is successfully uploaded as object {} to bucket {}.&quot;,</span>
+<span class="fc" id="L155">                  file.getAbsolutePath(), targetName, bucketName);</span>
+<span class="pc bpc" id="L156" title="1 of 4 branches missed.">      if (tags != null &amp;&amp; !tags.isEmpty()) {</span>
+<span class="fc" id="L157">        minioClient.setObjectTags(</span>
+<span class="fc" id="L158">            SetObjectTagsArgs.builder().bucket(bucketName).object(targetName)</span>
+<span class="fc" id="L159">                             .tags(tags).build());</span>
       }
-<span class="fc" id="L160">      logger.debug(&quot;Resp: {} {} {} {} {}&quot;, response.bucket(), response.object(),</span>
-<span class="fc" id="L161">                   response.versionId(), response.etag(), response.region());</span>
-<span class="fc" id="L162">      return response.versionId();</span>
-<span class="nc" id="L163">    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {</span>
-<span class="nc" id="L164">      logger.error(e.getMessage());</span>
-<span class="nc" id="L165">      error = true;</span>
-<span class="nc" id="L166">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="fc" id="L161">      logger.debug(&quot;Resp: {} {} {} {} {}&quot;, response.bucket(), response.object(),</span>
+<span class="fc" id="L162">                   response.versionId(), response.etag(), response.region());</span>
+<span class="fc" id="L163">      return response.versionId();</span>
+<span class="nc" id="L164">    } catch (final MinioException | IOException | NoSuchAlgorithmException |</span>
+                   InvalidKeyException e) {
+<span class="nc" id="L166">      logger.error(e.getMessage());</span>
+<span class="nc" id="L167">      error = true;</span>
+<span class="nc" id="L168">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
     } finally {
-<span class="pc bpc" id="L168" title="3 of 4 branches missed.">      if (error &amp;&amp; uploaded) {</span>
+<span class="pc bpc" id="L170" title="3 of 4 branches missed.">      if (error &amp;&amp; uploaded) {</span>
         // Clean incompletely object creation
         try {
-<span class="nc" id="L171">          deleteFile(bucketName, targetName);</span>
-<span class="nc" id="L172">        } catch (final Exception e) {</span>
-<span class="nc" id="L173">          logger.warn(</span>
+<span class="nc" id="L173">          deleteFile(bucketName, targetName);</span>
+<span class="nc" id="L174">        } catch (final Exception e) {</span>
+<span class="nc" id="L175">          logger.warn(</span>
               &quot;Error while cleaning S3 file incompletely created&quot; + &quot; : {}&quot;,
-<span class="nc" id="L175">              e.getMessage());</span>
-<span class="nc" id="L176">        }</span>
+<span class="nc" id="L177">              e.getMessage());</span>
+<span class="nc" id="L178">        }</span>
       }
     }
   }
@@ -190,19 +192,20 @@ public class WaarpR66S3Client {
   public final void setTags(final String bucketName, final String targetName,
                             final Map&lt;String, String&gt; tags)
       throws OpenR66ProtocolNetworkException {
-<span class="nc" id="L193">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="nc" id="L195">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, targetName);
     try {
-<span class="nc bnc" id="L196" title="All 4 branches missed.">      if (tags != null &amp;&amp; !tags.isEmpty()) {</span>
-<span class="nc" id="L197">        minioClient.setObjectTags(</span>
-<span class="nc" id="L198">            SetObjectTagsArgs.builder().bucket(bucketName).object(targetName)</span>
-<span class="nc" id="L199">                             .tags(tags).build());</span>
+<span class="nc bnc" id="L198" title="All 4 branches missed.">      if (tags != null &amp;&amp; !tags.isEmpty()) {</span>
+<span class="nc" id="L199">        minioClient.setObjectTags(</span>
+<span class="nc" id="L200">            SetObjectTagsArgs.builder().bucket(bucketName).object(targetName)</span>
+<span class="nc" id="L201">                             .tags(tags).build());</span>
       }
-<span class="nc" id="L201">    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {</span>
-<span class="nc" id="L202">      logger.error(e.getMessage());</span>
-<span class="nc" id="L203">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
-<span class="nc" id="L204">    }</span>
-<span class="nc" id="L205">  }</span>
+<span class="nc" id="L203">    } catch (final MinioException | IOException | NoSuchAlgorithmException |</span>
+                   InvalidKeyException e) {
+<span class="nc" id="L205">      logger.error(e.getMessage());</span>
+<span class="nc" id="L206">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="nc" id="L207">    }</span>
+<span class="nc" id="L208">  }</span>
 
   /**
    * Get the ZoneDateTime when this Object will be deleted
@@ -217,16 +220,17 @@ public class WaarpR66S3Client {
   public final ZonedDateTime getObjectRetention(final String bucketName,
                                                 final String sourceName)
       throws OpenR66ProtocolNetworkException {
-<span class="nc" id="L220">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="nc" id="L223">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, sourceName);
     try {
-<span class="nc" id="L223">      final Retention retention = minioClient.getObjectRetention(</span>
-<span class="nc" id="L224">          GetObjectRetentionArgs.builder().bucket(bucketName).object(bucketName)</span>
-<span class="nc" id="L225">                                .build());</span>
-<span class="nc" id="L226">      return retention.retainUntilDate();</span>
-<span class="nc" id="L227">    } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {</span>
-<span class="nc" id="L228">      logger.error(e.getMessage());</span>
-<span class="nc" id="L229">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="nc" id="L226">      final Retention retention = minioClient.getObjectRetention(</span>
+<span class="nc" id="L227">          GetObjectRetentionArgs.builder().bucket(bucketName).object(bucketName)</span>
+<span class="nc" id="L228">                                .build());</span>
+<span class="nc" id="L229">      return retention.retainUntilDate();</span>
+<span class="nc" id="L230">    } catch (final MinioException | InvalidKeyException | IOException |</span>
+                   NoSuchAlgorithmException e) {
+<span class="nc" id="L232">      logger.error(e.getMessage());</span>
+<span class="nc" id="L233">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
     }
   }
 
@@ -243,27 +247,28 @@ public class WaarpR66S3Client {
                                           final String targetName,
                                           final ZonedDateTime retentionUntil)
       throws OpenR66ProtocolNetworkException {
-<span class="nc" id="L246">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="nc" id="L250">    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, targetName);
-<span class="nc" id="L248">    ParametersChecker.checkParameter(&quot;Retention cannot be null&quot;,</span>
+<span class="nc" id="L252">    ParametersChecker.checkParameter(&quot;Retention cannot be null&quot;,</span>
                                      retentionUntil);
-<span class="nc bnc" id="L250" title="All 2 branches missed.">    if (retentionUntil.isBefore(ZonedDateTime.now())) {</span>
-<span class="nc" id="L251">      logger.warn(&quot;Retention Date Time is before now&quot;);</span>
-<span class="nc" id="L252">      throw new IllegalArgumentException(&quot;Retention Date Time is before now&quot;);</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    if (retentionUntil.isBefore(ZonedDateTime.now())) {</span>
+<span class="nc" id="L255">      logger.warn(&quot;Retention Date Time is before now&quot;);</span>
+<span class="nc" id="L256">      throw new IllegalArgumentException(&quot;Retention Date Time is before now&quot;);</span>
     }
-<span class="nc" id="L254">    final Retention config =</span>
+<span class="nc" id="L258">    final Retention config =</span>
         new Retention(RetentionMode.COMPLIANCE, retentionUntil);
     // Set object retention
     try {
-<span class="nc" id="L258">      minioClient.setObjectRetention(</span>
-<span class="nc" id="L259">          SetObjectRetentionArgs.builder().bucket(bucketName).object(targetName)</span>
-<span class="nc" id="L260">                                .config(config).bypassGovernanceMode(true)</span>
-<span class="nc" id="L261">                                .build());</span>
-<span class="nc" id="L262">    } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {</span>
-<span class="nc" id="L263">      logger.error(e.getMessage());</span>
-<span class="nc" id="L264">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
-<span class="nc" id="L265">    }</span>
-<span class="nc" id="L266">  }</span>
+<span class="nc" id="L262">      minioClient.setObjectRetention(</span>
+<span class="nc" id="L263">          SetObjectRetentionArgs.builder().bucket(bucketName).object(targetName)</span>
+<span class="nc" id="L264">                                .config(config).bypassGovernanceMode(true)</span>
+<span class="nc" id="L265">                                .build());</span>
+<span class="nc" id="L266">    } catch (final MinioException | InvalidKeyException | IOException |</span>
+                   NoSuchAlgorithmException e) {
+<span class="nc" id="L268">      logger.error(e.getMessage());</span>
+<span class="nc" id="L269">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="nc" id="L270">    }</span>
+<span class="nc" id="L271">  }</span>
 
   /**
    * Get a File from S3
@@ -282,39 +287,40 @@ public class WaarpR66S3Client {
                                            final File file,
                                            final boolean getTags)
       throws OpenR66ProtocolNetworkException {
-<span class="fc" id="L285">    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="fc" id="L290">    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, sourceName);
-<span class="fc" id="L287">    ParametersChecker.checkParameter(&quot;File cannot be null&quot;, file);</span>
-<span class="fc" id="L288">    boolean downloaded = false;</span>
-<span class="fc" id="L289">    boolean error = false;</span>
+<span class="fc" id="L292">    ParametersChecker.checkParameter(&quot;File cannot be null&quot;, file);</span>
+<span class="fc" id="L293">    boolean downloaded = false;</span>
+<span class="fc" id="L294">    boolean error = false;</span>
     // Get input stream
-<span class="fc" id="L291">    try (final InputStream stream = minioClient.getObject(</span>
-<span class="fc" id="L292">        GetObjectArgs.builder().bucket(bucketName).object(sourceName).build());</span>
-<span class="fc" id="L293">         final FileOutputStream outputStream = new FileOutputStream(file)) {</span>
-<span class="fc" id="L294">      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];</span>
+<span class="fc" id="L296">    try (final InputStream stream = minioClient.getObject(</span>
+<span class="fc" id="L297">        GetObjectArgs.builder().bucket(bucketName).object(sourceName).build());</span>
+<span class="fc" id="L298">         final FileOutputStream outputStream = new FileOutputStream(file)) {</span>
+<span class="fc" id="L299">      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];</span>
       int bytesRead;
-<span class="fc bfc" id="L296" title="All 2 branches covered.">      while ((bytesRead = stream.read(buf, 0, buf.length)) &gt;= 0) {</span>
-<span class="fc" id="L297">        outputStream.write(buf, 0, bytesRead);</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">      while ((bytesRead = stream.read(buf, 0, buf.length)) &gt;= 0) {</span>
+<span class="fc" id="L302">        outputStream.write(buf, 0, bytesRead);</span>
       }
-<span class="fc" id="L299">      FileUtils.close(outputStream);</span>
-<span class="fc" id="L300">      FileUtils.close(stream);</span>
-<span class="fc" id="L301">      downloaded = true;</span>
-<span class="pc bpc" id="L302" title="1 of 2 branches missed.">      if (getTags) {</span>
-<span class="fc" id="L303">        final Tags tags = minioClient.getObjectTags(</span>
-<span class="fc" id="L304">            GetObjectTagsArgs.builder().bucket(bucketName).object(sourceName)</span>
-<span class="fc" id="L305">                             .build());</span>
-<span class="fc" id="L306">        return tags.get();</span>
+<span class="fc" id="L304">      FileUtils.close(outputStream);</span>
+<span class="fc" id="L305">      FileUtils.close(stream);</span>
+<span class="fc" id="L306">      downloaded = true;</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">      if (getTags) {</span>
+<span class="fc" id="L308">        final Tags tags = minioClient.getObjectTags(</span>
+<span class="fc" id="L309">            GetObjectTagsArgs.builder().bucket(bucketName).object(sourceName)</span>
+<span class="fc" id="L310">                             .build());</span>
+<span class="fc" id="L311">        return tags.get();</span>
       } else {
-<span class="nc" id="L308">        return SingletonUtils.singletonMap();</span>
+<span class="nc" id="L313">        return SingletonUtils.singletonMap();</span>
       }
-<span class="nc" id="L310">    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {</span>
-<span class="nc" id="L311">      logger.info(e);</span>
-<span class="nc" id="L312">      error = true;</span>
-<span class="nc" id="L313">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="nc" id="L315">    } catch (final MinioException | IOException | NoSuchAlgorithmException |</span>
+                   InvalidKeyException e) {
+<span class="nc" id="L317">      logger.info(e);</span>
+<span class="nc" id="L318">      error = true;</span>
+<span class="nc" id="L319">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
     } finally {
-<span class="pc bpc" id="L315" title="3 of 4 branches missed.">      if (error &amp;&amp; downloaded) {</span>
+<span class="pc bpc" id="L321" title="3 of 4 branches missed.">      if (error &amp;&amp; downloaded) {</span>
         // Delete wrongly deleted file
-<span class="nc" id="L317">        file.delete();</span>
+<span class="nc" id="L323">        file.delete();</span>
       }
     }
   }
@@ -332,17 +338,18 @@ public class WaarpR66S3Client {
   public final Map&lt;String, String&gt; getTags(final String bucketName,
                                            final String sourceName)
       throws OpenR66ProtocolNetworkException {
-<span class="nc" id="L335">    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="nc" id="L341">    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, sourceName);
     try {
-<span class="nc" id="L338">      final Tags tags = minioClient.getObjectTags(</span>
-<span class="nc" id="L339">          GetObjectTagsArgs.builder().bucket(bucketName).object(sourceName)</span>
-<span class="nc" id="L340">                           .build());</span>
+<span class="nc" id="L344">      final Tags tags = minioClient.getObjectTags(</span>
+<span class="nc" id="L345">          GetObjectTagsArgs.builder().bucket(bucketName).object(sourceName)</span>
+<span class="nc" id="L346">                           .build());</span>
 
-<span class="nc" id="L342">      return tags.get();</span>
-<span class="nc" id="L343">    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {</span>
-<span class="nc" id="L344">      logger.error(e.getMessage());</span>
-<span class="nc" id="L345">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="nc" id="L348">      return tags.get();</span>
+<span class="nc" id="L349">    } catch (final MinioException | IOException | NoSuchAlgorithmException |</span>
+                   InvalidKeyException e) {
+<span class="nc" id="L351">      logger.error(e.getMessage());</span>
+<span class="nc" id="L352">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
     }
   }
 
@@ -356,18 +363,19 @@ public class WaarpR66S3Client {
    */
   public final void deleteFile(final String bucketName, final String sourceName)
       throws OpenR66ProtocolNetworkException {
-<span class="fc" id="L359">    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,</span>
+<span class="fc" id="L366">    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,</span>
                                      bucketName, sourceName);
     try {
       // Remove object.
-<span class="fc" id="L363">      minioClient.removeObject(</span>
-<span class="fc" id="L364">          RemoveObjectArgs.builder().bucket(bucketName).object(sourceName)</span>
-<span class="fc" id="L365">                          .build());</span>
-<span class="nc" id="L366">    } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {</span>
-<span class="nc" id="L367">      logger.error(e.getMessage());</span>
-<span class="nc" id="L368">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
-<span class="fc" id="L369">    }</span>
-<span class="fc" id="L370">  }</span>
+<span class="fc" id="L370">      minioClient.removeObject(</span>
+<span class="fc" id="L371">          RemoveObjectArgs.builder().bucket(bucketName).object(sourceName)</span>
+<span class="fc" id="L372">                          .build());</span>
+<span class="nc" id="L373">    } catch (final MinioException | IOException | NoSuchAlgorithmException |</span>
+                   InvalidKeyException e) {
+<span class="nc" id="L375">      logger.error(e.getMessage());</span>
+<span class="nc" id="L376">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="fc" id="L377">    }</span>
+<span class="fc" id="L378">  }</span>
 
   /**
    * Get sourceNames from S3 from the bucketName specified, names optionally starting with a String, recursively or not,
@@ -387,24 +395,24 @@ public class WaarpR66S3Client {
                                                       final boolean recursively,
                                                       final int limit)
       throws OpenR66ProtocolNetworkException {
-<span class="fc" id="L390">    ParametersChecker.checkParameter(&quot;Bucket cannot be null or empty&quot;,</span>
+<span class="fc" id="L398">    ParametersChecker.checkParameter(&quot;Bucket cannot be null or empty&quot;,</span>
                                      bucketName);
     try {
       // List recursively
       final ListObjectsArgs.Builder builder =
-<span class="fc" id="L395">          ListObjectsArgs.builder().bucket(bucketName).recursive(recursively);</span>
-<span class="pc bpc" id="L396" title="1 of 2 branches missed.">      if (ParametersChecker.isNotEmpty(optionalNameStartWith)) {</span>
-<span class="nc" id="L397">        builder.prefix(optionalNameStartWith);</span>
+<span class="fc" id="L403">          ListObjectsArgs.builder().bucket(bucketName).recursive(recursively);</span>
+<span class="pc bpc" id="L404" title="1 of 2 branches missed.">      if (ParametersChecker.isNotEmpty(optionalNameStartWith)) {</span>
+<span class="nc" id="L405">        builder.prefix(optionalNameStartWith);</span>
       }
-<span class="pc bpc" id="L399" title="1 of 2 branches missed.">      if (limit &gt; 0) {</span>
-<span class="nc" id="L400">        builder.maxKeys(limit);</span>
+<span class="pc bpc" id="L407" title="1 of 2 branches missed.">      if (limit &gt; 0) {</span>
+<span class="nc" id="L408">        builder.maxKeys(limit);</span>
       }
-<span class="fc" id="L402">      final ListObjectsArgs args = builder.build();</span>
-<span class="fc" id="L403">      final Iterable&lt;Result&lt;Item&gt;&gt; iterable = minioClient.listObjects(args);</span>
-<span class="fc" id="L404">      return Iterators.transform(iterable.iterator(), function);</span>
-<span class="nc" id="L405">    } catch (final Exception e) {</span>
-<span class="nc" id="L406">      logger.error(e.getMessage());</span>
-<span class="nc" id="L407">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
+<span class="fc" id="L410">      final ListObjectsArgs args = builder.build();</span>
+<span class="fc" id="L411">      final Iterable&lt;Result&lt;Item&gt;&gt; iterable = minioClient.listObjects(args);</span>
+<span class="fc" id="L412">      return Iterators.transform(iterable.iterator(), function);</span>
+<span class="nc" id="L413">    } catch (final Exception e) {</span>
+<span class="nc" id="L414">      logger.error(e.getMessage());</span>
+<span class="nc" id="L415">      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);</span>
     }
   }
 }

@@ -1326,6 +1326,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * AUTH TLS -&gt; 234 -&gt; USER or ([PBSZ 0] PROT P then USER) -&gt; 2xy
    */
 <span class="nc" id="L1328">  AUTH(org.waarp.ftp.core.command.rfc4217.AUTH.class, null,</span>
+       org.waarp.ftp.core.command.rfc2389.OPTS.class,
        org.waarp.ftp.core.command.rfc4217.PROT.class,
        org.waarp.ftp.core.command.rfc4217.PBSZ.class,
        org.waarp.ftp.core.command.access.USER.class),
@@ -1335,7 +1336,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * 200&lt;br&gt;
    * 500, 533*, 534*
    */
-<span class="nc" id="L1338">  CCC(org.waarp.ftp.core.command.rfc4217.CCC.class, null),</span>
+<span class="nc" id="L1339">  CCC(org.waarp.ftp.core.command.rfc4217.CCC.class, null),</span>
   /**
    * Data protection negotiation commands&lt;br&gt;
    * PROT P (Data)&lt;br&gt;
@@ -1343,14 +1344,14 @@ import org.waarp.ftp.core.session.FtpSession;
    * 200&lt;br&gt;
    * 504, 536*, 503, 534*, 431* 500, 501, 421, 530
    */
-<span class="nc" id="L1346">  PROT(org.waarp.ftp.core.command.rfc4217.PROT.class, null),</span>
+<span class="nc" id="L1347">  PROT(org.waarp.ftp.core.command.rfc4217.PROT.class, null),</span>
   /**
    * Data protection negotiation commands&lt;br&gt;
    * PBSZ 0&lt;br&gt;
    * 200&lt;br&gt;
    * 503, 500, 501, 421, 530
    */
-<span class="nc" id="L1353">  PBSZ(org.waarp.ftp.core.command.rfc4217.PBSZ.class, null);</span>
+<span class="nc" id="L1354">  PBSZ(org.waarp.ftp.core.command.rfc4217.PBSZ.class, null);</span>
 
   /**
    * The Class that implements this command
@@ -1369,11 +1370,11 @@ import org.waarp.ftp.core.session.FtpSession;
 
   FtpCommandCode(final Class&lt;? extends AbstractCommand&gt; command,
                  final Class&lt;? extends AbstractCommand&gt; previousValid,
-<span class="nc" id="L1372">                 final Class&lt;?&gt;... nextValids) {</span>
-<span class="nc" id="L1373">    this.command = command;</span>
-<span class="nc" id="L1374">    this.previousValid = previousValid;</span>
-<span class="nc" id="L1375">    this.nextValids = nextValids;</span>
-<span class="nc" id="L1376">  }</span>
+<span class="nc" id="L1373">                 final Class&lt;?&gt;... nextValids) {</span>
+<span class="nc" id="L1374">    this.command = command;</span>
+<span class="nc" id="L1375">    this.previousValid = previousValid;</span>
+<span class="nc" id="L1376">    this.nextValids = nextValids;</span>
+<span class="nc" id="L1377">  }</span>
 
   /**
    * Get the corresponding AbstractCommand object from the line received from
@@ -1388,162 +1389,162 @@ import org.waarp.ftp.core.session.FtpSession;
   public static AbstractCommand getFromLine(final FtpSession session,
                                             final String line) {
     FtpCommandCode ftpCommandCode;
-<span class="nc" id="L1391">    String newline = line;</span>
-<span class="nc bnc" id="L1392" title="All 2 branches missed.">    if (newline == null) {</span>
-<span class="nc" id="L1393">      ftpCommandCode = Unknown;</span>
-<span class="nc" id="L1394">      newline = &quot;&quot;;</span>
+<span class="nc" id="L1392">    String newline = line;</span>
+<span class="nc bnc" id="L1393" title="All 2 branches missed.">    if (newline == null) {</span>
+<span class="nc" id="L1394">      ftpCommandCode = Unknown;</span>
+<span class="nc" id="L1395">      newline = &quot;&quot;;</span>
     }
     final String command;
     String arg;
-<span class="nc bnc" id="L1398" title="All 2 branches missed.">    if (newline.indexOf(' ') == -1) {</span>
-<span class="nc" id="L1399">      command = newline;</span>
-<span class="nc" id="L1400">      arg = null;</span>
+<span class="nc bnc" id="L1399" title="All 2 branches missed.">    if (newline.indexOf(' ') == -1) {</span>
+<span class="nc" id="L1400">      command = newline;</span>
+<span class="nc" id="L1401">      arg = null;</span>
     } else {
-<span class="nc" id="L1402">      command = newline.substring(0, newline.indexOf(' '));</span>
-<span class="nc" id="L1403">      arg = newline.substring(newline.indexOf(' ') + 1);</span>
-<span class="nc bnc" id="L1404" title="All 2 branches missed.">      if (arg.length() == 0) {</span>
-<span class="nc" id="L1405">        arg = null;</span>
+<span class="nc" id="L1403">      command = newline.substring(0, newline.indexOf(' '));</span>
+<span class="nc" id="L1404">      arg = newline.substring(newline.indexOf(' ') + 1);</span>
+<span class="nc bnc" id="L1405" title="All 2 branches missed.">      if (arg.length() == 0) {</span>
+<span class="nc" id="L1406">        arg = null;</span>
       }
     }
-<span class="nc" id="L1408">    final String COMMAND = command.toUpperCase();</span>
+<span class="nc" id="L1409">    final String COMMAND = command.toUpperCase();</span>
     try {
-<span class="nc" id="L1410">      ftpCommandCode = valueOf(COMMAND);</span>
-<span class="nc" id="L1411">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L1412">      ftpCommandCode = Unknown;</span>
-<span class="nc" id="L1413">    }</span>
-<span class="nc" id="L1414">    final AbstractCommand abstractCommand =</span>
-<span class="nc" id="L1415">        getAbstractCommand(ftpCommandCode, session);</span>
-<span class="nc bnc" id="L1416" title="All 2 branches missed.">    if (abstractCommand instanceof UnknownCommand) {</span>
-<span class="nc" id="L1417">      abstractCommand.setArgs(session, COMMAND, arg, Unknown);</span>
+<span class="nc" id="L1411">      ftpCommandCode = valueOf(COMMAND);</span>
+<span class="nc" id="L1412">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L1413">      ftpCommandCode = Unknown;</span>
+<span class="nc" id="L1414">    }</span>
+<span class="nc" id="L1415">    final AbstractCommand abstractCommand =</span>
+<span class="nc" id="L1416">        getAbstractCommand(ftpCommandCode, session);</span>
+<span class="nc bnc" id="L1417" title="All 2 branches missed.">    if (abstractCommand instanceof UnknownCommand) {</span>
+<span class="nc" id="L1418">      abstractCommand.setArgs(session, COMMAND, arg, Unknown);</span>
     } else {
-<span class="nc" id="L1419">      abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);</span>
+<span class="nc" id="L1420">      abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);</span>
     }
-<span class="nc" id="L1421">    return abstractCommand;</span>
+<span class="nc" id="L1422">    return abstractCommand;</span>
   }
 
   private static AbstractCommand getAbstractCommand(final FtpCommandCode code,
                                                     final FtpSession session) {
-<span class="nc bnc" id="L1426" title="All 59 branches missed.">    switch (code) {</span>
+<span class="nc bnc" id="L1427" title="All 59 branches missed.">    switch (code) {</span>
       case Connection:
-<span class="nc" id="L1428">        return new ConnectionCommand(session);</span>
+<span class="nc" id="L1429">        return new ConnectionCommand(session);</span>
       case USER:
-<span class="nc" id="L1430">        return new org.waarp.ftp.core.command.access.USER();</span>
+<span class="nc" id="L1431">        return new org.waarp.ftp.core.command.access.USER();</span>
       case PASS:
-<span class="nc" id="L1432">        return new org.waarp.ftp.core.command.access.PASS();</span>
+<span class="nc" id="L1433">        return new org.waarp.ftp.core.command.access.PASS();</span>
       case ACCT:
-<span class="nc" id="L1434">        return new org.waarp.ftp.core.command.access.ACCT();</span>
+<span class="nc" id="L1435">        return new org.waarp.ftp.core.command.access.ACCT();</span>
       case CWD:
-<span class="nc" id="L1436">        return new org.waarp.ftp.core.command.directory.CWD();</span>
+<span class="nc" id="L1437">        return new org.waarp.ftp.core.command.directory.CWD();</span>
       case CDUP:
-<span class="nc" id="L1438">        return new org.waarp.ftp.core.command.directory.CDUP();</span>
+<span class="nc" id="L1439">        return new org.waarp.ftp.core.command.directory.CDUP();</span>
       case SMNT:
-<span class="nc" id="L1440">        return new org.waarp.ftp.core.command.directory.SMNT();</span>
+<span class="nc" id="L1441">        return new org.waarp.ftp.core.command.directory.SMNT();</span>
       case REIN:
-<span class="nc" id="L1442">        return new org.waarp.ftp.core.command.access.REIN();</span>
+<span class="nc" id="L1443">        return new org.waarp.ftp.core.command.access.REIN();</span>
       case QUIT:
-<span class="nc" id="L1444">        return new org.waarp.ftp.core.command.access.QUIT();</span>
+<span class="nc" id="L1445">        return new org.waarp.ftp.core.command.access.QUIT();</span>
       case PORT:
-<span class="nc" id="L1446">        return new org.waarp.ftp.core.command.parameter.PORT();</span>
+<span class="nc" id="L1447">        return new org.waarp.ftp.core.command.parameter.PORT();</span>
       case PASV:
-<span class="nc" id="L1448">        return new org.waarp.ftp.core.command.parameter.PASV();</span>
+<span class="nc" id="L1449">        return new org.waarp.ftp.core.command.parameter.PASV();</span>
       case TYPE:
-<span class="nc" id="L1450">        return new org.waarp.ftp.core.command.parameter.TYPE();</span>
+<span class="nc" id="L1451">        return new org.waarp.ftp.core.command.parameter.TYPE();</span>
       case STRU:
-<span class="nc" id="L1452">        return new org.waarp.ftp.core.command.parameter.STRU();</span>
+<span class="nc" id="L1453">        return new org.waarp.ftp.core.command.parameter.STRU();</span>
       case MODE:
-<span class="nc" id="L1454">        return new org.waarp.ftp.core.command.parameter.MODE();</span>
+<span class="nc" id="L1455">        return new org.waarp.ftp.core.command.parameter.MODE();</span>
       case RETR:
-<span class="nc" id="L1456">        return new org.waarp.ftp.core.command.service.RETR();</span>
+<span class="nc" id="L1457">        return new org.waarp.ftp.core.command.service.RETR();</span>
       case STOR:
-<span class="nc" id="L1458">        return new org.waarp.ftp.core.command.service.STOR();</span>
+<span class="nc" id="L1459">        return new org.waarp.ftp.core.command.service.STOR();</span>
       case STOU:
-<span class="nc" id="L1460">        return new org.waarp.ftp.core.command.service.STOU();</span>
+<span class="nc" id="L1461">        return new org.waarp.ftp.core.command.service.STOU();</span>
       case APPE:
-<span class="nc" id="L1462">        return new org.waarp.ftp.core.command.service.APPE();</span>
+<span class="nc" id="L1463">        return new org.waarp.ftp.core.command.service.APPE();</span>
       case ALLO:
-<span class="nc" id="L1464">        return new org.waarp.ftp.core.command.service.ALLO();</span>
+<span class="nc" id="L1465">        return new org.waarp.ftp.core.command.service.ALLO();</span>
       case REST:
-<span class="nc" id="L1466">        return new org.waarp.ftp.core.command.service.REST();</span>
+<span class="nc" id="L1467">        return new org.waarp.ftp.core.command.service.REST();</span>
       case RNFR:
-<span class="nc" id="L1468">        return new org.waarp.ftp.core.command.service.RNFR();</span>
+<span class="nc" id="L1469">        return new org.waarp.ftp.core.command.service.RNFR();</span>
       case RNTO:
-<span class="nc" id="L1470">        return new org.waarp.ftp.core.command.service.RNTO();</span>
+<span class="nc" id="L1471">        return new org.waarp.ftp.core.command.service.RNTO();</span>
       case ABOR:
-<span class="nc" id="L1472">        return new org.waarp.ftp.core.command.service.ABOR();</span>
+<span class="nc" id="L1473">        return new org.waarp.ftp.core.command.service.ABOR();</span>
       case DELE:
-<span class="nc" id="L1474">        return new org.waarp.ftp.core.command.service.DELE();</span>
+<span class="nc" id="L1475">        return new org.waarp.ftp.core.command.service.DELE();</span>
       case RMD:
-<span class="nc" id="L1476">        return new org.waarp.ftp.core.command.service.RMD();</span>
+<span class="nc" id="L1477">        return new org.waarp.ftp.core.command.service.RMD();</span>
       case MKD:
-<span class="nc" id="L1478">        return new org.waarp.ftp.core.command.service.MKD();</span>
+<span class="nc" id="L1479">        return new org.waarp.ftp.core.command.service.MKD();</span>
       case PWD:
-<span class="nc" id="L1480">        return new org.waarp.ftp.core.command.service.PWD();</span>
+<span class="nc" id="L1481">        return new org.waarp.ftp.core.command.service.PWD();</span>
       case LIST:
-<span class="nc" id="L1482">        return new org.waarp.ftp.core.command.service.LIST();</span>
+<span class="nc" id="L1483">        return new org.waarp.ftp.core.command.service.LIST();</span>
       case NLST:
-<span class="nc" id="L1484">        return new org.waarp.ftp.core.command.service.NLST();</span>
+<span class="nc" id="L1485">        return new org.waarp.ftp.core.command.service.NLST();</span>
       case SITE:
-<span class="nc" id="L1486">        return new org.waarp.ftp.core.command.info.SITE();</span>
+<span class="nc" id="L1487">        return new org.waarp.ftp.core.command.info.SITE();</span>
       case SYST:
-<span class="nc" id="L1488">        return new org.waarp.ftp.core.command.info.SYST();</span>
+<span class="nc" id="L1489">        return new org.waarp.ftp.core.command.info.SYST();</span>
       case STAT:
-<span class="nc" id="L1490">        return new org.waarp.ftp.core.command.info.STAT();</span>
+<span class="nc" id="L1491">        return new org.waarp.ftp.core.command.info.STAT();</span>
       case HELP:
-<span class="nc" id="L1492">        return new org.waarp.ftp.core.command.info.HELP();</span>
+<span class="nc" id="L1493">        return new org.waarp.ftp.core.command.info.HELP();</span>
       case NOOP:
-<span class="nc" id="L1494">        return new org.waarp.ftp.core.command.info.NOOP();</span>
+<span class="nc" id="L1495">        return new org.waarp.ftp.core.command.info.NOOP();</span>
       case XCWD:
-<span class="nc" id="L1496">        return new org.waarp.ftp.core.command.rfc775.XCWD();</span>
+<span class="nc" id="L1497">        return new org.waarp.ftp.core.command.rfc775.XCWD();</span>
       case XCUP:
-<span class="nc" id="L1498">        return new org.waarp.ftp.core.command.rfc775.XCUP();</span>
+<span class="nc" id="L1499">        return new org.waarp.ftp.core.command.rfc775.XCUP();</span>
       case XRMD:
-<span class="nc" id="L1500">        return new org.waarp.ftp.core.command.rfc775.XRMD();</span>
+<span class="nc" id="L1501">        return new org.waarp.ftp.core.command.rfc775.XRMD();</span>
       case XMKD:
-<span class="nc" id="L1502">        return new org.waarp.ftp.core.command.rfc775.XMKD();</span>
+<span class="nc" id="L1503">        return new org.waarp.ftp.core.command.rfc775.XMKD();</span>
       case XPWD:
-<span class="nc" id="L1504">        return new org.waarp.ftp.core.command.rfc775.XPWD();</span>
+<span class="nc" id="L1505">        return new org.waarp.ftp.core.command.rfc775.XPWD();</span>
       case MDTM:
-<span class="nc" id="L1506">        return new org.waarp.ftp.core.command.rfc3659.MDTM();</span>
+<span class="nc" id="L1507">        return new org.waarp.ftp.core.command.rfc3659.MDTM();</span>
       case SIZE:
-<span class="nc" id="L1508">        return new org.waarp.ftp.core.command.rfc3659.SIZE();</span>
+<span class="nc" id="L1509">        return new org.waarp.ftp.core.command.rfc3659.SIZE();</span>
       case MLSD:
-<span class="nc" id="L1510">        return new org.waarp.ftp.core.command.rfc3659.MLSD();</span>
+<span class="nc" id="L1511">        return new org.waarp.ftp.core.command.rfc3659.MLSD();</span>
       case MLST:
-<span class="nc" id="L1512">        return new org.waarp.ftp.core.command.rfc3659.MLST();</span>
+<span class="nc" id="L1513">        return new org.waarp.ftp.core.command.rfc3659.MLST();</span>
       case FEAT:
-<span class="nc" id="L1514">        return new org.waarp.ftp.core.command.rfc2389.FEAT();</span>
+<span class="nc" id="L1515">        return new org.waarp.ftp.core.command.rfc2389.FEAT();</span>
       case OPTS:
-<span class="nc" id="L1516">        return new org.waarp.ftp.core.command.rfc2389.OPTS();</span>
+<span class="nc" id="L1517">        return new org.waarp.ftp.core.command.rfc2389.OPTS();</span>
       case EPRT:
-<span class="nc" id="L1518">        return new org.waarp.ftp.core.command.rfc2428.EPRT();</span>
+<span class="nc" id="L1519">        return new org.waarp.ftp.core.command.rfc2428.EPRT();</span>
       case EPSV:
-<span class="nc" id="L1520">        return new org.waarp.ftp.core.command.rfc2428.EPSV();</span>
+<span class="nc" id="L1521">        return new org.waarp.ftp.core.command.rfc2428.EPSV();</span>
       case XCRC:
-<span class="nc" id="L1522">        return new org.waarp.ftp.core.command.extension.XCRC();</span>
+<span class="nc" id="L1523">        return new org.waarp.ftp.core.command.extension.XCRC();</span>
       case XMD5:
-<span class="nc" id="L1524">        return new org.waarp.ftp.core.command.extension.XMD5();</span>
+<span class="nc" id="L1525">        return new org.waarp.ftp.core.command.extension.XMD5();</span>
       case XSHA1:
-<span class="nc" id="L1526">        return new org.waarp.ftp.core.command.extension.XSHA1();</span>
+<span class="nc" id="L1527">        return new org.waarp.ftp.core.command.extension.XSHA1();</span>
       case XDIGEST:
-<span class="nc" id="L1528">        return new org.waarp.ftp.core.command.extension.XDIGEST();</span>
+<span class="nc" id="L1529">        return new org.waarp.ftp.core.command.extension.XDIGEST();</span>
       case IncorrectSequence:
-<span class="nc" id="L1530">        return new IncorrectCommand();</span>
+<span class="nc" id="L1531">        return new IncorrectCommand();</span>
       case INTERNALSHUTDOWN:
-<span class="nc" id="L1532">        return new org.waarp.ftp.core.command.internal.INTERNALSHUTDOWN();</span>
+<span class="nc" id="L1533">        return new org.waarp.ftp.core.command.internal.INTERNALSHUTDOWN();</span>
       case LIMITBANDWIDTH:
-<span class="nc" id="L1534">        return new org.waarp.ftp.core.command.internal.LIMITBANDWIDTH();</span>
+<span class="nc" id="L1535">        return new org.waarp.ftp.core.command.internal.LIMITBANDWIDTH();</span>
       case AUTH:
-<span class="nc" id="L1536">        return new org.waarp.ftp.core.command.rfc4217.AUTH();</span>
+<span class="nc" id="L1537">        return new org.waarp.ftp.core.command.rfc4217.AUTH();</span>
       case CCC:
-<span class="nc" id="L1538">        return new org.waarp.ftp.core.command.rfc4217.CCC();</span>
+<span class="nc" id="L1539">        return new org.waarp.ftp.core.command.rfc4217.CCC();</span>
       case PROT:
-<span class="nc" id="L1540">        return new org.waarp.ftp.core.command.rfc4217.PROT();</span>
+<span class="nc" id="L1541">        return new org.waarp.ftp.core.command.rfc4217.PROT();</span>
       case PBSZ:
-<span class="nc" id="L1542">        return new org.waarp.ftp.core.command.rfc4217.PBSZ();</span>
+<span class="nc" id="L1543">        return new org.waarp.ftp.core.command.rfc4217.PBSZ();</span>
       case Unknown:
       case Unimplemented:
       default:
-<span class="nc" id="L1546">        return new UnknownCommand();</span>
+<span class="nc" id="L1547">        return new UnknownCommand();</span>
     }
   }
 
@@ -1556,7 +1557,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ...)
    */
   public static boolean isStoreLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1559" title="All 6 branches missed.">    return command == APPE || command == STOR || command == STOU;</span>
+<span class="nc bnc" id="L1560" title="All 6 branches missed.">    return command == APPE || command == STOR || command == STOU;</span>
   }
 
   /**
@@ -1567,7 +1568,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * @return True if the command is a Retrieve like operation (RETR, ...)
    */
   public static boolean isRetrLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1570" title="All 2 branches missed.">    return command == RETR;</span>
+<span class="nc bnc" id="L1571" title="All 2 branches missed.">    return command == RETR;</span>
   }
 
   /**
@@ -1578,7 +1579,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * @return True if the command is a Retrieve or Store like operation
    */
   public static boolean isStorOrRetrLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1581" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command);</span>
+<span class="nc bnc" id="L1582" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command);</span>
   }
 
   /**
@@ -1591,7 +1592,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     MLST, ...)
    */
   public static boolean isListLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1594" title="All 8 branches missed.">    return command == LIST || command == NLST || command == MLSD ||</span>
+<span class="nc bnc" id="L1595" title="All 8 branches missed.">    return command == LIST || command == NLST || command == MLSD ||</span>
            command == MLST;
   }
 
@@ -1604,8 +1605,8 @@ import org.waarp.ftp.core.session.FtpSession;
    */
   public static boolean isDataConnectionUsageCommand(
       final FtpCommandCode command) {
-<span class="nc bnc" id="L1607" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command) ||</span>
-<span class="nc bnc" id="L1608" title="All 2 branches missed.">           isListLikeCommand(command);</span>
+<span class="nc bnc" id="L1608" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command) ||</span>
+<span class="nc bnc" id="L1609" title="All 2 branches missed.">           isListLikeCommand(command);</span>
   }
 
   /**
@@ -1618,7 +1619,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ...)
    */
   public static boolean isSpecialCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1621" title="All 8 branches missed.">    return command == QUIT || command == ABOR || command == NOOP ||</span>
+<span class="nc bnc" id="L1622" title="All 8 branches missed.">    return command == QUIT || command == ABOR || command == NOOP ||</span>
            command == STAT;
   }
 
@@ -1632,7 +1633,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ACCT, CCC)
    */
   public static boolean isSslOrAuthCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1635" title="All 12 branches missed.">    return command == AUTH || command == PBSZ || command == PROT ||</span>
+<span class="nc bnc" id="L1636" title="All 12 branches missed.">    return command == AUTH || command == PBSZ || command == PROT ||</span>
            command == PASS || command == ACCT || command == CCC;
   }
 
@@ -1645,14 +1646,14 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ...)
    */
   public static boolean isExtensionCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1648" title="All 12 branches missed.">    return command == XMD5 || command == XCRC || command == XSHA1 ||</span>
+<span class="nc bnc" id="L1649" title="All 12 branches missed.">    return command == XMD5 || command == XCRC || command == XSHA1 ||</span>
            command == XDIGEST || command == INTERNALSHUTDOWN ||
            command == LIMITBANDWIDTH;
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L1655">    return name();</span>
+<span class="nc" id="L1656">    return name();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

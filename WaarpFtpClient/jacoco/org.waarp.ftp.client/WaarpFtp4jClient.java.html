@@ -201,20 +201,20 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
   }
 
   private void reconnect() {
-<span class="fc" id="L204">    ftpClient.setAutoNoopTimeout(0);</span>
+<span class="nc" id="L204">    ftpClient.setAutoNoopTimeout(0);</span>
     try {
 <span class="nc" id="L206">      ftpClient.logout();</span>
-<span class="fc" id="L207">    } catch (final Exception e) {</span>
+<span class="nc" id="L207">    } catch (final Exception e) {</span>
       // do nothing
     } finally {
-<span class="fc" id="L210">      disconnect();</span>
+<span class="nc" id="L210">      disconnect();</span>
     }
-<span class="fc" id="L212">    waitAfterDataCommand();</span>
-<span class="fc" id="L213">    connect();</span>
-<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    if (directory != null) {</span>
+<span class="nc" id="L212">    waitAfterDataCommand();</span>
+<span class="nc" id="L213">    connect();</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (directory != null) {</span>
 <span class="nc" id="L215">      changeDir(directory);</span>
     }
-<span class="fc" id="L217">  }</span>
+<span class="nc" id="L217">  }</span>
 
   @Override
   public final boolean connect() {
@@ -248,11 +248,11 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
         } else {
 <span class="fc" id="L249">          ftpClient.login(user, pwd, acct);</span>
         }
-<span class="fc" id="L251">      } catch (final Exception e) {</span>
-<span class="fc" id="L252">        logout();</span>
-<span class="fc" id="L253">        result = LOGIN_IN_ERROR;</span>
-<span class="fc" id="L254">        logger.error(result);</span>
-<span class="fc" id="L255">        return false;</span>
+<span class="nc" id="L251">      } catch (final Exception e) {</span>
+<span class="nc" id="L252">        logout();</span>
+<span class="nc" id="L253">        result = LOGIN_IN_ERROR;</span>
+<span class="nc" id="L254">        logger.error(result);</span>
+<span class="nc" id="L255">        return false;</span>
 <span class="fc" id="L256">      }</span>
       try {
 <span class="fc" id="L258">        ftpClient.setType(FTPClient.TYPE_BINARY);</span>
@@ -268,8 +268,8 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
 <span class="fc" id="L268">      isActive = true;</span>
 <span class="fc" id="L269">      return true;</span>
     } finally {
-<span class="pc bpc" id="L271" title="1 of 4 branches missed.">      if (!isActive &amp;&amp; !ftpClient.isPassive()) {</span>
-<span class="fc" id="L272">        disconnect();</span>
+<span class="pc bpc" id="L271" title="3 of 4 branches missed.">      if (!isActive &amp;&amp; !ftpClient.isPassive()) {</span>
+<span class="nc" id="L272">        disconnect();</span>
       }
     }
   }
@@ -279,13 +279,13 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
 <span class="fc" id="L279">    result = null;</span>
 <span class="fc" id="L280">    ftpClient.setAutoNoopTimeout(0);</span>
 <span class="fc" id="L281">    logger.debug(&quot;QUIT&quot;);</span>
-<span class="fc bfc" id="L282" title="All 2 branches covered.">    if (executeCommand(&quot;QUIT&quot;) == null) {</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">    if (executeCommand(&quot;QUIT&quot;) == null) {</span>
       try {
 <span class="nc" id="L284">        ftpClient.logout();</span>
-<span class="fc" id="L285">      } catch (final Exception e) {</span>
+<span class="nc" id="L285">      } catch (final Exception e) {</span>
         // do nothing
       } finally {
-<span class="fc" id="L288">        disconnect();</span>
+<span class="nc" id="L288">        disconnect();</span>
       }
     }
 <span class="fc" id="L291">  }</span>
@@ -296,8 +296,8 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
 <span class="fc" id="L296">    ftpClient.setAutoNoopTimeout(0);</span>
     try {
 <span class="fc" id="L298">      ftpClient.disconnect(false);</span>
-<span class="fc" id="L299">    } catch (final Exception e) {</span>
-<span class="fc" id="L300">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
+<span class="nc" id="L299">    } catch (final Exception e) {</span>
+<span class="nc" id="L300">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
 <span class="fc" id="L301">    }</span>
 <span class="fc" id="L302">  }</span>
 
@@ -697,21 +697,21 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
         }
       }
 <span class="fc" id="L699">      return reply.getMessages();</span>
-<span class="fc" id="L700">    } catch (final Exception e) {</span>
+<span class="nc" id="L700">    } catch (final Exception e) {</span>
       try {
-<span class="fc" id="L702">        reconnect();</span>
-<span class="fc" id="L703">        final FTPReply reply = ftpClient.sendCustomCommand(params);</span>
-<span class="pc bpc" id="L704" title="1 of 2 branches missed.">        if (!reply.isSuccessCode()) {</span>
+<span class="nc" id="L702">        reconnect();</span>
+<span class="nc" id="L703">        final FTPReply reply = ftpClient.sendCustomCommand(params);</span>
+<span class="nc bnc" id="L704" title="All 2 branches missed.">        if (!reply.isSuccessCode()) {</span>
 <span class="nc" id="L705">          result = reply.toString();</span>
 <span class="nc" id="L706">          return null;</span>
         }
-<span class="fc" id="L708">        return reply.getMessages();</span>
-<span class="fc" id="L709">      } catch (final Exception e1) {</span>
-<span class="fc" id="L710">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L708">        return reply.getMessages();</span>
+<span class="nc" id="L709">      } catch (final Exception e1) {</span>
+<span class="nc" id="L710">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
       }
-<span class="fc" id="L712">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="fc" id="L713">      logger.error(result + &quot;: {}&quot;, e.getMessage());</span>
-<span class="fc" id="L714">      return null;</span>
+<span class="nc" id="L712">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L713">      logger.error(result + &quot;: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L714">      return null;</span>
     }
   }
 

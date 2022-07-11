@@ -368,7 +368,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
 <span class="pc bpc" id="L369" title="1 of 2 branches missed.">    logger.debug(&quot;LocalChannelReference null? {}&quot;,</span>
 <span class="fc" id="L370">                 localChannelReference == null);</span>
-<span class="fc bfc" id="L371" title="All 2 branches covered.">    if (localChannelReference.getDbSession() != null) {</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">    if (localChannelReference.getDbSession() != null) {</span>
 <span class="fc" id="L372">      localChannelReference.getDbSession().useConnection();</span>
     }
 <span class="pc bpc" id="L374" title="1 of 2 branches missed.">    if (localChannelReference.getNetworkChannelObject() != null) {</span>
@@ -534,7 +534,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="fc" id="L534">      final R66Auth source = localChannelReference.getNetworkChannel().attr(</span>
 <span class="fc" id="L535">          NetworkServerHandler.REUSABLE_AUTH_KEY).get();</span>
 <span class="pc bpc" id="L536" title="1 of 2 branches missed.">      if (source != null) {</span>
-<span class="fc bfc" id="L537" title="All 2 branches covered.">        if (localChannelReference.getDbSession() != null) {</span>
+<span class="pc bpc" id="L537" title="1 of 2 branches missed.">        if (localChannelReference.getDbSession() != null) {</span>
 <span class="fc" id="L538">          localChannelReference.getDbSession().useConnection();</span>
         }
 <span class="pc bpc" id="L540" title="1 of 2 branches missed.">        if (localChannelReference.getNetworkChannelObject() != null) {</span>
@@ -609,17 +609,17 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException {
     // do something according to the error
-<span class="nc bnc" id="L612" title="All 2 branches missed.">    if (session.getLocalChannelReference().getFutureRequest().isDone()) {</span>
+<span class="pc bpc" id="L612" title="1 of 2 branches missed.">    if (session.getLocalChannelReference().getFutureRequest().isDone()) {</span>
       // already canceled or successful
 <span class="nc" id="L614">      return;</span>
     }
-<span class="nc" id="L616">    logger.error(localChannelReference.getRequestId() + &quot;: &quot; + packet);</span>
-<span class="nc" id="L617">    session.setStatus(46);</span>
-<span class="nc" id="L618">    final ErrorCode code = ErrorCode.getFromCode(packet.getSmiddle());</span>
-<span class="nc" id="L619">    session.getLocalChannelReference()</span>
-<span class="nc" id="L620">           .setErrorMessage(packet.getSheader(), code);</span>
+<span class="fc" id="L616">    logger.error(localChannelReference.getRequestId() + &quot;: &quot; + packet);</span>
+<span class="fc" id="L617">    session.setStatus(46);</span>
+<span class="fc" id="L618">    final ErrorCode code = ErrorCode.getFromCode(packet.getSmiddle());</span>
+<span class="fc" id="L619">    session.getLocalChannelReference()</span>
+<span class="fc" id="L620">           .setErrorMessage(packet.getSheader(), code);</span>
     final OpenR66ProtocolBusinessException exception;
-<span class="nc bnc" id="L622" title="All 2 branches missed.">    if (code.code == ErrorCode.CanceledTransfer.code) {</span>
+<span class="pc bpc" id="L622" title="1 of 2 branches missed.">    if (code.code == ErrorCode.CanceledTransfer.code) {</span>
 <span class="nc" id="L623">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
 <span class="nc" id="L624">      logger.info(&quot;Stop retrieving file: the transfer has been canceled&quot;);</span>
 <span class="nc" id="L625">      exception =</span>
@@ -642,7 +642,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         // ignore
 <span class="nc" id="L643">      }</span>
 <span class="nc" id="L644">      return;</span>
-<span class="nc bnc" id="L645" title="All 2 branches missed.">    } else if (code.code == ErrorCode.StoppedTransfer.code) {</span>
+<span class="pc bpc" id="L645" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.StoppedTransfer.code) {</span>
 <span class="nc" id="L646">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
 <span class="nc" id="L647">      logger.info(&quot;Stop retrieving file: the transfer has been stopped&quot;);</span>
 <span class="nc" id="L648">      exception = new OpenR66ProtocolBusinessStopException(packet.getSheader());</span>
@@ -668,7 +668,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         // ignore
 <span class="nc" id="L669">      }</span>
 <span class="nc" id="L670">      return;</span>
-<span class="nc bnc" id="L671" title="All 2 branches missed.">    } else if (code.code == ErrorCode.QueryAlreadyFinished.code) {</span>
+<span class="pc bpc" id="L671" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.QueryAlreadyFinished.code) {</span>
 <span class="nc" id="L672">      final DbTaskRunner runner = session.getRunner();</span>
 <span class="nc bnc" id="L673" title="All 2 branches missed.">      if (runner == null) {</span>
 <span class="nc" id="L674">        exception =</span>
@@ -686,26 +686,26 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         }
       }
 <span class="nc" id="L688">      throw exception;</span>
-<span class="nc bnc" id="L689" title="All 2 branches missed.">    } else if (code.code == ErrorCode.QueryStillRunning.code) {</span>
+<span class="pc bpc" id="L689" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.QueryStillRunning.code) {</span>
 <span class="nc" id="L690">      exception = new OpenR66ProtocolBusinessQueryStillRunningException(</span>
 <span class="nc" id="L691">          packet.getSheader());</span>
 <span class="nc" id="L692">      throw exception;</span>
-<span class="nc bnc" id="L693" title="All 2 branches missed.">    } else if (code.code == ErrorCode.BadAuthent.code) {</span>
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.BadAuthent.code) {</span>
 <span class="nc" id="L694">      exception =</span>
 <span class="nc" id="L695">          new OpenR66ProtocolNotAuthenticatedException(packet.toString());</span>
-<span class="nc bnc" id="L696" title="All 2 branches missed.">    } else if (code.code == ErrorCode.QueryRemotelyUnknown.code) {</span>
+<span class="pc bpc" id="L696" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.QueryRemotelyUnknown.code) {</span>
 <span class="nc" id="L697">      exception = new OpenR66ProtocolBusinessCancelException(packet.toString());</span>
-<span class="nc bnc" id="L698" title="All 2 branches missed.">    } else if (code.code == ErrorCode.FileNotFound.code) {</span>
+<span class="pc bpc" id="L698" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.FileNotFound.code) {</span>
 <span class="nc" id="L699">      exception = new OpenR66ProtocolBusinessRemoteFileNotFoundException(</span>
 <span class="nc" id="L700">          packet.toString());</span>
     } else {
-<span class="nc" id="L702">      exception =</span>
-<span class="nc" id="L703">          new OpenR66ProtocolBusinessNoWriteBackException(packet.toString());</span>
+<span class="fc" id="L702">      exception =</span>
+<span class="fc" id="L703">          new OpenR66ProtocolBusinessNoWriteBackException(packet.toString());</span>
     }
-<span class="nc" id="L705">    session.setFinalizeTransfer(false,</span>
+<span class="fc" id="L705">    session.setFinalizeTransfer(false,</span>
                                 new R66Result(exception, session, true, code,
-<span class="nc" id="L707">                                              session.getRunner()));</span>
-<span class="nc" id="L708">    throw exception;</span>
+<span class="fc" id="L707">                                              session.getRunner()));</span>
+<span class="fc" id="L708">    throw exception;</span>
   }
 
   /**

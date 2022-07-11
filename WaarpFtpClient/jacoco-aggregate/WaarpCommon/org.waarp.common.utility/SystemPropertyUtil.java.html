@@ -137,7 +137,7 @@ public final class SystemPropertyUtil {
     }
     // Ensure minimize Direct except if something different set
 <span class="fc bfc" id="L139" title="All 2 branches covered.">    if (!contains(IO_NETTY_MAXDIRECTMEMORY) ||</span>
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        ParametersChecker.isNotEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        ParametersChecker.isEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {</span>
       try {
 <span class="fc" id="L142">        System.setProperty(IO_NETTY_MAXDIRECTMEMORY, &quot;0&quot;);</span>
 <span class="fc" id="L143">        synchronized (PROPS) {</span>
@@ -151,50 +151,54 @@ public final class SystemPropertyUtil {
 <span class="nc" id="L151">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
 <span class="fc" id="L152">      }</span>
     }
-    try {
-<span class="fc" id="L155">      System.setProperty(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY,</span>
-                         NET_SF_SAXON_TRANSFORMER_FACTORY_IMPL);
-<span class="fc" id="L157">      synchronized (PROPS) {</span>
-<span class="fc" id="L158">        PROPS.clear();</span>
-<span class="fc" id="L159">        PROPS.putAll(newProps);</span>
-<span class="fc" id="L160">      }</span>
-<span class="nc" id="L161">    } catch (final Throwable ignored) {//NOSONAR</span>
-<span class="nc" id="L162">      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="fc" id="L163">    }</span>
-<span class="fc bfc" id="L164" title="All 2 branches covered.">    if (!contains(FILE_ENCODING) ||</span>
-<span class="fc bfc" id="L165" title="All 2 branches covered.">        !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">    if (!contains(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY) ||</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        ParametersChecker.isEmpty(</span>
+<span class="fc" id="L156">            get(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY))) {</span>
       try {
-<span class="fc" id="L167">        System.setProperty(FILE_ENCODING, WaarpStringUtils.UTF_8);</span>
-        try {
-<span class="fc" id="L169">          final Field charset =</span>
-<span class="fc" id="L170">              Charset.class.getDeclaredField(&quot;defaultCharset&quot;);</span>
-<span class="fc" id="L171">          charset.setAccessible(true); //NOSONAR</span>
-<span class="fc" id="L172">          charset.set(null, null); //NOSONAR</span>
-<span class="nc" id="L173">        } catch (final Throwable e) {//NOSONAR</span>
-<span class="nc" id="L174">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="fc" id="L175">        }</span>
-<span class="fc" id="L176">        synchronized (PROPS) {</span>
-<span class="fc" id="L177">          PROPS.clear();</span>
-<span class="fc" id="L178">          PROPS.putAll(newProps);</span>
-<span class="fc" id="L179">        }</span>
-<span class="nc" id="L180">      } catch (final Throwable e1) {//NOSONAR</span>
-        // ignore since it is a security issue and -Dfile.encoding=UTF-8 should be used
-<span class="nc" id="L182">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L183">        SysErrLogger.FAKE_LOGGER.syserr(</span>
-            &quot;Issue while trying to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument: &quot; +
-<span class="nc" id="L185">            e1.getMessage());</span>
-<span class="nc" id="L186">        SysErrLogger.FAKE_LOGGER.syserr(</span>
-<span class="nc" id="L187">            &quot;Currently file.encoding is: &quot; + get(FILE_ENCODING));</span>
-<span class="fc" id="L188">      }</span>
+<span class="fc" id="L158">        System.setProperty(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY,</span>
+                           NET_SF_SAXON_TRANSFORMER_FACTORY_IMPL);
+<span class="fc" id="L160">        synchronized (PROPS) {</span>
+<span class="fc" id="L161">          PROPS.clear();</span>
+<span class="fc" id="L162">          PROPS.putAll(newProps);</span>
+<span class="fc" id="L163">        }</span>
+<span class="nc" id="L164">      } catch (final Throwable ignored) {//NOSONAR</span>
+<span class="nc" id="L165">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L166">      }</span>
     }
-<span class="fc" id="L190">  }</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">    if (!contains(FILE_ENCODING) ||</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {</span>
+      try {
+<span class="fc" id="L171">        System.setProperty(FILE_ENCODING, WaarpStringUtils.UTF_8);</span>
+        try {
+<span class="fc" id="L173">          final Field charset =</span>
+<span class="fc" id="L174">              Charset.class.getDeclaredField(&quot;defaultCharset&quot;);</span>
+<span class="fc" id="L175">          charset.setAccessible(true); //NOSONAR</span>
+<span class="fc" id="L176">          charset.set(null, null); //NOSONAR</span>
+<span class="nc" id="L177">        } catch (final Throwable e) {//NOSONAR</span>
+<span class="nc" id="L178">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L179">        }</span>
+<span class="fc" id="L180">        synchronized (PROPS) {</span>
+<span class="fc" id="L181">          PROPS.clear();</span>
+<span class="fc" id="L182">          PROPS.putAll(newProps);</span>
+<span class="fc" id="L183">        }</span>
+<span class="nc" id="L184">      } catch (final Throwable e1) {//NOSONAR</span>
+        // ignore since it is a security issue and -Dfile.encoding=UTF-8 should be used
+<span class="nc" id="L186">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L187">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+            &quot;Issue while trying to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument: &quot; +
+<span class="nc" id="L189">            e1.getMessage());</span>
+<span class="nc" id="L190">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L191">            &quot;Currently file.encoding is: &quot; + get(FILE_ENCODING));</span>
+<span class="fc" id="L192">      }</span>
+    }
+<span class="fc" id="L194">  }</span>
 
   /**
    * @return True if Encoding is Correct
    */
   public static boolean isFileEncodingCorrect() {
-<span class="pc bpc" id="L196" title="1 of 2 branches missed.">    return contains(FILE_ENCODING) &amp;&amp;</span>
-<span class="pc bpc" id="L197" title="1 of 2 branches missed.">           WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING));</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">    return contains(FILE_ENCODING) &amp;&amp;</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">           WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING));</span>
   }
 
   /**
@@ -203,8 +207,8 @@ public final class SystemPropertyUtil {
    * {@code key} exists.
    */
   public static boolean contains(final String key) {
-<span class="fc" id="L206">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L207">    return PROPS.containsKey(key);</span>
+<span class="fc" id="L210">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L211">    return PROPS.containsKey(key);</span>
   }
 
   /**
@@ -215,7 +219,7 @@ public final class SystemPropertyUtil {
    * @return the property value or {@code null}
    */
   public static String get(final String key) {
-<span class="fc" id="L218">    return get(key, null);</span>
+<span class="fc" id="L222">    return get(key, null);</span>
   }
 
   /**
@@ -233,20 +237,20 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static String get(final String key, final String def) {
-<span class="fc" id="L236">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L237">    String value = PROPS.getProperty(key);</span>
-<span class="fc bfc" id="L238" title="All 2 branches covered.">    if (value == null) {</span>
-<span class="fc" id="L239">      return def;</span>
+<span class="fc" id="L240">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L241">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L243">      return def;</span>
     }
 
     try {
-<span class="fc" id="L243">      value = ParametersChecker.checkSanityString(value);</span>
-<span class="nc" id="L244">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L245">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
-<span class="nc" id="L246">      return def;</span>
-<span class="fc" id="L247">    }</span>
+<span class="fc" id="L247">      value = ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L248">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L249">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L250">      return def;</span>
+<span class="fc" id="L251">    }</span>
 
-<span class="fc" id="L249">    return value;</span>
+<span class="fc" id="L253">    return value;</span>
   }
 
   /**
@@ -264,35 +268,35 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static boolean get(final String key, final boolean def) {
-<span class="fc" id="L267">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L268">    String value = PROPS.getProperty(key);</span>
-<span class="fc bfc" id="L269" title="All 2 branches covered.">    if (value == null) {</span>
-<span class="fc" id="L270">      return def;</span>
+<span class="fc" id="L271">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L272">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L274">      return def;</span>
     }
 
-<span class="fc" id="L273">    value = value.trim().toLowerCase();</span>
-<span class="fc bfc" id="L274" title="All 2 branches covered.">    if (value.isEmpty()) {</span>
-<span class="fc" id="L275">      return true;</span>
-    }
-
-<span class="fc bfc" id="L278" title="All 6 branches covered.">    if (&quot;true&quot;.equals(value) || &quot;yes&quot;.equals(value) || &quot;1&quot;.equals(value)) {</span>
+<span class="fc" id="L277">    value = value.trim().toLowerCase();</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">    if (value.isEmpty()) {</span>
 <span class="fc" id="L279">      return true;</span>
     }
 
-<span class="pc bpc" id="L282" title="2 of 6 branches missed.">    if (&quot;false&quot;.equals(value) || &quot;no&quot;.equals(value) || &quot;0&quot;.equals(value)) {</span>
-<span class="fc" id="L283">      return false;</span>
+<span class="fc bfc" id="L282" title="All 6 branches covered.">    if (&quot;true&quot;.equals(value) || &quot;yes&quot;.equals(value) || &quot;1&quot;.equals(value)) {</span>
+<span class="fc" id="L283">      return true;</span>
+    }
+
+<span class="pc bpc" id="L286" title="2 of 6 branches missed.">    if (&quot;false&quot;.equals(value) || &quot;no&quot;.equals(value) || &quot;0&quot;.equals(value)) {</span>
+<span class="fc" id="L287">      return false;</span>
     }
     try {
-<span class="fc" id="L286">      ParametersChecker.checkSanityString(value);</span>
-<span class="nc" id="L287">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L288">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
-<span class="nc" id="L289">      return def;</span>
-<span class="fc" id="L290">    }</span>
-<span class="fc" id="L291">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="fc" id="L290">      ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L291">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L292">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L293">      return def;</span>
+<span class="fc" id="L294">    }</span>
+<span class="fc" id="L295">    SysErrLogger.FAKE_LOGGER.syserr(</span>
         &quot;Unable to parse the boolean system property '&quot; + key + &quot;':&quot; + value +
         &quot; - &quot; + USING_THE_DEFAULT_VALUE + def);
 
-<span class="fc" id="L295">    return def;</span>
+<span class="fc" id="L299">    return def;</span>
   }
 
   /**
@@ -310,33 +314,33 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static int get(final String key, final int def) {
-<span class="fc" id="L313">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L314">    String value = PROPS.getProperty(key);</span>
-<span class="fc bfc" id="L315" title="All 2 branches covered.">    if (value == null) {</span>
-<span class="fc" id="L316">      return def;</span>
+<span class="fc" id="L317">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L318">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L320">      return def;</span>
     }
 
-<span class="fc" id="L319">    value = value.trim().toLowerCase();</span>
-<span class="fc bfc" id="L320" title="All 2 branches covered.">    if (value.matches(FIND_0_9)) {</span>
+<span class="fc" id="L323">    value = value.trim().toLowerCase();</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">    if (value.matches(FIND_0_9)) {</span>
       try {
-<span class="fc" id="L322">        return Integer.parseInt(value);</span>
-<span class="nc" id="L323">      } catch (final Exception ignored) {</span>
+<span class="fc" id="L326">        return Integer.parseInt(value);</span>
+<span class="nc" id="L327">      } catch (final Exception ignored) {</span>
         // Since logger could be not available yet
         // Ignore
-<span class="nc" id="L326">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L330">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
       }
     }
     try {
-<span class="fc" id="L330">      ParametersChecker.checkSanityString(value);</span>
-<span class="nc" id="L331">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L332">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
-<span class="nc" id="L333">      return def;</span>
-<span class="fc" id="L334">    }</span>
-<span class="fc" id="L335">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="fc" id="L334">      ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L335">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L336">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L337">      return def;</span>
+<span class="fc" id="L338">    }</span>
+<span class="fc" id="L339">    SysErrLogger.FAKE_LOGGER.syserr(</span>
         &quot;Unable to parse the integer system property '&quot; + key + &quot;':&quot; + value +
         &quot; - &quot; + USING_THE_DEFAULT_VALUE + def);
 
-<span class="fc" id="L339">    return def;</span>
+<span class="fc" id="L343">    return def;</span>
   }
 
   /**
@@ -354,34 +358,34 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static long get(final String key, final long def) {
-<span class="fc" id="L357">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L358">    String value = PROPS.getProperty(key);</span>
-<span class="fc bfc" id="L359" title="All 2 branches covered.">    if (value == null) {</span>
-<span class="fc" id="L360">      return def;</span>
+<span class="fc" id="L361">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L362">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L364">      return def;</span>
     }
 
-<span class="fc" id="L363">    value = value.trim().toLowerCase();</span>
-<span class="fc bfc" id="L364" title="All 2 branches covered.">    if (value.matches(FIND_0_9)) {</span>
+<span class="fc" id="L367">    value = value.trim().toLowerCase();</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">    if (value.matches(FIND_0_9)) {</span>
       try {
-<span class="fc" id="L366">        return Long.parseLong(value);</span>
-<span class="nc" id="L367">      } catch (final Exception ignored) {</span>
+<span class="fc" id="L370">        return Long.parseLong(value);</span>
+<span class="nc" id="L371">      } catch (final Exception ignored) {</span>
         // Since logger could be not available yet
         // Ignore
-<span class="nc" id="L370">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L374">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
       }
     }
     try {
-<span class="fc" id="L374">      ParametersChecker.checkSanityString(value);</span>
-<span class="nc" id="L375">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L376">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
-<span class="nc" id="L377">      return def;</span>
-<span class="fc" id="L378">    }</span>
+<span class="fc" id="L378">      ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L379">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L380">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L381">      return def;</span>
+<span class="fc" id="L382">    }</span>
 
-<span class="fc" id="L380">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="fc" id="L384">    SysErrLogger.FAKE_LOGGER.syserr(</span>
         &quot;Unable to parse the long integer system property '&quot; + key + &quot;':&quot; +
         value + &quot; - &quot; + USING_THE_DEFAULT_VALUE + def);
 
-<span class="fc" id="L384">    return def;</span>
+<span class="fc" id="L388">    return def;</span>
   }
 
   /**
@@ -394,31 +398,31 @@ public final class SystemPropertyUtil {
    *     property is not allowed.
    */
   public static boolean getBoolean(final String key, final boolean def) {
-<span class="nc" id="L397">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="nc" id="L401">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
 
-<span class="nc" id="L399">    String value = PROPS.getProperty(key);</span>
-<span class="nc bnc" id="L400" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L401">      return def;</span>
+<span class="nc" id="L403">    String value = PROPS.getProperty(key);</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L405">      return def;</span>
     }
 
-<span class="nc" id="L404">    value = value.trim().toLowerCase();</span>
-<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (value.isEmpty()) {</span>
-<span class="nc" id="L406">      return true;</span>
-    }
-
-<span class="nc bnc" id="L409" title="All 6 branches missed.">    if (&quot;true&quot;.equals(value) || &quot;yes&quot;.equals(value) || &quot;1&quot;.equals(value)) {</span>
+<span class="nc" id="L408">    value = value.trim().toLowerCase();</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">    if (value.isEmpty()) {</span>
 <span class="nc" id="L410">      return true;</span>
     }
 
-<span class="nc bnc" id="L413" title="All 6 branches missed.">    if (&quot;false&quot;.equals(value) || &quot;no&quot;.equals(value) || &quot;0&quot;.equals(value)) {</span>
-<span class="nc" id="L414">      return false;</span>
+<span class="nc bnc" id="L413" title="All 6 branches missed.">    if (&quot;true&quot;.equals(value) || &quot;yes&quot;.equals(value) || &quot;1&quot;.equals(value)) {</span>
+<span class="nc" id="L414">      return true;</span>
     }
 
-<span class="nc" id="L417">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc bnc" id="L417" title="All 6 branches missed.">    if (&quot;false&quot;.equals(value) || &quot;no&quot;.equals(value) || &quot;0&quot;.equals(value)) {</span>
+<span class="nc" id="L418">      return false;</span>
+    }
+
+<span class="nc" id="L421">    SysErrLogger.FAKE_LOGGER.syserr(</span>
         &quot;Unable to parse the boolean system property '&quot; + key + &quot;':&quot; + value +
         &quot; - &quot; + USING_THE_DEFAULT_VALUE2 + def);
 
-<span class="nc" id="L421">    return def;</span>
+<span class="nc" id="L425">    return def;</span>
   }
 
   /**
@@ -431,27 +435,27 @@ public final class SystemPropertyUtil {
    *     property is not allowed.
    */
   public static int getInt(final String key, final int def) {
-<span class="nc" id="L434">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="nc" id="L438">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
 
-<span class="nc" id="L436">    String value = PROPS.getProperty(key);</span>
-<span class="nc bnc" id="L437" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L438">      return def;</span>
+<span class="nc" id="L440">    String value = PROPS.getProperty(key);</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L442">      return def;</span>
     }
 
-<span class="nc" id="L441">    value = value.trim().toLowerCase();</span>
-<span class="nc bnc" id="L442" title="All 2 branches missed.">    if (value.matches(FIND_0_9)) {</span>
+<span class="nc" id="L445">    value = value.trim().toLowerCase();</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (value.matches(FIND_0_9)) {</span>
       try {
-<span class="nc" id="L444">        return Integer.parseInt(value);</span>
-<span class="nc" id="L445">      } catch (final Exception e) {</span>
+<span class="nc" id="L448">        return Integer.parseInt(value);</span>
+<span class="nc" id="L449">      } catch (final Exception e) {</span>
         // Ignore
       }
     }
 
-<span class="nc" id="L450">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L454">    SysErrLogger.FAKE_LOGGER.syserr(</span>
         &quot;Unable to parse the integer system property '&quot; + key + &quot;':&quot; + value +
         &quot; - &quot; + USING_THE_DEFAULT_VALUE2 + def);
 
-<span class="nc" id="L454">    return def;</span>
+<span class="nc" id="L458">    return def;</span>
   }
 
   /**
@@ -464,27 +468,27 @@ public final class SystemPropertyUtil {
    *     property is not allowed.
    */
   public static long getLong(final String key, final long def) {
-<span class="nc" id="L467">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="nc" id="L471">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
 
-<span class="nc" id="L469">    String value = PROPS.getProperty(key);</span>
-<span class="nc bnc" id="L470" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L471">      return def;</span>
+<span class="nc" id="L473">    String value = PROPS.getProperty(key);</span>
+<span class="nc bnc" id="L474" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L475">      return def;</span>
     }
 
-<span class="nc" id="L474">    value = value.trim().toLowerCase();</span>
-<span class="nc bnc" id="L475" title="All 2 branches missed.">    if (value.matches(FIND_0_9)) {</span>
+<span class="nc" id="L478">    value = value.trim().toLowerCase();</span>
+<span class="nc bnc" id="L479" title="All 2 branches missed.">    if (value.matches(FIND_0_9)) {</span>
       try {
-<span class="nc" id="L477">        return Long.parseLong(value);</span>
-<span class="nc" id="L478">      } catch (final Exception e) {</span>
+<span class="nc" id="L481">        return Long.parseLong(value);</span>
+<span class="nc" id="L482">      } catch (final Exception e) {</span>
         // Ignore
       }
     }
 
-<span class="nc" id="L483">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L487">    SysErrLogger.FAKE_LOGGER.syserr(</span>
         &quot;Unable to parse the long integer system property '&quot; + key + &quot;':&quot; +
         value + &quot; - &quot; + USING_THE_DEFAULT_VALUE2 + def);
 
-<span class="nc" id="L487">    return def;</span>
+<span class="nc" id="L491">    return def;</span>
   }
 
   /**
@@ -502,16 +506,16 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key or def null
    */
   public static String getAndSet(final String key, final String def) {
-<span class="fc" id="L505">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="pc bpc" id="L506" title="1 of 2 branches missed.">    if (def == null) {</span>
-<span class="nc" id="L507">      throw new IllegalArgumentException(&quot;Def cannot be null&quot;);</span>
+<span class="fc" id="L509">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="pc bpc" id="L510" title="1 of 2 branches missed.">    if (def == null) {</span>
+<span class="nc" id="L511">      throw new IllegalArgumentException(&quot;Def cannot be null&quot;);</span>
     }
-<span class="fc bfc" id="L509" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
-<span class="fc" id="L510">      System.setProperty(key, def);</span>
-<span class="fc" id="L511">      refresh();</span>
-<span class="fc" id="L512">      return def;</span>
+<span class="fc bfc" id="L513" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L514">      System.setProperty(key, def);</span>
+<span class="fc" id="L515">      refresh();</span>
+<span class="fc" id="L516">      return def;</span>
     }
-<span class="fc" id="L514">    return PROPS.getProperty(key);</span>
+<span class="fc" id="L518">    return PROPS.getProperty(key);</span>
   }
 
   /**
@@ -529,13 +533,13 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static boolean getAndSet(final String key, final boolean def) {
-<span class="fc" id="L532">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc bfc" id="L533" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
-<span class="fc" id="L534">      System.setProperty(key, Boolean.toString(def));</span>
-<span class="fc" id="L535">      refresh();</span>
-<span class="fc" id="L536">      return def;</span>
+<span class="fc" id="L536">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc bfc" id="L537" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L538">      System.setProperty(key, Boolean.toString(def));</span>
+<span class="fc" id="L539">      refresh();</span>
+<span class="fc" id="L540">      return def;</span>
     }
-<span class="fc" id="L538">    return get(key, def);</span>
+<span class="fc" id="L542">    return get(key, def);</span>
   }
 
   /**
@@ -553,13 +557,13 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static int getAndSet(final String key, final int def) {
-<span class="fc" id="L556">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc bfc" id="L557" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
-<span class="fc" id="L558">      System.setProperty(key, Integer.toString(def));</span>
-<span class="fc" id="L559">      refresh();</span>
-<span class="fc" id="L560">      return def;</span>
+<span class="fc" id="L560">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc bfc" id="L561" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L562">      System.setProperty(key, Integer.toString(def));</span>
+<span class="fc" id="L563">      refresh();</span>
+<span class="fc" id="L564">      return def;</span>
     }
-<span class="fc" id="L562">    return get(key, def);</span>
+<span class="fc" id="L566">    return get(key, def);</span>
   }
 
   /**
@@ -577,13 +581,13 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static long getAndSet(final String key, final long def) {
-<span class="fc" id="L580">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc bfc" id="L581" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
-<span class="fc" id="L582">      System.setProperty(key, Long.toString(def));</span>
-<span class="fc" id="L583">      refresh();</span>
-<span class="fc" id="L584">      return def;</span>
+<span class="fc" id="L584">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc bfc" id="L585" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L586">      System.setProperty(key, Long.toString(def));</span>
+<span class="fc" id="L587">      refresh();</span>
+<span class="fc" id="L588">      return def;</span>
     }
-<span class="fc" id="L586">    return get(key, def);</span>
+<span class="fc" id="L590">    return get(key, def);</span>
   }
 
   /**
@@ -598,17 +602,17 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key or def null
    */
   public static String set(final String key, final String def) {
-<span class="fc" id="L601">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="pc bpc" id="L602" title="1 of 2 branches missed.">    if (def == null) {</span>
-<span class="nc" id="L603">      throw new IllegalArgumentException(&quot;Def cannot be null&quot;);</span>
+<span class="fc" id="L605">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="pc bpc" id="L606" title="1 of 2 branches missed.">    if (def == null) {</span>
+<span class="nc" id="L607">      throw new IllegalArgumentException(&quot;Def cannot be null&quot;);</span>
     }
-<span class="fc" id="L605">    String old = null;</span>
-<span class="fc bfc" id="L606" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
-<span class="fc" id="L607">      old = PROPS.getProperty(key);</span>
+<span class="fc" id="L609">    String old = null;</span>
+<span class="fc bfc" id="L610" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L611">      old = PROPS.getProperty(key);</span>
     }
-<span class="fc" id="L609">    System.setProperty(key, def);</span>
-<span class="fc" id="L610">    refresh();</span>
-<span class="fc" id="L611">    return old;</span>
+<span class="fc" id="L613">    System.setProperty(key, def);</span>
+<span class="fc" id="L614">    refresh();</span>
+<span class="fc" id="L615">    return old;</span>
   }
 
   /**
@@ -623,14 +627,14 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static boolean set(final String key, final boolean def) {
-<span class="fc" id="L626">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L627">    boolean old = false;</span>
-<span class="fc bfc" id="L628" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
-<span class="fc" id="L629">      old = get(key, def);</span>
+<span class="fc" id="L630">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L631">    boolean old = false;</span>
+<span class="fc bfc" id="L632" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L633">      old = get(key, def);</span>
     }
-<span class="fc" id="L631">    System.setProperty(key, Boolean.toString(def));</span>
-<span class="fc" id="L632">    refresh();</span>
-<span class="fc" id="L633">    return old;</span>
+<span class="fc" id="L635">    System.setProperty(key, Boolean.toString(def));</span>
+<span class="fc" id="L636">    refresh();</span>
+<span class="fc" id="L637">    return old;</span>
   }
 
   /**
@@ -645,14 +649,14 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static int set(final String key, final int def) {
-<span class="fc" id="L648">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L649">    int old = 0;</span>
-<span class="fc bfc" id="L650" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
-<span class="fc" id="L651">      old = get(key, def);</span>
+<span class="fc" id="L652">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L653">    int old = 0;</span>
+<span class="fc bfc" id="L654" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L655">      old = get(key, def);</span>
     }
-<span class="fc" id="L653">    System.setProperty(key, Integer.toString(def));</span>
-<span class="fc" id="L654">    refresh();</span>
-<span class="fc" id="L655">    return old;</span>
+<span class="fc" id="L657">    System.setProperty(key, Integer.toString(def));</span>
+<span class="fc" id="L658">    refresh();</span>
+<span class="fc" id="L659">    return old;</span>
   }
 
   /**
@@ -667,14 +671,14 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static long set(final String key, final long def) {
-<span class="fc" id="L670">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L671">    long old = 0;</span>
-<span class="fc bfc" id="L672" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
-<span class="fc" id="L673">      old = get(key, def);</span>
+<span class="fc" id="L674">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L675">    long old = 0;</span>
+<span class="fc bfc" id="L676" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L677">      old = get(key, def);</span>
     }
-<span class="fc" id="L675">    System.setProperty(key, Long.toString(def));</span>
-<span class="fc" id="L676">    refresh();</span>
-<span class="fc" id="L677">    return old;</span>
+<span class="fc" id="L679">    System.setProperty(key, Long.toString(def));</span>
+<span class="fc" id="L680">    refresh();</span>
+<span class="fc" id="L681">    return old;</span>
   }
 
   /**
@@ -686,11 +690,11 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException key null
    */
   public static void clear(final String key) {
-<span class="fc" id="L689">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
-<span class="fc" id="L690">    PROPS.remove(key);</span>
-<span class="fc" id="L691">    System.clearProperty(key);</span>
-<span class="fc" id="L692">    refresh();</span>
-<span class="fc" id="L693">  }</span>
+<span class="fc" id="L693">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L694">    PROPS.remove(key);</span>
+<span class="fc" id="L695">    System.clearProperty(key);</span>
+<span class="fc" id="L696">    refresh();</span>
+<span class="fc" id="L697">  }</span>
 
   /**
    * Print to System.out the content of the properties
@@ -700,105 +704,105 @@ public final class SystemPropertyUtil {
    * @throws IllegalArgumentException out null
    */
   public static void debug(final PrintStream out) {
-<span class="fc" id="L703">    ParametersChecker.checkParameter(&quot;Out&quot;, out);</span>
-<span class="fc" id="L704">    PROPS.list(out);</span>
-<span class="fc" id="L705">  }</span>
+<span class="fc" id="L707">    ParametersChecker.checkParameter(&quot;Out&quot;, out);</span>
+<span class="fc" id="L708">    PROPS.list(out);</span>
+<span class="fc" id="L709">  }</span>
 
   /**
    * Inspired from http://commons.apache.org/lang/api-2.4/org/apache/commons/lang/
    * SystemUtils.html
    */
-<span class="fc" id="L711">  public enum Platform {</span>
+<span class="fc" id="L715">  public enum Platform {</span>
     /**
      * Windows
      */
-<span class="fc" id="L715">    WINDOWS,</span>
+<span class="fc" id="L719">    WINDOWS,</span>
     /**
      * Mac
      */
-<span class="fc" id="L719">    MAC,</span>
+<span class="fc" id="L723">    MAC,</span>
     /**
      * Unix
      */
-<span class="fc" id="L723">    UNIX,</span>
+<span class="fc" id="L727">    UNIX,</span>
     /**
      * Solaris
      */
-<span class="fc" id="L727">    SOLARIS,</span>
+<span class="fc" id="L731">    SOLARIS,</span>
     /**
      * Unsupported
      */
-<span class="fc" id="L731">    UNSUPPORTED</span>
+<span class="fc" id="L735">    UNSUPPORTED</span>
   }
 
   /**
    * @return the Platform
    */
   public static Platform getOS() {
-<span class="fc bfc" id="L738" title="All 2 branches covered.">    if (mOs == null) {</span>
-<span class="fc" id="L739">      mOs = Platform.UNSUPPORTED;</span>
-<span class="fc" id="L740">      String os = &quot;&quot;;</span>
+<span class="fc bfc" id="L742" title="All 2 branches covered.">    if (mOs == null) {</span>
+<span class="fc" id="L743">      mOs = Platform.UNSUPPORTED;</span>
+<span class="fc" id="L744">      String os = &quot;&quot;;</span>
       try {
-<span class="fc" id="L742">        os = System.getProperty(&quot;os.name&quot;).toLowerCase();</span>
-<span class="nc" id="L743">      } catch (final Exception ignored) {</span>
+<span class="fc" id="L746">        os = System.getProperty(&quot;os.name&quot;).toLowerCase();</span>
+<span class="nc" id="L747">      } catch (final Exception ignored) {</span>
         // ignore
-<span class="nc" id="L745">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="fc" id="L746">      }</span>
-<span class="pc bpc" id="L747" title="1 of 2 branches missed.">      if (os.contains(&quot;win&quot;)) {</span>
-<span class="nc" id="L748">        mOs = Platform.WINDOWS;</span>
+<span class="nc" id="L749">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L750">      }</span>
+<span class="pc bpc" id="L751" title="1 of 2 branches missed.">      if (os.contains(&quot;win&quot;)) {</span>
+<span class="nc" id="L752">        mOs = Platform.WINDOWS;</span>
         // Windows
       }
-<span class="pc bpc" id="L751" title="1 of 2 branches missed.">      if (os.contains(&quot;mac&quot;)) {</span>
-<span class="nc" id="L752">        mOs = Platform.MAC;</span>
+<span class="pc bpc" id="L755" title="1 of 2 branches missed.">      if (os.contains(&quot;mac&quot;)) {</span>
+<span class="nc" id="L756">        mOs = Platform.MAC;</span>
         // Mac
       }
-<span class="pc bpc" id="L755" title="1 of 2 branches missed.">      if (os.contains(&quot;nux&quot;)) {</span>
-<span class="fc" id="L756">        mOs = Platform.UNIX;</span>
+<span class="pc bpc" id="L759" title="1 of 2 branches missed.">      if (os.contains(&quot;nux&quot;)) {</span>
+<span class="fc" id="L760">        mOs = Platform.UNIX;</span>
         // Linux
       }
-<span class="pc bpc" id="L759" title="1 of 2 branches missed.">      if (os.contains(&quot;nix&quot;)) {</span>
-<span class="nc" id="L760">        mOs = Platform.UNIX;</span>
+<span class="pc bpc" id="L763" title="1 of 2 branches missed.">      if (os.contains(&quot;nix&quot;)) {</span>
+<span class="nc" id="L764">        mOs = Platform.UNIX;</span>
         // Unix
       }
-<span class="pc bpc" id="L763" title="1 of 2 branches missed.">      if (os.contains(&quot;sunos&quot;)) {</span>
-<span class="nc" id="L764">        mOs = Platform.SOLARIS;</span>
+<span class="pc bpc" id="L767" title="1 of 2 branches missed.">      if (os.contains(&quot;sunos&quot;)) {</span>
+<span class="nc" id="L768">        mOs = Platform.SOLARIS;</span>
         // Solaris
       }
     }
-<span class="fc" id="L768">    return mOs;</span>
+<span class="fc" id="L772">    return mOs;</span>
   }
 
   /**
    * @return True if Windows
    */
   public static boolean isWindows() {
-<span class="pc bpc" id="L775" title="1 of 2 branches missed.">    return getOS() == Platform.WINDOWS;</span>
+<span class="pc bpc" id="L779" title="1 of 2 branches missed.">    return getOS() == Platform.WINDOWS;</span>
   }
 
   /**
    * @return True if Mac
    */
   public static boolean isMac() {
-<span class="pc bpc" id="L782" title="1 of 2 branches missed.">    return getOS() == Platform.MAC;</span>
+<span class="pc bpc" id="L786" title="1 of 2 branches missed.">    return getOS() == Platform.MAC;</span>
   }
 
   /**
    * @return True if Unix
    */
   public static boolean isUnix() {
-<span class="pc bpc" id="L789" title="1 of 2 branches missed.">    return getOS() == Platform.UNIX;</span>
+<span class="pc bpc" id="L793" title="1 of 2 branches missed.">    return getOS() == Platform.UNIX;</span>
   }
 
   /**
    * @return True if Solaris
    */
   public static boolean isSolaris() {
-<span class="pc bpc" id="L796" title="1 of 2 branches missed.">    return getOS() == Platform.SOLARIS;</span>
+<span class="pc bpc" id="L800" title="1 of 2 branches missed.">    return getOS() == Platform.SOLARIS;</span>
   }
 
   public static void debug() {
-<span class="nc" id="L800">    PROPS.list(System.out);//NOSONAR</span>
-<span class="nc" id="L801">  }</span>
+<span class="nc" id="L804">    PROPS.list(System.out);//NOSONAR</span>
+<span class="nc" id="L805">  }</span>
 
   private SystemPropertyUtil() {
     // Unused

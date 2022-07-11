@@ -100,86 +100,91 @@ public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO 
   }
 
   @Override
+  protected final String getTable() {
+<span class="nc" id="L104">    return TABLE;</span>
+  }
+
+  @Override
   protected final String getSelectRequest() {
-<span class="fc" id="L104">    return SQL_SELECT;</span>
+<span class="fc" id="L109">    return SQL_SELECT;</span>
   }
 
   @Override
   protected final String getGetAllRequest() {
-<span class="fc" id="L109">    return SQL_GET_ALL;</span>
+<span class="fc" id="L114">    return SQL_GET_ALL;</span>
   }
 
   @Override
   protected final String getCountRequest() {
-<span class="fc" id="L114">    return SQL_COUNT_ALL;</span>
+<span class="fc" id="L119">    return SQL_COUNT_ALL;</span>
   }
 
   @Override
   protected final String getExistRequest() {
-<span class="fc" id="L119">    return SQL_EXIST;</span>
+<span class="fc" id="L124">    return SQL_EXIST;</span>
   }
 
   @Override
   protected final Object[] getInsertValues(final Host host)
       throws WaarpDatabaseSqlException {
-<span class="fc" id="L125">    host.checkValues();</span>
-<span class="fc" id="L126">    return new Object[] {</span>
-<span class="fc" id="L127">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
-<span class="fc" id="L128">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
-<span class="fc" id="L129">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
+<span class="fc" id="L130">    host.checkValues();</span>
+<span class="fc" id="L131">    return new Object[] {</span>
+<span class="fc" id="L132">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L133">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L134">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
   protected final String getInsertRequest() {
-<span class="fc" id="L135">    return SQL_INSERT;</span>
+<span class="fc" id="L140">    return SQL_INSERT;</span>
   }
 
   @Override
   protected final Object[] getUpdateValues(final Host host)
       throws WaarpDatabaseSqlException {
-<span class="fc" id="L141">    host.checkValues();</span>
-<span class="fc" id="L142">    return new Object[] {</span>
-<span class="fc" id="L143">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
-<span class="fc" id="L144">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
-<span class="fc" id="L145">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
+<span class="fc" id="L146">    host.checkValues();</span>
+<span class="fc" id="L147">    return new Object[] {</span>
+<span class="fc" id="L148">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L149">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L150">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
     };
   }
 
   @Override
   protected final String getUpdateRequest() {
-<span class="fc" id="L151">    return SQL_UPDATE;</span>
+<span class="fc" id="L156">    return SQL_UPDATE;</span>
   }
 
   @Override
   protected final String getDeleteRequest() {
-<span class="nc" id="L156">    return SQL_DELETE;</span>
+<span class="nc" id="L161">    return SQL_DELETE;</span>
   }
 
   @Override
   protected final String getDeleteAllRequest() {
-<span class="nc" id="L161">    return SQL_DELETE_ALL;</span>
+<span class="nc" id="L166">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
   public final Host getFromResultSet(final ResultSet set) throws SQLException {
     try {
-<span class="fc" id="L167">      return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
-<span class="fc" id="L168">                      set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
-<span class="fc" id="L169">                      set.getBoolean(IS_SSL_FIELD),</span>
-<span class="fc" id="L170">                      set.getBoolean(IS_CLIENT_FIELD),</span>
-<span class="fc" id="L171">                      set.getBoolean(IS_PROXIFIED_FIELD),</span>
-<span class="fc" id="L172">                      set.getBoolean(ADMINROLE_FIELD),</span>
-<span class="fc" id="L173">                      set.getBoolean(IS_ACTIVE_FIELD),</span>
-<span class="fc" id="L174">                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
-<span class="nc" id="L175">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L176">      throw new SQLException(e);</span>
+<span class="fc" id="L172">      return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
+<span class="fc" id="L173">                      set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
+<span class="fc" id="L174">                      set.getBoolean(IS_SSL_FIELD),</span>
+<span class="fc" id="L175">                      set.getBoolean(IS_CLIENT_FIELD),</span>
+<span class="fc" id="L176">                      set.getBoolean(IS_PROXIFIED_FIELD),</span>
+<span class="fc" id="L177">                      set.getBoolean(ADMINROLE_FIELD),</span>
+<span class="fc" id="L178">                      set.getBoolean(IS_ACTIVE_FIELD),</span>
+<span class="fc" id="L179">                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="nc" id="L180">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L181">      throw new SQLException(e);</span>
     }
   }
 
   @Override
   protected final boolean isDbTransfer() {
-<span class="fc" id="L182">    return false;</span>
+<span class="fc" id="L187">    return false;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

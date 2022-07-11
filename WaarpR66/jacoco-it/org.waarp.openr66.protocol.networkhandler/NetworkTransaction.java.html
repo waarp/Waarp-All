@@ -370,7 +370,7 @@ public class NetworkTransaction {
       final SocketAddress socketAddress, final boolean isSSL,
       final R66Future futureRequest) {
     try {
-<span class="fc" id="L373">      return createConnectionWithRetryWithAuthenticationException(socketAddress,</span>
+<span class="nc" id="L373">      return createConnectionWithRetryWithAuthenticationException(socketAddress,</span>
                                                                   isSSL,
                                                                   futureRequest);
 <span class="nc" id="L376">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
@@ -420,15 +420,15 @@ public class NetworkTransaction {
 <span class="nc" id="L420">        logger.error(&quot;Cannot be authenticated : {}&quot;, e.getMessage());</span>
 <span class="nc" id="L421">        logger.debug(e);</span>
 <span class="nc" id="L422">        throw e;</span>
-<span class="nc" id="L423">      } catch (final OpenR66ProtocolNetworkException e) {</span>
+<span class="fc" id="L423">      } catch (final OpenR66ProtocolNetworkException e) {</span>
         // Can retry
-<span class="nc" id="L425">        logger.error(&quot;Cannot connect : {}. Will retry&quot;, e.getMessage());</span>
-<span class="nc" id="L426">        logger.warn(e);</span>
+<span class="fc" id="L425">        logger.error(&quot;Cannot connect : {}. Will retry&quot;, e.getMessage());</span>
+<span class="fc" id="L426">        logger.warn(e);</span>
         try {
-<span class="nc" id="L428">          Thread.sleep(Configuration.configuration.getDelayRetry());</span>
-<span class="nc" id="L429">        } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L430">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L431">        }</span>
+<span class="fc" id="L428">          Thread.sleep(Configuration.configuration.getDelayRetry());</span>
+<span class="fc" id="L429">        } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="fc" id="L430">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="fc" id="L431">        }</span>
       }
     }
 <span class="fc bfc" id="L434" title="All 2 branches covered.">    if (localChannelReference != null) {</span>
@@ -493,13 +493,13 @@ public class NetworkTransaction {
 <span class="fc" id="L493">                                       .createNewClient(networkChannelReference,</span>
                                                         ChannelUtils.NOCHANNEL,
                                                         futureRequest, isSSL);
-<span class="nc" id="L496">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L497">        throw new OpenR66ProtocolNetworkException(e);</span>
+<span class="fc" id="L496">      } catch (final NullPointerException e) {</span>
+<span class="fc" id="L497">        throw new OpenR66ProtocolNetworkException(e);</span>
 <span class="fc" id="L498">      }</span>
 <span class="fc" id="L499">      ok = true;</span>
     } finally {
-<span class="pc bpc" id="L501" title="1 of 4 branches missed.">      if (!ok &amp;&amp; networkChannelReference != null) {</span>
-<span class="nc" id="L502">        checkClosingNetworkChannel(networkChannelReference, null);</span>
+<span class="fc bfc" id="L501" title="All 4 branches covered.">      if (!ok &amp;&amp; networkChannelReference != null) {</span>
+<span class="fc" id="L502">        checkClosingNetworkChannel(networkChannelReference, null);</span>
       }
     }
 <span class="pc bpc" id="L505" title="1 of 2 branches missed.">    if (localChannelReference.getFutureValidateStartup().isSuccess()) {</span>
@@ -550,7 +550,7 @@ public class NetworkTransaction {
       }
 <span class="fc" id="L551">      logger.debug(&quot;NEW PHYSICAL CONNECTION REQUIRED&quot;);</span>
 <span class="fc" id="L552">      ChannelFuture channelFuture = null;</span>
-<span class="pc bpc" id="L553" title="1 of 2 branches missed.">      for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="fc bfc" id="L553" title="All 2 branches covered.">      for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
 <span class="pc bpc" id="L554" title="1 of 2 branches missed.">        if (WaarpShutdownHook.isShutdownStarting()) {</span>
 <span class="nc" id="L555">          throw new OpenR66ProtocolNoConnectionException(</span>
               &quot;Local system in shutdown&quot;);
@@ -599,18 +599,18 @@ public class NetworkTransaction {
                 &quot;Cannot connect to remote server since received an &quot; +
                 &quot;interruption&quot;);
           }
-<span class="pc bpc" id="L602" title="1 of 2 branches missed.">          if (channelFuture.cause() instanceof ConnectException) {</span>
+<span class="fc bfc" id="L602" title="All 2 branches covered.">          if (channelFuture.cause() instanceof ConnectException) {</span>
 <span class="fc" id="L603">            logger.debug(&quot;KO CONNECT: {}&quot;, channelFuture.cause().getMessage());</span>
 <span class="fc" id="L604">            throw new OpenR66ProtocolNoConnectionException(</span>
 <span class="fc" id="L605">                channelFuture.cause().getMessage(), channelFuture.cause());</span>
           } else {
-<span class="nc" id="L607">            logger.debug(&quot;KO CONNECT but retry&quot;, channelFuture.cause());</span>
+<span class="fc" id="L607">            logger.debug(&quot;KO CONNECT but retry&quot;, channelFuture.cause());</span>
           }
         }
       }
-<span class="nc bnc" id="L611" title="All 2 branches missed.">      if (channelFuture != null) {</span>
-<span class="nc" id="L612">        throw new OpenR66ProtocolNetworkException(</span>
-<span class="nc" id="L613">            &quot;Cannot connect to remote server&quot;, channelFuture.cause());</span>
+<span class="pc bpc" id="L611" title="1 of 2 branches missed.">      if (channelFuture != null) {</span>
+<span class="fc" id="L612">        throw new OpenR66ProtocolNetworkException(</span>
+<span class="fc" id="L613">            &quot;Cannot connect to remote server&quot;, channelFuture.cause());</span>
       } else {
 <span class="nc" id="L615">        throw new OpenR66ProtocolNetworkException(</span>
             &quot;Cannot connect to remote server&quot;);
@@ -1135,7 +1135,7 @@ public class NetworkTransaction {
                                       TimeUnit.MILLISECONDS);
     try {
 <span class="fc" id="L1137">      logger.debug(&quot;Close con: {}&quot;, networkChannelReference);</span>
-<span class="pc bpc" id="L1138" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="fc bfc" id="L1138" title="All 2 branches covered.">      if (localChannelReference != null) {</span>
 <span class="fc" id="L1139">        networkChannelReference.closeAndRemove(localChannelReference);</span>
       }
 <span class="fc" id="L1141">      final int count = networkChannelReference.nbLocalChannels();</span>
@@ -1150,9 +1150,9 @@ public class NetworkTransaction {
                                                                  TimeUnit.MILLISECONDS);
 <span class="fc" id="L1151">        } catch (final OpenR66RunnerErrorException ignored) {</span>
           // nothing
-<span class="nc" id="L1153">        } catch (final IllegalStateException ignored) {</span>
+<span class="fc" id="L1153">        } catch (final IllegalStateException ignored) {</span>
           // nothing
-<span class="pc" id="L1155">        }</span>
+<span class="fc" id="L1155">        }</span>
       } else {
 <span class="fc" id="L1157">        networkChannelReference.use();</span>
 <span class="fc" id="L1158">        logger.debug(&quot;Ignore shutdown after checking&quot;);</span>
@@ -1255,7 +1255,7 @@ public class NetworkTransaction {
           &quot;Remote Host is blacklisted&quot;);
     }
 <span class="fc" id="L1257">    nc = getNCR(address);</span>
-<span class="fc bfc" id="L1258" title="All 6 branches covered.">    if (nc != null &amp;&amp; (nc.isShuttingDown || !nc.channel().isActive())) {</span>
+<span class="pc bpc" id="L1258" title="1 of 6 branches missed.">    if (nc != null &amp;&amp; (nc.isShuttingDown || !nc.channel().isActive())) {</span>
 <span class="fc" id="L1259">      logger.debug(&quot;HOST IS DisActive: {}&quot;, address);</span>
 <span class="fc" id="L1260">      throw new OpenR66ProtocolRemoteShutdownException(</span>
           &quot;Remote Host is disActive&quot;);

@@ -185,17 +185,17 @@ public class ClientRunner extends Thread {
 <span class="fc" id="L185">          session.setRunner(reloaded);</span>
 <span class="fc" id="L186">          session.setBlockSize(reloaded.getBlocksize());</span>
 <span class="fc" id="L187">          final File file = new File(reloaded.getFullFilePath());</span>
-<span class="fc bfc" id="L188" title="All 2 branches covered.">          if (!file.isFile()) {</span>
-<span class="fc" id="L189">            logger.warn(&quot;File not found: {}&quot;, file.getAbsolutePath());</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">          if (!file.isFile()) {</span>
+<span class="nc" id="L189">            logger.warn(&quot;File not found: {}&quot;, file.getAbsolutePath());</span>
             // File does no more exist =&gt; error
-<span class="fc" id="L191">            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
-<span class="fc" id="L192">            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
-<span class="fc" id="L193">            logger.error(&quot;Runner Error: {} {}&quot;,</span>
-<span class="fc" id="L194">                         ErrorCode.FileNotFound.getMesg(),</span>
-<span class="fc" id="L195">                         taskRunner.toShortString());</span>
-<span class="fc" id="L196">            reloaded.setErrorTask();</span>
-<span class="fc" id="L197">            reloaded.update();</span>
-<span class="fc" id="L198">            return;</span>
+<span class="nc" id="L191">            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);</span>
+<span class="nc" id="L192">            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
+<span class="nc" id="L193">            logger.error(&quot;Runner Error: {} {}&quot;,</span>
+<span class="nc" id="L194">                         ErrorCode.FileNotFound.getMesg(),</span>
+<span class="nc" id="L195">                         taskRunner.toShortString());</span>
+<span class="nc" id="L196">            reloaded.setErrorTask();</span>
+<span class="nc" id="L197">            reloaded.update();</span>
+<span class="nc" id="L198">            return;</span>
           }
 <span class="fc" id="L200">          status = true;</span>
 <span class="nc" id="L201">        } catch (final CommandAbstractException e) {</span>
@@ -247,29 +247,29 @@ public class ClientRunner extends Thread {
 <span class="nc" id="L247">        logger.error(&quot;Runner Error: {} {}&quot;, e.getMessage(),</span>
 <span class="nc" id="L248">                     taskRunner.toShortString());</span>
 <span class="nc" id="L249">        return;</span>
-<span class="fc" id="L250">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
-<span class="fc" id="L251">        logger.error(&quot;No connection Error {}&quot;, e.getMessage());</span>
-<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (localChannelReference != null) {</span>
+<span class="nc" id="L250">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="nc" id="L251">        logger.error(&quot;No connection Error {}&quot;, e.getMessage());</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (localChannelReference != null) {</span>
 <span class="nc" id="L253">          localChannelReference.setErrorMessage(</span>
 <span class="nc" id="L254">              ErrorCode.ConnectionImpossible.getMesg(),</span>
               ErrorCode.ConnectionImpossible);
         }
-<span class="fc" id="L257">        taskRunner.setErrorTask();</span>
+<span class="nc" id="L257">        taskRunner.setErrorTask();</span>
         try {
-<span class="fc" id="L259">          taskRunner.forceSaveStatus();</span>
-<span class="fc" id="L260">          taskRunner.run();</span>
-<span class="fc" id="L261">          taskRunner.saveStatus();</span>
+<span class="nc" id="L259">          taskRunner.forceSaveStatus();</span>
+<span class="nc" id="L260">          taskRunner.run();</span>
+<span class="nc" id="L261">          taskRunner.saveStatus();</span>
 <span class="nc" id="L262">        } catch (final OpenR66RunnerErrorException e1) {</span>
 <span class="nc" id="L263">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                             true);
-<span class="fc" id="L265">        }</span>
-<span class="fc" id="L266">        return;</span>
+<span class="nc" id="L265">        }</span>
+<span class="nc" id="L266">        return;</span>
 <span class="nc" id="L267">      } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L268">        logger.error(&quot;Protocol Error&quot;, e);</span>
 <span class="nc" id="L269">        return;</span>
-<span class="fc" id="L270">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
-<span class="fc" id="L271">        logger.warn(&quot;No connection warning {}&quot;, e.getMessage());</span>
-<span class="fc" id="L272">        return;</span>
+<span class="nc" id="L270">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
+<span class="nc" id="L271">        logger.warn(&quot;No connection warning {}&quot;, e.getMessage());</span>
+<span class="nc" id="L272">        return;</span>
 <span class="fc" id="L273">      }</span>
 <span class="fc" id="L274">      final R66Result result = transfer.getResult();</span>
 <span class="pc bpc" id="L275" title="1 of 2 branches missed.">      if (result != null) {</span>

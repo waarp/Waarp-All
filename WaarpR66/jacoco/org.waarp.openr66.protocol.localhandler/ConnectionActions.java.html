@@ -188,7 +188,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="fc" id="L188">      session.partialClear();</span>
 <span class="fc" id="L189">      session.setStatus(51);</span>
 <span class="fc bfc" id="L190" title="All 2 branches covered.">      if (localChannelReference != null) {</span>
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        if (localChannelReference.getDbSession() != null) {</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (localChannelReference.getDbSession() != null) {</span>
 <span class="fc" id="L192">          localChannelReference.getDbSession().endUseConnection();</span>
 <span class="fc" id="L193">          logger.debug(&quot;End Use Connection&quot;);</span>
         }
@@ -368,7 +368,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
 <span class="pc bpc" id="L369" title="1 of 2 branches missed.">    logger.debug(&quot;LocalChannelReference null? {}&quot;,</span>
 <span class="fc" id="L370">                 localChannelReference == null);</span>
-<span class="pc bpc" id="L371" title="1 of 2 branches missed.">    if (localChannelReference.getDbSession() != null) {</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">    if (localChannelReference.getDbSession() != null) {</span>
 <span class="fc" id="L372">      localChannelReference.getDbSession().useConnection();</span>
     }
 <span class="pc bpc" id="L374" title="1 of 2 branches missed.">    if (localChannelReference.getNetworkChannelObject() != null) {</span>
@@ -619,29 +619,29 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="fc" id="L619">    session.getLocalChannelReference()</span>
 <span class="fc" id="L620">           .setErrorMessage(packet.getSheader(), code);</span>
     final OpenR66ProtocolBusinessException exception;
-<span class="fc bfc" id="L622" title="All 2 branches covered.">    if (code.code == ErrorCode.CanceledTransfer.code) {</span>
-<span class="fc" id="L623">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
-<span class="fc" id="L624">      logger.info(&quot;Stop retrieving file: the transfer has been canceled&quot;);</span>
-<span class="fc" id="L625">      exception =</span>
-<span class="fc" id="L626">          new OpenR66ProtocolBusinessCancelException(packet.getSheader());</span>
-<span class="fc" id="L627">      final int rank = 0;</span>
-<span class="fc" id="L628">      final DbTaskRunner runner = session.getRunner();</span>
-<span class="pc bpc" id="L629" title="1 of 2 branches missed.">      if (runner != null) {</span>
-<span class="fc" id="L630">        runner.setRankAtStartup(rank);</span>
-<span class="fc" id="L631">        runner.stopOrCancelRunner(code);</span>
+<span class="pc bpc" id="L622" title="1 of 2 branches missed.">    if (code.code == ErrorCode.CanceledTransfer.code) {</span>
+<span class="nc" id="L623">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
+<span class="nc" id="L624">      logger.info(&quot;Stop retrieving file: the transfer has been canceled&quot;);</span>
+<span class="nc" id="L625">      exception =</span>
+<span class="nc" id="L626">          new OpenR66ProtocolBusinessCancelException(packet.getSheader());</span>
+<span class="nc" id="L627">      final int rank = 0;</span>
+<span class="nc" id="L628">      final DbTaskRunner runner = session.getRunner();</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">      if (runner != null) {</span>
+<span class="nc" id="L630">        runner.setRankAtStartup(rank);</span>
+<span class="nc" id="L631">        runner.stopOrCancelRunner(code);</span>
       }
-<span class="fc" id="L633">      final R66Result result =</span>
+<span class="nc" id="L633">      final R66Result result =</span>
           new R66Result(exception, session, true, code, runner);
       // now try to inform other
-<span class="fc" id="L636">      session.setFinalizeTransfer(false, result);</span>
+<span class="nc" id="L636">      session.setFinalizeTransfer(false, result);</span>
       try {
-<span class="fc" id="L638">        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
-<span class="fc" id="L639">                                              false).addListener(</span>
+<span class="nc" id="L638">        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,</span>
+<span class="nc" id="L639">                                              false).addListener(</span>
             new RunnerChannelFutureListener(localChannelReference, result));
 <span class="nc" id="L641">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="fc" id="L643">      }</span>
-<span class="fc" id="L644">      return;</span>
+<span class="nc" id="L643">      }</span>
+<span class="nc" id="L644">      return;</span>
 <span class="pc bpc" id="L645" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.StoppedTransfer.code) {</span>
 <span class="nc" id="L646">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
 <span class="nc" id="L647">      logger.info(&quot;Stop retrieving file: the transfer has been stopped&quot;);</span>
@@ -731,17 +731,17 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
     private RunnerChannelFutureListener(
         final LocalChannelReference localChannelReference,
-<span class="fc" id="L734">        final R66Result result) {</span>
-<span class="fc" id="L735">      this.localChannelReference = localChannelReference;</span>
-<span class="fc" id="L736">      this.result = result;</span>
-<span class="fc" id="L737">    }</span>
+<span class="nc" id="L734">        final R66Result result) {</span>
+<span class="nc" id="L735">      this.localChannelReference = localChannelReference;</span>
+<span class="nc" id="L736">      this.result = result;</span>
+<span class="nc" id="L737">    }</span>
 
     @Override
     public final void operationComplete(final ChannelFuture future) {
-<span class="fc" id="L741">      localChannelReference.invalidateRequest(result);</span>
-<span class="fc" id="L742">      ChannelCloseTimer.closeFutureTransaction(</span>
-<span class="fc" id="L743">          localChannelReference.getServerHandler());</span>
-<span class="fc" id="L744">    }</span>
+<span class="nc" id="L741">      localChannelReference.invalidateRequest(result);</span>
+<span class="nc" id="L742">      ChannelCloseTimer.closeFutureTransaction(</span>
+<span class="nc" id="L743">          localChannelReference.getServerHandler());</span>
+<span class="nc" id="L744">    }</span>
 
   }
 

@@ -50,7 +50,7 @@ import static org.waarp.common.database.DbConstant.*;
 /**
  * Java Task for SpooledDirectory information to the Waarp Server
  */
-<span class="fc" id="L53">public class SpooledInformTask extends AbstractExecJavaTask {</span>
+<span class="nc" id="L53">public class SpooledInformTask extends AbstractExecJavaTask {</span>
 
   private static final String TD_TD = &quot;&lt;/TD&gt;&lt;TD&gt;&quot;;
 
@@ -68,71 +68,71 @@ import static org.waarp.common.database.DbConstant.*;
   public static class SpooledInformation {
     public final String host;
     public FileMonitorInformation fileMonitorInformation;
-<span class="fc" id="L71">    public Date lastUpdate = new Date();</span>
+<span class="nc" id="L71">    public Date lastUpdate = new Date();</span>
 
     /**
      * @param host
      * @param fileMonitorInformation
      */
     private SpooledInformation(final String host,
-<span class="fc" id="L78">                               final FileMonitorInformation fileMonitorInformation) {</span>
-<span class="fc" id="L79">      this.host = host;</span>
-<span class="fc" id="L80">      this.fileMonitorInformation = fileMonitorInformation;</span>
-<span class="fc" id="L81">    }</span>
+<span class="nc" id="L78">                               final FileMonitorInformation fileMonitorInformation) {</span>
+<span class="nc" id="L79">      this.host = host;</span>
+<span class="nc" id="L80">      this.fileMonitorInformation = fileMonitorInformation;</span>
+<span class="nc" id="L81">    }</span>
   }
 
   @Override
   public final void run() {
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (callFromBusiness) {</span>
       // Business Request to validate?
-<span class="fc" id="L88">      String validated = SpooledDirectoryTransfer.PARTIALOK;</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">      if (isToValidate) {</span>
+<span class="nc" id="L88">      String validated = SpooledDirectoryTransfer.PARTIALOK;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (isToValidate) {</span>
         try {
-<span class="fc" id="L91">          final FileMonitorInformation fileMonitorInformation =</span>
-<span class="fc" id="L92">              JsonHandler.mapper.readValue(fullarg,</span>
+<span class="nc" id="L91">          final FileMonitorInformation fileMonitorInformation =</span>
+<span class="nc" id="L92">              JsonHandler.mapper.readValue(fullarg,</span>
                                            FileMonitorInformation.class);
-<span class="fc" id="L94">          logger.info(</span>
-<span class="fc" id="L95">              &quot;Receive SpooledInform of size: &quot; + fullarg.length() + &quot; (&quot; +</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">              fileMonitorInformation.fileItems.size() + &quot;, &quot; +</span>
+<span class="nc" id="L94">          logger.info(</span>
+<span class="nc" id="L95">              &quot;Receive SpooledInform of size: &quot; + fullarg.length() + &quot; (&quot; +</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">              fileMonitorInformation.fileItems.size() + &quot;, &quot; +</span>
               (fileMonitorInformation.removedFileItems != null?
-<span class="fc" id="L98">                  fileMonitorInformation.removedFileItems.size() : -1) + ')');</span>
-<span class="fc" id="L99">          final String host = session.getAuth().getUser();</span>
-<span class="fc" id="L100">          synchronized (spooledInformationMap) {</span>
-<span class="fc bfc" id="L101" title="All 2 branches covered.">            if (fileMonitorInformation.removedFileItems == null ||</span>
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                fileMonitorInformation.removedFileItems.isEmpty()) {</span>
-<span class="fc" id="L103">              final SpooledInformation old =</span>
-<span class="fc" id="L104">                  spooledInformationMap.put(fileMonitorInformation.name,</span>
+<span class="nc" id="L98">                  fileMonitorInformation.removedFileItems.size() : -1) + ')');</span>
+<span class="nc" id="L99">          final String host = session.getAuth().getUser();</span>
+<span class="nc" id="L100">          synchronized (spooledInformationMap) {</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if (fileMonitorInformation.removedFileItems == null ||</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">                fileMonitorInformation.removedFileItems.isEmpty()) {</span>
+<span class="nc" id="L103">              final SpooledInformation old =</span>
+<span class="nc" id="L104">                  spooledInformationMap.put(fileMonitorInformation.name,</span>
                                             new SpooledInformation(host,
                                                                    fileMonitorInformation));
-<span class="pc bpc" id="L107" title="1 of 4 branches missed.">              if (old != null &amp;&amp; old.fileMonitorInformation != null) {</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">                if (old.fileMonitorInformation.directories != null) {</span>
-<span class="fc" id="L109">                  old.fileMonitorInformation.directories.clear();</span>
+<span class="nc bnc" id="L107" title="All 4 branches missed.">              if (old != null &amp;&amp; old.fileMonitorInformation != null) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">                if (old.fileMonitorInformation.directories != null) {</span>
+<span class="nc" id="L109">                  old.fileMonitorInformation.directories.clear();</span>
                 }
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">                if (old.fileMonitorInformation.fileItems != null) {</span>
-<span class="fc" id="L112">                  old.fileMonitorInformation.fileItems.clear();</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                if (old.fileMonitorInformation.fileItems != null) {</span>
+<span class="nc" id="L112">                  old.fileMonitorInformation.fileItems.clear();</span>
                 }
-<span class="fc" id="L114">                old.fileMonitorInformation = null;</span>
+<span class="nc" id="L114">                old.fileMonitorInformation = null;</span>
               }
-<span class="fc" id="L116">            } else {</span>
+<span class="nc" id="L116">            } else {</span>
               // partial update
-<span class="fc" id="L118">              final SpooledInformation update =</span>
-<span class="fc" id="L119">                  spooledInformationMap.get(fileMonitorInformation.name);</span>
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">              if (update == null) {</span>
+<span class="nc" id="L118">              final SpooledInformation update =</span>
+<span class="nc" id="L119">                  spooledInformationMap.get(fileMonitorInformation.name);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">              if (update == null) {</span>
                 // Issue since update is not existing so full update is needed next time
 <span class="nc" id="L122">                spooledInformationMap.put(fileMonitorInformation.name,</span>
                                           new SpooledInformation(host,
                                                                  fileMonitorInformation));
 <span class="nc" id="L125">                validated = SpooledDirectoryTransfer.NEEDFULL;</span>
               } else {
-<span class="fc bfc" id="L127" title="All 2 branches covered.">                for (final String item : fileMonitorInformation.removedFileItems) {</span>
-<span class="fc" id="L128">                  update.fileMonitorInformation.fileItems.remove(item);</span>
-<span class="fc" id="L129">                }</span>
-<span class="fc" id="L130">                update.fileMonitorInformation.fileItems.putAll(</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">                for (final String item : fileMonitorInformation.removedFileItems) {</span>
+<span class="nc" id="L128">                  update.fileMonitorInformation.fileItems.remove(item);</span>
+<span class="nc" id="L129">                }</span>
+<span class="nc" id="L130">                update.fileMonitorInformation.fileItems.putAll(</span>
                     fileMonitorInformation.fileItems);
-<span class="fc" id="L132">                update.lastUpdate = new Date();</span>
+<span class="nc" id="L132">                update.lastUpdate = new Date();</span>
               }
             }
-<span class="fc" id="L135">          }</span>
+<span class="nc" id="L135">          }</span>
 <span class="nc" id="L136">        } catch (final JsonParseException e1) {</span>
 <span class="nc" id="L137">          logger.warn(&quot;Cannot parse SpooledInformation: &quot; + fullarg + ' ' +</span>
 <span class="nc" id="L138">                      e1.getMessage());</span>
@@ -141,10 +141,10 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="nc" id="L141">                      e1.getMessage());</span>
 <span class="nc" id="L142">        } catch (final IOException e1) {</span>
 <span class="nc" id="L143">          logger.warn(&quot;Cannot parse SpooledInformation: &quot; + e1.getMessage());</span>
-<span class="pc" id="L144">        }</span>
-<span class="fc" id="L145">        final BusinessRequestPacket packet =</span>
-<span class="fc" id="L146">            new BusinessRequestPacket(getClass().getName() + &quot; informed&quot;, 0);</span>
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (!validate(packet)) {</span>
+<span class="nc" id="L144">        }</span>
+<span class="nc" id="L145">        final BusinessRequestPacket packet =</span>
+<span class="nc" id="L146">            new BusinessRequestPacket(getClass().getName() + &quot; informed&quot;, 0);</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (!validate(packet)) {</span>
           // No Validation therefore send the new packet back
           try {
 <span class="nc" id="L150">            ChannelUtils.writeAbstractLocalPacket(</span>
@@ -153,15 +153,15 @@ import static org.waarp.common.database.DbConstant.*;
             // nothing
 <span class="nc" id="L154">          }</span>
         }
-<span class="fc" id="L156">        status = 0;</span>
+<span class="nc" id="L156">        status = 0;</span>
       }
-<span class="fc" id="L158">      finalValidate(validated);</span>
-<span class="fc" id="L159">    } else {</span>
+<span class="nc" id="L158">      finalValidate(validated);</span>
+<span class="nc" id="L159">    } else {</span>
       // unallowed
 <span class="nc" id="L161">      logger.warn(&quot;SpooledInformTask not allowed as Java Task: &quot; + fullarg);</span>
 <span class="nc" id="L162">      invalid();</span>
     }
-<span class="fc" id="L164">  }</span>
+<span class="nc" id="L164">  }</span>
 
   /**
    * @param detailed

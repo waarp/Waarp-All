@@ -20,6 +20,16 @@
 
 package org.waarp.openr66.elasticsearch;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation.Builder;
+import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
+import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,33 +43,26 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.joda.time.DateTime;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
-import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 import org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClient;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClientBuilder.*;
 import static org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers.*;
@@ -67,15 +70,16 @@ import static org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers.*;
 /**
  * Elasticsearch client for Waarp
  */
-public class ElasticsearchMonitoringExporterClientImpl
+<span class="nc bnc" id="L73" title="All 2 branches missed.">public class ElasticsearchMonitoringExporterClientImpl</span>
     implements ElasticsearchMonitoringExporterClient {
-<span class="nc" id="L72">  private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(</span>
+<span class="nc" id="L75">  private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(</span>
       ElasticsearchMonitoringExporterClientImpl.class);
 
   protected final String index;
   protected final RestClientBuilder builder;
 
-  protected RestHighLevelClient client;
+<span class="nc" id="L81">  protected ElasticsearchTransport transport = null;</span>
+<span class="nc" id="L82">  protected ElasticsearchClient client = null;</span>
 
   /**
    * Note that only one among (username/pwd, token, apikey) is allowed and
@@ -103,140 +107,150 @@ public class ElasticsearchMonitoringExporterClientImpl
                                                    final String prefix,
                                                    final String index,
                                                    final boolean compression,
-<span class="nc" id="L106">                                                   final HttpHost... httpHosts) {</span>
-<span class="nc" id="L107">    this.index = index;</span>
-<span class="nc" id="L108">    builder = RestClient.builder(httpHosts).setCompressionEnabled(compression);</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(prefix)) {</span>
-<span class="nc" id="L110">      builder.setPathPrefix(prefix);</span>
+<span class="nc" id="L110">                                                   final HttpHost... httpHosts) {</span>
+<span class="nc" id="L111">    this.index = index;</span>
+<span class="nc" id="L112">    builder = RestClient.builder(httpHosts).setCompressionEnabled(compression);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(prefix)) {</span>
+<span class="nc" id="L114">      builder.setPathPrefix(prefix);</span>
     }
-<span class="nc" id="L112">    int headerLen = 1;</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(apiKey, token)) {</span>
-<span class="nc" id="L114">      headerLen = 2;</span>
+<span class="nc" id="L116">    int headerLen = 1;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(apiKey, token)) {</span>
+<span class="nc" id="L118">      headerLen = 2;</span>
     }
-<span class="nc" id="L116">    final Header[] defaultHeaders = new Header[headerLen];</span>
-<span class="nc" id="L117">    headerLen = 0;</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(token)) {</span>
-<span class="nc" id="L119">      defaultHeaders[headerLen] =</span>
-          new BasicHeader(&quot;Authorization&quot;, &quot;Bearer &quot; + token);
-<span class="nc" id="L121">      headerLen++;</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(apiKey)) {</span>
+<span class="nc" id="L120">    final Header[] defaultHeaders = new Header[headerLen];</span>
+<span class="nc" id="L121">    headerLen = 0;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(token)) {</span>
 <span class="nc" id="L123">      defaultHeaders[headerLen] =</span>
-          new BasicHeader(&quot;Authorization&quot;, &quot;ApiKey &quot; + apiKey);
+          new BasicHeader(&quot;Authorization&quot;, &quot;Bearer &quot; + token);
 <span class="nc" id="L125">      headerLen++;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    } else if (ParametersChecker.isNotEmpty(apiKey)) {</span>
+<span class="nc" id="L127">      defaultHeaders[headerLen] =</span>
+          new BasicHeader(&quot;Authorization&quot;, &quot;ApiKey &quot; + apiKey);
+<span class="nc" id="L129">      headerLen++;</span>
     }
-<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (headerLen &gt; 0) {</span>
-<span class="nc" id="L128">      builder.setDefaultHeaders(defaultHeaders);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">    if (headerLen &gt; 0) {</span>
+<span class="nc" id="L132">      builder.setDefaultHeaders(defaultHeaders);</span>
     }
-<span class="nc" id="L130">    boolean tls = false;</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">    for (final HttpHost httpHost : httpHosts) {</span>
-<span class="nc" id="L132">      tls |= httpHost.getSchemeName().equalsIgnoreCase(&quot;https&quot;);</span>
+<span class="nc" id="L134">    boolean tls = false;</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">    for (final HttpHost httpHost : httpHosts) {</span>
+<span class="nc" id="L136">      tls |= httpHost.getSchemeName().equalsIgnoreCase(&quot;https&quot;);</span>
     }
     final SSLContext sslContext;
-<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (tls) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (tls) {</span>
       try {
-<span class="nc" id="L137">        final SSLContextBuilder sslBuilder = SSLContexts.custom()</span>
-<span class="nc" id="L138">                                                        .loadKeyMaterial(</span>
-<span class="nc" id="L139">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
-<span class="nc" id="L140">                                                                                       .getKeyStore(),</span>
-<span class="nc" id="L141">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
-<span class="nc" id="L142">                                                                                       .getKeyStorePassword())</span>
-<span class="nc" id="L143">                                                        .loadTrustMaterial(</span>
-<span class="nc" id="L144">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
-<span class="nc" id="L145">                                                                                       .getKeyTrustStore(),</span>
+<span class="nc" id="L141">        final SSLContextBuilder sslBuilder = SSLContexts.custom()</span>
+<span class="nc" id="L142">                                                        .loadKeyMaterial(</span>
+<span class="nc" id="L143">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L144">                                                                                       .getKeyStore(),</span>
+<span class="nc" id="L145">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L146">                                                                                       .getKeyStorePassword())</span>
+<span class="nc" id="L147">                                                        .loadTrustMaterial(</span>
+<span class="nc" id="L148">                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L149">                                                                                       .getKeyTrustStore(),</span>
                                                             null);
-<span class="nc" id="L147">        sslContext = sslBuilder.build();</span>
-<span class="nc" id="L148">      } catch (final NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {</span>
-<span class="nc" id="L149">        logger.error(e.getMessage());</span>
-<span class="nc" id="L150">        throw new IllegalArgumentException(e);</span>
-<span class="nc" id="L151">      }</span>
+<span class="nc" id="L151">        sslContext = sslBuilder.build();</span>
+<span class="nc" id="L152">      } catch (final NoSuchAlgorithmException | KeyStoreException |</span>
+                     UnrecoverableKeyException | KeyManagementException e) {
+<span class="nc" id="L154">        logger.error(e.getMessage());</span>
+<span class="nc" id="L155">        throw new IllegalArgumentException(e);</span>
+<span class="nc" id="L156">      }</span>
     } else {
-<span class="nc" id="L153">      sslContext = null;</span>
+<span class="nc" id="L158">      sslContext = null;</span>
     }
-<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(username, pwd)) {</span>
-<span class="nc" id="L156">      final CredentialsProvider credentialsProvider =</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (ParametersChecker.isNotEmpty(username, pwd)) {</span>
+<span class="nc" id="L161">      final CredentialsProvider credentialsProvider =</span>
           new BasicCredentialsProvider();
-<span class="nc" id="L158">      credentialsProvider.setCredentials(AuthScope.ANY,</span>
+<span class="nc" id="L163">      credentialsProvider.setCredentials(AuthScope.ANY,</span>
                                          new UsernamePasswordCredentials(
                                              username, pwd));
-<span class="nc" id="L161">      builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {</span>
+<span class="nc" id="L166">      builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {</span>
         @Override
         public HttpAsyncClientBuilder customizeHttpClient(
             final HttpAsyncClientBuilder httpClientBuilder) {
-<span class="nc bnc" id="L165" title="All 2 branches missed.">          if (sslContext != null) {</span>
-<span class="nc" id="L166">            return httpClientBuilder.setDefaultCredentialsProvider(</span>
-<span class="nc" id="L167">                credentialsProvider).setSSLContext(sslContext);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">          if (sslContext != null) {</span>
+<span class="nc" id="L171">            return httpClientBuilder.setDefaultCredentialsProvider(</span>
+<span class="nc" id="L172">                credentialsProvider).setSSLContext(sslContext);</span>
           } else {
-<span class="nc" id="L169">            return httpClientBuilder.setDefaultCredentialsProvider(</span>
+<span class="nc" id="L174">            return httpClientBuilder.setDefaultCredentialsProvider(</span>
                 credentialsProvider);
           }
         }
       });
     }
-<span class="nc" id="L175">    logger.info(&quot;Elasticsearch client: user {} pwd {} token {} apikey {} &quot; +</span>
+<span class="nc" id="L180">    logger.info(&quot;Elasticsearch client: user {} pwd {} token {} apikey {} &quot; +</span>
                 &quot;prefix {} index {}&quot;, username, pwd, token, apiKey, prefix,
                 index);
-<span class="nc" id="L178">    client = new RestHighLevelClient(builder);</span>
-<span class="nc" id="L179">  }</span>
+<span class="nc" id="L183">    createClient();</span>
+<span class="nc" id="L184">  }</span>
+
+  protected void createClient() {
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (client == null) {</span>
+<span class="nc" id="L188">      final RestClient restClient = builder.build();</span>
+<span class="nc" id="L189">      transport = new RestClientTransport(restClient, new JacksonJsonpMapper());</span>
+<span class="nc" id="L190">      client = new ElasticsearchClient(transport);</span>
+    }
+<span class="nc" id="L192">  }</span>
 
   @Override
   public final boolean post(final ObjectNode monitoredTransfers,
                             final DateTime start, final DateTime stop,
                             final String serverId) {
-<span class="nc bnc" id="L185" title="All 2 branches missed.">    if (client == null) {</span>
-<span class="nc" id="L186">      client = new RestHighLevelClient(builder);</span>
-    }
-<span class="nc" id="L188">    final String finalIndex = index.replace(ELASTIC_WAARPHOST, serverId)</span>
-<span class="nc" id="L189">                                   .replaceAll(ELASTIC_DATETIME,</span>
-<span class="nc" id="L190">                                               stop.toString(FORMAT_DATETIME))</span>
-<span class="nc" id="L191">                                   .replaceAll(ELASTIC_DATEHOUR,</span>
-<span class="nc" id="L192">                                               stop.toString(FORMAT_DATEHOUR))</span>
-<span class="nc" id="L193">                                   .replaceAll(ELASTIC_DATE,</span>
-<span class="nc" id="L194">                                               stop.toString(FORMAT_DATE))</span>
-<span class="nc" id="L195">                                   .replaceAll(ELASTIC_YEAR_MONTH,</span>
-<span class="nc" id="L196">                                               stop.toString(FORMAT_YEAR_MONTH))</span>
-<span class="nc" id="L197">                                   .replaceAll(ELASTIC_YEAR,</span>
-<span class="nc" id="L198">                                               stop.toString(FORMAT_YEAR))</span>
-<span class="nc" id="L199">                                   .toLowerCase();</span>
-<span class="nc" id="L200">    logger.debug(&quot;Will post to {}&quot;, finalIndex);</span>
-<span class="nc" id="L201">    final BulkRequest bulkRequest = new BulkRequest(finalIndex);</span>
-<span class="nc" id="L202">    final ArrayNode arrayNode = (ArrayNode) monitoredTransfers.get(RESULTS);</span>
-<span class="nc" id="L203">    final Iterator&lt;JsonNode&gt; iterator = arrayNode.elements();</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
-<span class="nc" id="L205">      final ObjectNode node = (ObjectNode) iterator.next();</span>
-<span class="nc" id="L206">      final IndexRequest indexRequest =</span>
-<span class="nc" id="L207">          new IndexRequest().id(node.get(UNIQUE_ID).asText());</span>
-<span class="nc" id="L208">      indexRequest.source(</span>
-<span class="nc" id="L209">          JsonUtils.nodeToString(node).getBytes(StandardCharsets.UTF_8),</span>
-          XContentType.JSON);
-<span class="nc" id="L211">      bulkRequest.add(indexRequest);</span>
-<span class="nc" id="L212">    }</span>
+<span class="nc" id="L198">    createClient();</span>
+<span class="nc" id="L199">    final String finalIndex = index.replace(ELASTIC_WAARPHOST, serverId)</span>
+<span class="nc" id="L200">                                   .replaceAll(ELASTIC_DATETIME,</span>
+<span class="nc" id="L201">                                               stop.toString(FORMAT_DATETIME))</span>
+<span class="nc" id="L202">                                   .replaceAll(ELASTIC_DATEHOUR,</span>
+<span class="nc" id="L203">                                               stop.toString(FORMAT_DATEHOUR))</span>
+<span class="nc" id="L204">                                   .replaceAll(ELASTIC_DATE,</span>
+<span class="nc" id="L205">                                               stop.toString(FORMAT_DATE))</span>
+<span class="nc" id="L206">                                   .replaceAll(ELASTIC_YEAR_MONTH,</span>
+<span class="nc" id="L207">                                               stop.toString(FORMAT_YEAR_MONTH))</span>
+<span class="nc" id="L208">                                   .replaceAll(ELASTIC_YEAR,</span>
+<span class="nc" id="L209">                                               stop.toString(FORMAT_YEAR))</span>
+<span class="nc" id="L210">                                   .toLowerCase();</span>
+<span class="nc" id="L211">    logger.debug(&quot;Will post to {}&quot;, finalIndex);</span>
+<span class="nc" id="L212">    final BulkRequest.Builder bulkRequestBuilder =</span>
+<span class="nc" id="L213">        new BulkRequest.Builder().index(finalIndex);</span>
+<span class="nc" id="L214">    final ArrayNode arrayNode = (ArrayNode) monitoredTransfers.get(RESULTS);</span>
+<span class="nc" id="L215">    final Iterator&lt;JsonNode&gt; iterator = arrayNode.elements();</span>
+<span class="nc" id="L216">    final List&lt;BulkOperation&gt; operations = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
+<span class="nc" id="L218">      final ObjectNode node = (ObjectNode) iterator.next();</span>
+<span class="nc" id="L219">      final IndexOperation.Builder&lt;ObjectNode&gt; indexBuilder =</span>
+          new IndexOperation.Builder();
+<span class="nc" id="L221">      indexBuilder.index(finalIndex);</span>
+<span class="nc" id="L222">      indexBuilder.id(node.get(UNIQUE_ID).asText());</span>
+<span class="nc" id="L223">      indexBuilder.document(node);</span>
+<span class="nc" id="L224">      operations.add(new Builder().index(indexBuilder.build()).build());</span>
+<span class="nc" id="L225">    }</span>
     final BulkResponse bulkResponse;
     try {
-<span class="nc" id="L215">      bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);</span>
-<span class="nc" id="L216">    } catch (final IOException e) {</span>
-<span class="nc" id="L217">      logger.error(e.getMessage());</span>
-<span class="nc" id="L218">      return false;</span>
-<span class="nc" id="L219">    }</span>
-<span class="nc" id="L220">    logger.debug(&quot;ES failure? {} {}&quot;, bulkResponse.hasFailures(),</span>
-<span class="nc" id="L221">                 bulkResponse.status().getStatus());</span>
-<span class="nc bnc" id="L222" title="All 4 branches missed.">    if (logger.isDebugEnabled() &amp;&amp; bulkResponse.hasFailures()) {</span>
-<span class="nc" id="L223">      final Iterator&lt;BulkItemResponse&gt; iterator1 = bulkResponse.iterator();</span>
-<span class="nc bnc" id="L224" title="All 2 branches missed.">      while (iterator1.hasNext()) {</span>
-<span class="nc" id="L225">        final BulkItemResponse response = iterator1.next();</span>
-<span class="nc" id="L226">        logger.debug(&quot;ES item: {}&quot;, response.getFailureMessage());</span>
-<span class="nc" id="L227">      }</span>
+<span class="nc" id="L228">      bulkResponse =</span>
+<span class="nc" id="L229">          client.bulk(bulkRequestBuilder.operations(operations).build());</span>
+<span class="nc" id="L230">    } catch (final IOException e) {</span>
+<span class="nc" id="L231">      logger.error(e.getMessage());</span>
+<span class="nc" id="L232">      return false;</span>
+<span class="nc" id="L233">    }</span>
+<span class="nc" id="L234">    logger.debug(&quot;ES failure? {} {}&quot;, bulkResponse.errors());</span>
+<span class="nc bnc" id="L235" title="All 4 branches missed.">    if (logger.isDebugEnabled() &amp;&amp; bulkResponse.errors()) {</span>
+<span class="nc" id="L236">      final List&lt;BulkResponseItem&gt; list = bulkResponse.items();</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">      for (BulkResponseItem item : list) {</span>
+<span class="nc bnc" id="L238" title="All 4 branches missed.">        assert item.error() != null;</span>
+<span class="nc" id="L239">        logger.debug(&quot;ES item: {}&quot;, item.error().reason());</span>
+<span class="nc" id="L240">      }</span>
     }
-<span class="nc bnc" id="L229" title="All 2 branches missed.">    return !bulkResponse.hasFailures();</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">    return !bulkResponse.errors();</span>
   }
 
   @Override
   public final void close() {
     try {
-<span class="nc" id="L235">      client.close();</span>
-<span class="nc" id="L236">    } catch (final IOException e) {</span>
-<span class="nc" id="L237">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L238">    }</span>
-<span class="nc" id="L239">    client = null;</span>
-<span class="nc" id="L240">  }</span>
+<span class="nc" id="L248">      transport.close();</span>
+<span class="nc" id="L249">    } catch (final IOException e) {</span>
+<span class="nc" id="L250">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L251">    }</span>
+<span class="nc" id="L252">    transport = null;</span>
+<span class="nc" id="L253">    client = null;</span>
+<span class="nc" id="L254">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

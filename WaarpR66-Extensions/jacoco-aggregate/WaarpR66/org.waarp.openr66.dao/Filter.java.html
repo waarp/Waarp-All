@@ -25,6 +25,7 @@ public class Filter {
   public static final String BETWEEN = &quot;BETWEEN&quot;;
   public static final String IS_NOT_NULL = &quot;IS NOT NULL&quot;;
   public static final String IN = &quot;IN&quot;;
+  public static final String SPECIFIC_SQL = &quot;SPEC_SQL&quot;;
   private static final byte B_NONE = 'n';
   private static final byte B_SINGLE = 's';
   private static final byte B_MULTIPLE = 'm';
@@ -35,28 +36,27 @@ public class Filter {
   private final byte specialOperand;
 
   public Filter(final String key, final String operand,
-<span class="fc" id="L38">                final Object... values) {</span>
-<span class="fc" id="L39">    this.key = key;</span>
-<span class="fc" id="L40">    this.operand = operand;</span>
-<span class="pc bpc" id="L41" title="1 of 2 branches missed.">    nbArgs = values == null? 0 : values.length;</span>
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">    if (nbArgs == 0) {</span>
-<span class="nc" id="L43">      this.value = null;</span>
-<span class="nc" id="L44">      specialOperand = B_NONE;</span>
-<span class="fc bfc" id="L45" title="All 2 branches covered.">    } else if (nbArgs == 1) {</span>
-<span class="fc" id="L46">      this.value = values[0];</span>
-<span class="fc" id="L47">      specialOperand = B_SINGLE;</span>
+<span class="fc" id="L39">                final Object... values) {</span>
+<span class="fc" id="L40">    this.key = key;</span>
+<span class="fc" id="L41">    this.operand = operand;</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">    nbArgs = values == null? 0 : values.length;</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">    if (nbArgs == 0) {</span>
+<span class="nc" id="L44">      this.value = null;</span>
+<span class="nc" id="L45">      specialOperand = B_NONE;</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">    } else if (nbArgs == 1) {</span>
+<span class="fc" id="L47">      this.value = values[0];</span>
+<span class="fc" id="L48">      specialOperand = B_SINGLE;</span>
     } else {
-<span class="fc" id="L49">      this.value = values;</span>
-<span class="fc" id="L50">      specialOperand = B_MULTIPLE;</span>
+<span class="fc" id="L50">      this.value = values;</span>
+<span class="fc" id="L51">      specialOperand = B_MULTIPLE;</span>
     }
-<span class="fc" id="L52">  }</span>
+<span class="fc" id="L53">  }</span>
 
   /**
-   * @return the number of values for the operand (-1 for 0, 0 for 1, 1 for 2
-   *     or (n-1) for n)
+   * @return the number of values for the operand
    */
   public final int nbAdditionnalParams() {
-<span class="fc" id="L59">    return nbArgs - 1;</span>
+<span class="fc" id="L59">    return nbArgs;</span>
   }
 
   /**
@@ -67,27 +67,29 @@ public class Filter {
    * @return the associated value
    */
   public final Object append(final StringBuilder builder) {
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (nbArgs == 0) {</span>
-<span class="nc" id="L71">      builder.append(key).append(' ').append(operand).append(&quot; &quot;);</span>
-<span class="fc bfc" id="L72" title="All 2 branches covered.">    } else if (nbArgs == 1) {</span>
-<span class="fc" id="L73">      builder.append(key).append(' ').append(operand).append(&quot; ? &quot;);</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (SPECIFIC_SQL.equalsIgnoreCase(operand)) {</span>
+<span class="nc" id="L71">      builder.append(key);</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    } else if (nbArgs == 0) {</span>
+<span class="nc" id="L73">      builder.append(key).append(' ').append(operand).append(&quot; &quot;);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">    } else if (nbArgs == 1) {</span>
+<span class="fc" id="L75">      builder.append(key).append(' ').append(operand).append(&quot; ? &quot;);</span>
     } else {
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">      if (BETWEEN.equalsIgnoreCase(operand)) {</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">      if (BETWEEN.equalsIgnoreCase(operand)) {</span>
         // Object is a Object[2]
-<span class="fc" id="L77">        builder.append(key).append(' ').append(BETWEEN).append(&quot; ? AND ? &quot;);</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">      } else if (IN.equalsIgnoreCase((operand))) {</span>
+<span class="fc" id="L79">        builder.append(key).append(' ').append(BETWEEN).append(&quot; ? AND ? &quot;);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">      } else if (IN.equalsIgnoreCase((operand))) {</span>
         // Object is a Object[n]
-<span class="nc" id="L80">        builder.append(key).append(' ').append(IN).append(&quot;(?&quot;);</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">        for (int i = 1; i &lt; nbArgs; i++) {</span>
-<span class="nc" id="L82">          builder.append(&quot;, ?&quot;);</span>
+<span class="nc" id="L82">        builder.append(key).append(' ').append(IN).append(&quot;(?&quot;);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        for (int i = 1; i &lt; nbArgs; i++) {</span>
+<span class="nc" id="L84">          builder.append(&quot;, ?&quot;);</span>
         }
-<span class="nc" id="L84">        builder.append(&quot;) &quot;);</span>
+<span class="nc" id="L86">        builder.append(&quot;) &quot;);</span>
       } else {
-<span class="nc" id="L86">        throw new IllegalArgumentException(</span>
+<span class="nc" id="L88">        throw new IllegalArgumentException(</span>
             &quot;Command seems to not support multiple arguments: &quot; + operand);
       }
     }
-<span class="fc" id="L90">    return value;</span>
+<span class="fc" id="L92">    return value;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

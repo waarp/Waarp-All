@@ -125,10 +125,10 @@ public final class HttpWriteCacheEnable {
     HttpResponse response;
 <span class="fc" id="L126">    final boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
 <span class="fc" id="L127">    final File file = new File(filename);</span>
-<span class="pc bpc" id="L128" title="1 of 4 branches missed.">    if (!file.isFile() || !file.canRead()) {</span>
-<span class="fc" id="L129">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Cannot read &quot; + file.getAbsolutePath());</span>
-<span class="fc" id="L130">      sendError(request, ctx, cookieNameToRemove, keepAlive);</span>
-<span class="fc" id="L131">      return;</span>
+<span class="pc bpc" id="L128" title="2 of 4 branches missed.">    if (!file.isFile() || !file.canRead()) {</span>
+<span class="nc" id="L129">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Cannot read &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L130">      sendError(request, ctx, cookieNameToRemove, keepAlive);</span>
+<span class="nc" id="L131">      return;</span>
     }
 <span class="fc" id="L133">    final DateFormat rfc1123Format =</span>
         new SimpleDateFormat(RFC1123_PATTERN, LOCALE_US);
@@ -232,24 +232,24 @@ public final class HttpWriteCacheEnable {
                                 final String cookieNameToRemove,
                                 final boolean keepAlive) {
     final HttpResponse response;
-<span class="fc" id="L235">    response =</span>
+<span class="nc" id="L235">    response =</span>
         new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_FOUND);
-<span class="fc" id="L237">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
-<span class="pc bpc" id="L238" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
+<span class="nc" id="L237">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">    if (!keepAlive) {</span>
 <span class="nc" id="L239">      response.headers()</span>
 <span class="nc" id="L240">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
-<span class="pc bpc" id="L241" title="1 of 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
 <span class="nc" id="L242">      response.headers()</span>
 <span class="nc" id="L243">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
     }
-<span class="fc" id="L245">    handleCookies(request, response, cookieNameToRemove);</span>
-<span class="fc" id="L246">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
+<span class="nc" id="L245">    handleCookies(request, response, cookieNameToRemove);</span>
+<span class="nc" id="L246">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
     // Decide whether to close the connection or not.
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    if (!keepAlive) {</span>
       // Close the connection when the whole content is written out.
 <span class="nc" id="L250">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
     }
-<span class="fc" id="L252">  }</span>
+<span class="nc" id="L252">  }</span>
 
   /**
    * Remove the given named cookie
@@ -262,19 +262,19 @@ public final class HttpWriteCacheEnable {
                                    final HttpResponse response,
                                    final String cookieNameToRemove) {
 <span class="fc" id="L264">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
-<span class="fc bfc" id="L265" title="All 2 branches covered.">    if (cookieString != null) {</span>
-<span class="fc" id="L266">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
-<span class="pc bpc" id="L267" title="1 of 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">    if (cookieString != null) {</span>
+<span class="nc" id="L266">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">      if (!cookies.isEmpty()) {</span>
         // Reset the sessions if necessary.
         // Remove all Session for images
-<span class="fc bfc" id="L270" title="All 2 branches covered.">        for (final Cookie cookie : cookies) {</span>
-<span class="pc bpc" id="L271" title="1 of 2 branches missed.">          if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        for (final Cookie cookie : cookies) {</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">          if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {</span>
             // nothing
           } else {
-<span class="fc" id="L274">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
-<span class="fc" id="L275">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+<span class="nc" id="L274">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L275">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
           }
-<span class="fc" id="L277">        }</span>
+<span class="nc" id="L277">        }</span>
       }
     }
 <span class="fc" id="L280">  }</span>

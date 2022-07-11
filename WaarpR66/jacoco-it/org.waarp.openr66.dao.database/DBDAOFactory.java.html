@@ -171,15 +171,38 @@ public class DBDAOFactory extends DAOFactory {
     }
   }
 
+  @Override
+  public String getLimitRequest(final String request, final int limit,
+                                final int offset) {
+<span class="fc" id="L177">    final DbProperties prop = connectionFactory.getProperties();</span>
+<span class="fc" id="L178">    String result = request;</span>
+<span class="fc" id="L179">    final boolean isOracle = prop instanceof OracleProperties;</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">    if (offset &gt; 0) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">      if (isOracle) {</span>
+<span class="nc" id="L182">        result += &quot; OFFSET &quot; + limit + &quot; ROWS&quot;;</span>
+      } else {
+<span class="nc" id="L184">        result += &quot; OFFSET &quot; + limit;</span>
+      }
+    }
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">      if (isOracle) {</span>
+<span class="nc" id="L189">        result += &quot; FETCH NEXT &quot; + limit + &quot; ROWS ONLY&quot;;</span>
+      } else {
+<span class="fc" id="L191">        result += &quot; LIMIT &quot; + limit;</span>
+      }
+    }
+<span class="fc" id="L194">    return result;</span>
+  }
+
   /**
    * Close the DBDAOFactory and close the ConnectionFactory Warning: You need
    * to close the Connection yourself!
    */
   public void close() {
-<span class="nc" id="L179">    logger.debug(&quot;Closing DAOFactory.&quot;);</span>
-<span class="nc" id="L180">    logger.debug(&quot;Closing factory ConnectionFactory.&quot;);</span>
-<span class="nc" id="L181">    connectionFactory.close();</span>
-<span class="nc" id="L182">  }</span>
+<span class="nc" id="L202">    logger.debug(&quot;Closing DAOFactory.&quot;);</span>
+<span class="nc" id="L203">    logger.debug(&quot;Closing factory ConnectionFactory.&quot;);</span>
+<span class="nc" id="L204">    connectionFactory.close();</span>
+<span class="nc" id="L205">  }</span>
 
   /**
    * Fake Connection to allow to setup a real connection for cached capability
@@ -188,9 +211,9 @@ public class DBDAOFactory extends DAOFactory {
   static class FakeConnection implements Connection {
     private final ConnectionFactory connectionFactory;
 
-<span class="fc" id="L191">    public FakeConnection(final ConnectionFactory connectionFactory) {</span>
-<span class="fc" id="L192">      this.connectionFactory = connectionFactory;</span>
-<span class="fc" id="L193">    }</span>
+<span class="fc" id="L214">    public FakeConnection(final ConnectionFactory connectionFactory) {</span>
+<span class="fc" id="L215">      this.connectionFactory = connectionFactory;</span>
+<span class="fc" id="L216">    }</span>
 
     /**
      * @return a newly created real connection
@@ -198,298 +221,298 @@ public class DBDAOFactory extends DAOFactory {
      * @throws SQLException
      */
     public Connection getRealConnection() throws SQLException {
-<span class="fc" id="L201">      return connectionFactory.getConnection();</span>
+<span class="fc" id="L224">      return connectionFactory.getConnection();</span>
     }
 
     @Override
     public Statement createStatement() throws SQLException {
-<span class="nc" id="L206">      return null;</span>
+<span class="nc" id="L229">      return null;</span>
     }
 
     @Override
     public PreparedStatement prepareStatement(final String s)
         throws SQLException {
-<span class="nc" id="L212">      return null;</span>
+<span class="nc" id="L235">      return null;</span>
     }
 
     @Override
     public CallableStatement prepareCall(final String s) throws SQLException {
-<span class="nc" id="L217">      return null;</span>
+<span class="nc" id="L240">      return null;</span>
     }
 
     @Override
     public String nativeSQL(final String s) throws SQLException {
-<span class="nc" id="L222">      return null;</span>
+<span class="nc" id="L245">      return null;</span>
     }
 
     @Override
     public void setAutoCommit(final boolean b) throws SQLException {
       // Emoty
-<span class="nc" id="L228">    }</span>
+<span class="nc" id="L251">    }</span>
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-<span class="nc" id="L232">      return false;</span>
+<span class="nc" id="L255">      return false;</span>
     }
 
     @Override
     public void commit() throws SQLException {
       // Emoty
-<span class="nc" id="L238">    }</span>
+<span class="nc" id="L261">    }</span>
 
     @Override
     public void rollback() throws SQLException {
       // Emoty
-<span class="nc" id="L243">    }</span>
+<span class="nc" id="L266">    }</span>
 
     @Override
     public void close() throws SQLException {
       // Emoty
-<span class="fc" id="L248">    }</span>
+<span class="fc" id="L271">    }</span>
 
     @Override
     public boolean isClosed() throws SQLException {
-<span class="nc" id="L252">      return false;</span>
+<span class="nc" id="L275">      return false;</span>
     }
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-<span class="nc" id="L257">      return null;</span>
+<span class="nc" id="L280">      return null;</span>
     }
 
     @Override
     public void setReadOnly(final boolean b) throws SQLException {
       // Emoty
-<span class="nc" id="L263">    }</span>
+<span class="nc" id="L286">    }</span>
 
     @Override
     public boolean isReadOnly() throws SQLException {
-<span class="nc" id="L267">      return false;</span>
+<span class="nc" id="L290">      return false;</span>
     }
 
     @Override
     public void setCatalog(final String s) throws SQLException {
       // Emoty
-<span class="nc" id="L273">    }</span>
+<span class="nc" id="L296">    }</span>
 
     @Override
     public String getCatalog() throws SQLException {
-<span class="nc" id="L277">      return null;</span>
+<span class="nc" id="L300">      return null;</span>
     }
 
     @Override
     public void setTransactionIsolation(final int i) throws SQLException {
       // Emoty
-<span class="nc" id="L283">    }</span>
+<span class="nc" id="L306">    }</span>
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-<span class="nc" id="L287">      return 0;</span>
+<span class="nc" id="L310">      return 0;</span>
     }
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-<span class="nc" id="L292">      return null;</span>
+<span class="nc" id="L315">      return null;</span>
     }
 
     @Override
     public void clearWarnings() throws SQLException {
       // Emoty
-<span class="nc" id="L298">    }</span>
+<span class="nc" id="L321">    }</span>
 
     @Override
     public Statement createStatement(final int i, final int i1)
         throws SQLException {
-<span class="nc" id="L303">      return null;</span>
+<span class="nc" id="L326">      return null;</span>
     }
 
     @Override
     public PreparedStatement prepareStatement(final String s, final int i,
                                               final int i1)
         throws SQLException {
-<span class="nc" id="L310">      return null;</span>
+<span class="nc" id="L333">      return null;</span>
     }
 
     @Override
     public CallableStatement prepareCall(final String s, final int i,
                                          final int i1) throws SQLException {
-<span class="nc" id="L316">      return null;</span>
+<span class="nc" id="L339">      return null;</span>
     }
 
     @Override
     public Map&lt;String, Class&lt;?&gt;&gt; getTypeMap() throws SQLException {
-<span class="nc" id="L321">      return null;</span>
+<span class="nc" id="L344">      return null;</span>
     }
 
     @Override
     public void setTypeMap(final Map&lt;String, Class&lt;?&gt;&gt; map)
         throws SQLException {
       // Emoty
-<span class="nc" id="L328">    }</span>
+<span class="nc" id="L351">    }</span>
 
     @Override
     public void setHoldability(final int i) throws SQLException {
       // Emoty
-<span class="nc" id="L333">    }</span>
+<span class="nc" id="L356">    }</span>
 
     @Override
     public int getHoldability() throws SQLException {
-<span class="nc" id="L337">      return 0;</span>
+<span class="nc" id="L360">      return 0;</span>
     }
 
     @Override
     public Savepoint setSavepoint() throws SQLException {
-<span class="nc" id="L342">      return null;</span>
+<span class="nc" id="L365">      return null;</span>
     }
 
     @Override
     public Savepoint setSavepoint(final String s) throws SQLException {
-<span class="nc" id="L347">      return null;</span>
+<span class="nc" id="L370">      return null;</span>
     }
 
     @Override
     public void rollback(final Savepoint savepoint) throws SQLException {
       // Emoty
-<span class="nc" id="L353">    }</span>
+<span class="nc" id="L376">    }</span>
 
     @Override
     public void releaseSavepoint(final Savepoint savepoint)
         throws SQLException {
       // Emoty
-<span class="nc" id="L359">    }</span>
+<span class="nc" id="L382">    }</span>
 
     @Override
     public Statement createStatement(final int i, final int i1, final int i2)
         throws SQLException {
-<span class="nc" id="L364">      return null;</span>
+<span class="nc" id="L387">      return null;</span>
     }
 
     @Override
     public PreparedStatement prepareStatement(final String s, final int i,
                                               final int i1, final int i2)
         throws SQLException {
-<span class="nc" id="L371">      return null;</span>
+<span class="nc" id="L394">      return null;</span>
     }
 
     @Override
     public CallableStatement prepareCall(final String s, final int i,
                                          final int i1, final int i2)
         throws SQLException {
-<span class="nc" id="L378">      return null;</span>
+<span class="nc" id="L401">      return null;</span>
     }
 
     @Override
     public PreparedStatement prepareStatement(final String s, final int i)
         throws SQLException {
-<span class="nc" id="L384">      return null;</span>
+<span class="nc" id="L407">      return null;</span>
     }
 
     @Override
     public PreparedStatement prepareStatement(final String s, final int[] ints)
         throws SQLException {
-<span class="nc" id="L390">      return null;</span>
+<span class="nc" id="L413">      return null;</span>
     }
 
     @Override
     public PreparedStatement prepareStatement(final String s,
                                               final String[] strings)
         throws SQLException {
-<span class="nc" id="L397">      return null;</span>
+<span class="nc" id="L420">      return null;</span>
     }
 
     @Override
     public Clob createClob() throws SQLException {
-<span class="nc" id="L402">      return null;</span>
+<span class="nc" id="L425">      return null;</span>
     }
 
     @Override
     public Blob createBlob() throws SQLException {
-<span class="nc" id="L407">      return null;</span>
+<span class="nc" id="L430">      return null;</span>
     }
 
     @Override
     public NClob createNClob() throws SQLException {
-<span class="nc" id="L412">      return null;</span>
+<span class="nc" id="L435">      return null;</span>
     }
 
     @Override
     public SQLXML createSQLXML() throws SQLException {
-<span class="nc" id="L417">      return null;</span>
+<span class="nc" id="L440">      return null;</span>
     }
 
     @Override
     public boolean isValid(final int i) throws SQLException {
-<span class="nc" id="L422">      return false;</span>
+<span class="nc" id="L445">      return false;</span>
     }
 
     @Override
     public void setClientInfo(final String s, final String s1)
         throws SQLClientInfoException {
       // Emoty
-<span class="nc" id="L429">    }</span>
+<span class="nc" id="L452">    }</span>
 
     @Override
     public void setClientInfo(final Properties properties)
         throws SQLClientInfoException {
       // Emoty
-<span class="nc" id="L435">    }</span>
+<span class="nc" id="L458">    }</span>
 
     @Override
     public String getClientInfo(final String s) throws SQLException {
-<span class="nc" id="L439">      return null;</span>
+<span class="nc" id="L462">      return null;</span>
     }
 
     @Override
     public Properties getClientInfo() throws SQLException {
-<span class="nc" id="L444">      return null;</span>
+<span class="nc" id="L467">      return null;</span>
     }
 
     @Override
     public Array createArrayOf(final String s, final Object[] objects)
         throws SQLException {
-<span class="nc" id="L450">      return null;</span>
+<span class="nc" id="L473">      return null;</span>
     }
 
     @Override
     public Struct createStruct(final String s, final Object[] objects)
         throws SQLException {
-<span class="nc" id="L456">      return null;</span>
+<span class="nc" id="L479">      return null;</span>
     }
 
     @Override
     public void setSchema(final String s) throws SQLException {
       // Emoty
-<span class="nc" id="L462">    }</span>
+<span class="nc" id="L485">    }</span>
 
     @Override
     public String getSchema() throws SQLException {
-<span class="nc" id="L466">      return null;</span>
+<span class="nc" id="L489">      return null;</span>
     }
 
     @Override
     public void abort(final Executor executor) throws SQLException {
       // Emoty
-<span class="nc" id="L472">    }</span>
+<span class="nc" id="L495">    }</span>
 
     @Override
     public void setNetworkTimeout(final Executor executor, final int i)
         throws SQLException {
       // Emoty
-<span class="nc" id="L478">    }</span>
+<span class="nc" id="L501">    }</span>
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-<span class="nc" id="L482">      return 0;</span>
+<span class="nc" id="L505">      return 0;</span>
     }
 
     @Override
     public &lt;T&gt; T unwrap(final Class&lt;T&gt; aClass) throws SQLException {
-<span class="nc" id="L487">      return null;</span>
+<span class="nc" id="L510">      return null;</span>
     }
 
     @Override
     public boolean isWrapperFor(final Class&lt;?&gt; aClass) throws SQLException {
-<span class="nc" id="L492">      return false;</span>
+<span class="nc" id="L515">      return false;</span>
     }
   }
 }

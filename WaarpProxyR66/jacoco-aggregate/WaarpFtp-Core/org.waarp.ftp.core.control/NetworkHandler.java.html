@@ -195,30 +195,30 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-<span class="fc" id="L198">    this.ctx = ctx;</span>
-<span class="fc" id="L199">    final Channel channel = ctx.channel();</span>
-<span class="pc bpc" id="L200" title="1 of 2 branches missed.">    if (session == null) {</span>
+<span class="nc" id="L198">    this.ctx = ctx;</span>
+<span class="nc" id="L199">    final Channel channel = ctx.channel();</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">    if (session == null) {</span>
       // should not be
 <span class="nc" id="L202">      logger.warn(&quot;NO SESSION&quot;, cause);</span>
 <span class="nc" id="L203">      return;</span>
     }
-<span class="pc bpc" id="L205" title="1 of 2 branches missed.">    if (cause instanceof ConnectException) {</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (cause instanceof ConnectException) {</span>
 <span class="nc" id="L206">      final ConnectException e2 = (ConnectException) cause;</span>
 <span class="nc" id="L207">      logger.warn(&quot;Connection impossible since {} with Channel {}&quot;,</span>
 <span class="nc" id="L208">                  e2.getMessage(), channel);</span>
-<span class="pc bpc" id="L209" title="1 of 2 branches missed.">    } else if (cause instanceof ChannelException) {</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">    } else if (cause instanceof ChannelException) {</span>
 <span class="nc" id="L210">      final ChannelException e2 = (ChannelException) cause;</span>
 <span class="nc" id="L211">      logger.warn(</span>
           &quot;Connection (example: timeout) impossible since {} with Channel {}&quot;,
 <span class="nc" id="L213">          e2.getMessage(), channel);</span>
-<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    } else if (cause instanceof ClosedChannelException) {</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    } else if (cause instanceof ClosedChannelException) {</span>
 <span class="nc" id="L215">      logger.debug(&quot;Connection closed before end&quot;);</span>
 <span class="nc" id="L216">      session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);</span>
 <span class="nc bnc" id="L217" title="All 2 branches missed.">      if (channel.isActive()) {</span>
 <span class="nc" id="L218">        writeFinalAnswer(ctx);</span>
       }
 <span class="nc" id="L220">      return;</span>
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    } else if (cause instanceof CommandAbstractException) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    } else if (cause instanceof CommandAbstractException) {</span>
       // FTP Exception: not close if not necessary
 <span class="nc" id="L223">      final CommandAbstractException e2 = (CommandAbstractException) cause;</span>
 <span class="nc" id="L224">      logger.warn(&quot;Command Error Reply {}&quot;, e2.getMessage());</span>
@@ -228,7 +228,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
 <span class="nc" id="L228">        writeFinalAnswer(ctx);</span>
       }
 <span class="nc" id="L230">      return;</span>
-<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    } else if (cause instanceof NullPointerException) {</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">    } else if (cause instanceof NullPointerException) {</span>
 <span class="nc" id="L232">      final NullPointerException e2 = (NullPointerException) cause;</span>
 <span class="nc" id="L233">      logger.warn(&quot;Null pointer Exception: &quot; + ctx.channel(), e2);</span>
       try {
@@ -243,29 +243,29 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
         // nothing
 <span class="nc" id="L244">      }</span>
 <span class="nc" id="L245">      return;</span>
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">    } else if (cause instanceof BindException) {</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">    } else if (cause instanceof BindException) {</span>
 <span class="nc" id="L247">      final BindException e2 = (BindException) cause;</span>
 <span class="nc" id="L248">      logger.warn(&quot;Connection aborted since {} with Channel {}&quot;,</span>
 <span class="nc" id="L249">                  e2.getMessage(), channel);</span>
 <span class="nc" id="L250">      logger.debug(&quot;DEBUG&quot;, cause);</span>
-<span class="pc bpc" id="L251" title="1 of 2 branches missed.">    } else if (cause instanceof IOException) {</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">    } else if (cause instanceof IOException) {</span>
 <span class="nc" id="L252">      final IOException e2 = (IOException) cause;</span>
 <span class="nc" id="L253">      logger.warn(&quot;Connection aborted since {} with Channel {}&quot;,</span>
 <span class="nc" id="L254">                  e2.getMessage(), channel);</span>
 <span class="nc" id="L255">      logger.debug(&quot;DEBUG&quot;, cause);</span>
-<span class="pc bpc" id="L256" title="1 of 2 branches missed.">    } else if (cause instanceof RejectedExecutionException) {</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">    } else if (cause instanceof RejectedExecutionException) {</span>
 <span class="nc" id="L257">      logger.debug(&quot;Rejected execution (shutdown) from {}&quot;, channel);</span>
 <span class="nc" id="L258">      return;</span>
     } else {
-<span class="fc" id="L260">      logger.warn(&quot;Unexpected exception from Outband Ref Channel: &quot; + channel +</span>
-<span class="fc" id="L261">                  &quot; Exception: &quot; + cause.getMessage(), cause);</span>
+<span class="nc" id="L260">      logger.warn(&quot;Unexpected exception from Outband Ref Channel: &quot; + channel +</span>
+<span class="nc" id="L261">                  &quot; Exception: &quot; + cause.getMessage(), cause);</span>
     }
-<span class="fc" id="L263">    session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);</span>
-<span class="fc" id="L264">    businessHandler.exceptionLocalCaught(cause);</span>
-<span class="pc bpc" id="L265" title="1 of 2 branches missed.">    if (channel.isActive()) {</span>
+<span class="nc" id="L263">    session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);</span>
+<span class="nc" id="L264">    businessHandler.exceptionLocalCaught(cause);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">    if (channel.isActive()) {</span>
 <span class="nc" id="L266">      writeFinalAnswer(ctx);</span>
     }
-<span class="fc" id="L268">  }</span>
+<span class="nc" id="L268">  }</span>
 
   /**
    * Simply call messageRun with the received message
@@ -285,7 +285,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
 <span class="nc" id="L285">        return;</span>
       }
 <span class="fc" id="L287">      AbstractCommand command = FtpCommandCode.getFromLine(getFtpSession(), e);</span>
-<span class="fc" id="L288">      logger.debug(&quot;RECVMSG: {} CMD: {} {}&quot; + command.getCode(), e,</span>
+<span class="fc" id="L288">      logger.debug(&quot;RECVMSG: {} CMD: {} {}&quot;, command.getCode(), e,</span>
 <span class="fc" id="L289">                   command.getCommand());</span>
       // First check if the command is an ABORT, QUIT or STAT
 <span class="fc bfc" id="L291" title="All 2 branches covered.">      if (!FtpCommandCode.isSpecialCommand(command.getCode())) {</span>
@@ -312,17 +312,17 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
 <span class="fc" id="L312">        messageRunAnswer(ctx);</span>
 <span class="fc" id="L313">        return;</span>
       }
-<span class="fc bfc" id="L315" title="All 2 branches covered.">      if (session.getCurrentCommand().isNextCommandValid(command)) {</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">      if (session.getCurrentCommand().isNextCommandValid(command)) {</span>
 <span class="fc" id="L316">        logger.debug(&quot;Previous: {} Next: {}&quot;,</span>
 <span class="fc" id="L317">                     session.getCurrentCommand().getCode(), command.getCode());</span>
 <span class="fc" id="L318">        session.setNextCommand(command);</span>
 <span class="fc" id="L319">        messageRunAnswer(ctx);</span>
       } else {
-<span class="pc bpc" id="L321" title="1 of 2 branches missed.">        if (!session.getAuth().isIdentified()) {</span>
-<span class="fc" id="L322">          session.setReplyCode(ReplyCode.REPLY_530_NOT_LOGGED_IN, null);</span>
-<span class="fc" id="L323">          session.setNextCommand(new USER());</span>
-<span class="fc" id="L324">          writeFinalAnswer(ctx);</span>
-<span class="fc" id="L325">          return;</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        if (!session.getAuth().isIdentified()) {</span>
+<span class="nc" id="L322">          session.setReplyCode(ReplyCode.REPLY_530_NOT_LOGGED_IN, null);</span>
+<span class="nc" id="L323">          session.setNextCommand(new USER());</span>
+<span class="nc" id="L324">          writeFinalAnswer(ctx);</span>
+<span class="nc" id="L325">          return;</span>
         }
 <span class="nc" id="L327">        command = new IncorrectCommand();</span>
 <span class="nc" id="L328">        command.setArgs(getFtpSession(), e, null,</span>
@@ -384,7 +384,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
    */
   protected void callForSnmp(final String error1, final String error2) {
     // ignore
-<span class="fc" id="L387">  }</span>
+<span class="nc" id="L387">  }</span>
 
   /**
    * Execute one command and write the following answer
@@ -445,21 +445,21 @@ public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
                                           @Override
                                           public final void operationComplete(
                                               final Future&lt;? super Channel&gt; future) {
-<span class="fc bfc" id="L448" title="All 2 branches covered.">                                            if (!future.isSuccess()) {</span>
-<span class="fc" id="L449">                                              final String error2 =</span>
-<span class="pc bpc" id="L450" title="1 of 2 branches missed.">                                                  future.cause() != null?</span>
-<span class="fc" id="L451">                                                      future.cause()</span>
-<span class="pc" id="L452">                                                            .getMessage() :</span>
+<span class="pc bpc" id="L448" title="1 of 2 branches missed.">                                            if (!future.isSuccess()) {</span>
+<span class="nc" id="L449">                                              final String error2 =</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">                                                  future.cause() != null?</span>
+<span class="nc" id="L451">                                                      future.cause()</span>
+<span class="nc" id="L452">                                                            .getMessage() :</span>
                                                       &quot;During Handshake&quot;;
-<span class="fc" id="L454">                                              logger.error(</span>
+<span class="nc" id="L454">                                              logger.error(</span>
                                                   &quot;Cannot finalize Ssl Command channel {}&quot;,
-<span class="fc" id="L456">                                                  error2, future.cause());</span>
-<span class="fc" id="L457">                                              callForSnmp(</span>
+<span class="nc" id="L456">                                                  error2, future.cause());</span>
+<span class="nc" id="L457">                                              callForSnmp(</span>
                                                   &quot;SSL Connection Error&quot;,
                                                   error2);
-<span class="fc" id="L460">                                              session.setSsl(false);</span>
-<span class="fc" id="L461">                                              ctx.close();</span>
-<span class="fc" id="L462">                                            } else {</span>
+<span class="nc" id="L460">                                              session.setSsl(false);</span>
+<span class="nc" id="L461">                                              ctx.close();</span>
+<span class="nc" id="L462">                                            } else {</span>
 <span class="fc" id="L463">                                              logger.debug(</span>
                                                   &quot;End of initialization of SSL and command channel: {}&quot;,
 <span class="fc" id="L465">                                                  ctx.channel());</span>

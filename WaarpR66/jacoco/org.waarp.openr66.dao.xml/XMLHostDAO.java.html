@@ -70,7 +70,7 @@ public class XMLHostDAO implements HostDAO {
   @Override
   public void close() {
     // ignore
-<span class="nc" id="L73">  }</span>
+<span class="fc" id="L73">  }</span>
 
   @Override
   public void delete(final Host host) {
@@ -152,6 +152,38 @@ public class XMLHostDAO implements HostDAO {
 <span class="fc" id="L152">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
+  @Override
+  public List&lt;Host&gt; find(final List&lt;Filter&gt; filters, final int limit)
+      throws DAOConnectionException {
+<span class="nc" id="L158">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  @Override
+  public List&lt;Host&gt; find(final List&lt;Filter&gt; filters, final String field,
+                         final boolean asc) throws DAOConnectionException {
+<span class="nc" id="L164">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  @Override
+  public List&lt;Host&gt; find(final List&lt;Filter&gt; filters, final String field,
+                         final boolean asc, final int limit)
+      throws DAOConnectionException {
+<span class="nc" id="L171">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  @Override
+  public List&lt;Host&gt; find(final List&lt;Filter&gt; filters, final String field,
+                         final boolean asc, final int limit, final int offset)
+      throws DAOConnectionException {
+<span class="nc" id="L178">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  @Override
+  public void update(final List&lt;Filter&gt; filters, final String toSet)
+      throws DAOConnectionException {
+<span class="nc" id="L184">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
   /**
    * {@link DAOConnectionException}
    *
@@ -159,87 +191,87 @@ public class XMLHostDAO implements HostDAO {
    */
   @Override
   public long count(final List&lt;Filter&gt; fitlers) throws DAOConnectionException {
-<span class="nc bnc" id="L162" title="All 4 branches missed.">    if (fitlers == null || fitlers.isEmpty()) {</span>
-<span class="nc" id="L163">      return dbR66HostAuthHashMap.size();</span>
+<span class="nc bnc" id="L194" title="All 4 branches missed.">    if (fitlers == null || fitlers.isEmpty()) {</span>
+<span class="nc" id="L195">      return dbR66HostAuthHashMap.size();</span>
     }
-<span class="nc" id="L165">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L197">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
   public void insert(final Host host) {
-<span class="fc" id="L170">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
-<span class="fc" id="L171">  }</span>
+<span class="fc" id="L202">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
+<span class="fc" id="L203">  }</span>
 
   @Override
   public Host select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
-<span class="fc" id="L176">    Host host = dbR66HostAuthHashMap.get(hostid);</span>
-<span class="fc bfc" id="L177" title="All 2 branches covered.">    if (host != null) {</span>
-<span class="fc" id="L178">      return host;</span>
+<span class="fc" id="L208">    Host host = dbR66HostAuthHashMap.get(hostid);</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">    if (host != null) {</span>
+<span class="fc" id="L210">      return host;</span>
     }
-<span class="pc bpc" id="L180" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
-<span class="fc" id="L181">      throw new DAOConnectionException(</span>
-<span class="fc" id="L182">          &quot;File &quot; + file.getPath() + &quot; doesn't exist&quot;);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
+<span class="fc" id="L213">      throw new DAOConnectionException(</span>
+<span class="fc" id="L214">          &quot;File &quot; + file.getPath() + &quot; doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L185">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L186">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+<span class="nc" id="L217">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L218">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
-<span class="nc" id="L188">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
-<span class="nc" id="L189">      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);</span>
+<span class="nc" id="L220">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
+<span class="nc" id="L221">      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);</span>
       // Setup XPath query
-<span class="nc" id="L191">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L192">      xPath.setXPathVariableResolver(resolver);</span>
-<span class="nc" id="L193">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
+<span class="nc" id="L223">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L224">      xPath.setXPathVariableResolver(resolver);</span>
+<span class="nc" id="L225">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
       // Retrieve node and instantiate object
-<span class="nc" id="L195">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">      if (node != null) {</span>
-<span class="nc" id="L197">        host = getFromNode(node);</span>
-<span class="nc" id="L198">        dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
-<span class="nc" id="L199">        return host;</span>
+<span class="nc" id="L227">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">      if (node != null) {</span>
+<span class="nc" id="L229">        host = getFromNode(node);</span>
+<span class="nc" id="L230">        dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
+<span class="nc" id="L231">        return host;</span>
       }
-<span class="nc" id="L201">      throw new DAONoDataException(&quot;Host not found&quot;);</span>
-<span class="nc" id="L202">    } catch (final SAXException e) {</span>
-<span class="nc" id="L203">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L204">    } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L205">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L206">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L207">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L208">    } catch (final IOException e) {</span>
-<span class="nc" id="L209">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L233">      throw new DAONoDataException(&quot;Host not found&quot;);</span>
+<span class="nc" id="L234">    } catch (final SAXException e) {</span>
+<span class="nc" id="L235">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L236">    } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L237">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L238">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L239">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L240">    } catch (final IOException e) {</span>
+<span class="nc" id="L241">      throw new DAOConnectionException(e);</span>
     }
   }
 
   @Override
   public void update(final Host host) {
-<span class="fc" id="L215">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
-<span class="fc" id="L216">  }</span>
+<span class="fc" id="L247">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
+<span class="fc" id="L248">  }</span>
 
   private Host getFromNode(final Node parent) {
-<span class="nc" id="L219">    final Host res = new Host();</span>
+<span class="nc" id="L251">    final Host res = new Host();</span>
 
-<span class="nc" id="L221">    final NodeList children = parent.getChildNodes();</span>
-<span class="nc bnc" id="L222" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
-<span class="nc" id="L223">      final Node node = children.item(j);</span>
-<span class="nc bnc" id="L224" title="All 2 branches missed.">      if (node.getNodeName().equals(HOSTID_FIELD)) {</span>
-<span class="nc" id="L225">        res.setHostid(node.getTextContent());</span>
-<span class="nc bnc" id="L226" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ADDRESS_FIELD)) {</span>
-<span class="nc" id="L227">        res.setAddress(node.getTextContent());</span>
-<span class="nc bnc" id="L228" title="All 2 branches missed.">      } else if (node.getNodeName().equals(PORT_FIELD)) {</span>
-<span class="nc" id="L229">        res.setPort(Integer.parseInt(node.getTextContent()));</span>
-<span class="nc bnc" id="L230" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_SSL_FIELD)) {</span>
-<span class="nc" id="L231">        res.setSSL(Boolean.parseBoolean(node.getTextContent()));</span>
-<span class="nc bnc" id="L232" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_CLIENT_FIELD)) {</span>
-<span class="nc" id="L233">        res.setClient(Boolean.parseBoolean(node.getTextContent()));</span>
-<span class="nc bnc" id="L234" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_PROXIFIED_FIELD)) {</span>
-<span class="nc" id="L235">        res.setProxified(Boolean.parseBoolean(node.getTextContent()));</span>
-<span class="nc bnc" id="L236" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ADMINROLE_FIELD)) {</span>
-<span class="nc" id="L237">        res.setAdmin(Boolean.parseBoolean(node.getTextContent()));</span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">      } else if (node.getNodeName().equals(HOSTKEY_FIELD)) {</span>
-<span class="nc" id="L239">        res.setHostkey(node.getTextContent().getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L253">    final NodeList children = parent.getChildNodes();</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
+<span class="nc" id="L255">      final Node node = children.item(j);</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">      if (node.getNodeName().equals(HOSTID_FIELD)) {</span>
+<span class="nc" id="L257">        res.setHostid(node.getTextContent());</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ADDRESS_FIELD)) {</span>
+<span class="nc" id="L259">        res.setAddress(node.getTextContent());</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      } else if (node.getNodeName().equals(PORT_FIELD)) {</span>
+<span class="nc" id="L261">        res.setPort(Integer.parseInt(node.getTextContent()));</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_SSL_FIELD)) {</span>
+<span class="nc" id="L263">        res.setSSL(Boolean.parseBoolean(node.getTextContent()));</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_CLIENT_FIELD)) {</span>
+<span class="nc" id="L265">        res.setClient(Boolean.parseBoolean(node.getTextContent()));</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_PROXIFIED_FIELD)) {</span>
+<span class="nc" id="L267">        res.setProxified(Boolean.parseBoolean(node.getTextContent()));</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ADMINROLE_FIELD)) {</span>
+<span class="nc" id="L269">        res.setAdmin(Boolean.parseBoolean(node.getTextContent()));</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">      } else if (node.getNodeName().equals(HOSTKEY_FIELD)) {</span>
+<span class="nc" id="L271">        res.setHostkey(node.getTextContent().getBytes(WaarpStringUtils.UTF8));</span>
       }
     }
-<span class="nc" id="L242">    return res;</span>
+<span class="nc" id="L274">    return res;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

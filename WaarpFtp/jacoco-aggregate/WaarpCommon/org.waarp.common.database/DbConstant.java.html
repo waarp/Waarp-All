@@ -19,10 +19,21 @@
  */
 package org.waarp.common.database;
 
+import org.waarp.common.database.model.DbType;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.SQLException;
+
 /**
  * Constants value for database
  */
-<span class="nc" id="L25">public class DbConstant {</span>
+<span class="nc" id="L31">public class DbConstant {</span>
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L35">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L36">      WaarpLoggerFactory.getLogger(DbConstant.class);</span>
   /**
    * Illegal value as SpecialId of transfer (any value above is valid)
    */
@@ -48,5 +59,24 @@ package org.waarp.common.database;
    */
   public static final int DELAYMAXCONNECTION = 30;
 
+  /**
+   * Print the error from SQLException
+   *
+   * @param ex
+   */
+  public static void error(final SQLException ex) {
+    // handle any errors
+<span class="nc" id="L69">    logger.error(</span>
+<span class="nc" id="L70">        &quot;SQLException: &quot; + ex.getMessage() + &quot; SQLState: &quot; + ex.getSQLState() +</span>
+<span class="nc" id="L71">        &quot; VendorError: &quot; + ex.getErrorCode());</span>
+<span class="nc" id="L72">  }</span>
+
+  /**
+   * @return True if Db is used
+   */
+  public static boolean isDbUsed() {
+<span class="nc bnc" id="L78" title="All 4 branches missed.">    return admin != null &amp;&amp; admin.getTypeDriver() != null &amp;&amp;</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">           admin.getTypeDriver() != DbType.none;</span>
+  }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
