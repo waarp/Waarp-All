@@ -361,6 +361,7 @@
     <exec.maven.version>3.0.0</exec.maven.version>
     <extra-enforcer-rules.version>1.6.0</extra-enforcer-rules.version>
     <maven-deploy-plugin.version>3.0.0-M2</maven-deploy-plugin.version>
+    <maven.flatten-maven-plugin.version>1.4.1</maven.flatten-maven-plugin.version>
     <asm.version>9.3</asm.version>
   </properties>
 
@@ -685,6 +686,12 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${exec.maven.version}</version>
+        </plugin>
+        
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>flatten-maven-plugin</artifactId>
+            <version>${maven.flatten-maven-plugin.version}</version>
         </plugin>
       </plugins>
 
@@ -1022,6 +1029,30 @@
           <updateReleaseInfo>true</updateReleaseInfo>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>flatten-maven-plugin</artifactId>
+            <configuration>
+                <updatePomFile>true</updatePomFile>
+                <flattenMode>resolveCiFriendliesOnly</flattenMode>
+            </configuration>
+            <executions>
+                <execution>
+                <id>flatten</id>
+                <phase>process-resources</phase>
+                <goals>
+                    <goal>flatten</goal>
+                </goals>
+                </execution>
+                <execution>
+                <id>flatten.clean</id>
+                <phase>clean</phase>
+                <goals>
+                    <goal>clean</goal>
+                </goals>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
     <resources>
       <resource>
