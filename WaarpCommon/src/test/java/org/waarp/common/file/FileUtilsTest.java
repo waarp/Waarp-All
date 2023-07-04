@@ -104,10 +104,10 @@ public class FileUtilsTest {
     final ClassLoader classLoader = FileUtilsTest.class.getClassLoader();
     File file = new File(classLoader.getResource("cert.jks").getFile());
     file = file.getParentFile().getParentFile().getParentFile().getParentFile();
-    file = new File(file, "lib/phantomjs-2.1.1.bz2");
+    file = new File(file, "lib/geckodriver.bz2");
     SysErrLogger.FAKE_LOGGER.sysout(file.getAbsolutePath());
     assertTrue(file.canRead());
-    File to = new File("/tmp/phantomjs-2.1.1");
+    File to = new File("/tmp/geckodriver.bz2");
     if (to.exists()) {
       to.delete();
     }

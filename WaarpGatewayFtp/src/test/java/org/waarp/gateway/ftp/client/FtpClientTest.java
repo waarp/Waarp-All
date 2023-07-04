@@ -181,7 +181,6 @@ public class FtpClientTest extends TestWebAbstract {
     final ClassLoader classLoader = FtpClientTest.class.getClassLoader();
     File file = new File(classLoader.getResource("Gg-FTP.xml").getFile());
     if (file.exists()) {
-      driverType = DriverType.FIREFOX;
       initiateWebDriver(file.getParentFile());
     }
     final File tmp = new File("/tmp");

@@ -21,43 +21,29 @@
 package org.waarp.common.utility;
 
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.waarp.common.file.FileUtils;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.logging.Level;
 
 import static org.junit.Assert.*;
 
 public abstract class TestWebAbstract {
+  static final Logger logger = LoggerFactory.getLogger(TestWebAbstract.class);
+
   public static WebDriver driver = null;
-  public static DriverType driverType = DriverType.FIREFOX;
 
   public static void initiateWebDriver(File file) {
+
     File libdir = file.getParentFile().getParentFile().getParentFile();
     // test-classes -> target -> WaarpR66 -> lib -> geckodriver (linux x64)
-    File libPhantomJS = new File("/tmp/phantomjs-2.1.1");
-    if (!libPhantomJS.canRead()) {
-      File libPhantomJSZip = new File(libdir, "lib/phantomjs-2.1.1.bz2");
-      if (libPhantomJSZip.canRead()) {
-        FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
-        libPhantomJS.setExecutable(true);
-      }
-    }
-    assertTrue(libPhantomJS.exists());
-    System.setProperty("phantomjs.binary.path", libPhantomJS.getAbsolutePath());
 
     File firefoxDriver = new File("/tmp/geckodriver");
     if (!firefoxDriver.canRead()) {
@@ -86,16 +72,9 @@ public abstract class TestWebAbstract {
     driver = initializeDriver();
   }
 
-  public static WebDriver initializeDriver() throws InterruptedException {
-    WebDriver driver;
-    switch (driverType) {
-      case PHANTOMJS:
-        driver = createPhantomJSDriver();
-        break;
-      case FIREFOX:
-      default:
-        driver = createFirefoxDriver();
-    }
+  private static WebDriver initializeDriver() throws InterruptedException {
+    logger.debug("initializeDriver()");
+    WebDriver driver = createFirefoxDriver();
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
     driver.manage().window().setSize(new Dimension(1920, 1080));
     driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
@@ -104,62 +83,10 @@ public abstract class TestWebAbstract {
   }
 
   private static int createDriver = 0;
-  private static WebDriver createPhantomJSDriver() {
-    DesiredCapabilities desiredCapabilities = new DesiredCapabilities("phantomjs", "", Platform.ANY);
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-                                      System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
-    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities.setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
-    LoggingPreferences logPrefs = new LoggingPreferences();
-    logPrefs.enable(LogType.BROWSER, Level.OFF);
-    logPrefs.enable(LogType.CLIENT, Level.OFF);
-    logPrefs.enable(LogType.DRIVER, Level.OFF);
-    logPrefs.enable(LogType.PERFORMANCE, Level.OFF);
-    logPrefs.enable(LogType.PROFILER, Level.OFF);
-    logPrefs.enable(LogType.SERVER, Level.OFF);
-    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-    desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-                                      "--webdriver-loglevel=NONE");
-    desiredCapabilities.setJavascriptEnabled(true);
-
-    ArrayList<String> cliArgs = new ArrayList<String>();
-    cliArgs.add("--web-security=true");
-    cliArgs.add("--ignore-ssl-errors=true");
-    cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgs);
-    int wait = 10;
-    createDriver++;
-    PhantomJSDriver phantomJSDriver = null;
-    for (int i = 0; i < 10; i++) {
-      try {
-        phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
-        break;
-      } catch (Exception e) {
-        try {
-          Thread.sleep(wait);
-          wait += 10;
-        } catch (InterruptedException ex) {
-          // Ignore
-        }
-      }
-    }
-    if (phantomJSDriver == null) {
-      if (createDriver > 4) {
-        throw new RuntimeException("Cannot start Driver");
-      }
-      return createFirefoxDriver();
-    }
-    createDriver = 0;
-    phantomJSDriver.setLogLevel(Level.OFF);
-    return phantomJSDriver;
-  }
 
   private static WebDriver createFirefoxDriver() {
     FirefoxOptions options = new FirefoxOptions();
-    options.setHeadless(true);
-    options.setLogLevel(FirefoxDriverLogLevel.ERROR);
+    options.setLogLevel(FirefoxDriverLogLevel.DEBUG);
     options.setAcceptInsecureCerts(true);
     options.setCapability(CapabilityType.OVERLAPPING_CHECK_DISABLED, true);
     options.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
@@ -168,17 +95,18 @@ public abstract class TestWebAbstract {
     options.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
     options.setCapability(CapabilityType.SUPPORTS_JAVASCRIPT, true);
     // options.setScriptTimeout(Duration.ofSeconds(10));
-    new File("/tmp/chromedir").mkdirs();
-    options.addArguments("--headless", "user-data-dir=/tmp/chromedir", "disable-infobars",
-                         "--disable-extensions", "--disable-dev-shm-usage", "--no-sandbox");
+    options.addArguments("--headless", "--log debug");
     FirefoxDriver firefoxDriver = null;
     int wait = 10;
     createDriver++;
     for (int i = 0; i < 10; i++) {
       try {
+        logger.debug("Trying to instantiate FirefoxDriver, attempt #{} using driver located in: {}", i, System.getProperty("webdriver.gecko.driver"));
         firefoxDriver = new FirefoxDriver(options);
+        logger.debug("FirefoxDriver successfully created: {}", firefoxDriver);
         break;
       } catch (Exception e) {
+        logger.error("Error while creating Selenium Firefox driver", e);
         try {
           Thread.sleep(wait);
           wait += 10;
@@ -188,10 +116,7 @@ public abstract class TestWebAbstract {
       }
     }
     if (firefoxDriver == null) {
-      if (createDriver > 4) {
-        throw new RuntimeException("Cannot start Driver");
-      }
-      return createPhantomJSDriver();
+      throw new RuntimeException("Cannot start Driver");
     }
     createDriver = 0;
     // chromeDriver.manage().window().minimize();
@@ -213,9 +138,5 @@ public abstract class TestWebAbstract {
       driver = null;
     }
     Thread.sleep(10);
-  }
-
-  public enum DriverType {
-    PHANTOMJS, FIREFOX
   }
 }

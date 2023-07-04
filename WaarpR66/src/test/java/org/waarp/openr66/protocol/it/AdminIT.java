@@ -87,7 +87,6 @@ public class AdminIT extends TestAbstract {
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
     if (file.exists()) {
-      TestWebAbstract.driverType = TestWebAbstract.DriverType.FIREFOX;
       TestWebAbstract.initiateWebDriver(file.getParentFile());
     }
     setUpDbBeforeClass();
