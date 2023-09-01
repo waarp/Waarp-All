@@ -99,7 +99,7 @@
     <repository>
       <id>jboss org</id>
       <name>Jboss org</name>
-      <url>http://repository.jboss.org/nexus/content/groups/public</url>
+      <url>https://repository.jboss.org/nexus/content/groups/public</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -110,7 +110,7 @@
     <repository>
       <id>com.anasoft.os.repository.releases</id>
       <name>ANASOFT OpenSource releases</name>
-      <url>http://anasoft-os-repo.googlecode.com/svn/repository/releases</url>
+      <url>https://anasoft-os-repo.googlecode.com/svn/repository/releases</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -142,18 +142,13 @@
     <repository>
       <id>eaio.com</id>
       <name>EAIO</name>
-      <url>http://eaio.com/maven2</url>
+      <url>https://eaio.com/maven2</url>
       <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-    </repository>
-    <repository>
-      <name>PhantomJS</name>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
     </repository>
     <repository>
       <!-- This repository refers to lib directory such that no need to install
@@ -342,7 +337,7 @@
     <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version><!--
 			1.9 -->
     <license-maven-plugin.version>2.0.0</license-maven-plugin.version>
-    <maven-enforcer-plugin.version>3.0.0
+    <maven-enforcer-plugin.version>3.2.1
     </maven-enforcer-plugin.version><!-- 1.3.1 -->
     <versions-maven-plugin.version>2.9.0</versions-maven-plugin.version>
     <animal-sniffer-enforcer-rule.version>1.21
@@ -359,8 +354,9 @@
     <jdeb.vafer.version>1.10</jdeb.vafer.version>
     <maven.rpm-maven-plugin.version>2.2.0</maven.rpm-maven-plugin.version>
     <exec.maven.version>3.0.0</exec.maven.version>
-    <extra-enforcer-rules.version>1.6.0</extra-enforcer-rules.version>
+    <extra-enforcer-rules.version>1.6.2</extra-enforcer-rules.version>
     <maven-deploy-plugin.version>3.0.0-M2</maven-deploy-plugin.version>
+    <maven.flatten-maven-plugin.version>1.4.1</maven.flatten-maven-plugin.version>
     <asm.version>9.3</asm.version>
   </properties>
 
@@ -686,6 +682,12 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>${exec.maven.version}</version>
         </plugin>
+        
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>flatten-maven-plugin</artifactId>
+            <version>${maven.flatten-maven-plugin.version}</version>
+        </plugin>
       </plugins>
 
     </pluginManagement>
@@ -892,7 +894,6 @@
                         <include name="**"/>
                       </zipfileset>
                       <zipfileset dir="${basedir}/target/resources"
-                                  prefix="./"
                                   erroronmissingarchive="false"/>
                       <zipfileset filemode="644"
                                   src="${project.build.directory}/${project.build.finalName}.orig.jar"
@@ -918,7 +919,6 @@
                         <include name="**"/>
                       </zipfileset>
                       <zipfileset dir="${basedir}/target/resources"
-                                  prefix="./"
                                   erroronmissingarchive="false"/>
                       <zipfileset filemode="644"
                                   src="${project.build.directory}/${project.build.finalName}-sources.orig.jar"
@@ -1024,6 +1024,30 @@
           <updateReleaseInfo>true</updateReleaseInfo>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>flatten-maven-plugin</artifactId>
+            <configuration>
+                <updatePomFile>true</updatePomFile>
+                <flattenMode>resolveCiFriendliesOnly</flattenMode>
+            </configuration>
+            <executions>
+                <execution>
+                <id>flatten</id>
+                <phase>process-resources</phase>
+                <goals>
+                    <goal>flatten</goal>
+                </goals>
+                </execution>
+                <execution>
+                <id>flatten.clean</id>
+                <phase>clean</phase>
+                <goals>
+                    <goal>clean</goal>
+                </goals>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
     <resources>
       <resource>
@@ -3362,18 +3386,6 @@
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-classes-kqueue</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>com.github.detro</groupId>
-        <artifactId>ghostdriver</artifactId>
-        <version>2.1.0</version>
-        <scope>test</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-remote-driver</artifactId>
           </exclusion>
         </exclusions>
       </dependency>

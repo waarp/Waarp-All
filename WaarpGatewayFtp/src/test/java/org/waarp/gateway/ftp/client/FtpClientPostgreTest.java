@@ -260,7 +260,6 @@ public class FtpClientPostgreTest extends TestWebAbstract {
       }
     }
     if (file.exists()) {
-      driverType = DriverType.FIREFOX;
       initiateWebDriver(file.getParentFile());
     }
     final File tmp = new File("/tmp");
