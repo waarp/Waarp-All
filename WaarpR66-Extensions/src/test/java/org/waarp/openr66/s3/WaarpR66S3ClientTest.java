@@ -117,22 +117,24 @@ public class WaarpR66S3ClientTest {
       }
       logger.warn("List all: {}", count);
       assertEquals(4, count);
-      iterator = waarpR66S3Client.listObjectsFromBucket(BUCKET, "/di", true, 0);
+      iterator = waarpR66S3Client.listObjectsFromBucket(BUCKET, "di", true, 0);
       count = 0;
       while (iterator.hasNext()) {
         iterator.next();
         count++;
       }
-      logger.warn("List from /di: {}", count);
+      logger.warn("List from di: {}", count);
       assertEquals(3, count);
-      iterator = waarpR66S3Client.listObjectsFromBucket(BUCKET, "/di", true, 2);
+      iterator = waarpR66S3Client.listObjectsFromBucket(BUCKET, "di", true, 2);
       count = 0;
       while (iterator.hasNext()) {
         iterator.next();
         count++;
       }
-      logger.warn("List from /di limit 2: {} but shall be 2", count);
-      //assertEquals(2, count);
+      logger.warn("List from di limit 2: {} but shall be 2", count);
+      // From https://github.com/minio/minio-java/issues/1057 the limit (maxKeys) seems to define how many entries to be fetched on a request.
+      // From what I understand each iteration performed using the iterator trigger a new request leading to 3 results instead of 2 define in the limit.
+      assertEquals(3, count);
       // Only Directory listing at root
       iterator = waarpR66S3Client.listObjectsFromBucket(BUCKET, null, false, 0);
       count = 0;
